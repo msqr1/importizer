@@ -36,14 +36,14 @@
       - ```verbose``` - Enable verbose output (debugging)
       - ```includeGuardPat``` - Regex for name of include guard used in the project (optional) to remove. Modulizer will try to look for a ```#pragma once``` to remove if unspecified.
       - ```includePaths``` - Include paths searched when converting include to import (optional)
-      - ```headerIgnores``` - Paths relative to ```inDir``` of header files to ignore (optional). Their paired sources, if available, will be treated as if they have a ```main()```.
+      - ```ignoredHeaders``` - Paths relative to ```inDir``` of header files to ignore (optional). Their paired sources, if available, will be treated as if they have a ```main()```.
       - ```hdrExt``` - Header file extension
       - ```srcExt``` - Source file (also module implementation unit) extension
       - ```moduleInterfaceExt``` - Module interface unit file extension
   - Default values for ```.toml```-only settings:
       - verbose: ```false``` [boolean]
       - includePaths: ```[]``` [string array]
-      - headerIgnores: ```[]``` [string array]
+      - ignoredHeaders: ```[]``` [string array]
       - hdrExt: ```".hpp"``` [string]
       - srcExt: ```".cpp"``` [string]
       - moduleInterfaceExt: ```".cppm"``` [string]

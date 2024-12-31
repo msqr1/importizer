@@ -13,6 +13,7 @@ struct Opts {
   std::string srcExt;
   std::string moduleInterfaceExt;
   std::vector<std::filesystem::path> includePaths;
+  std::vector<std::filesystem::path> ignoredHeaders;
 };
 
 Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose);

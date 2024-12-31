@@ -47,14 +47,14 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
     errSrc.begin.line, errSrc.begin.column);
   }
   const toml::table config{std::move(parseRes.table())};
-  auto getTypeCk = [&]<typename keyType>(std::string_view key) {
+  auto getTypeCk = [&]<typename keyTp>(std::string_view key) {
     const toml::node_view<const toml::node> node{config[key]};
 
     // TOML need std::string, not const char*, string_view, etc.
-    if constexpr(std::is_convertible_v<keyType, std::string>) {
+    if constexpr(std::is_convertible_v<keyTp, std::string>) {
       if(node.is_string()) return node.ref<std::string>();
     }
-    else if(node.is<keyType>()) return node.ref<keyType>();
+    else if(node.is<keyTp>()) return node.ref<keyTp>();
 
 // Clang++ < 20 can't handle [[noreturn]] in constructors (eg. exitWithErr).
 #pragma GCC diagnostic ignored "-Wreturn-type"
@@ -83,12 +83,17 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
     + getStr("includeGuardPat") + R"([^\n]*\n)", re::Opts::Multiline);
   }
   else opts.maybeIncludeGuardPat = std::nullopt;
-  if(config.contains("includePaths")) {
-    const toml::array includePathsArr{*config.get_as<toml::array>("includePaths")};
-    for(const toml::node& elem : includePathsArr) {
-      if(!elem.is_string()) exitWithErr("includePaths must only contain strings");
-      opts.includePaths.emplace_back(elem.ref<std::string>());
+  
+  auto getArr = [&]<typename elemTp, typename T>(std::string_view key,
+    std::vector<T>& container, const char* tpName) -> void {
+    if(!config.contains(key)) return;
+    const toml::array arr{*config.get_as<toml::array>(key)};
+    for(const toml::node& elem : arr) {
+      if(!elem.is<elemTp>()) exitWithErr("{} must only contains {}s", key, tpName);
+     container.emplace_back(elem.ref<elemTp>());
     }
-  }
+  };
+  getArr.template operator()<std::string>("includePaths", opts.includePaths, "string");
+  getArr.template operator()<std::string>("ignoredHeaders", opts.ignoredHeaders, "string");
   return opts;
 }
