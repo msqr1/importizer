@@ -1,17 +1,16 @@
 #include "Base.hpp"
-#include "Regex.hpp"
 #include "ArgProcessor.hpp"
 #include "FileOp.hpp"
+#include "Directive.hpp"
+#include "GMF.hpp"
+#include "../3rdParty/fmt/include/fmt/format.h"
 #include "../3rdParty/Generator.hpp"
-#include <string>
-#include <filesystem>
-
-namespace fs = std::filesystem;
+#include <exception>
 
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv, verbose)};
   for(File& file : iterateFiles(opts)) {
-    
+    insertGMF(file.content, lexDirectives(file.content), opts);
   }
 }
 

@@ -18,7 +18,7 @@ cppcoro::generator<File&> iterateFiles(const Opts& opts) {
     path = ent.path();
     logIfVerbose("Current file: {}", path.native());
     pathView = path.extension().native();
-    if(pathView == opts.hdrExt) file.type = File::Type::Hdr
+    if(pathView == opts.hdrExt) file.type = File::Type::Hdr;
     else if(pathView == opts.srcExt) {
       path.replace_extension(opts.hdrExt);
       file.type = fs::exists(path) ? File::Type::PairedSrc : File::Type::Src;

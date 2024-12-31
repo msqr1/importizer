@@ -2,8 +2,6 @@ test*
 !test
 .vscode
 src-old
-src/Regex.*
-src/PreprocessorDirective.*
 3rdParty/*
 !3rdParty/Setup.cmake
 !3rdParty/Generator.hpp

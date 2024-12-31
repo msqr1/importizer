@@ -20,7 +20,7 @@ if(releaseBuild)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-add_executable(modulizer Base.cc Regex.cc ArgProcessor.cc FileOp.cc Main.cc) 
+add_executable(modulizer Base.cc Regex.cc ArgProcessor.cc FileOp.cc Main.cc Directive.cc GMF.cc)
 target_compile_features(modulizer PUBLIC cxx_std_23)
 target_compile_options(modulizer PUBLIC -Wall)
 
