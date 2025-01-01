@@ -21,7 +21,7 @@ std::string_view getOptVal(int optidx, int argc, const char* const* argv) {
 
 Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
   Opts opts;
-  std::string_view configPath{"modulizer.toml"};
+  std::string_view configPath{"include2import.toml"};
   {
     std::string_view arg;
     if(argc > 1) {

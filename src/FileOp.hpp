@@ -11,13 +11,10 @@ namespace cppcoro {
 }
 struct Opts;
 struct File {
-  enum class Type {
-    Hdr,
-    Src,
-    PairedSrc
-  } type;
-  bool manualExportingRequired;
-  std::filesystem::path path;
+  bool isHdr;
+  bool paired;
+  bool manualExport{};
+  std::filesystem::path path; // Relative to inDir
   std::string content;
 };
 

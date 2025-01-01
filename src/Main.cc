@@ -10,7 +10,7 @@
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv, verbose)};
   for(File& file : iterateFiles(opts)) {
-    insertGMF(file.content, lexDirectives(file.content), opts);
+    insertGMF(file, lexDirectives(file.content), opts);
   }
 }
 

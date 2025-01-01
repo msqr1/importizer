@@ -1,7 +1,7 @@
 #pragma once
 #include "Directive.hpp"
 #include <vector>
-#include <string>
 
 struct Opts;
-void insertGMF(std::string& code, const std::vector<Directive>& directives, const Opts& opts);
+struct File;
+void insertGMF(File& file, const std::vector<Directive>& directives, const Opts& opts);
