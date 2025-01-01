@@ -13,7 +13,8 @@ struct Opts;
 struct File {
   bool isHdr;
   bool paired;
-  std::filesystem::path path; // Relative to inDir
+  bool pairedHdrIgnored;
+  std::filesystem::path relPath; // Relative to inDir/outDir
   std::string content;
 };
 

@@ -1,5 +1,5 @@
-#include "Base.hpp"
 #include "ArgProcessor.hpp"
+#include "Base.hpp"
 #include "../3rdParty/fmt/include/fmt/format.h"
 #define TOML_EXCEPTIONS 0
 #define TOML_ENABLE_FORMATTERS 0

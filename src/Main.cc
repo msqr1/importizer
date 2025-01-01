@@ -12,8 +12,8 @@ void run(int argc, const char* const* argv) {
   for(File& file : iterateFiles(opts)) {
     bool manualExport{modularize(file, lexDirectives(file.content), opts)};
     if(manualExport) {
-      file.path.replace_extension(opts.moduleInterfaceExt);
-      log("{}", file.path.native());
+      if(file.isHdr) file.relPath.replace_extension(opts.moduleInterfaceExt);
+      log("{}", file.relPath.native());
     }
   }
 }

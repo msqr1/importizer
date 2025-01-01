@@ -4,4 +4,4 @@
 
 struct Opts;
 struct File;
-bool modularize(File& file, const std::vector<Directive>& directives, const Opts& opts);
+bool modularize(File& file, const std::vector<Directive>& directives, const Opts& opts); 
