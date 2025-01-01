@@ -13,7 +13,6 @@ struct Opts;
 struct File {
   bool isHdr;
   bool paired;
-  bool manualExport{};
   std::filesystem::path path; // Relative to inDir
   std::string content;
 };

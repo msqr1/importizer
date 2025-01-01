@@ -2,7 +2,7 @@
 #include "ArgProcessor.hpp"
 #include "FileOp.hpp"
 #include "Directive.hpp"
-#include "GMF.hpp"
+#include "Modularizer.hpp"
 #include "../3rdParty/fmt/include/fmt/format.h"
 #include "../3rdParty/Generator.hpp"
 #include <exception>
@@ -10,7 +10,11 @@
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv, verbose)};
   for(File& file : iterateFiles(opts)) {
-    insertGMF(file, lexDirectives(file.content), opts);
+    bool manualExport{modularize(file, lexDirectives(file.content), opts)};
+    if(manualExport) {
+      file.path.replace_extension(opts.moduleInterfaceExt);
+      log("{}", file.path.native());
+    }
   }
 }
 

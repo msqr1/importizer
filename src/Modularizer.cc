@@ -1,4 +1,4 @@
-#include "GMF.hpp"
+#include "Modularizer.hpp"
 #include "Directive.hpp"
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
@@ -66,7 +66,8 @@ std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::pat
 
 }
 
-void insertGMF(File& file, const std::vector<Directive>& directives, const Opts& opts) {
+bool modularize(File& file, const std::vector<Directive>& directives, const Opts& opts) {
+  bool manualExport{};
   GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::optional<fs::path> maybeResolvedInclude;
   std::string fileStart;
@@ -79,7 +80,7 @@ void insertGMF(File& file, const std::vector<Directive>& directives, const Opts&
     }
   }
   if(!file.isHdr) file.path.replace_extension(opts.srcExt);
-  else if(hdrIgnored) return;
+  else if(hdrIgnored) return false;
 
   // Convert to module interface/implementation
   if(file.isHdr || !hasMainFunc(file.content)) {
@@ -132,7 +133,7 @@ void insertGMF(File& file, const std::vector<Directive>& directives, const Opts&
     // Convert header and unpaired source into module interface unit. Without 
     // the "export " the file is a module implementation unit
     if(file.isHdr || !file.paired)  {
-      file.manualExport = true;
+      manualExport = true;
       fileStart += "export ";
     }
     fileStart += "module ";
@@ -173,6 +174,6 @@ void insertGMF(File& file, const std::vector<Directive>& directives, const Opts&
     }
     fileStart += directive.str;
   }
-  log("{}", fileStart);
   file.content.insert(0, fileStart);
+  return manualExport;
 }

@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <optional>
 
 struct Opts {
   bool raiseDefine;

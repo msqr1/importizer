@@ -121,5 +121,6 @@ std::vector<Directive> lexDirectives(std::string& code) {
     else whitespaceAfterNewline = isspace(code[i]);
     i++;
   }
+  code.resize(codeLen);
   return directives;
 };
