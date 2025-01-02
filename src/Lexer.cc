@@ -27,7 +27,7 @@ void balance(std::string_view str, size_t& pos) {
 // Such as #/*comment*/include/*comment*/<iostream>
 // because this skips over space until it sees a character
 // Not sure why anyone would do this.
-Directive::Type directiveTypeFromStr(std::string_view str) {
+DirectiveType directiveTypeFromStr(std::string_view str) {
   str.remove_prefix(1);
   size_t startDirective{};
   while(str[startDirective] == ' ') startDirective++;
@@ -35,12 +35,12 @@ Directive::Type directiveTypeFromStr(std::string_view str) {
   while(str[endDirective] != ' ' && str[endDirective] != '\n' 
     && str[endDirective] != '/') endDirective++;
   std::string_view directive{str.substr(startDirective, endDirective - startDirective)};
-  if(directive == "define") return Directive::Type::Define;
-  if(directive == "undef") return Directive::Type::Undef;
+  if(directive == "define") return DirectiveType::Define;
+  if(directive == "undef") return DirectiveType::Undef;
   std::string_view first2Chars{directive.substr(0, 2)};
-  if(first2Chars == "if" || first2Chars == "el") return Directive::Type::Condition;
-  if(directive == "endif") return Directive::Type::EndIf;
-  if(directive == "include") return Directive::Type::Include;
+  if(first2Chars == "if" || first2Chars == "el") return DirectiveType::Condition;
+  if(directive == "endif") return DirectiveType::EndIf;
+  if(directive == "include") return DirectiveType::Include;
   if(directive == "pragma") {
     startDirective = endDirective;
     while(str[startDirective] == ' ') startDirective++;
@@ -48,14 +48,14 @@ Directive::Type directiveTypeFromStr(std::string_view str) {
     while(str[endDirective] != ' ' && str[endDirective] != '\n' 
     && str[endDirective] != '/') endDirective++;
     directive = str.substr(startDirective, endDirective - startDirective);
-    if(directive == "once") return Directive::Type::PragmaOnce;
+    if(directive == "once") return DirectiveType::PragmaOnce;
   }
-  return Directive::Type::Other;
+  return DirectiveType::Other;
 }
 
 }
 
-Directive::Directive(Type type_, std::string_view str_): type{type_}, str{str_} {
+Directive::Directive(DirectiveType type_, std::string_view str_): type{type_}, str{str_} {
   if(str_.back() != '\n') str += '\n';
 }
 
@@ -63,7 +63,7 @@ Directive::Directive(Type type_, std::string_view str_): type{type_}, str{str_} 
 // Fix this so that it changes to string remove()
 // FIXME: Make it also detect if a main() is available
 LexResult lex(std::string& code) {
-  logIfVerbose("Getting preprocessor directives...");
+  logIfVerbose("Lexing...");
   LexResult lexRes;
   bool whitespaceAfterNewline{true};
   size_t i{};
@@ -103,12 +103,12 @@ LexResult lex(std::string& code) {
       // Get the \n if available
       const size_t end{i + (i < codeLen)};
       std::string directive{code.substr(start, end - start)};
-      Directive::Type type{directiveTypeFromStr(directive)};
+      DirectiveType type{directiveTypeFromStr(directive)};
       switch(type) {
-      case Directive::Type::Other:
+      case DirectiveType::Other:
         continue;
-      case Directive::Type::PragmaOnce:
-      case Directive::Type::Include:
+      case DirectiveType::PragmaOnce:
+      case DirectiveType::Include:
         std::copy(code.begin() + end, code.end(), code.begin() + start);
         i = start;
         codeLen -= end - start;

@@ -67,15 +67,53 @@ bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
   GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::optional<fs::path> maybeResolvedInclude;
   std::string fileStart;
-  if(file.relPath == "Main.cc") file.type = File::Type::SrcWithMain;
+
+  // Only convert include to import for source with a main(), paired or unpaired
+  if(file.type == FileType::SrcWithMain) {
+    for(const Directive& directive : lexRes.directives) {
+      if(directive.type == DirectiveType::Include) {
+        size_t start{directive.str.find('<')};
+        size_t end;
+        bool isAngle{};
+        if(start != notFound) {
+          isAngle = true;
+          start++;
+          end = directive.str.find('>', start);
+        }
+        else {
+          start = directive.str.find('"') + 1;
+          end = directive.str.find('"', start);
+        }
+        fs::path includePath{directive.str.substr(start, end - start)};
+        maybeResolvedInclude = isAngle ? getAngleInclude(ctx, includePath) :
+          getQuotedInclude(ctx, includePath, file.relPath);
+        if(maybeResolvedInclude) {
+          bool ignore{};
+
+          // Don't include2import ignored headers, keep them as #include
+          for(const fs::path& p : opts.ignoredHeaders) {
+            if(*maybeResolvedInclude == p) {
+              ignore = true;
+              break;
+            }
+          }
+          if(!ignore) {
+            fileStart += "import " + path2ModuleName(*maybeResolvedInclude) + ";\n";
+            continue;
+          }
+        }
+      }
+      fileStart += directive.str;
+    }
+  }
 
   // Convert to module interface/implementation
-  if(file.type == File::Type::Hdr || file.type != File::Type::SrcWithMain) {
+  else {
     fileStart += "module;\n";
     std::string afterModuleDecl;
     for(const Directive& directive : lexRes.directives) {
       switch(directive.type) {
-      case Directive::Type::Include: {
+      case DirectiveType::Include: {
         size_t start{directive.str.find('<')};
         size_t end;
         bool isAngle{start != notFound};
@@ -92,7 +130,7 @@ bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
           getQuotedInclude(ctx, includePath, file.relPath);
         
         // Skip #include of paired header
-        if(file.type == File::Type::PairedSrc) {
+        if(file.type == FileType::PairedSrc) {
           includePath.replace_extension(opts.srcExt);
           if(includePath == file.relPath) continue;
           includePath.replace_extension(opts.hdrExt);
@@ -113,12 +151,12 @@ bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
         else fileStart += directive.str;
         break;
       }
-      case Directive::Type::Condition:
-      case Directive::Type::EndIf:
+      case DirectiveType::Condition:
+      case DirectiveType::EndIf:
         afterModuleDecl += directive.str;
         [[fallthrough]];
-      case Directive::Type::Define:
-      case Directive::Type::Undef:
+      case DirectiveType::Define:
+      case DirectiveType::Undef:
         fileStart += directive.str;
         break;
       default:
@@ -127,7 +165,7 @@ bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
 
     // Convert header and unpaired source into module interface unit. Without 
     // the "export " the file is a module implementation unit
-    if(file.type == File::Type::Hdr || file.type == File::Type::UnpairedSrc)  {
+    if(file.type == FileType::Hdr || file.type == FileType::UnpairedSrc)  {
       manualExport = true;
       fileStart += "export ";
     }
@@ -136,43 +174,7 @@ bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
     fileStart += ";\n";
     fileStart += afterModuleDecl;
   }
-
-  // Only convert include to import for source with a main(), paired or unpaired
-  else for(const Directive& directive : lexRes.directives) {
-    if(directive.type == Directive::Type::Include) {
-      size_t start{directive.str.find('<')};
-      size_t end;
-      bool isAngle{};
-      if(start != notFound) {
-        isAngle = true;
-        start++;
-        end = directive.str.find('>', start);
-      }
-      else {
-        start = directive.str.find('"') + 1;
-        end = directive.str.find('"', start);
-      }
-      fs::path includePath{directive.str.substr(start, end - start)};
-      maybeResolvedInclude = isAngle ? getAngleInclude(ctx, includePath) :
-        getQuotedInclude(ctx, includePath, file.relPath);
-      if(maybeResolvedInclude) {
-        bool ignore{};
-
-        // Don't include2import ignored headers, keep them as #include
-        for(const fs::path& p : opts.ignoredHeaders) {
-          if(*maybeResolvedInclude == p) {
-            ignore = true;
-            break;
-          }
-        }
-        if(!ignore) {
-          fileStart += "import " + path2ModuleName(*maybeResolvedInclude) + ";\n";
-          continue;
-        }
-      }
-    }
-    fileStart += directive.str;
-  }
+  
   file.content.insert(0, fileStart);
   return manualExport;
 }

@@ -12,7 +12,7 @@ void run(int argc, const char* const* argv) {
   for(File& file : iterateFiles(opts)) {
     bool manualExport{modularize(file, lex(file.content), opts)};
     if(manualExport) {
-      if(file.type == File::Type::Hdr) {
+      if(file.type == FileType::Hdr) {
         file.relPath.replace_extension(opts.moduleInterfaceExt);
       }
       log("{}", file.relPath.native());

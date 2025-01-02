@@ -11,16 +11,14 @@ namespace cppcoro {
   template<typename T> class generator;
 }
 struct Opts;
-struct HdrInfo {};
-;
-
+enum class FileType {
+  Hdr,
+  UnpairedSrc,
+  SrcWithMain,
+  PairedSrc
+};
 struct File {
-  enum class Type {
-    Hdr,
-    UnpairedSrc,
-    SrcWithMain,
-    PairedSrc
-  } type;
+  FileType type;
   std::filesystem::path relPath; // Relative to inDir/outDir
   std::string content;
 };

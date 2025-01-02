@@ -27,17 +27,17 @@ cppcoro::generator<File&> iterateFiles(const Opts& opts) {
           goto skipThisFile;
         }
       }
-      file.type = File::Type::Hdr;
+      file.type = FileType::Hdr;
     }
     else if(ext == opts.srcExt) {
-      file.type = File::Type::UnpairedSrc;
+      file.type = FileType::UnpairedSrc;
       path.replace_extension(opts.hdrExt);
-      if(fs::exists(path)) file.type = File::Type::PairedSrc;
+      if(fs::exists(path)) file.type = FileType::PairedSrc;
       path.replace_extension(opts.srcExt);
       relPath.replace_extension(opts.hdrExt);
       for(const fs::path& p : opts.ignoredHeaders) {
         if(relPath == p) {
-          file.type = File::Type::SrcWithMain;
+          file.type = FileType::SrcWithMain;
           break;
         }
       }
@@ -65,7 +65,7 @@ cppcoro::generator<File&> iterateFiles(const Opts& opts) {
     co_yield file;
     relPath = std::move(file.relPath);
     logIfVerbose("Trying to write...");
-    if(file.type == File::Type::Hdr) relPath.replace_extension(opts.moduleInterfaceExt);
+    if(file.type == FileType::Hdr) relPath.replace_extension(opts.moduleInterfaceExt);
     relPath = opts.outDir / relPath;
     fs::create_directories(relPath.parent_path());
     ofs.open(relPath);

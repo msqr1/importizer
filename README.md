@@ -1,6 +1,6 @@
 # include2import
 - Convert ```#include``` code to ```import```
-- This only convert #include statements to import statement, as well as adding the GMF
+- This only convert #include statements to import statement, as well as creating the GMF
 - This takes you on the way to modularizing your codebase.
 - **You would still have to manually choose what to export after running. You would usually export everything, though.**
 - Requires valid C++20
@@ -59,3 +59,6 @@
     - Add the macro definition on the command line when compiling for the files that needed the macro (using ```-D...```).
     - Refactor the macro definition into a separate header, ```#include``` that where the macro is needed, and add the new header to the ```ignoredHeaders```.
     - Add the macro-containing headers to the ```ignoredHeaders``` (their paired sources, if available will be treated as if they have a ```main()```)
+
+# Maybe in the future
+- Automatic macro refactoring
