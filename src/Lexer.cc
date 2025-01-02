@@ -1,4 +1,4 @@
-#include "Directive.hpp"
+#include "Lexer.hpp"
 #include "Base.hpp"
 #include "Regex.hpp"
 #include "ArgProcessor.hpp"
@@ -61,9 +61,10 @@ Directive::Directive(Type type_, std::string_view str_): type{type_}, str{str_} 
 
 // FIXME: It's still behaving like string erase when seeing an include.
 // Fix this so that it changes to string remove()
-std::vector<Directive> lexDirectives(std::string& code) {
+// FIXME: Make it also detect if a main() is available
+LexResult lex(std::string& code) {
   logIfVerbose("Getting preprocessor directives...");
-  std::vector<Directive> directives;
+  LexResult lexRes;
   bool whitespaceAfterNewline{true};
   size_t i{};
   size_t codeLen{code.length()};
@@ -113,7 +114,7 @@ std::vector<Directive> lexDirectives(std::string& code) {
         codeLen -= end - start;
         [[fallthrough]];
       default:
-        directives.emplace_back(type, std::move(directive));
+        lexRes.directives.emplace_back(type, std::move(directive));
       }
       continue;
     }
@@ -122,5 +123,5 @@ std::vector<Directive> lexDirectives(std::string& code) {
     i++;
   }
   code.resize(codeLen);
-  return directives;
+  return lexRes;
 };

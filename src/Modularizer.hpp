@@ -1,7 +1,7 @@
 #pragma once
-#include "Directive.hpp"
+#include "Lexer.hpp"
 #include <vector>
 
 struct Opts;
 struct File;
-bool modularize(File& file, const std::vector<Directive>& directives, const Opts& opts); 
+bool modularize(File& file, const LexResult& lexRes, const Opts& opts); 

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "FileOp.hpp"
 
 struct Directive {
   enum class Type {
@@ -15,5 +16,8 @@ struct Directive {
   std::string str;
   Directive(Type type_, std::string_view str_);
 };
+struct LexResult {
+  std::vector<Directive> directives;
+};
 
-std::vector<Directive> lexDirectives(std::string& code);
+LexResult lex(std::string& code);

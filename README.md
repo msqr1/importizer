@@ -8,7 +8,7 @@
 # Usage
 - Build from source for now. Just clone, make a directory inside the cloned repo, and run CMake from there.
 - Add ```-DCMAKE_BUILD_TYPE=Release``` when running CMake to get an optimized program.
-- Requires clang(++) and libc++ 14 or higher, I haven't tested with others yet. You will need to add  ```-DCMAKE_C_COMPILER=clang-14``` and ```-DCMAKE_CXX_COMPILER=clang++-14``` when running CMake
+- Requires libc++16 or higher and the clang compiler, I haven't tested with others yet.
 - Create a ```include2import.toml``` in the directory of the generated binary, add some settings, and run the program.
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
 
@@ -35,6 +35,7 @@
       - srcExt: ```".cpp"``` [string]
       - moduleInterfaceExt: ```".cppm"``` [string]
   - Behavior of include path searching (similar concept to specifying ```-I```):
+
 | Type          | Action                                                                   |
 |---------------|--------------------------------------------------------------------------|
 | Quoted        | 1. Relative to directory of the current file<br>2. Same as angle-bracket |
@@ -43,6 +44,7 @@
 # Behavior
 - A file pair is defined as a header and the source with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```
 - Action by file type:
+
 | File type | Paired | Has ```main()``` | Conversion                 | Must do manual export |
 |-----------|--------|------------------|----------------------------|-----------------------|
 | Header    |        | N/A              | Module interface unit      | ✔                     |
