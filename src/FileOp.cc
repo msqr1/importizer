@@ -35,6 +35,7 @@ cppcoro::generator<File&> iterateFiles(const Opts& opts) {
       if(fs::exists(path)) file.paired = true;
       path.replace_extension(opts.srcExt);
       relPath.replace_extension(opts.hdrExt);
+      file.pairedHdrIgnored = false;
       for(const fs::path& p : opts.ignoredHeaders) {
         if(relPath == p) {
           file.pairedHdrIgnored = true;

@@ -104,6 +104,16 @@ bool modularize(File& file, const std::vector<Directive>& directives, const Opts
         maybeResolvedInclude = isAngle ? getAngleInclude(ctx, includePath) :
           getQuotedInclude(ctx, includePath, file.relPath);
         if(maybeResolvedInclude) {
+          bool ignore{};
+
+          // Don't import ignored headers
+          for(const fs::path& p : opts.ignoredHeaders) {
+            if(*maybeResolvedInclude == p) {
+              beforeModuleDecl += directive.str;
+              ignore = true;
+            }
+          }
+          if(ignore) continue;
           afterModuleDecl += "import " + path2ModuleName(*maybeResolvedInclude) + ";\n";
         }
         else beforeModuleDecl += directive.str;
@@ -165,6 +175,16 @@ bool modularize(File& file, const std::vector<Directive>& directives, const Opts
       maybeResolvedInclude = isAngle ? getAngleInclude(ctx, includePath) :
         getQuotedInclude(ctx, includePath, file.relPath);
       if(maybeResolvedInclude) {
+        bool ignore{};
+
+        // Don't import ignored headers
+        for(const fs::path& p : opts.ignoredHeaders) {
+          if(*maybeResolvedInclude == p) {
+            fileStart += directive.str;
+            ignore = true;
+          }
+        }
+        if(ignore) continue;
         fileStart += "import " + path2ModuleName(*maybeResolvedInclude) + ";\n";
         continue;
       }

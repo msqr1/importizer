@@ -6,6 +6,7 @@ src-old
 !3rdParty/Setup.cmake
 !3rdParty/Generator.hpp
 build
+out
 CMakePresets.json
 test/*/*
 !test/*/modulizer.toml
