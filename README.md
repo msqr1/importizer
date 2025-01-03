@@ -42,7 +42,8 @@
 | Angle bracket | 1. Relative to the include paths listed                                  |
 
 # Behavior
-- A file pair is defined as a header and the source with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```
+- A file pair is defined as a header and the source with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 
+- include2import's behavior is undefined for a header-source pair and the source has a main function. This is extremely rare in real code, though.
 - Action by file type:
 
 | File type | Paired | Has ```main()``` | Conversion                 | Must do manual export |
@@ -52,7 +53,6 @@
 | Source    |        |                  | Module interface unit      | ✔                     |
 | Source    | ✔      |                  | Module implementation unit |                       |
 | Source    |        | ✔                | Only include to import     |                       |
-| Source    | ✔      | ✔                | Only include to import     |                       |
 
 # Macros
 - Modules, unlike headers, were explicitly designed to be encapsulated from macros and so they wouldn't leak macros. If a macro is defined in a header, and the header get modularized, it will only exist in that module only. Some ways to remedy:

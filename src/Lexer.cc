@@ -59,19 +59,19 @@ Directive::Directive(DirectiveType type_, std::string_view str_): type{type_}, s
   if(str_.back() != '\n') str += '\n';
 }
 
-// FIXME: It's still behaving like string erase when seeing an include.
-// Fix this so that it changes to string remove()
 // FIXME: Make it also detect if a main() is available
-LexResult lex(std::string& code) {
-  logIfVerbose("Lexing...");
+// If you're a sane person you wouldn't write the main function like this:
+// int/*comment*/main/*comment*/(, right? Cuz it won't work.
+LexResult lex(File& file) {
   LexResult lexRes;
+  bool lookForMain{file.type == FileType::PairedSrc || file.type == FileType::UnpairedSrc};
   bool whitespaceAfterNewline{true};
   size_t i{};
+  std::string& code{file.content};
   size_t codeLen{code.length()};
   while(i < codeLen) {
-
-    // Skip comments
-    if(code[i] == '/') {
+    switch(code[i]) {
+    case '/':
       i++;
       if(code[i] == '/') {
         while(i < codeLen && code[i] != '\n') i++;
@@ -80,10 +80,8 @@ LexResult lex(std::string& code) {
         i++;
         while(!(code[i - 1] == '*' && code[i] == '/')) i++;
       }
-    }
-
-    // Skip string literals
-    else if(code[i] == '"') {
+      break;
+    case '"':
       i++;
 
       // Raw string literal
@@ -95,33 +93,51 @@ LexResult lex(std::string& code) {
         i += delimSize;
       }
       else while(code[i] == '"') i++;
-    }
-    if(whitespaceAfterNewline && code[i] == '#') {
-      const size_t start{i};
-      while(i < codeLen && code[i] != '\n') i++;
-      
-      // Get the \n if available
-      const size_t end{i + (i < codeLen)};
-      std::string directive{code.substr(start, end - start)};
-      DirectiveType type{directiveTypeFromStr(directive)};
-      switch(type) {
-      case DirectiveType::Other:
+      break;
+    case '\n':
+      whitespaceAfterNewline = true;
+      break;
+    default:
+      if(whitespaceAfterNewline && code[i] == '#') {
+        const size_t start{i};
+        while(i < codeLen && code[i] != '\n') i++;
+        
+        // Get the \n  if available
+        const size_t end{i + (i < codeLen)};
+        const size_t len{end - start};
+        std::string directive{code.substr(start, len)};
+        DirectiveType type{directiveTypeFromStr(directive)};
+        switch(type) {
+        case DirectiveType::Other:
+          continue;
+        case DirectiveType::PragmaOnce:
+        case DirectiveType::Include:
+        case DirectiveType::Define:
+        case DirectiveType::Undef:
+          std::copy(code.begin() + end, code.end(), code.begin() + start);
+          i = start;
+          codeLen -= len;
+          [[fallthrough]];
+        default:
+          lexRes.directives.emplace_back(type, std::move(directive));
+        }
         continue;
-      case DirectiveType::PragmaOnce:
-      case DirectiveType::Include:
-        std::copy(code.begin() + end, code.end(), code.begin() + start);
-        i = start;
-        codeLen -= end - start;
-        [[fallthrough]];
-      default:
-        lexRes.directives.emplace_back(type, std::move(directive));
       }
-      continue;
+      else whitespaceAfterNewline = isspace(code[i]);
+      if(lookForMain && code[i] == 'i' && 
+        code[i + 1] == 'n' && code[i + 2] == 't') {
+        i = code.find_first_not_of(" \n\t", i + 3);
+        if(!(code[i] == 'm' && code[i + 1] == 'a' && code[i + 2] == 'i' && 
+          code[i + 3] == 'n')) break;
+        i = code.find_first_not_of(" \n\t", i + 4);
+        if(code[i] == '(') {
+          lookForMain = false;
+          file.type = FileType::SrcWithMain;
+        }
+      }
     }
-    else if(code[i] == '\n') whitespaceAfterNewline = true;
-    else whitespaceAfterNewline = isspace(code[i]);
     i++;
   }
   code.resize(codeLen);
   return lexRes;
-};
+}

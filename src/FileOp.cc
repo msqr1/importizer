@@ -22,7 +22,7 @@ cppcoro::generator<File&> iterateFiles(const Opts& opts) {
       for(const fs::path& p : opts.ignoredHeaders) {
         if(relPath == p) {
           logIfVerbose("Is ignored (in ignoredHeaders)");
-          fs::copy(path, opts.outDir / relPath, 
+          fs::copy_file(path, opts.outDir / relPath, 
             fs::copy_options::overwrite_existing);
           goto skipThisFile;
         }

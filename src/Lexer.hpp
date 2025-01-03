@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "FileOp.hpp"
 
-enum class DirectiveType {
+struct File;
+enum class DirectiveType : char {
   Define,
   Undef,
   Condition,
@@ -21,4 +21,4 @@ struct LexResult {
   std::vector<Directive> directives;
 };
 
-LexResult lex(std::string& code);
+LexResult lex(File& file);

@@ -10,7 +10,7 @@
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv, verbose)};
   for(File& file : iterateFiles(opts)) {
-    bool manualExport{modularize(file, lex(file.content), opts)};
+    bool manualExport{modularize(file, lex(file), opts)};
     if(manualExport) {
       if(file.type == FileType::Hdr) {
         file.relPath.replace_extension(opts.moduleInterfaceExt);
