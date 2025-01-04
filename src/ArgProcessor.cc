@@ -1,49 +1,29 @@
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "../3rdParty/fmt/include/fmt/format.h"
+#include "../3rdParty/Argparse.hpp"
 #define TOML_EXCEPTIONS 0
 #define TOML_ENABLE_FORMATTERS 0
 #include "../3rdParty/toml++/include/toml++/toml.hpp"
 #include <string_view>
 
 namespace fs = std::filesystem;
-namespace {
-
-std::string_view getOptVal(int optidx, int argc, const char* const* argv) {
-  optidx++;
-  if(optidx == argc || argv[optidx][0] == '-') {
-    exitWithErr("Invalid/Nonexistent value for option {}", argv[optidx - 1]);
-  }
-  return argv[optidx];
-}
-
-} // namespace
+namespace ap = argparse;
 
 Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
   Opts opts;
-  std::string_view configPath{"include2import.toml"};
-  {
-    std::string_view arg;
-    if(argc > 1) {
-      arg = argv[1];
-
-      // Help or version must be the first argument
-      if(arg == "-h" || arg == "--help") {
-        log("Modularize C++20 code");
-        exitOK();
-      }
-      if(arg == "-v" || arg == "--version") {
-        log("0.0.1");
-        exitOK();
-      }
-      if(arg == "-c" || arg == "--config") configPath = getOptVal(1, argc, argv);
-    }
-  }
-  const toml::parse_result parseRes{toml::parse_file(configPath)};
+  ap::ArgumentParser parser("include2import", "0.0.1");
+  parser.add_description("C++ include to import converter. Takes you on the way of modularization!");
+  parser.add_argument("-c", "--config")
+    .help("Path to a configuration file")
+    .default_value("include2import.toml");
+  parser.parse_args(argc, argv);
+  const fs::path configPath{parser.get("-c")};
+  const toml::parse_result parseRes{toml::parse_file(configPath.native())};
   if(!parseRes) {
     const toml::parse_error err{parseRes.error()};
     const toml::source_region errSrc{err.source()};
-    exitWithErr("TOML++ error: {} at {}({}:{})", err.description(), configPath, 
+    exitWithErr("TOML++ error: {} at {}({}:{})", err.description(), configPath.native(), 
     errSrc.begin.line, errSrc.begin.column);
   }
   const toml::table config{std::move(parseRes.table())};
@@ -71,8 +51,9 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
     if(!config.contains(key)) exitWithErr("{} must be specified", key);
     return getTypeCk.template operator()<std::string>(key);
   };
-  opts.inDir = getStr("inDir");
-  opts.outDir = getStr("outDir");
+  const fs::path configDir{configPath.parent_path()};
+  opts.inDir = configDir / getStr("inDir");
+  opts.outDir = configDir / getStr("outDir");
   verbose = getOrDefault("verbose", false);
   opts.raiseDefine = getOrDefault("raiseDefine", false);
   opts.hdrExt = getOrDefault("hdrExt", ".hpp");
@@ -83,16 +64,16 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
   }
   else opts.maybeIncludeGuardPat = std::nullopt;
   
-  auto getArr = [&]<typename elemTp, typename T>(std::string_view key,
-    std::vector<T>& container, const char* tpName) -> void {
+  auto getPathArr = [&](std::string_view key,
+    std::vector<fs::path>& container, const fs::path& relativeTo) -> void {
     if(!config.contains(key)) return;
     const toml::array arr{*config.get_as<toml::array>(key)};
     for(const toml::node& elem : arr) {
-      if(!elem.is<elemTp>()) exitWithErr("{} must only contains {}s", key, tpName);
-     container.emplace_back(elem.ref<elemTp>());
+      if(!elem.is<std::string>()) exitWithErr("{} must only contains strings", key);
+     container.emplace_back(relativeTo / elem.ref<std::string>());
     }
   };
-  getArr.template operator()<std::string>("includePaths", opts.includePaths, "string");
-  getArr.template operator()<std::string>("ignoredHeaders", opts.ignoredHeaders, "string");
+  getPathArr("includePaths", opts.includePaths, configDir);
+  getPathArr("ignoredHeaders", opts.ignoredHeaders, configDir);
   return opts;
 }

@@ -1,0 +1,6 @@
+inDir = "vosk-api/src"
+outDir = "../out"
+hdrExt = ".h"
+srcExt = ".cc"
+includeGuard = "VOSK_.+_H"
+includePath = ["vosk-api/src"]

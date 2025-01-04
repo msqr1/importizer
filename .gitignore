@@ -9,4 +9,4 @@ build
 out
 CMakePresets.json
 test/*/*
-!test/*/modulizer.toml
+!test/*/include2import.toml
