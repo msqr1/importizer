@@ -18,8 +18,16 @@ enum class DirectiveType : char {
 };
 struct IncludeInfo {
   bool isAngle;
+  size_t startOffset;
   std::string_view includeStr;
-  IncludeInfo(bool isAngle, std::string_view includeStr);
+  IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr);
+};
+
+// Only for ifndef and define directive
+struct GuardInfo {
+  size_t startOffset;
+  std::string_view identifier;
+  GuardInfo(size_t startOffset, std::string_view identifier);
 };
 
 struct Directive {
@@ -27,7 +35,7 @@ struct Directive {
   std::string str;
 
   // Only valid for the include, ifndef and define directive
-  std::variant<std::monostate, IncludeInfo, std::string_view> info;
+  std::variant<std::monostate, IncludeInfo, GuardInfo> info;
   Directive(std::string&& str);
   Directive(Directive&& other);
 };

@@ -47,14 +47,14 @@ DirectiveAction handleDirective(const Directive& directive, IncludeGuardCtx& ctx
   switch(directive.type) {
   case DirectiveType::Ifndef:
     if(ctx.state == IncludeGuardState::Looking && 
-      ctx.pat->match(std::get<std::string_view>(directive.info))) {
+      ctx.pat->match(std::get<GuardInfo>(directive.info).identifier)) {
       ctx.state = IncludeGuardState::GotIfndef;
       return DirectiveAction::Remove;    
     }
     return DirectiveAction::EmplaceRemove;
   case DirectiveType::Define:
     if(ctx.state == IncludeGuardState::GotIfndef &&
-      ctx.pat->match(std::get<std::string_view>(directive.info))) {
+      ctx.pat->match(std::get<GuardInfo>(directive.info).identifier)) {
       ctx.state = IncludeGuardState::GotDefine;
       return DirectiveAction::Remove; 
     }
@@ -80,12 +80,15 @@ DirectiveAction handleDirective(const Directive& directive, IncludeGuardCtx& ctx
 
 }
 
-IncludeInfo::IncludeInfo(bool isAngle, std::string_view includeStr): isAngle{isAngle},
-  includeStr{includeStr} {}
+IncludeInfo::IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr): 
+  isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
+GuardInfo::GuardInfo(size_t startOffset, std::string_view identifier): 
+  startOffset{startOffset}, identifier{identifier} {}
+
 Directive::Directive(std::string&& str_) : str{str_} {
   if(str.back() != '\n') str += '\n';
   
-  auto getWord = [](size_t start, std::string_view str){
+  auto getWord = [](size_t start, std::string_view str) {
     while(str[start] == ' ') start++;
     size_t end{start};
     while(str[end] != ' ' && str[end] != '\n' 
@@ -107,9 +110,15 @@ Directive::Directive(std::string&& str_) : str{str_} {
   else type = DirectiveType::Other;
   switch(type) {
   case DirectiveType::Ifndef:
-  case DirectiveType::Define:
-    info = getWord(1 + directive.length(), str);
+  case DirectiveType::Define: {
+    size_t start{1 + directive.length()};
+    while(str[start] == ' ') start++;
+    size_t end{start};
+    while(str[end] != ' ' && str[end] != '\n' 
+      && str[end] != '/') end++;
+    info.emplace<GuardInfo>(start, std::string_view(str.c_str() + start, end - start));
     break;
+  }
   case DirectiveType::Include: {
     size_t start{str.find('<', 1 + directive.length())};
     size_t end;
@@ -122,7 +131,8 @@ Directive::Directive(std::string&& str_) : str{str_} {
       start = str.find('"') + 1;
       end = str.find('"', start);
     }
-    info.emplace<IncludeInfo>(isAngle, std::string_view(str.c_str() + start, end - start));
+    info.emplace<IncludeInfo>(start, isAngle, 
+      std::string_view(str.c_str() + start, end - start));
     break;
   }
   default:
@@ -136,18 +146,16 @@ Directive::Directive(Directive&& other) {
   switch(other.info.index()) {
   case 1: {
     IncludeInfo& includeInfo{std::get<IncludeInfo>(info)};
-    size_t offset{static_cast<size_t>(includeInfo.includeStr.data() - other.str.c_str())};
     size_t len{includeInfo.includeStr.length()};
     str = std::move(other.str);
-    includeInfo.includeStr = std::string_view(str.c_str() + offset, len);
+    includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
     break;
   }
   case 2: {
-    std::string_view& v{std::get<std::string_view>(info)};
-    size_t offset{static_cast<size_t>(v.data() - other.str.c_str())};
-    size_t len{v.length()};
+    GuardInfo& guardInfo{std::get<GuardInfo>(info)};
+    size_t len{guardInfo.identifier.length()};
     str = std::move(other.str);
-    v = std::string_view(str.c_str() + offset, len);
+    guardInfo.identifier = std::string_view(str.c_str() + guardInfo.startOffset, len);
     break;
   }
   }
