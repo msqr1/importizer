@@ -1,4 +1,5 @@
 # include2import
+- Still very unstable, but I would love feedback for improvement!
 - Convert ```#include``` code to ```import```
 - This only convert #include statements to import statement, as well as creating the GMF
 - This takes you on the way to modularizing your codebase.
