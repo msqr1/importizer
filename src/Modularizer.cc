@@ -1,5 +1,5 @@
 #include "Modularizer.hpp"
-#include "Lexer.hpp"
+#include "Preprocessor.hpp"
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "FileOp.hpp"
@@ -62,7 +62,7 @@ std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::pat
 
 }
 
-bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
+bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
   bool manualExport{};
   GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::optional<fs::path> maybeResolvedInclude;
@@ -71,23 +71,11 @@ bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
   // Only convert include to import for source with a main(), paired or unpaired
   if(file.type == FileType::SrcWithMain) {
     fs::path includePath;
-    for(const Directive& directive : lexRes.directives) {
+    for(const Directive& directive : prcRes.directives) {
       if(directive.type == DirectiveType::Include) {
-        size_t start{directive.str.find('<')};
-        size_t end;
-        bool isAngle{};
-        if(start != notFound) {
-          isAngle = true;
-          start++;
-          end = directive.str.find('>', start);
-        }
-        else {
-          start = directive.str.find('"') + 1;
-          end = directive.str.find('"', start);
-        }
-        includePath = directive.str.substr(start, end - start);
-        maybeResolvedInclude = isAngle ? getAngleInclude(ctx, includePath) :
-          getQuotedInclude(ctx, includePath, file.relPath);
+        IncludeInfo info{std::get<IncludeInfo>(directive.info)};
+        maybeResolvedInclude = info.isAngle ? getAngleInclude(ctx, info.includeStr) :
+          getQuotedInclude(ctx, info.includeStr, file.relPath);
           
         if(maybeResolvedInclude) {
           includePath = std::move(*maybeResolvedInclude);
@@ -122,23 +110,12 @@ bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
     fileStart += "module;\n";
     std::string afterModuleDecl;
     fs::path includePath;
-    for(const Directive& directive : lexRes.directives) {
+    for(const Directive& directive : prcRes.directives) {
       switch(directive.type) {
       case DirectiveType::Include: {
-        size_t start{directive.str.find('<')};
-        size_t end;
-        bool isAngle{start != notFound};
-        if(isAngle) {
-          start++;
-          end = directive.str.find('>', start);
-        }
-        else {
-          start = directive.str.find('"') + 1;
-          end = directive.str.find('"', start);
-        }
-        includePath = directive.str.substr(start, end - start);
-        maybeResolvedInclude = isAngle ? getAngleInclude(ctx, includePath) :
-          getQuotedInclude(ctx, includePath, file.relPath);
+        IncludeInfo info{std::get<IncludeInfo>(directive.info)};
+        maybeResolvedInclude = info.isAngle ? getAngleInclude(ctx, info.includeStr) :
+          getQuotedInclude(ctx, info.includeStr, file.relPath);
         
         if(maybeResolvedInclude) {
           includePath = std::move(*maybeResolvedInclude);
@@ -164,7 +141,9 @@ bool modularize(File& file, const LexResult& lexRes, const Opts& opts) {
         else fileStart += directive.str;
         break;
       }
-      case DirectiveType::Condition:
+      case DirectiveType::Ifndef:
+      case DirectiveType::IfCond:
+      case DirectiveType::ElCond:
       case DirectiveType::EndIf:
         afterModuleDecl += directive.str;
         [[fallthrough]];

@@ -1,7 +1,7 @@
 #pragma once
-#include "Lexer.hpp"
+#include "Preprocessor.hpp"
 #include <vector>
 
 struct Opts;
 struct File;
-bool modularize(File& file, const LexResult& lexRes, const Opts& opts); 
+bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts);

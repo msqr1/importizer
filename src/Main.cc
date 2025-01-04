@@ -1,7 +1,7 @@
 #include "Base.hpp"
 #include "ArgProcessor.hpp"
 #include "FileOp.hpp"
-#include "Lexer.hpp"
+#include "Preprocessor.hpp"
 #include "Modularizer.hpp"
 #include "../3rdParty/fmt/include/fmt/format.h"
 #include "../3rdParty/Generator.hpp"
@@ -10,7 +10,8 @@
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv, verbose)};
   for(File& file : iterateFiles(opts)) {
-    bool manualExport{modularize(file, lex(file), opts)};
+    const PreprocessResult pr{preprocess(file, opts.maybeIncludeGuardPat)};
+    const bool manualExport{modularize(file, pr, opts)};
     if(manualExport) {
       if(file.type == FileType::Hdr) {
         file.relPath.replace_extension(opts.moduleInterfaceExt);

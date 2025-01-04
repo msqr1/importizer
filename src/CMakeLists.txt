@@ -20,7 +20,8 @@ if(releaseBuild)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-add_executable(include2import Base.cc Regex.cc ArgProcessor.cc FileOp.cc Main.cc Lexer.cc Modularizer.cc)
+add_executable(include2import Base.cc Regex.cc ArgProcessor.cc FileOp.cc Main.cc 
+  Preprocessor.cc Modularizer.cc)
 target_compile_features(include2import PUBLIC cxx_std_23)
 target_compile_options(include2import PUBLIC -Wall)
 

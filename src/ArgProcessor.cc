@@ -79,8 +79,7 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
   opts.srcExt = getOrDefault("srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault("moduleInterfaceExt", ".cppm");
   if(config.contains("includeGuardPat")) {
-    opts.maybeIncludeGuardPat.emplace(R"(^[ \t]*#(?:ifndef|define)[ \t]+)" 
-    + getStr("includeGuardPat") + R"([^\n]*\n)", re::Opts::Multiline);
+    opts.maybeIncludeGuardPat.emplace('^' + getStr("includeGuardPat"));
   }
   else opts.maybeIncludeGuardPat = std::nullopt;
   
