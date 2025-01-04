@@ -68,8 +68,8 @@ DirectiveAction handleDirective(const Directive& directive, IncludeGuardCtx& ctx
       if(ctx.counter == 0) return DirectiveAction::Remove;
     }
     return DirectiveAction::EmplaceRemove;
-  case DirectiveType::ElCond:
   case DirectiveType::Include:
+  case DirectiveType::ElCond:
   case DirectiveType::Undef:
     return DirectiveAction::EmplaceRemove;
   case DirectiveType::PragmaOnce:
@@ -130,8 +130,27 @@ Directive::Directive(std::string&& str_) : str{str_} {
 }
 Directive::Directive(Directive&& other) {
   type = other.type;
-  str = std::move(other.str);
   info = std::move(other.info);
+
+  // Sorry for the workarounds to get the offset
+  switch(other.info.index()) {
+  case 1: {
+    IncludeInfo& includeInfo{std::get<IncludeInfo>(info)};
+    size_t offset{static_cast<size_t>(includeInfo.includeStr.data() - other.str.c_str())};
+    size_t len{includeInfo.includeStr.length()};
+    str = std::move(other.str);
+    includeInfo.includeStr = std::string_view(str.c_str() + offset, len);
+    break;
+  }
+  case 2: {
+    std::string_view& v{std::get<std::string_view>(info)};
+    size_t offset{static_cast<size_t>(v.data() - other.str.c_str())};
+    size_t len{v.length()};
+    str = std::move(other.str);
+    v = std::string_view(str.c_str() + offset, len);
+    break;
+  }
+  }
 }
 
 // If you're a sane person you wouldn't write the main function like this:

@@ -73,10 +73,10 @@ bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
     fs::path includePath;
     for(const Directive& directive : prcRes.directives) {
       if(directive.type == DirectiveType::Include) {
-        IncludeInfo info{std::get<IncludeInfo>(directive.info)};
+        const IncludeInfo& info{std::get<IncludeInfo>(directive.info)};
         maybeResolvedInclude = info.isAngle ? getAngleInclude(ctx, info.includeStr) :
           getQuotedInclude(ctx, info.includeStr, file.relPath);
-          
+        
         if(maybeResolvedInclude) {
           includePath = std::move(*maybeResolvedInclude);
 
