@@ -1,5 +1,6 @@
 #include "Modularizer.hpp"
 #include "Preprocessor.hpp"
+#include "Directive.hpp"
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "FileOp.hpp"
