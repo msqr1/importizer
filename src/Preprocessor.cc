@@ -49,7 +49,7 @@ DirectiveAction handleDirective(const Directive& directive, IncludeGuardCtx& ctx
     if(ctx.state == IncludeGuardState::Looking && 
       ctx.pat->match(std::get<GuardInfo>(directive.info).identifier)) {
       ctx.state = IncludeGuardState::GotIfndef;
-      return DirectiveAction::Remove;    
+      return DirectiveAction::Remove;
     }
     return DirectiveAction::EmplaceRemove;
   case DirectiveType::Define:
@@ -141,8 +141,6 @@ Directive::Directive(std::string&& str_) : str{str_} {
 Directive::Directive(Directive&& other) {
   type = other.type;
   info = std::move(other.info);
-
-  // Sorry for the workarounds to get the offset
   switch(other.info.index()) {
   case 1: {
     IncludeInfo& includeInfo{std::get<IncludeInfo>(info)};
@@ -196,7 +194,7 @@ PreprocessResult preprocess(File& file,
         balance<'(',')'>(code, i);
         i += delimSize;
       }
-      else while(code[i] == '"') i++;
+      else while(code[i] != '"') i++;
       break;
     case '\n':
       whitespaceAfterNewline = true;
