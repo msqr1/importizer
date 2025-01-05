@@ -1,8 +1,6 @@
 #pragma once
-#include "Base.hpp"
-#include <vector>
+#include <string>
 #include <filesystem>
-#include <variant>
 
 namespace re {
   class Pattern;

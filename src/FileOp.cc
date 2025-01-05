@@ -1,4 +1,5 @@
 #include "FileOp.hpp"
+#include "Base.hpp"
 #include "ArgProcessor.hpp"
 #include "../3rdParty/Generator.hpp"
 #include <fstream>

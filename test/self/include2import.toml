@@ -2,3 +2,4 @@ inDir = "../../src"
 outDir = "../out"
 hdrExt = ".hpp"
 srcExt = ".cc"
+verbose = true

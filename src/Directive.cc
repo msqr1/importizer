@@ -14,7 +14,6 @@ IncludeGuardCtx::IncludeGuardCtx(bool lookFor, const std::optional<re::Pattern>&
 
 Directive::Directive(std::string&& str_) : str{str_} {
   if(str.back() != '\n') str += '\n';
-  
   auto getWord = [](size_t start, std::string_view str) {
     while(str[start] == ' ') start++;
     size_t end{start};
@@ -48,7 +47,7 @@ Directive::Directive(std::string&& str_) : str{str_} {
   }
   case DirectiveType::Include: {
     size_t start{str.find('<', 1 + directive.length())};
-    size_t end;
+    size_t end; 
     bool isAngle{start != notFound};
     if(isAngle) {
       start++;
@@ -65,6 +64,7 @@ Directive::Directive(std::string&& str_) : str{str_} {
   default:
   }
 }
+
 Directive::Directive(Directive&& other) {
   type = other.type;
   info = std::move(other.info);

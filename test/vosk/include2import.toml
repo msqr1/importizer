@@ -4,3 +4,4 @@ hdrExt = ".h"
 srcExt = ".cc"
 includePath = ["vosk-api/src"]
 includeGuardPat = 'KALDI_[^\s]+_H_'
+verbose = true
