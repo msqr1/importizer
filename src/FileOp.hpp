@@ -11,6 +11,7 @@ namespace cppcoro {
   template<typename T> class generator;
 }
 struct Opts;
+
 enum class FileType : char {
   Hdr,
   UnpairedSrc,

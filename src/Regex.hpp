@@ -10,11 +10,6 @@ namespace cppcoro {
 
 namespace re {
 
-// Copied from PCRE2 options
-enum Opts {
-  Multiline = 0x00000400u
-};
-
 class Capture {
 friend class Captures;
   Capture(size_t start, size_t end);
@@ -36,7 +31,6 @@ public:
 };
 
 // Pattern MANAGES resources, so we will prohibit copying (like a unique_ptr)
-
 class Pattern {
   pcre2_real_code_8* pattern{};
   pcre2_real_match_data_8* matchData{};

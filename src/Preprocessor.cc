@@ -1,7 +1,6 @@
 #include "Preprocessor.hpp"
 #include "Base.hpp"
 #include "Regex.hpp"
-#include "ArgProcessor.hpp"
 #include "FileOp.hpp"
 #include "Directive.hpp"
 #include <string>
@@ -29,6 +28,7 @@ template <char open, char close> void balance(std::string_view str, size_t& pos)
 // int/*comment*/main/*comment*/(, right? Cuz it won't work.
 PreprocessResult preprocess(File& file, 
   const std::optional<re::Pattern>& maybeIncludeGuardPat) {
+  logIfVerbose("Preprocessing...");
   PreprocessResult preprocessRes;
   bool lookForMain{file.type == FileType::PairedSrc || file.type == FileType::UnpairedSrc};
   IncludeGuardCtx ctx{maybeIncludeGuardPat && file.type == FileType::Hdr, 
@@ -95,6 +95,7 @@ PreprocessResult preprocess(File& file,
           code[i + 3] == 'n')) break;
         i = code.find_first_not_of(" \n\t", i + 4);
         if(code[i] == '(') {
+          logIfVerbose("Found a main function...");
           lookForMain = false;
           file.type = FileType::SrcWithMain;
         }

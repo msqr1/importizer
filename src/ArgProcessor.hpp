@@ -1,9 +1,12 @@
 #pragma once
-#include "Regex.hpp"
 #include <filesystem>
 #include <string>
 #include <vector>
 #include <optional>
+
+namespace re {
+  class Pattern;
+}
 
 struct Opts {
   bool raiseDefine;

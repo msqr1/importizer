@@ -1,10 +1,13 @@
 #include "Directive.hpp"
 #include "Base.hpp"
+#include "Regex.hpp"
 
 IncludeInfo::IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr): 
   isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
-GuardInfo::GuardInfo(size_t startOffset, std::string_view identifier): 
+
+GuardInfo::GuardInfo(size_t startOffset, std::string_view identifier):
   startOffset{startOffset}, identifier{identifier} {}
+
 IncludeGuardCtx::IncludeGuardCtx(bool lookFor, const std::optional<re::Pattern>& pat):
   state{lookFor ? IncludeGuardState::Looking : IncludeGuardState::NotLooking}, pat{pat},
   counter{1} {}

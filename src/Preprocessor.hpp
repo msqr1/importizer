@@ -4,8 +4,12 @@
 #include <string>
 #include <variant>
 
+namespace re {
+  class Pattern;
+}
 struct File;
 struct Opts;
+
 struct PreprocessResult {
   std::vector<Directive> directives;
 };

@@ -5,7 +5,6 @@
 #include "Base.hpp"
 #include "FileOp.hpp"
 #include <vector>
-#include <algorithm>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -64,14 +63,15 @@ std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::pat
 }
 
 bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
+  logIfVerbose("Modularizing...");
   bool manualExport{};
   GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::optional<fs::path> maybeResolvedInclude;
   std::string fileStart;
-
+  fs::path includePath;
+  
   // Only convert include to import for source with a main(), paired or unpaired
   if(file.type == FileType::SrcWithMain) {
-    fs::path includePath;
     for(const Directive& directive : prcRes.directives) {
       if(directive.type == DirectiveType::Include) {
         const IncludeInfo& info{std::get<IncludeInfo>(directive.info)};
@@ -110,7 +110,6 @@ bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
   else {
     fileStart += "module;\n";
     std::string afterModuleDecl;
-    fs::path includePath;
     for(const Directive& directive : prcRes.directives) {
       switch(directive.type) {
       case DirectiveType::Include: {

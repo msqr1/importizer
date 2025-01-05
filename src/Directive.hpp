@@ -1,7 +1,10 @@
 #pragma once
-#include "Regex.hpp"
 #include <optional>
 #include <variant>
+
+namespace re {
+  class Pattern;
+}
 
 struct IncludeInfo {
   bool isAngle;

@@ -1,5 +1,6 @@
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
+#include "Regex.hpp"
 #include "../3rdParty/fmt/include/fmt/format.h"
 #include "../3rdParty/Argparse.hpp"
 #define TOML_EXCEPTIONS 0
@@ -63,7 +64,6 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
     opts.maybeIncludeGuardPat.emplace('^' + getStr("includeGuardPat"));
   }
   else opts.maybeIncludeGuardPat = std::nullopt;
-  
   auto getPathArr = [&](std::string_view key,
     std::vector<fs::path>& container, const fs::path& relativeTo) -> void {
     if(!config.contains(key)) return;
