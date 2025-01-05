@@ -2,7 +2,9 @@ test*
 !test
 .vscode
 src-old
-3rdParty/*/
+3rdParty/*
+!3rdParty/Setup.cmake
+!3rdParty/Generator.hpp
 build
 out
 CMakePresets.json
