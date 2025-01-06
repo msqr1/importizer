@@ -3,6 +3,7 @@
 #include "ArgProcessor.hpp"
 #include "../3rdParty/Generator.hpp"
 #include <fstream>
+#include <filesystem>
 
 namespace fs = std::filesystem;
 

@@ -1,11 +1,6 @@
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
-#include "Regex.hpp"
-#include "../3rdParty/fmt/include/fmt/format.h"
 #include "../3rdParty/Argparse.hpp"
-#define TOML_EXCEPTIONS 0
-#define TOML_ENABLE_FORMATTERS 0
-#include "../3rdParty/toml++/include/toml++/toml.hpp"
 #include <string_view>
 
 namespace fs = std::filesystem;

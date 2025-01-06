@@ -68,7 +68,7 @@ PreprocessResult preprocess(File& file,
     default:
       if(whitespaceAfterNewline && code[i] == '#') {
         const size_t start{i};
-        while(i < codeLen && code[i] != '\n') i++;
+        while(i < codeLen && (code[i] != '\n' || code[i - 1] == '\\')) i++;
         
         // Get the \n if available
         const size_t end{i + (i < codeLen)};
