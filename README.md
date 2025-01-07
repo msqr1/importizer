@@ -24,7 +24,8 @@
       - ```verbose``` - Enable verbose output (debugging)
       - ```includeGuardPat``` - Regex for name of include guard used in the project (optional) to remove. include2import will try to look for a ```#pragma once``` to remove if unspecified.
       - ```includePaths``` - Include paths relative to the config file searched when converting include to import (optional)
-      - ```ignoredHeaders``` - Paths relative to ```inDir``` of header files to ignore (optional). Their paired sources, if available, will be treated as if they have a ```main()```. 
+      - ```ignoredHeaders``` - Paths relative to ```inDir``` of header files to ignore (optional). Their paired sources, if available, will be treated as if they have a ```main()```
+      - ```sysInclude2Import``` - Convert system #include to import (eg. ```#include <vector>``` to ```import std.vector```)
       - ```hdrExt``` - Header file extension
       - ```srcExt``` - Source file (also module implementation unit) extension
       - ```moduleInterfaceExt``` - Module interface unit file extension
@@ -43,7 +44,7 @@
 | Angle bracket | 1. Relative to the include paths listed                                  |
 
 # Behavior
-- A file pair is defined as a header and the source with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 
+- A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 
 - include2import's behavior is undefined for a header-source pair and the source has a main function. This is extremely rare in real code, though.
 - Action by file type:
 

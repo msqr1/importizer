@@ -4,6 +4,7 @@
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "FileOp.hpp"
+#include "SysInclude.hpp"
 #include <vector>
 #include <filesystem>
 
@@ -60,46 +61,68 @@ std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::pat
   return getAngleInclude(ctx, include);
 }
 
+enum class StdImportLvl : char {
+  No,
+  Std,
+  StdCompat
+};
+enum class IncludeAction : char {
+  Continue,
+  KeepAsInclude,
+};
+
+IncludeAction handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, const File& file,
+  const Opts& opts, std::string& imports, StdImportLvl& importStd) {
+  std::optional<fs::path> maybeResolvedInclude{
+    info.isAngle ?  getAngleInclude(ctx, info.includeStr) :
+    getQuotedInclude(ctx, info.includeStr, file.relPath)
+  };
+  if(maybeResolvedInclude) {
+    fs::path includePath{std::move(*maybeResolvedInclude)};
+
+    // Skip include2import conversion of paired header
+    if(file.type == FileType::PairedSrc) {
+      includePath.replace_extension(opts.srcExt);
+      if(includePath == file.relPath) return IncludeAction::Continue;
+      includePath.replace_extension(opts.hdrExt);
+    }
+
+    // Don't include2import ignored headers, keep them as #include
+    for(const fs::path& p : opts.ignoredHeaders) {
+      if(includePath == p) return IncludeAction::KeepAsInclude;
+    }
+    imports += "import " + path2ModuleName(info.includeStr) + ";\n";
+    return IncludeAction::Continue;
+  }
+  std::optional<SysIncludeType> maybeSysInclude;
+  if(opts.sysInclude2Import && (maybeSysInclude = getSysIncludeType(info.includeStr))) {
+    if(importStd < StdImportLvl::StdCompat) {
+      if(*maybeSysInclude == SysIncludeType::CppOrCwrap) importStd = StdImportLvl::Std;
+      else importStd = StdImportLvl::StdCompat;
+    }
+    return IncludeAction::Continue;
+  }
+  return IncludeAction::KeepAsInclude;
+}
+
 }
 
 bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
   logIfVerbose("Modularizing...");
   bool manualExport{};
-  GetIncludeCtx ctx{opts.inDir, opts.includePaths};
-  std::optional<fs::path> maybeResolvedInclude;
+  const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::string fileStart;
-  fs::path includePath;
-  
+  StdImportLvl importStd;
+
   // Only convert include to import for source with a main(), paired or unpaired
   if(file.type == FileType::SrcWithMain) {
     for(const Directive& directive : prcRes.directives) {
       if(directive.type == DirectiveType::Include) {
-        const IncludeInfo& info{std::get<IncludeInfo>(directive.info)};
-        maybeResolvedInclude = info.isAngle ? getAngleInclude(ctx, info.includeStr) :
-          getQuotedInclude(ctx, info.includeStr, file.relPath);
-        
-        if(maybeResolvedInclude) {
-          includePath = std::move(*maybeResolvedInclude);
-
-          // Skip include2import conversion of paired header
-          if(file.type == FileType::PairedSrc) {
-            includePath.replace_extension(opts.srcExt);
-            if(includePath == file.relPath) continue;
-            includePath.replace_extension(opts.hdrExt);
-          }
-          bool ignore{};
-
-          // Don't include2import ignored headers, keep them as #include
-          for(const fs::path& p : opts.ignoredHeaders) {
-            if(includePath == p) {
-              ignore = true;
-              break;
-            }
-          }
-          if(!ignore) {
-            fileStart += "import " + path2ModuleName(includePath) + ";\n";
-            continue;
-          }
+        const IncludeInfo info{std::get<IncludeInfo>(directive.info)};
+        switch(handleInclude(info, ctx, file, opts, fileStart, importStd)) {
+        case IncludeAction::Continue:
+          continue;
+        case IncludeAction::KeepAsInclude:
         }
       }
       fileStart += directive.str;
@@ -113,32 +136,14 @@ bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
     for(const Directive& directive : prcRes.directives) {
       switch(directive.type) {
       case DirectiveType::Include: {
-        IncludeInfo info{std::get<IncludeInfo>(directive.info)};
-        maybeResolvedInclude = info.isAngle ? getAngleInclude(ctx, info.includeStr) :
-          getQuotedInclude(ctx, info.includeStr, file.relPath);
-        
-        if(maybeResolvedInclude) {
-          includePath = std::move(*maybeResolvedInclude);
-
-          // Skip include2import conversion of paired header
-          if(file.type == FileType::PairedSrc) {
-            includePath.replace_extension(opts.srcExt);
-            if(includePath == file.relPath) continue;
-            includePath.replace_extension(opts.hdrExt);
-          }
-          bool ignore{};
-
-          // Don't include2import ignored headers, keep them as #include
-          for(const fs::path& p : opts.ignoredHeaders) {
-            if(includePath == p) {
-              fileStart += directive.str;
-              ignore = true;
-            }
-          }
-          if(ignore) continue;
-          afterModuleDecl += "import " + path2ModuleName(includePath) + ";\n";
+        const IncludeInfo info{std::get<IncludeInfo>(directive.info)};
+        switch(handleInclude(info, ctx, file, opts, afterModuleDecl, importStd)) {
+        case IncludeAction::KeepAsInclude:
+          fileStart += directive.str;
+          [[fallthrough]];
+        case IncludeAction::Continue:
+          continue;
         }
-        else fileStart += directive.str;
         break;
       }
       case DirectiveType::Ifndef:
@@ -166,7 +171,8 @@ bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
     fileStart += ";\n";
     fileStart += afterModuleDecl;
   }
-  
+  if(importStd == StdImportLvl::StdCompat) fileStart +="import std.compat;\n";
+  else if(importStd == StdImportLvl::Std) fileStart += "import std;\n";
   file.content.insert(0, fileStart);
   return manualExport;
 }

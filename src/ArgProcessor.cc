@@ -51,7 +51,7 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
   opts.inDir = configDir / getStr("inDir");
   opts.outDir = configDir / getStr("outDir");
   verbose = getOrDefault("verbose", false);
-  opts.raiseDefine = getOrDefault("raiseDefine", false);
+  opts.sysInclude2Import = getOrDefault("sysInclude2Import", false);
   opts.hdrExt = getOrDefault("hdrExt", ".hpp");
   opts.srcExt = getOrDefault("srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault("moduleInterfaceExt", ".cppm");
