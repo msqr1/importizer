@@ -4,7 +4,7 @@
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "FileOp.hpp"
-#include "SysInclude.hpp"
+#include "StdInclude.hpp"
 #include <vector>
 #include <filesystem>
 
@@ -94,10 +94,10 @@ IncludeAction handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, c
     imports += "import " + path2ModuleName(info.includeStr) + ";\n";
     return IncludeAction::Continue;
   }
-  std::optional<SysIncludeType> maybeSysInclude;
-  if(opts.sysInclude2Import && (maybeSysInclude = getSysIncludeType(info.includeStr))) {
+  std::optional<StdIncludeType> maybeStdInclude;
+  if(opts.stdInclude2Import && (maybeStdInclude = getStdIncludeType(info.includeStr))) {
     if(importStd < StdImportLvl::StdCompat) {
-      if(*maybeSysInclude == SysIncludeType::CppOrCwrap) importStd = StdImportLvl::Std;
+      if(*maybeStdInclude == StdIncludeType::CppOrCwrap) importStd = StdImportLvl::Std;
       else importStd = StdImportLvl::StdCompat;
     }
     return IncludeAction::Continue;

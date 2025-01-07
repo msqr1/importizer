@@ -1,4 +1,4 @@
-#include "SysInclude.hpp"
+#include "StdInclude.hpp"
 #include <array>
 
 namespace {
@@ -31,12 +31,12 @@ constexpr std::array<std::string_view, 24> cCompatHdrs {
 
 }
 
-std::optional<SysIncludeType> getSysIncludeType(std::string_view include) {
+std::optional<StdIncludeType> getStdIncludeType(std::string_view include) {
   for(std::string_view cppOrCwrapHdr : cppOrCwrapHdrs) {
-    if(include == cppOrCwrapHdr) return SysIncludeType::CppOrCwrap;
+    if(include == cppOrCwrapHdr) return StdIncludeType::CppOrCwrap;
   }
   for(std::string_view cCompatHdr : cCompatHdrs) {
-    if(include == cCompatHdr) return SysIncludeType::CCompat;
+    if(include == cCompatHdr) return StdIncludeType::CCompat;
   }
   return std::nullopt;
 }

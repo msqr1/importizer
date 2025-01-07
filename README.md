@@ -25,7 +25,7 @@
       - ```includeGuardPat``` - Regex for name of include guard used in the project (optional) to remove. include2import will try to look for a ```#pragma once``` to remove if unspecified.
       - ```includePaths``` - Include paths relative to the config file searched when converting include to import (optional)
       - ```ignoredHeaders``` - Paths relative to ```inDir``` of header files to ignore (optional). Their paired sources, if available, will be treated as if they have a ```main()```
-      - ```sysInclude2Import``` - Convert system #include to import (eg. ```#include <vector>``` to ```import std.vector```)
+      - ```stdInclude2Import``` - Convert standard includes to ```import std``` or ```import std.compat```
       - ```hdrExt``` - Header file extension
       - ```srcExt``` - Source file (also module implementation unit) extension
       - ```moduleInterfaceExt``` - Module interface unit file extension

@@ -9,7 +9,7 @@ namespace re {
 }
 
 struct Opts {
-  bool sysInclude2Import;
+  bool stdInclude2Import;
   std::filesystem::path inDir;
   std::filesystem::path outDir;
   std::optional<re::Pattern> maybeIncludeGuardPat;
