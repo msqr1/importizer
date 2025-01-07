@@ -18,24 +18,27 @@
       -  ```-c --config``` - Path to TOML configuration file (```.toml```), default to ```include2import.toml```
       -  ```-h --help``` - Print help and exit
       -  ```-v --version``` - Print version and exit
-  - ```.toml```-only settings:
-      - ```inDir``` - Input directory relative to the config file (required)
-      - ```outDir``` - Output directory relative to the config file (required)
-      - ```verbose``` - Enable verbose output (debugging)
-      - ```includeGuardPat``` - Regex for name of include guard used in the project (optional) to remove. include2import will try to look for a ```#pragma once``` to remove if unspecified.
-      - ```includePaths``` - Include paths relative to the config file searched when converting include to import (optional)
-      - ```ignoredHeaders``` - Paths relative to ```inDir``` of header files to ignore (optional). Their paired sources, if available, will be treated as if they have a ```main()```
-      - ```stdInclude2Import``` - Convert standard includes to ```import std``` or ```import std.compat```
+  - Required ```.toml```-only settings:
+      - ```inDir``` - Input directory relative to the config file
+      - ```outDir``` - Output directory relative to the config file
+  - Optional ```.toml```-only settings:
+      - ```verbose``` - Enable verbose output for debugging
       - ```hdrExt``` - Header file extension
       - ```srcExt``` - Source file (also module implementation unit) extension
       - ```moduleInterfaceExt``` - Module interface unit file extension
-  - Default values for ```.toml```-only settings:
+      - ```includeGuardPat``` - Regex for name of include guard used in the project to remove. include2import will try to look for a ```#pragma once``` to remove if unspecified.
+      - ```includePaths``` - Include paths relative to the config file searched when converting include to import
+      - ```ignoredHeaders``` - Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()```
+      - ```stdInclude2Import``` - Convert standard includes to ```import std``` or ```import std.compat```
+  - Default values for optional ```.toml```-only settings:
       - verbose: ```false``` [boolean]
-      - includePaths: ```[]``` [string array]
-      - ignoredHeaders: ```[]``` [string array]
       - hdrExt: ```".hpp"``` [string]
       - srcExt: ```".cpp"``` [string]
       - moduleInterfaceExt: ```".cppm"``` [string]
+      - includeGuardPat: (nothing) [string]
+      - includePaths: ```[]``` [string array]
+      - ignoredHeaders: ```[]``` [string array]
+      - stdInclude2Import: ```false``` [boolean]
   - Behavior of include path searching (similar concept to specifying ```-I```):
 
 | Type          | Action                                                                   |
