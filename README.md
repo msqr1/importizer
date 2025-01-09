@@ -1,10 +1,13 @@
-# include2import
-- Still very unstable, but I would love feedback for improvement!
-- Convert ```#include``` code to ```import```
-- This only convert #include statements to import statement, as well as creating the GMF
-- This takes you on the way to modularizing your codebase.
-- **You would still have to manually choose what to export after running. You would usually export everything, though.**
-- Requires valid C++20
+# Introduction
+Do you need help converting your header-based codebase to C++20 modules?
+include2import can help.
+
+Please note that include2import is still very unstable, but I would love feedback for improvement!
+
+What does it do?
+- Convert ```#include``` statements to ```import``` statement, as well as creating the GMF
+- Takes you on the way to modularizing your codebase.
+- **You would still have to manually choose what to export after running.**
 
 # Usage
 - Build from source for now. Just clone, make a directory inside the cloned repo, and run CMake from there.
@@ -14,37 +17,29 @@
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
 
 # CLI
-  - CLI only (flags, one-time settings):
-      -  ```-c --config``` - Path to TOML configuration file (```.toml```), default to ```include2import.toml```
-      -  ```-h --help``` - Print help and exit
-      -  ```-v --version``` - Print version and exit
-  - Required ```.toml```-only settings:
-      - ```inDir``` - Input directory relative to the config file
-      - ```outDir``` - Output directory relative to the config file
-  - Optional ```.toml```-only settings:
-      - ```verbose``` - Enable verbose output for debugging
-      - ```hdrExt``` - Header file extension
-      - ```srcExt``` - Source file (also module implementation unit) extension
-      - ```moduleInterfaceExt``` - Module interface unit file extension
-      - ```includeGuardPat``` - Regex for name of include guard used in the project to remove. include2import will try to look for a ```#pragma once``` to remove if unspecified.
-      - ```includePaths``` - Include paths relative to the config file searched when converting include to import
-      - ```ignoredHeaders``` - Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()```
-      - ```stdInclude2Import``` - Convert standard includes to ```import std``` or ```import std.compat```
-  - Default values for optional ```.toml```-only settings:
-      - verbose: ```false``` [boolean]
-      - hdrExt: ```".hpp"``` [string]
-      - srcExt: ```".cpp"``` [string]
-      - moduleInterfaceExt: ```".cppm"``` [string]
-      - includeGuardPat: (nothing) [string]
-      - includePaths: ```[]``` [string array]
-      - ignoredHeaders: ```[]``` [string array]
-      - stdInclude2Import: ```false``` [boolean]
-  - Behavior of include path searching (similar concept to specifying ```-I```):
+| Flag         | Description                                                                         |
+|--------------|-------------------------------------------------------------------------------------|
+| -c --config  | Path to TOML configuration file (```.toml```), default to ```include2import.toml``` |
+| -h --help    | Print help and exit                                                                 |
+| -v --version | Print version and exit                                                              |
 
-| Type          | Action                                                                   |
-|---------------|--------------------------------------------------------------------------|
-| Quoted        | 1. Relative to directory of the current file<br>2. Same as angle-bracket |
-| Angle bracket | 1. Relative to the include paths listed                                  |
+# TOML setting file
+- Paths are relative to the config file by default, unless otherwise specified
+- Settings are optional, unless otherwise specified
+- General settings:
+
+| Setting name       | Description                                                                                                                                 | Value type   | Default value  |
+|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
+| inDir              | Input directory (required)                                                                                                                  | String       | N/A            |
+| outDir             | Output directory (required)                                                                                                                 | String       | N/A            |
+| verbose            | Enable verbose output for debugging                                                                                                         | Boolean      | ```false```    |
+| hdrExt             | Header file extension                                                                                                                       | String       | ```.hpp```     |
+| srcExt             | Source (also module implementation unit) file extension                                                                                     | String       | ```.cpp```     |
+| moduleInterfaceExt | Module interface unit file extension                                                                                                        | String       | ```.cppm```    |
+| includeGuardPat    | Regex for the include guard identifier used in the project to remove                                                                        | String       | ```[^\s]+_H``` |
+| includePaths       | Include paths searched when converting include to import                                                                                    | String array | ```[]```       |
+| ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | Boolean      | ```false```    |
+| stdInclude2Import  | Convert standard includes to ```import std``` or ```import std.compat```                                                                    | Boolean      | ```false```    |
 
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 
@@ -58,6 +53,12 @@
 | Source    |        |                  | Module interface unit      | ✔                     |
 | Source    | ✔      |                  | Module implementation unit |                       |
 | Source    |        | ✔                | Only include to import     |                       |
+- Behavior of include path searching (similar concept to specifying ```-I```):
+
+| Type          | Action                                                                   |
+|---------------|--------------------------------------------------------------------------|
+| Quoted        | 1. Relative to directory of the current file<br>2. Same as angle-bracket |
+| Angle bracket | 1. Relative to each of ```includePaths```                                |
 
 # Macros
 - Modules, unlike headers, were explicitly designed to be encapsulated from macros and so they wouldn't leak macros. If a macro is defined in a header, and the header get modularized, it will only exist in that module only. Some ways to remedy:
