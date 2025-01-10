@@ -45,7 +45,7 @@ include2import supports two modularization scheme:
 | ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | Boolean      | ```false```    |
 | stdInclude2Import  | Convert standard includes to ```import std``` or ```import std.compat```                                                                    | Boolean      | ```false```    |
 
-- Transitional modularization settings:
+- Transitional modularization settings (mi_ prefix = macro identifier):
 
 | Setting name        | Description                              | Value type | Default value      |
 |---------------------|------------------------------------------|------------|--------------------|
