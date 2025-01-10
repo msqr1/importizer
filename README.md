@@ -9,6 +9,10 @@ What does it do?
 - Takes you on the way to modularizing your codebase.
 - **You would still have to manually choose what to export after running.**
 
+include2import supports two modularization scheme:
+- Complete modularization: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
+- Transtitional modularization: You want to have both a header-based interface and a module-based one for backward compatibility and a gradual switch. You can opt in by specifing ```[Transitional]``` in the setting file.
+
 # Usage
 - Build from source for now. Just clone, make a directory inside the cloned repo, and run CMake from there.
 - Add ```-DCMAKE_BUILD_TYPE=Release``` when running CMake to get an optimized program.
@@ -40,6 +44,15 @@ What does it do?
 | includePaths       | Include paths searched when converting include to import                                                                                    | String array | ```[]```       |
 | ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | Boolean      | ```false```    |
 | stdInclude2Import  | Convert standard includes to ```import std``` or ```import std.compat```                                                                    | Boolean      | ```false```    |
+
+- Transitional modularization settings:
+
+| Setting name        | Description                              | Value type | Default value      |
+|---------------------|------------------------------------------|------------|--------------------|
+| mi_control          | Header-module switching macro identifier | string     | ```CPP_MODULES```  |
+| mi_exportKeyword    | Exported symbol macro identifier         | string     | ```EXPORT```       |
+| mi_exportBlockBegin | Export block begin macro identifier      | string     | ```BEGIN_EXPORT``` |
+| mi_exportBlockEnd   | Export block end macro identifier        | string     | ```END_EXPORT```   |
 
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 
