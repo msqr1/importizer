@@ -2,8 +2,11 @@
 #include "Base.hpp"
 #include "ArgProcessor.hpp"
 #include "../3rdParty/Generator.hpp"
+#include <cstddef>
 #include <fstream>
 #include <filesystem>
+#include <string_view>
+#include <utility>
 
 namespace fs = std::filesystem;
 

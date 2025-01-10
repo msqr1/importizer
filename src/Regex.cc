@@ -1,5 +1,9 @@
 #include "Regex.hpp"
 #include "Base.hpp"
+#include <cstddef>
+#include <optional>
+#include <source_location>
+#include <string_view>
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include "../3rdParty/pcre2/src/pcre2.h.generic"
 

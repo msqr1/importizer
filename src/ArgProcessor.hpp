@@ -1,11 +1,8 @@
 #pragma once
+#include "Regex.hpp"
 #include <filesystem>
 #include <string>
 #include <vector>
-
-namespace re {
-  class Pattern;
-}
 
 struct Opts {
   bool stdInclude2Import;

@@ -1,6 +1,10 @@
 #include "Directive.hpp"
 #include "Base.hpp"
 #include "Regex.hpp"
+#include <cstddef>
+#include <string>
+#include <string_view>
+#include <utility>
 
 IncludeInfo::IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr): 
   isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}

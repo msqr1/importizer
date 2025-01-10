@@ -1,4 +1,6 @@
 #pragma once
+#include "fmt/base.h"
+#include <cstddef>
 #include <source_location>
 #include <filesystem>
 

@@ -3,6 +3,7 @@
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
 #include "Modularizer.hpp"
+#include "fmt/base.h"
 #include <exception>
 
 void run(int argc, const char* const* argv) {

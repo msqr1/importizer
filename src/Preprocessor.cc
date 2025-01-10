@@ -3,7 +3,12 @@
 #include "Regex.hpp"
 #include "FileOp.hpp"
 #include "Directive.hpp"
+#include <algorithm>
+#include <cctype>
+#include <cstddef>
 #include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -86,7 +91,7 @@ PreprocessResult preprocess(File& file,
         }
         continue;
       }
-      else whitespaceAfterNewline = isspace(code[i]);
+      else whitespaceAfterNewline = std::isspace(code[i]);
       if(lookForMain && code[i] == 'i' && 
         code[i + 1] == 'n' && code[i + 2] == 't') {
         i = code.find_first_not_of(" \n\t", i + 3);

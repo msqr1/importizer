@@ -1,5 +1,6 @@
 .vscode
 .cache
+.clangd
 3rdParty/*
 !3rdParty/Setup.cmake
 !3rdParty/Generator.hpp

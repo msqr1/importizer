@@ -1,5 +1,7 @@
 #include "StdInclude.hpp"
 #include <array>
+#include <optional>
+#include <string_view>
 
 namespace {
 

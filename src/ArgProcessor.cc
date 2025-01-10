@@ -1,7 +1,12 @@
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "../3rdParty/Argparse.hpp"
+#include "toml++/toml.hpp"
+#include <filesystem>
+#include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 namespace fs = std::filesystem;
 namespace ap = argparse;
