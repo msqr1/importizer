@@ -27,12 +27,11 @@ template <char open, char close> void balance(std::string_view str, size_t& pos)
 // If you're a sane person you wouldn't write the main function like this:
 // int/*comment*/main/*comment*/(, right? Cuz it won't work.
 PreprocessResult preprocess(File& file, 
-  const std::optional<re::Pattern>& maybeIncludeGuardPat) {
+  const re::Pattern& includeGuardPat) {
   logIfVerbose("Preprocessing...");
   PreprocessResult preprocessRes;
   bool lookForMain{file.type == FileType::PairedSrc || file.type == FileType::UnpairedSrc};
-  IncludeGuardCtx ctx{maybeIncludeGuardPat && file.type == FileType::Hdr, 
-    maybeIncludeGuardPat};
+  IncludeGuardCtx ctx{file.type == FileType::Hdr, includeGuardPat};
   bool whitespaceAfterNewline{true};
   std::string& code{file.content};
   size_t i{};

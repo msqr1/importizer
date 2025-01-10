@@ -12,4 +12,4 @@ struct PreprocessResult {
   std::vector<Directive> directives;
 };
 
-PreprocessResult preprocess(File& file, const std::optional<re::Pattern>& maybeIncludeGuardPat);
+PreprocessResult preprocess(File& file, const re::Pattern& maybeIncludeGuardPat);

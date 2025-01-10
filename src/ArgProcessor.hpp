@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-#include <optional>
 
 namespace re {
   class Pattern;
@@ -12,7 +11,7 @@ struct Opts {
   bool stdInclude2Import;
   std::filesystem::path inDir;
   std::filesystem::path outDir;
-  std::optional<re::Pattern> maybeIncludeGuardPat;
+  re::Pattern includeGuardPat;
   std::string hdrExt;
   std::string srcExt;
   std::string moduleInterfaceExt;

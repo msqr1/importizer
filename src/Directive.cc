@@ -8,7 +8,7 @@ IncludeInfo::IncludeInfo(size_t startOffset, bool isAngle, std::string_view incl
 GuardInfo::GuardInfo(size_t startOffset, std::string_view identifier):
   startOffset{startOffset}, identifier{identifier} {}
 
-IncludeGuardCtx::IncludeGuardCtx(bool lookFor, const std::optional<re::Pattern>& pat):
+IncludeGuardCtx::IncludeGuardCtx(bool lookFor, const re::Pattern& pat):
   state{lookFor ? IncludeGuardState::Looking : IncludeGuardState::NotLooking}, pat{pat},
   counter{1} {}
 
@@ -90,14 +90,14 @@ DirectiveAction getDirectiveAction(const Directive& directive, IncludeGuardCtx& 
   switch(directive.type) {
   case DirectiveType::Ifndef:
     if(ctx.state == IncludeGuardState::Looking && 
-      ctx.pat->match(std::get<GuardInfo>(directive.info).identifier)) {
+      ctx.pat.match(std::get<GuardInfo>(directive.info).identifier)) {
       ctx.state = IncludeGuardState::GotIfndef;
       return DirectiveAction::Remove;
     }
     return DirectiveAction::EmplaceRemove;
   case DirectiveType::Define:
     if(ctx.state == IncludeGuardState::GotIfndef &&
-      ctx.pat->match(std::get<GuardInfo>(directive.info).identifier)) {
+      ctx.pat.match(std::get<GuardInfo>(directive.info).identifier)) {
       ctx.state = IncludeGuardState::GotDefine;
       return DirectiveAction::Remove; 
     }

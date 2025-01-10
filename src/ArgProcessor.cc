@@ -55,10 +55,7 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
   opts.hdrExt = getOrDefault("hdrExt", ".hpp");
   opts.srcExt = getOrDefault("srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault("moduleInterfaceExt", ".cppm");
-  if(config.contains("includeGuardPat")) {
-    opts.maybeIncludeGuardPat.emplace('^' + getStr("includeGuardPat"));
-  }
-  else opts.maybeIncludeGuardPat = std::nullopt;
+  opts.includeGuardPat.reset(getOrDefault("includeGuardPat", R"([^\s]+_H)"));
   auto getPathArr = [&](std::string_view key,
     std::vector<fs::path>& container, const fs::path& relativeTo) -> void {
     if(!config.contains(key)) return;

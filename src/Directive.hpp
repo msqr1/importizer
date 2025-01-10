@@ -1,5 +1,4 @@
 #pragma once
-#include <optional>
 #include <variant>
 
 namespace re {
@@ -30,9 +29,9 @@ enum class IncludeGuardState : char {
 
 struct IncludeGuardCtx {
   IncludeGuardState state;
-  const std::optional<re::Pattern>& pat;
+  const re::Pattern& pat;
   size_t counter;
-  IncludeGuardCtx(bool lookFor, const std::optional<re::Pattern>& pat);
+  IncludeGuardCtx(bool lookFor, const re::Pattern& pat);
 };
 
 enum class DirectiveType : char {

@@ -70,9 +70,8 @@ enum class IncludeAction : char {
   Continue,
   KeepAsInclude,
 };
-
-IncludeAction handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, const File& file,
-  const Opts& opts, std::string& imports, StdImportLvl& importStd) {
+IncludeAction handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, 
+  const File& file, const Opts& opts, std::string& imports, StdImportLvl& importStd) {
   std::optional<fs::path> maybeResolvedInclude{
     info.isAngle ?  getAngleInclude(ctx, info.includeStr) :
     getQuotedInclude(ctx, info.includeStr, file.relPath)
@@ -97,8 +96,8 @@ IncludeAction handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, c
   std::optional<StdIncludeType> maybeStdInclude;
   if(opts.stdInclude2Import && (maybeStdInclude = getStdIncludeType(info.includeStr))) {
     if(importStd < StdImportLvl::StdCompat) {
-      if(*maybeStdInclude == StdIncludeType::CppOrCwrap) importStd = StdImportLvl::Std;
-      else importStd = StdImportLvl::StdCompat;
+      importStd = *maybeStdInclude == StdIncludeType::CppOrCwrap ?
+        StdImportLvl::Std : StdImportLvl::StdCompat;
     }
     return IncludeAction::Continue;
   }
