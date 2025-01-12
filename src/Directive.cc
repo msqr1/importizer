@@ -78,5 +78,6 @@ Directive::Directive(Directive&& other) {
     break;
   }
   default:
+    str = std::move(other.str);
   }
 }

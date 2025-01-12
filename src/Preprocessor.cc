@@ -12,6 +12,7 @@
 #include <optional>
 #include <utility>
 #include <variant>
+#include <vector>
 
 namespace {
 
@@ -38,12 +39,10 @@ enum class DirectiveAction : char {
 
 }
 
-// If you're a sane person you wouldn't write the main function like this:
-// int/*comment*/main/*comment*/(, right? Cuz it won't work.
-PreprocessResult preprocess(const std::optional<TransitionalOpts>& transitionalOpts, 
+std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transitionalOpts, 
   File& file, const re::Pattern& includeGuardPat) {
   logIfVerbose("Preprocessing...");
-  PreprocessResult preprocessRes;
+  std::vector<Directive> directives;
   bool lookForMain{file.type == FileType::PairedSrc || file.type == FileType::UnpairedSrc};
   IncludeGuardCtx ctx{file.type, includeGuardPat};
   bool whitespaceAfterNewline{true};
@@ -138,10 +137,10 @@ PreprocessResult preprocess(const std::optional<TransitionalOpts>& transitionalO
         }
         switch(directiveAction) {
         case DirectiveAction::Emplace:
-          preprocessRes.directives.emplace_back(std::move(directive));
+          directives.emplace_back(std::move(directive));
           break;
         case DirectiveAction::EmplaceRemove:
-          preprocessRes.directives.emplace_back(std::move(directive));
+          directives.emplace_back(std::move(directive));
           [[fallthrough]];
         case DirectiveAction::Remove:
           std::copy(code.begin() + end, code.end(), code.begin() + start);
@@ -153,6 +152,9 @@ PreprocessResult preprocess(const std::optional<TransitionalOpts>& transitionalO
         continue;
       }
       else whitespaceAfterNewline = std::isspace(code[i]);
+
+      // If you're a sane person you wouldn't write the main function like this:
+      // int/*comment*/main/*comment*/(, right? Cuz it won't work.
       if(lookForMain && code[i] == 'i' && code[i + 1] == 'n' && code[i + 2] == 't') {
         i = code.find_first_not_of(" \n\t", i + 3);
         if(!(code[i] == 'm' && code[i + 1] == 'a' && code[i + 2] == 'i' && 
@@ -168,5 +170,5 @@ PreprocessResult preprocess(const std::optional<TransitionalOpts>& transitionalO
     i++;
   }
   code.resize(codeLen);
-  return preprocessRes;
+  return directives;
 }

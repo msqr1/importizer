@@ -10,6 +10,9 @@
 
 namespace fs = std::filesystem;
 
+void writeFile(const fs::path& to, std::string_view content) {
+
+}
 cppcoro::generator<File&> iterateFiles(const Opts& opts) {
   File file;
   fs::path path;

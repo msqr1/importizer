@@ -1,22 +1,25 @@
 #include "Base.hpp"
 #include "ArgProcessor.hpp"
+#include "Directive.hpp"
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
 #include "Preamble.hpp"
 #include <fmt/base.h>
 #include <exception>
+#include <vector>
 
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv, verbose)};
   for(File& file : iterateFiles(opts)) {
-    preprocess(opts.transitionalOpts, file, opts.includeGuardPat);
-    /*const bool manualExport{modularize(file, pr, opts)};
+    const std::vector<Directive> directives{
+      preprocess(opts.transitionalOpts, file, opts.includeGuardPat)};
+    bool manualExport{insertPreamble(file, directives, opts)};
     if(manualExport) {
       if(file.type == FileType::Hdr) {
         file.relPath.replace_extension(opts.moduleInterfaceExt);
       }
       log("{}", file.relPath.native());
-    }*/
+    }
   }
 }
 

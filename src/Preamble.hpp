@@ -1,7 +1,8 @@
 #pragma once
+#include "Directive.hpp"
+#include <vector>
 
 struct Opts;
 struct File;
-struct PreprocessResult;
 
-bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts);
+bool insertPreamble(File& file, const std::vector<Directive>& directives, const Opts& opts);

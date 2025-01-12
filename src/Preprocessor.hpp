@@ -11,8 +11,4 @@ struct File;
 struct Opts;
 struct TransitionalOpts;
 
-struct PreprocessResult {
-  std::vector<Directive> directives;
-};
-
-PreprocessResult preprocess(const std::optional<TransitionalOpts>& transitionalOpts, File& file, const re::Pattern& includeGuardPat);
+std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transitionalOpts, File& file, const re::Pattern& includeGuardPat);

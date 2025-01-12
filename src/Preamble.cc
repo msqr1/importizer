@@ -5,9 +5,11 @@
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
 #include "StdInclude.hpp"
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 #include <filesystem>
 
@@ -66,56 +68,248 @@ std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::pat
 }
 
 enum class StdImportLvl : char {
-  No,
+  Unused,
   Std,
   StdCompat
 };
-enum class IncludeAction : char {
-  Continue,
-  KeepAsInclude,
-};
-IncludeAction handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, 
-  const File& file, const Opts& opts, std::string& imports, StdImportLvl& importStd) {
-  std::optional<fs::path> maybeResolvedInclude{
+
+struct Skip {};
+struct KeepAsInclude {};
+struct Keep4Hdr {};
+using IncludeHandleResult = std::variant<Skip, KeepAsInclude, std::string, Keep4Hdr>;
+IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, 
+  const File& file, const Opts& opts, StdImportLvl& lvl) {
+  std::optional<fs::path> resolvedInclude{
     info.isAngle ?  getAngleInclude(ctx, info.includeStr) :
     getQuotedInclude(ctx, info.includeStr, file.relPath)
   };
-  if(maybeResolvedInclude) {
-    fs::path includePath{std::move(*maybeResolvedInclude)};
+  if(resolvedInclude) {
+    fs::path includePath{std::move(*resolvedInclude)};
 
     // Skip include2import conversion of paired header
     if(file.type == FileType::PairedSrc) {
       includePath.replace_extension(opts.srcExt);
-      if(includePath == file.relPath) return IncludeAction::Continue;
+      if(includePath == file.relPath) return Skip{};
       includePath.replace_extension(opts.hdrExt);
     }
 
     // Don't include2import ignored headers, keep them as #include
     for(const fs::path& p : opts.ignoredHeaders) {
-      if(includePath == p) return IncludeAction::KeepAsInclude;
+      if(includePath == p) return KeepAsInclude{};
     }
-    imports += "import " + path2ModuleName(info.includeStr) + ";\n";
-    return IncludeAction::Continue;
+    return "import " + path2ModuleName(includePath) + ";\n";
   }
   std::optional<StdIncludeType> maybeStdInclude;
   if(opts.stdInclude2Import && (maybeStdInclude = getStdIncludeType(info.includeStr))) {
-    if(importStd < StdImportLvl::StdCompat) {
-      importStd = *maybeStdInclude == StdIncludeType::CppOrCwrap ?
+    if(lvl < StdImportLvl::StdCompat) {
+      lvl = *maybeStdInclude == StdIncludeType::CppOrCwrap ?
         StdImportLvl::Std : StdImportLvl::StdCompat;
     }
-    return IncludeAction::Continue;
+    if(opts.transitionalOpts) return Keep4Hdr{};
+    else return Skip{};
   }
-  return IncludeAction::KeepAsInclude;
+  return KeepAsInclude{};
 }
 
-}
-
-bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
-  logIfVerbose("Modularizing...");
-  bool manualExport{};
+std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& directives,
+  const File& file, bool& manualExport) {
+  std::string preamble;
   const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
-  std::string fileStart;
+  IncludeHandleResult res;
+  StdImportLvl lvl;
 
-  file.content.insert(0, fileStart);
+  // Only convert include to import for source with a main(), paired or unpaired
+  if(file.type == FileType::SrcWithMain) {
+    for(const Directive& directive : directives) {
+      if(directive.type == DirectiveType::Include) {
+        res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
+          lvl);
+        switch(res.index()) {
+        case 2:
+          preamble += std::get<std::string>(res);
+          [[fallthrough]];
+        case 0:
+          continue;
+        case 1:
+        }
+      }
+      preamble += directive.str;
+    }
+  }
+
+  // Convert to module interface/implementation
+  else {
+    preamble += "module;\n";
+    std::string imports;
+    for(const Directive& directive : directives) {
+      switch(directive.type) {
+      case DirectiveType::Include: {
+        res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
+          lvl);
+        switch(res.index()) {
+        case 2:
+          imports += std::get<std::string>(res);
+          [[fallthrough]];
+        case 0:
+        case 3:
+          continue;
+        case 1:
+        }
+        preamble += directive.str;
+        break;
+      }
+      case DirectiveType::Ifndef:
+      case DirectiveType::IfCond:
+      case DirectiveType::ElCond:
+      case DirectiveType::EndIf:
+      case DirectiveType::Define:
+      case DirectiveType::Undef:
+        imports += directive.str;
+        preamble += directive.str;
+        break;
+      default:
+      }
+    }
+
+    // Convert header and unpaired source into module interface unit. Without 
+    // the "export " the file is a module implementation unit
+    if(file.type == FileType::Hdr || file.type == FileType::UnpairedSrc)  {
+      manualExport = true;
+      preamble += "export ";
+    }
+    preamble += "module ";
+    preamble += path2ModuleName(file.relPath);
+    preamble += ";\n";
+    preamble += imports;
+  }
+  if(lvl == StdImportLvl::StdCompat) preamble += "import std.compat;\n";
+  else if(lvl == StdImportLvl::Std) preamble += "import std;\n";
+  return preamble;
+}
+
+std::string getTransitionalPreamble(const Opts& opts,
+  const std::vector<Directive>& directives, const File& file, bool& manualExport) {
+  const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
+  IncludeHandleResult res;
+  std::string preamble;
+  std::string includes;
+  StdImportLvl lvl;
+  if(file.type == FileType::SrcWithMain) {
+    preamble += "#ifdef ";
+    preamble += opts.transitionalOpts->mi_control;
+    preamble += "\n";
+    for(const Directive& directive : directives) {
+      if(directive.type == DirectiveType::Include) {
+        res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
+          lvl);
+        switch(res.index()) {
+        case 0:
+          continue;
+        case 2:
+          preamble += std::get<std::string>(res);
+          break;
+        case 1:
+          preamble += directive.str;
+        }
+      }
+      includes += directive.str;
+    }
+  }
+
+  // Convert to module interface/implementation
+  else {
+    std::string imports;
+    std::string GMF{"module;\n"};
+    for(const Directive& directive : directives) switch(directive.type) {
+    case DirectiveType::Include: {
+      res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts, lvl);
+      switch(res.index()) {
+      case 1:
+        includes += directive.str;
+        GMF += directive.str;
+        [[fallthrough]];
+      case 0:
+        break;
+      case 2:
+        imports += std::get<std::string>(res);
+        [[fallthrough]];
+      case 3:
+        includes += directive.str;
+      }
+      break;
+    }
+    case DirectiveType::Ifndef:
+      if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
+        preamble += directive.str;
+        continue;
+      }
+      else {
+        GMF += directive.str;
+        imports += directive.str;
+        includes += directive.str;
+      }
+    case DirectiveType::Define:
+      if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
+        preamble += directive.str;
+        preamble += "#include \"";
+
+        // Fake the same root path
+        preamble += ("." / opts.transitionalOpts->exportMacrosPath)
+          .lexically_relative("." / file.relPath);
+        preamble += "\"\n";
+        continue;
+      }
+      [[fallthrough]];
+    case DirectiveType::Undef:
+    case DirectiveType::IfCond:
+    case DirectiveType::ElCond:
+    case DirectiveType::EndIf:
+      GMF += directive.str;
+      imports += directive.str;
+      includes += directive.str;
+      break;
+    case DirectiveType::PragmaOnce:
+      preamble += directive.str;
+      preamble += "#include \"";
+
+      // Fake the same root path
+      preamble += ("." / opts.transitionalOpts->exportMacrosPath)
+          .lexically_relative("." / file.relPath);
+      preamble += "\"\n";
+      break;
+    case DirectiveType::Other:
+    }
+    preamble += "#ifdef ";
+    preamble += opts.transitionalOpts->mi_control;
+    preamble += "\n";
+    preamble += GMF;
+
+    // Convert header and unpaired source into module interface unit. Without 
+    // the "export " the file is a module implementation unit
+    if(file.type == FileType::Hdr || file.type == FileType::UnpairedSrc)  {
+      manualExport = true;
+      preamble += "export ";
+    }
+    preamble += "module ";
+    preamble += path2ModuleName(file.relPath);
+    preamble += ";\n";
+    preamble += imports;
+  }
+  if(lvl == StdImportLvl::StdCompat) preamble += "import std.compat;\n";
+  else if(lvl == StdImportLvl::Std) preamble += "import std;\n";
+  preamble += "#else\n";
+  preamble += includes;
+  preamble += "#endif\n";
+  return preamble;
+}
+
+}
+
+bool insertPreamble(File& file, const std::vector<Directive>& directives, const Opts& opts) {
+  logIfVerbose("Modularizing...");
+  bool manualExport;
+  file.content.insert(0, opts.transitionalOpts ?
+    getTransitionalPreamble(opts, directives, file, manualExport) : 
+    getDefaultPreamble(opts, directives, file, manualExport));
   return manualExport;
 }
