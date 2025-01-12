@@ -1,4 +1,5 @@
 #pragma once
+#include "FileOp.hpp"
 #include <cstddef>
 #include <string>
 #include <string_view>
@@ -7,20 +8,6 @@
 namespace re {
   class Pattern;
 }
-
-struct IncludeInfo {
-  bool isAngle;
-  size_t startOffset;
-  std::string_view includeStr;
-  IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr);
-};
-
-// Only for ifndef and define directive
-struct GuardInfo {
-  size_t startOffset;
-  std::string_view identifier;
-  GuardInfo(size_t startOffset, std::string_view identifier);
-};
 
 enum class IncludeGuardState : char {
   NotLooking,
@@ -34,8 +21,21 @@ struct IncludeGuardCtx {
   IncludeGuardState state;
   const re::Pattern& pat;
   size_t counter;
-  IncludeGuardCtx(bool lookFor, const re::Pattern& pat);
+  IncludeGuardCtx(FileType type, const re::Pattern& pat):
+    state{type == FileType::Hdr ? 
+      IncludeGuardState::Looking : IncludeGuardState::NotLooking},
+    pat{pat} {}
 };
+
+struct IncludeInfo {
+  bool isAngle;
+  size_t startOffset;
+  std::string_view includeStr;
+  IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr);
+};
+
+// For ifndef and define that matches opts.includeGuardPat
+struct IncludeGuard {};
 
 enum class DirectiveType : char {
   Define,
@@ -53,16 +53,7 @@ struct Directive {
   DirectiveType type;
   std::string str;
 
-  // Only valid for the include, ifndef and define directive
-  std::variant<std::monostate, IncludeInfo, GuardInfo> info;
-  Directive(std::string&& str);
+  std::variant<std::monostate, IncludeInfo, IncludeGuard> extraInfo;
+  Directive(std::string&& str, const IncludeGuardCtx& ctx);
   Directive(Directive&& other);
 };
-
-enum class DirectiveAction : char {
-  Ignore,
-  EmplaceRemove,
-  Remove
-};
-
-DirectiveAction getDirectiveAction(const Directive& directive, IncludeGuardCtx& ctx);

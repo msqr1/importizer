@@ -5,18 +5,12 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <variant>
 
 IncludeInfo::IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr): 
   isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
 
-GuardInfo::GuardInfo(size_t startOffset, std::string_view identifier):
-  startOffset{startOffset}, identifier{identifier} {}
-
-IncludeGuardCtx::IncludeGuardCtx(bool lookFor, const re::Pattern& pat):
-  state{lookFor ? IncludeGuardState::Looking : IncludeGuardState::NotLooking}, pat{pat},
-  counter{1} {}
-
-Directive::Directive(std::string&& str_) : str{str_} {
+Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx) : str{str_} {
   if(str.back() != '\n') str += '\n';
   auto getWord = [](size_t start, std::string_view str) {
     while(str[start] == ' ') start++;
@@ -40,13 +34,16 @@ Directive::Directive(std::string&& str_) : str{str_} {
   else type = DirectiveType::Other;
   switch(type) {
   case DirectiveType::Ifndef:
+    if(ctx.state == IncludeGuardState::Looking && 
+      ctx.pat.match(getWord(1 + directive.length(), str))) {
+      extraInfo.emplace<IncludeGuard>();
+    }
+    break;
   case DirectiveType::Define: {
-    size_t start{1 + directive.length()};
-    while(str[start] == ' ') start++;
-    size_t end{start};
-    while(str[end] != ' ' && str[end] != '\n' 
-      && str[end] != '/') end++;
-    info.emplace<GuardInfo>(start, std::string_view(str.c_str() + start, end - start));
+    if(ctx.state == IncludeGuardState::GotIfndef &&
+      ctx.pat.match(getWord(1 + directive.length(), str))) {
+      extraInfo.emplace<IncludeGuard>();
+    }
     break;
   }
   case DirectiveType::Include: {
@@ -61,7 +58,7 @@ Directive::Directive(std::string&& str_) : str{str_} {
       start = str.find('"') + 1;
       end = str.find('"', start);
     }
-    info.emplace<IncludeInfo>(start, isAngle, 
+    extraInfo.emplace<IncludeInfo>(start, isAngle, 
       std::string_view(str.c_str() + start, end - start));
     break;
   }
@@ -71,56 +68,15 @@ Directive::Directive(std::string&& str_) : str{str_} {
 
 Directive::Directive(Directive&& other) {
   type = other.type;
-  info = std::move(other.info);
-  switch(other.info.index()) {
+  extraInfo = std::move(other.extraInfo);
+  switch(other.extraInfo.index()) {
   case 1: {
-    IncludeInfo& includeInfo{std::get<IncludeInfo>(info)};
+    IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
     size_t len{includeInfo.includeStr.length()};
     str = std::move(other.str);
     includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
     break;
   }
-  case 2: {
-    GuardInfo& guardInfo{std::get<GuardInfo>(info)};
-    size_t len{guardInfo.identifier.length()};
-    str = std::move(other.str);
-    guardInfo.identifier = std::string_view(str.c_str() + guardInfo.startOffset, len);
-    break;
-  }
-  }
-}
-
-DirectiveAction getDirectiveAction(const Directive& directive, IncludeGuardCtx& ctx) {
-  switch(directive.type) {
-  case DirectiveType::Ifndef:
-    if(ctx.state == IncludeGuardState::Looking && 
-      ctx.pat.match(std::get<GuardInfo>(directive.info).identifier)) {
-      ctx.state = IncludeGuardState::GotIfndef;
-      return DirectiveAction::Remove;
-    }
-    return DirectiveAction::EmplaceRemove;
-  case DirectiveType::Define:
-    if(ctx.state == IncludeGuardState::GotIfndef &&
-      ctx.pat.match(std::get<GuardInfo>(directive.info).identifier)) {
-      ctx.state = IncludeGuardState::GotDefine;
-      return DirectiveAction::Remove; 
-    }
-    return DirectiveAction::EmplaceRemove;
-  case DirectiveType::IfCond:
-    if(ctx.state == IncludeGuardState::GotDefine) ctx.counter++;
-    return DirectiveAction::EmplaceRemove;
-  case DirectiveType::EndIf:
-    if(ctx.state == IncludeGuardState::GotDefine) {
-      ctx.counter--;
-      if(ctx.counter == 0) return DirectiveAction::Remove;
-    }
-    return DirectiveAction::EmplaceRemove;
-  case DirectiveType::Include:
-  case DirectiveType::ElCond:
-  case DirectiveType::Undef:
-    return DirectiveAction::EmplaceRemove;
-  case DirectiveType::PragmaOnce:
-  case DirectiveType::Other:
-    return DirectiveAction::Remove;
+  default:
   }
 }

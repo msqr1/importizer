@@ -1,3 +1,4 @@
+#include "Preamble.hpp"
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "Directive.hpp"
@@ -50,6 +51,7 @@ std::optional<fs::path> getAngleInclude(const GetIncludeCtx& ctx, const fs::path
   };
   return std::nullopt;
 }
+
 std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::path& include, 
   const fs::path& currentFile) {
   fs::path p{currentFile};
@@ -113,67 +115,7 @@ bool modularize(File& file, const PreprocessResult& prcRes, const Opts& opts) {
   bool manualExport{};
   const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::string fileStart;
-  StdImportLvl importStd;
 
-  // Only convert include to import for source with a main(), paired or unpaired
-  if(file.type == FileType::SrcWithMain) {
-    for(const Directive& directive : prcRes.directives) {
-      if(directive.type == DirectiveType::Include) {
-        const IncludeInfo info{std::get<IncludeInfo>(directive.info)};
-        switch(handleInclude(info, ctx, file, opts, fileStart, importStd)) {
-        case IncludeAction::Continue:
-          continue;
-        case IncludeAction::KeepAsInclude:
-        }
-      }
-      fileStart += directive.str;
-    }
-  }
-
-  // Convert to module interface/implementation
-  else {
-    fileStart += "module;\n";
-    std::string afterModuleDecl;
-    for(const Directive& directive : prcRes.directives) {
-      switch(directive.type) {
-      case DirectiveType::Include: {
-        const IncludeInfo info{std::get<IncludeInfo>(directive.info)};
-        switch(handleInclude(info, ctx, file, opts, afterModuleDecl, importStd)) {
-        case IncludeAction::KeepAsInclude:
-          fileStart += directive.str;
-          [[fallthrough]];
-        case IncludeAction::Continue:
-          continue;
-        }
-        break;
-      }
-      case DirectiveType::Ifndef:
-      case DirectiveType::IfCond:
-      case DirectiveType::ElCond:
-      case DirectiveType::EndIf:
-        afterModuleDecl += directive.str;
-        [[fallthrough]];
-      case DirectiveType::Define:
-      case DirectiveType::Undef:
-        fileStart += directive.str;
-        break;
-      default:
-      }
-    }
-
-    // Convert header and unpaired source into module interface unit. Without 
-    // the "export " the file is a module implementation unit
-    if(file.type == FileType::Hdr || file.type == FileType::UnpairedSrc)  {
-      manualExport = true;
-      fileStart += "export ";
-    }
-    fileStart += "module ";
-    fileStart += path2ModuleName(file.relPath);
-    fileStart += ";\n";
-    fileStart += afterModuleDecl;
-  }
-  if(importStd == StdImportLvl::StdCompat) fileStart +="import std.compat;\n";
-  else if(importStd == StdImportLvl::Std) fileStart += "import std;\n";
   file.content.insert(0, fileStart);
   return manualExport;
 }

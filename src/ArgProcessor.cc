@@ -1,20 +1,13 @@
 #include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "../3rdParty/Argparse.hpp"
+#include <toml++/toml.hpp>
+#include <utility>
+#include <vector>
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
-#include <toml++/impl/array.hpp>
-#include <toml++/impl/node.hpp>
-#include <toml++/impl/node_view.hpp>
-#include <toml++/impl/parse_error.hpp>
-#include <toml++/impl/parse_result.hpp>
-#include <toml++/impl/parser.hpp>
-#include <toml++/impl/source_region.hpp>
-#include <toml++/impl/table.hpp>
-#include <utility>
-#include <vector>
 
 namespace fs = std::filesystem;
 namespace ap = argparse;
@@ -103,5 +96,7 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
     getOrDefault(transitionalConfig, "mi_exportBlockBegin", "BEGIN_EXPORT");
   opts.transitionalOpts->mi_exportBlockEnd = 
     getOrDefault(transitionalConfig, "mi_exportBlockEnd", "END_EXPORT");
+  opts.transitionalOpts->exportMacrosPath =
+    getOrDefault(transitionalConfig, "exportMacrosPath", "Export.hpp");
   return opts;
 }

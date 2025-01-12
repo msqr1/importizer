@@ -47,12 +47,13 @@ include2import supports two modularization scheme:
 
 - Transitional modularization settings (mi_ prefix = macro identifier):
 
-| Setting name        | Description                              | Value type | Default value      |
-|---------------------|------------------------------------------|------------|--------------------|
-| mi_control          | Header-module switching macro identifier | string     | ```CPP_MODULES```  |
-| mi_exportKeyword    | Exported symbol macro identifier         | string     | ```EXPORT```       |
-| mi_exportBlockBegin | Export block begin macro identifier      | string     | ```BEGIN_EXPORT``` |
-| mi_exportBlockEnd   | Export block end macro identifier        | string     | ```END_EXPORT```   |
+| Setting name        | Description                                | Value type | Default value      |
+|---------------------|--------------------------------------------|------------|--------------------|
+| mi_control          | Header-module switching macro identifier   | string     | ```CPP_MODULES```  |
+| mi_exportKeyword    | Exported symbol macro identifier           | string     | ```EXPORT```       |
+| mi_exportBlockBegin | Export block begin macro identifier        | string     | ```BEGIN_EXPORT``` |
+| mi_exportBlockEnd   | Export block end macro identifier          | string     | ```END_EXPORT```   |
+| exportMacrosPath    | Export macros file path relative to outDir | string     | ```Export.hpp```   |
 
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 

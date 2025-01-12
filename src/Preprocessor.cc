@@ -1,4 +1,5 @@
 #include "Preprocessor.hpp"
+#include "ArgProcessor.hpp"
 #include "Base.hpp"
 #include "Regex.hpp"
 #include "FileOp.hpp"
@@ -8,8 +9,9 @@
 #include <cstddef>
 #include <string>
 #include <string_view>
+#include <optional>
 #include <utility>
-#include <vector>
+#include <variant>
 
 namespace {
 
@@ -27,16 +29,23 @@ template <char open, char close> void balance(std::string_view str, size_t& pos)
   } while(nest); 
 }
 
+enum class DirectiveAction : char {
+  Continue,
+  Emplace,
+  EmplaceRemove,
+  Remove,
+};
+
 }
 
 // If you're a sane person you wouldn't write the main function like this:
 // int/*comment*/main/*comment*/(, right? Cuz it won't work.
-PreprocessResult preprocess(File& file, 
-  const re::Pattern& includeGuardPat) {
+PreprocessResult preprocess(const std::optional<TransitionalOpts>& transitionalOpts, 
+  File& file, const re::Pattern& includeGuardPat) {
   logIfVerbose("Preprocessing...");
   PreprocessResult preprocessRes;
   bool lookForMain{file.type == FileType::PairedSrc || file.type == FileType::UnpairedSrc};
-  IncludeGuardCtx ctx{file.type == FileType::Hdr, includeGuardPat};
+  IncludeGuardCtx ctx{file.type, includeGuardPat};
   bool whitespaceAfterNewline{true};
   std::string& code{file.content};
   size_t i{};
@@ -77,8 +86,60 @@ PreprocessResult preprocess(File& file,
         // Get the \n if available
         const size_t end{i + (i < codeLen)};
         const size_t len{end - start};
-        Directive directive{code.substr(start, end - start)};
-        switch(getDirectiveAction(directive, ctx)) {
+        DirectiveAction directiveAction;
+        Directive directive{code.substr(start, end - start), ctx};
+        switch(directive.type) {
+        case DirectiveType::Ifndef:
+          if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
+            ctx.state = IncludeGuardState::GotIfndef;
+            ctx.counter = 1;
+            directiveAction = transitionalOpts ?
+              DirectiveAction::EmplaceRemove : DirectiveAction::Remove;
+          }
+          else directiveAction = DirectiveAction::Emplace;
+          break;
+        case DirectiveType::Define:
+          if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
+            ctx.state = IncludeGuardState::GotDefine;
+            directiveAction = transitionalOpts ?
+              DirectiveAction::EmplaceRemove : DirectiveAction::Remove;
+          }
+          else directiveAction = DirectiveAction::Emplace;
+          break;
+        case DirectiveType::IfCond:
+          if(ctx.state == IncludeGuardState::GotDefine) ctx.counter++;
+          directiveAction = DirectiveAction::Emplace;
+          break;
+        case DirectiveType::EndIf:
+          if(ctx.state == IncludeGuardState::GotDefine) {
+            ctx.counter--;
+            if(ctx.counter == 0) {
+              ctx.state = IncludeGuardState::GotEndif;
+              directiveAction = transitionalOpts ?
+                DirectiveAction::Continue : DirectiveAction::Remove;
+              break;
+            }
+          }
+          [[fallthrough]];
+        case DirectiveType::ElCond:
+        case DirectiveType::Undef:
+          directiveAction = DirectiveAction::Emplace;
+          break;
+        case DirectiveType::PragmaOnce:
+          directiveAction = transitionalOpts ?
+            DirectiveAction::EmplaceRemove : DirectiveAction::Remove;
+          break;
+        case DirectiveType::Include:
+          directiveAction = DirectiveAction::EmplaceRemove;
+          break;
+        case DirectiveType::Other:
+          directiveAction = DirectiveAction::Continue;
+          break;
+        }
+        switch(directiveAction) {
+        case DirectiveAction::Emplace:
+          preprocessRes.directives.emplace_back(std::move(directive));
+          break;
         case DirectiveAction::EmplaceRemove:
           preprocessRes.directives.emplace_back(std::move(directive));
           [[fallthrough]];
@@ -87,13 +148,12 @@ PreprocessResult preprocess(File& file,
           i = start;
           codeLen -= len;
           break;
-        case DirectiveAction::Ignore:
+        case DirectiveAction::Continue:
         }
         continue;
       }
       else whitespaceAfterNewline = std::isspace(code[i]);
-      if(lookForMain && code[i] == 'i' && 
-        code[i + 1] == 'n' && code[i + 2] == 't') {
+      if(lookForMain && code[i] == 'i' && code[i + 1] == 'n' && code[i + 2] == 't') {
         i = code.find_first_not_of(" \n\t", i + 3);
         if(!(code[i] == 'm' && code[i + 1] == 'a' && code[i + 2] == 'i' && 
           code[i + 3] == 'n')) break;

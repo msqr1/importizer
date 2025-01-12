@@ -10,6 +10,7 @@ struct TransitionalOpts {
   std::string mi_exportKeyword;
   std::string mi_exportBlockBegin;
   std::string mi_exportBlockEnd;
+  std::filesystem::path exportMacrosPath;
 };
 struct Opts {
   bool stdInclude2Import;
