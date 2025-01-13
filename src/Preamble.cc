@@ -276,14 +276,14 @@ std::string getTransitionalPreamble(const Opts& opts,
 
       // Fake the same root path
       preamble += ("." / opts.transitionalOpts->exportMacrosPath)
-          .lexically_relative("." / file.relPath);
+        .lexically_relative("." / file.relPath);
       preamble += "\"\n";
       break;
     case DirectiveType::Other:
     }
     preamble += "#ifdef ";
     preamble += opts.transitionalOpts->mi_control;
-    preamble += "\n";
+    preamble += '\n';
     preamble += GMF;
 
     // Convert header and unpaired source into module interface unit. Without 

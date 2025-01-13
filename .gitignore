@@ -10,4 +10,4 @@ test/*/*
 !test/*/include2import.toml
 build
 out
-src/CMakePresets.json
+CMakePresets.json

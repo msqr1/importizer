@@ -45,6 +45,7 @@ auto getMustHave(const toml::table& tbl, std::string_view key) {
 }
 
 }
+
 Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
   ap::ArgumentParser parser("include2import", "0.0.1");
