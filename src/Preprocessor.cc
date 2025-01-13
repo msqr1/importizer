@@ -1,6 +1,5 @@
 #include "Preprocessor.hpp"
 #include "ArgProcessor.hpp"
-#include "Base.hpp"
 #include "Regex.hpp"
 #include "FileOp.hpp"
 #include "Directive.hpp"
@@ -62,9 +61,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
       break;
     case '\'':
       i++;
-      while(code[i] != '\'') {
-        i += (code[i] == '\\') + 1;
-      }
+      while(code[i] != '\'') i += (code[i] == '\\') + 1;
       break;
     case '"':
       i++;
@@ -77,9 +74,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         balance<'(',')'>(code, i);
         i += delimSize;
       }
-      else while(code[i] != '"') {
-        i += (code[i] == '\\') + 1;
-      }
+      else while(code[i] != '"') i += (code[i] == '\\') + 1;
       break;
     case '\n':
       whitespaceAfterNewline = true;

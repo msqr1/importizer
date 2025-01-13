@@ -11,8 +11,6 @@
 
 namespace fs = std::filesystem;
 
-namespace {
-
 void readFromPath(const fs::path& path, std::string& str) {
   std::ifstream ifs{path};
   if(!ifs) exitWithErr("Unable to open {} for reading", path.native());
@@ -22,8 +20,6 @@ void readFromPath(const fs::path& path, std::string& str) {
     return fsize;
   });
   if(ifs.fail() || ifs.bad()) exitWithErr("Unable to read from {}", path.native());
-}
-
 }
 
 void writeToPath(const fs::path& path, std::string_view data) {
@@ -69,7 +65,7 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
       relPath.replace_extension(opts.srcExt);
     }
     else continue;
-    readFromPath(path, file.content);
+    file.path = std::move(path);
     file.relPath = std::move(relPath);
     files.emplace_back(std::move(file));
     skipThisFile:

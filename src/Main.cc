@@ -1,10 +1,11 @@
 #include "ArgProcessor.hpp"
 #include "Directive.hpp"
 #include "FileOp.hpp"
-#include "Preprocessor.hpp"
 #include "Preamble.hpp"
-#include <array>
+#include "Preprocessor.hpp"
 #include <fmt/base.h>
+#include <array>
+#include <cmath>
 #include <exception>
 #include <string>
 #include <string_view>
@@ -15,7 +16,7 @@ void run(int argc, const char* const* argv) {
   if(opts.transitionalOpts) {
     const TransitionalOpts& t{*opts.transitionalOpts};
     std::string exportMacros{"#ifdef "};
-    const std::array<std::string_view, 18> tokens{t.mi_control, "\n#define ", 
+    const std::array<std::string_view, 14> tokens{t.mi_control, "\n#define ", 
       t.mi_exportKeyword, " export\n#define ", t.mi_exportBlockBegin,
       " export {\n#define ", t.mi_exportBlockEnd, " }\n#else\n#define ",
       t.mi_exportKeyword, "\n#define ", t.mi_exportBlockBegin, "\n#define ",
@@ -25,6 +26,7 @@ void run(int argc, const char* const* argv) {
   }
   std::vector<File> processableFiles{getProcessableFiles(opts)};
   for(File& file : processableFiles) {
+    readFromPath(file.path, file.content);
     const std::vector<Directive> directives{
       preprocess(opts.transitionalOpts, file, opts.includeGuardPat)};
     bool manualExport{insertPreamble(file, directives, opts)};
