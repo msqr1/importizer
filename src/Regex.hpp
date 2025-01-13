@@ -5,9 +5,6 @@
 
 struct pcre2_real_code_8;
 struct pcre2_real_match_data_8;
-namespace cppcoro {
-  template<typename T> class generator;
-}
 
 namespace re {
 

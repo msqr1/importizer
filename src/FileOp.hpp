@@ -1,12 +1,11 @@
 #pragma once
 #include <string>
 #include <filesystem>
+#include <string_view>
+#include <vector>
 
 namespace re {
   class Pattern;
-}
-namespace cppcoro {
-  template<typename T> class generator;
 }
 struct Opts;
 
@@ -22,4 +21,6 @@ struct File {
   std::string content;
 };
 
-cppcoro::generator<File&> iterateFiles(const Opts& opts);
+void writeToPath(const std::filesystem::path& to, std::string_view content);
+
+std::vector<File> getProcessableFiles(const Opts& opts);

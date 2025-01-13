@@ -41,7 +41,6 @@ enum class DirectiveAction : char {
 
 std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transitionalOpts, 
   File& file, const re::Pattern& includeGuardPat) {
-  logIfVerbose("Preprocessing...");
   std::vector<Directive> directives;
   bool lookForMain{file.type == FileType::PairedSrc || file.type == FileType::UnpairedSrc};
   IncludeGuardCtx ctx{file.type, includeGuardPat};
@@ -61,6 +60,12 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         while(!(code[i - 1] == '*' && code[i] == '/')) i++;
       }
       break;
+    case '\'':
+      i++;
+      while(code[i] != '\'') {
+        i += (code[i] == '\\') + 1;
+      }
+      break;
     case '"':
       i++;
 
@@ -72,7 +77,9 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         balance<'(',')'>(code, i);
         i += delimSize;
       }
-      else while(code[i] != '"') i++;
+      else while(code[i] != '"') {
+        i += (code[i] == '\\') + 1;
+      }
       break;
     case '\n':
       whitespaceAfterNewline = true;
@@ -161,7 +168,6 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
           code[i + 3] == 'n')) break;
         i = code.find_first_not_of(" \n\t", i + 4);
         if(code[i] == '(') {
-          logIfVerbose("Found a main function...");
           lookForMain = false;
           file.type = FileType::SrcWithMain;
         }

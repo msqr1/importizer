@@ -1,7 +1,0 @@
-inDir = "kaldi/src"
-outDir = "../out"
-hdrExt = ".h"
-srcExt = ".cc"
-includePaths = ["kaldi/src"]
-includeGuardPat = 'KALDI_[^\s]+_H_'
-verbose = true

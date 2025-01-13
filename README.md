@@ -36,7 +36,6 @@ include2import supports two modularization scheme:
 |--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
 | inDir              | Input directory (required)                                                                                                                  | String       | N/A            |
 | outDir             | Output directory (required)                                                                                                                 | String       | N/A            |
-| verbose            | Enable verbose output for debugging                                                                                                         | Boolean      | ```false```    |
 | hdrExt             | Header file extension                                                                                                                       | String       | ```.hpp```     |
 | srcExt             | Source (also module implementation unit) file extension                                                                                     | String       | ```.cpp```     |
 | moduleInterfaceExt | Module interface unit file extension                                                                                                        | String       | ```.cppm```    |
@@ -44,6 +43,8 @@ include2import supports two modularization scheme:
 | includePaths       | Include paths searched when converting include to import                                                                                    | String array | ```[]```       |
 | ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | Boolean      | ```false```    |
 | stdInclude2Import  | Convert standard includes to ```import std``` or ```import std.compat```                                                                    | Boolean      | ```false```    |
+| logCurrentFile     | Print the current file being processed. This is used when trying to find which file caused problems                                         | Boolean      | ```false```    |
+
 
 - Transitional modularization settings (mi_ prefix = macro identifier):
 

@@ -26,7 +26,7 @@ target_compile_features(include2import PUBLIC cxx_std_23)
 target_compile_options(include2import PUBLIC -Wall)
 
 # 3rd-party headers rarely changes
-set(3rdPartyHeaders Generator.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h)
+set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h)
 list(TRANSFORM 3rdPartyHeaders PREPEND "../3rdParty/")
 
 # Project headers that should not be changed frequently

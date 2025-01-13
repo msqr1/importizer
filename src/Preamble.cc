@@ -210,6 +210,8 @@ std::string getTransitionalPreamble(const Opts& opts,
           break;
         case 1:
           preamble += directive.str;
+          break;
+        case 3:
         }
       }
       includes += directive.str;
@@ -227,7 +229,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       case 1:
         includes += directive.str;
         GMF += directive.str;
-        [[fallthrough]];
+        break;
       case 0:
         break;
       case 2:
@@ -306,8 +308,7 @@ std::string getTransitionalPreamble(const Opts& opts,
 }
 
 bool insertPreamble(File& file, const std::vector<Directive>& directives, const Opts& opts) {
-  logIfVerbose("Modularizing...");
-  bool manualExport;
+  bool manualExport{};
   file.content.insert(0, opts.transitionalOpts ?
     getTransitionalPreamble(opts, directives, file, manualExport) : 
     getDefaultPreamble(opts, directives, file, manualExport));

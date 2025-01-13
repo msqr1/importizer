@@ -45,7 +45,7 @@ auto getMustHave(const toml::table& tbl, std::string_view key) {
 }
 
 }
-Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
+Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
   ap::ArgumentParser parser("include2import", "0.0.1");
   parser.add_description("C++ include to import converter. Takes you on the way of modularization!");
@@ -65,7 +65,6 @@ Opts getOptsOrExit(int argc, const char* const* argv, bool& verbose) {
   const fs::path configDir{configPath.parent_path()};
   opts.inDir = configDir / getMustHave<std::string>(config, "inDir");
   opts.outDir = configDir / getMustHave<std::string>(config, "outDir");
-  verbose = getOrDefault(config, "verbose", false);
   opts.stdInclude2Import = getOrDefault(config, "stdInclude2Import", false);
   opts.hdrExt = getOrDefault(config, "hdrExt", ".hpp");
   opts.srcExt = getOrDefault(config, "srcExt", ".cpp");
