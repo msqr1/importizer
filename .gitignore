@@ -6,7 +6,6 @@
 !3rdParty/Generator.hpp
 test*
 !test
-test/*/*
 !test/*/include2import.toml
 build
 out

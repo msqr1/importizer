@@ -12,4 +12,10 @@ execute_process(
 )
 
 add_subdirectory(src)
-add_subdirectory(test)
+
+option(ENABLE_TESTS "Build and run tests" OFF)
+if (${ENABLE_TESTS})
+  enable_testing()
+  add_subdirectory(test)
+endif()
+

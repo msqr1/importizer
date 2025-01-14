@@ -1,4 +1,4 @@
-#include "ArgProcessor.hpp"
+#include "OptProcessor.hpp"
 #include "Directive.hpp"
 #include "FileOp.hpp"
 #include "Preamble.hpp"
@@ -24,8 +24,7 @@ void run(int argc, const char* const* argv) {
     for(std::string_view token : tokens) exportMacros += token;
     writeToPath(opts.outDir / t.exportMacrosPath, exportMacros);
   }
-  std::vector<File> processableFiles{getProcessableFiles(opts)};
-  for(File& file : processableFiles) {
+  for(File& file : getProcessableFiles(opts)) {
     readFromPath(file.path, file.content);
     const std::vector<Directive> directives{
       preprocess(opts.transitionalOpts, file, opts.includeGuardPat)};

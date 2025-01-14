@@ -1,3 +1,5 @@
-add_executable(test Driver.cc)
-add_subdirectory(../3rdParty/Catch2 "${CMAKE_BINARY_DIR}/Catch2")
-target_link_libraries(test PRIVATE Catch2::Catch2WithMain)
+add_executable(cmpdir CmpDir.cc)
+add_executable(gettmpdir GetTmpDir.cc)
+add_subdirectory(../3rdParty/fmt "${CMAKE_BINARY_DIR}/fmt")
+target_link_libraries(cmpdir fmt::fmt)
+target_link_libraries(gettmpdir fmt::fmt)
