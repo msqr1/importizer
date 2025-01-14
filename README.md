@@ -21,11 +21,14 @@ include2import supports two modularization scheme:
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
 
 # CLI
+- Some arguments will take precedence over those in the config file
+- Paths are relative to the current working directory
 | Flag         | Description                                                                         |
 |--------------|-------------------------------------------------------------------------------------|
 | -c --config  | Path to TOML configuration file (```.toml```), default to ```include2import.toml``` |
 | -h --help    | Print help and exit                                                                 |
 | -v --version | Print version and exit                                                              |
+| -o --outDir  | Output directory (required if not specified in the config file)                     |
 
 # TOML setting file
 - Paths are relative to the config file by default, unless otherwise specified
@@ -35,7 +38,7 @@ include2import supports two modularization scheme:
 | Setting name       | Description                                                                                                                                 | Value type   | Default value  |
 |--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
 | inDir              | Input directory (required)                                                                                                                  | String       | N/A            |
-| outDir             | Output directory (required)                                                                                                                 | String       | N/A            |
+| outDir             | Output directory (required if not specified on the command line)                                                                            | String       | N/A            |
 | hdrExt             | Header file extension                                                                                                                       | String       | ```.hpp```     |
 | srcExt             | Source (also module implementation unit) file extension                                                                                     | String       | ```.cpp```     |
 | moduleInterfaceExt | Module interface unit file extension                                                                                                        | String       | ```.cppm```    |
@@ -44,7 +47,6 @@ include2import supports two modularization scheme:
 | ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | Boolean      | ```false```    |
 | stdInclude2Import  | Convert standard includes to ```import std``` or ```import std.compat```                                                                    | Boolean      | ```false```    |
 | logCurrentFile     | Print the current file being processed. This is used when trying to find which file caused problems                                         | Boolean      | ```false```    |
-
 
 - Transitional modularization settings (mi_ prefix = macro identifier):
 

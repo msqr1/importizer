@@ -13,9 +13,8 @@ execute_process(
 
 add_subdirectory(src)
 
-option(ENABLE_TESTS "Build and run tests" OFF)
-if (${ENABLE_TESTS})
-  enable_testing()
+option(BUILD_TESTS "Build and run tests" OFF)
+if (${BUILD_TESTS})
   add_subdirectory(test)
 endif()
 

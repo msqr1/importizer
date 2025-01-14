@@ -51,8 +51,10 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   ap::ArgumentParser parser("include2import", "0.0.1");
   parser.add_description("C++ include to import converter. Takes you on the way of modularization!");
   parser.add_argument("-c", "--config")
-    .help("Path to a configuration file")
+    .help("Path to a TOML configuration file")
     .default_value("include2import.toml");
+  parser.add_argument("-o", "--outDir")
+    .help("Output directory");
   parser.parse_args(argc, argv);
   const fs::path configPath{parser.get("-c")};
   const toml::parse_result parseRes{toml::parse_file(configPath.native())};
@@ -65,7 +67,9 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   const toml::table config{std::move(parseRes.table())};
   const fs::path configDir{configPath.parent_path()};
   opts.inDir = configDir / getMustHave<std::string>(config, "inDir");
-  opts.outDir = configDir / getMustHave<std::string>(config, "outDir");
+  std::optional<std::string> outDir{parser.present("-o")};
+  opts.outDir = outDir ? 
+    fs::path(*outDir) : configDir / getMustHave<std::string>(config, "outDir");
   opts.stdInclude2Import = getOrDefault(config, "stdInclude2Import", false);
   opts.hdrExt = getOrDefault(config, "hdrExt", ".hpp");
   opts.srcExt = getOrDefault(config, "srcExt", ".cpp");

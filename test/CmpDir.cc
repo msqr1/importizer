@@ -31,7 +31,7 @@ void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
 // Compares two directories for structure and file content
 // Takes two args, compared and reference.
 // Returns 0 for all passed test, 1 for a failed test, and 2 for other errors
-int main(int argc, const char* const* argv) {
+int main([[maybe_unused]] int argc, const char* const* argv) {
   int res{0};
   const fs::path compared{argv[1]};
   const fs::path reference{argv[2]};

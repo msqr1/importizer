@@ -43,6 +43,7 @@ int main(int argc, const char* const* argv) {
   }
   catch(const std::exception& exc) {
     fmt::println(stderr, "std::exception thrown: {}", exc.what());
+    return 1;
   }
   catch(int exitCode) {
     return exitCode;
