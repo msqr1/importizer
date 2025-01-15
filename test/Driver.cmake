@@ -2,7 +2,7 @@ execute_process(OUTPUT_VARIABLE out RESULT_VARIABLE res COMMAND ${CMAKE_ARGV3} -
 if(NOT(${res} EQUAL 0))
   message(FATAL_ERROR ${out})
 endif()
-execute_process(ECHO_OUTPUT_VARIABLE RESULT_VARIABLE res COMMAND ${CMAKE_ARGV6} ${CMAKE_ARGV5} ${CMAKE_ARGV7})
+execute_process(OUTPUT_VARIABLE out RESULT_VARIABLE res COMMAND ${CMAKE_ARGV6} ${CMAKE_ARGV5} ${CMAKE_ARGV7})
 if(NOT(${res} EQUAL 0))
   message(FATAL_ERROR ${out})
 endif()
