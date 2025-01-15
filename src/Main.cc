@@ -25,6 +25,7 @@ void run(int argc, const char* const* argv) {
     writeToPath(opts.outDir / t.exportMacrosPath, exportMacros);
   }
   for(File& file : getProcessableFiles(opts)) {
+    if(opts.logCurrentFile) log("Current file: {}", file.relPath.native());
     readFromPath(file.path, file.content);
     const std::vector<Directive> directives{
       preprocess(opts.transitionalOpts, file, opts.includeGuardPat)};

@@ -70,22 +70,24 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   std::optional<std::string> outDir{parser.present("-o")};
   opts.outDir = outDir ? 
     fs::path(*outDir) : configDir / getMustHave<std::string>(config, "outDir");
+  opts.logCurrentFile = getOrDefault(config, "logCurrentFile", false);
   opts.stdInclude2Import = getOrDefault(config, "stdInclude2Import", false);
   opts.hdrExt = getOrDefault(config, "hdrExt", ".hpp");
   opts.srcExt = getOrDefault(config, "srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault(config, "moduleInterfaceExt", ".cppm");
   opts.includeGuardPat.reset(getOrDefault(config, "includeGuardPat", R"([^\s]+_H)"));
   auto getPathArr = [&](std::string_view key,
-    std::vector<fs::path>& container, const fs::path& relativeTo) -> void {
+    std::vector<fs::path>& container, const std::optional<fs::path>& prefix) -> void {
     if(!config.contains(key)) return;
     const toml::array arr{*config[key].as_array()};
     for(const toml::node& elem : arr) {
       if(!elem.is<std::string>()) exitWithErr("{} must only contains strings", key);
-     container.emplace_back(relativeTo / elem.ref<std::string>());
+      if(prefix) container.emplace_back(*prefix / elem.ref<std::string>());
+      else container.emplace_back(elem.ref<std::string>());
     }
   };
   getPathArr("includePaths", opts.includePaths, configDir);
-  getPathArr("ignoredHeaders", opts.ignoredHeaders, configDir);
+  getPathArr("ignoredHeaders", opts.ignoredHeaders, std::nullopt);
   if(!config.contains("Transitional")) {
     opts.transitionalOpts = std::nullopt;
     return opts;

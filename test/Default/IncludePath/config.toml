@@ -1,0 +1,4 @@
+inDir = "Input"
+outDir = "CorrectOutput"
+srcExt = ".cc"
+includePaths = ["Input"]

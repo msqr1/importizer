@@ -8,7 +8,7 @@ endif()
 # Setup the 3rdParty folder
 execute_process(
   WORKING_DIRECTORY ../3rdParty 
-  COMMAND cmake -P Setup.cmake
+  COMMAND ${CMAKE_COMMAND} -P Setup.cmake
 )
 
 add_subdirectory(src)

@@ -43,6 +43,7 @@ int main([[maybe_unused]] int argc, const char* const* argv) {
   fs::path relPath;
   fs::path cmpPath;
   for(const auto& ent : fs::recursive_directory_iterator(reference)) {
+    if(!ent.is_regular_file()) continue;
     refPath = ent.path();
     relPath = refPath.lexically_relative(reference);
     cmpPath = compared / relPath;

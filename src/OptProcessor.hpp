@@ -15,6 +15,7 @@ struct TransitionalOpts {
 
 struct Opts {
   bool stdInclude2Import;
+  bool logCurrentFile;
   std::filesystem::path inDir;
   std::filesystem::path outDir;
   re::Pattern includeGuardPat;

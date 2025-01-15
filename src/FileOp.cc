@@ -37,6 +37,7 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
   fs::path relPath;
   std::string ext;
   for(const auto& ent : fs::recursive_directory_iterator(opts.inDir)) {
+    if(!ent.is_regular_file()) continue;
     path = ent.path();
     relPath = path.lexically_relative(opts.inDir);
     ext = relPath.extension().native();

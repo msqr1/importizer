@@ -189,6 +189,7 @@ std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& d
 
 std::string getTransitionalPreamble(const Opts& opts,
   const std::vector<Directive>& directives, const File& file, bool& manualExport) {
+  bool exportMacrosIncluded{false};
   const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   IncludeHandleResult res;
   std::string preamble;
@@ -254,11 +255,14 @@ std::string getTransitionalPreamble(const Opts& opts,
       if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
         preamble += directive.str;
         preamble += "#include \"";
+        if(!exportMacrosIncluded) {
 
-        // Fake the same root path
-        preamble += ("." / opts.transitionalOpts->exportMacrosPath)
-          .lexically_relative("." / file.relPath);
-        preamble += "\"\n";
+          // Fake the same root path
+          preamble += ("." / opts.transitionalOpts->exportMacrosPath)
+            .lexically_relative("." / file.relPath);
+          preamble += "\"\n";
+          exportMacrosIncluded = true;
+        }
         continue;
       }
       [[fallthrough]];
@@ -272,14 +276,25 @@ std::string getTransitionalPreamble(const Opts& opts,
       break;
     case DirectiveType::PragmaOnce:
       preamble += directive.str;
-      preamble += "#include \"";
+      if(!exportMacrosIncluded) {
+
+        // Fake the same root path
+        preamble += "#include \"";
+        preamble += ("." / opts.transitionalOpts->exportMacrosPath)
+          .lexically_relative("." / file.relPath);
+        preamble += "\"\n";
+        exportMacrosIncluded = true;
+      }
+      break;
+    case DirectiveType::Other:
+    }
+    if(!exportMacrosIncluded) {
 
       // Fake the same root path
+      preamble += "#include \"";
       preamble += ("." / opts.transitionalOpts->exportMacrosPath)
         .lexically_relative("." / file.relPath);
       preamble += "\"\n";
-      break;
-    case DirectiveType::Other:
     }
     preamble += "#ifdef ";
     preamble += opts.transitionalOpts->mi_control;
