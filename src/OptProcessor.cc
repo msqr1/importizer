@@ -55,6 +55,8 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     .default_value("include2import.toml");
   parser.add_argument("-o", "--outDir")
     .help("Output directory");
+  parser.add_argument("-i", "--inDir")
+    .help("Input directory");
   parser.parse_args(argc, argv);
   const fs::path configPath{parser.get("-c")};
   const toml::parse_result parseRes{toml::parse_file(configPath.native())};
@@ -66,10 +68,12 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   }
   const toml::table config{std::move(parseRes.table())};
   const fs::path configDir{configPath.parent_path()};
-  opts.inDir = configDir / getMustHave<std::string>(config, "inDir");
-  std::optional<std::string> outDir{parser.present("-o")};
-  opts.outDir = outDir ? 
-    fs::path(*outDir) : configDir / getMustHave<std::string>(config, "outDir");
+  std::optional<fs::path> path{parser.present("-i")};
+  opts.inDir = path ? 
+    std::move(*path) : configDir / getMustHave<std::string>(config, "inDir");
+  path = parser.present("-o");
+  opts.outDir = path ? 
+    std::move(*path) : configDir / getMustHave<std::string>(config, "outDir");
   opts.logCurrentFile = getOrDefault(config, "logCurrentFile", false);
   opts.stdInclude2Import = getOrDefault(config, "stdInclude2Import", false);
   opts.hdrExt = getOrDefault(config, "hdrExt", ".hpp");

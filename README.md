@@ -30,6 +30,7 @@ include2import supports two modularization scheme:
 | -h --help    | Print help and exit                                                                 |
 | -v --version | Print version and exit                                                              |
 | -o --outDir  | Output directory (required if not specified in the config file)                     |
+| -i --inDir   | Input directory (required if not specified in the config file)                      |
 
 # TOML setting file
 - Paths are relative to the config file by default, unless otherwise specified
@@ -38,7 +39,7 @@ include2import supports two modularization scheme:
 
 | Setting name       | Description                                                                                                                                 | Value type   | Default value  |
 |--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
-| inDir              | Input directory (required)                                                                                                                  | String       | N/A            |
+| inDir              | Input directory (required if not specified on the command line)                                                                             | String       | N/A            |
 | outDir             | Output directory (required if not specified on the command line)                                                                            | String       | N/A            |
 | hdrExt             | Header file extension                                                                                                                       | String       | ```.hpp```     |
 | srcExt             | Source (also module implementation unit) file extension                                                                                     | String       | ```.cpp```     |
