@@ -1,12 +1,3 @@
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug)
-endif()
-
-string(COMPARE EQUAL "${CMAKE_BULD_TYPE}" "Release" releaseBuild)
-if(releaseBuild)
-  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif()
-
 add_executable(include2import Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
   Preprocessor.cc Preamble.cc Directive.cc StdInclude.cc)
 target_compile_features(include2import PRIVATE cxx_std_23)
@@ -42,7 +33,7 @@ set(BUILD_STATIC_LIBS off)
 set(PCRE2_SUPPORT_JIT on CACHE BOOL "PCRE2 JIT")
 
 # Another fix for PCRE2, it uses option() for default values with CMAKE < 3.12, so it just
-# override my variables above
+# override my variables above. For this policy we can't cmake_policy() 
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 add_subdirectory(../3rdParty/pcre2 "${CMAKE_BINARY_DIR}/pcre2")
 target_link_libraries(include2import pcre2-8)
