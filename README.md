@@ -23,6 +23,7 @@ include2import supports two modularization scheme:
 # CLI
 - Some arguments will take precedence over those in the config file
 - Paths are relative to the current working directory
+
 | Flag         | Description                                                                         |
 |--------------|-------------------------------------------------------------------------------------|
 | -c --config  | Path to TOML configuration file (```.toml```), default to ```include2import.toml``` |
