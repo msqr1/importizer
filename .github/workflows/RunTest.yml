@@ -17,10 +17,10 @@ jobs:
       - name: Test
         if: steps.build.outcome == 'success'
         id: test
-        run: cd test && ctest --output-on-failure
+        run: cd build/test && ctest --output-on-failure
       - name: Upload built binary
         if: steps.test.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
         with:
           name: include2import-${{ matrix.platform }}
-          path: ../src/include2import*
+          path: build/src/include2import*
