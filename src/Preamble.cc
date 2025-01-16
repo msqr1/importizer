@@ -130,7 +130,7 @@ std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& d
           [[fallthrough]];
         case 0:
           continue;
-        case 1:
+        case 1:;
         }
       }
       preamble += directive.str;
@@ -153,7 +153,7 @@ std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& d
         case 0:
         case 3:
           continue;
-        case 1:
+        case 1:;
         }
         preamble += directive.str;
         break;
@@ -167,7 +167,7 @@ std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& d
         imports += directive.str;
         preamble += directive.str;
         break;
-      default:
+      default:;
       }
     }
 
@@ -211,7 +211,7 @@ std::string getTransitionalPreamble(const Opts& opts,
         case 1:
           preamble += directive.str;
           break;
-        case 3:
+        case 3:;
         }
       }
       includes += directive.str;
@@ -250,6 +250,7 @@ std::string getTransitionalPreamble(const Opts& opts,
         imports += directive.str;
         includes += directive.str;
       }
+      [[fallthrough]];
     case DirectiveType::Define:
       if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
         preamble += directive.str;
@@ -267,7 +268,7 @@ std::string getTransitionalPreamble(const Opts& opts,
     case DirectiveType::PragmaOnce:
       preamble += directive.str;
       break;
-    case DirectiveType::Other:
+    case DirectiveType::Other:;
     }
     preamble += "#include \"";
 

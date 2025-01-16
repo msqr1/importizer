@@ -149,7 +149,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
           i = start;
           codeLen -= len;
           break;
-        case DirectiveAction::Continue:
+        case DirectiveAction::Continue:;
         }
         continue;
       }

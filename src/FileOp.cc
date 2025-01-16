@@ -15,7 +15,7 @@ void readFromPath(const fs::path& path, std::string& str) {
   std::ifstream ifs{path};
   if(!ifs) exitWithErr("Unable to open {} for reading", path.native());
   size_t fsize{fs::file_size(path)};
-  str.resize_and_overwrite(fsize, [&](char* newBuf, size_t _) {
+  str.resize_and_overwrite(fsize, [&](char* newBuf, [[maybe_unused]] size_t _) {
     ifs.read(newBuf, fsize);
     return fsize;
   });
@@ -71,7 +71,7 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
     file.path = std::move(path);
     file.relPath = std::move(relPath);
     files.emplace_back(std::move(file));
-    skipThisFile:
+    skipThisFile:;
   }
   return files;
 }

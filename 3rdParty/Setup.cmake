@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
 function(gitClone repo hash outDir)
-  string(CONCAT url "https://github.com/" ${repo})
   file(MAKE_DIRECTORY ${outDir})
   execute_process(
     WORKING_DIRECTORY ${outDir} 
@@ -9,7 +8,7 @@ function(gitClone repo hash outDir)
   )
   execute_process(
     WORKING_DIRECTORY ${outDir} 
-    COMMAND git fetch --depth 1 ${url} ${hash}
+    COMMAND git fetch --depth 1 "https://github.com/${repo}" ${hash}
   )
   execute_process(
     WORKING_DIRECTORY ${outDir} 

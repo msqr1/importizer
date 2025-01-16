@@ -71,6 +71,7 @@ include2import supports two modularization scheme:
 | Source    |        |                  | Module interface unit      | ✔                     |
 | Source    | ✔      |                  | Module implementation unit |                       |
 | Source    |        | ✔                | Only include to import     |                       |
+
 - Behavior of include path searching (similar concept to specifying ```-I```):
 
 | Type          | Action                                                                   |

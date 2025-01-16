@@ -62,7 +62,7 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx) : str{str_}
       std::string_view(str.c_str() + start, end - start));
     break;
   }
-  default:
+  default:;
   }
 }
 

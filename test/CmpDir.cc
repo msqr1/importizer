@@ -1,6 +1,5 @@
-
-#include <cstddef>
 #include <fmt/base.h>
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <string>

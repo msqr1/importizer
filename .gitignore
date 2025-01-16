@@ -3,10 +3,9 @@
 .clangd
 3rdParty/*
 !3rdParty/Setup.cmake
-!3rdParty/Generator.hpp
 test*
 !test
-!test/*/include2import.toml
 build
 out
+act
 CMakePresets.json

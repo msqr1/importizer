@@ -1,0 +1,26 @@
+name: Run test
+
+on: push
+
+jobs:
+  all:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-15, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@4.2.2
+      - name: Build
+        id: build
+        run: mkdir build && cd build && cmake ..
+      - name: Test
+        if: steps.build.outcome == 'success'
+        id: test
+        run: cd test && ctest --output-on-failure
+      - name: Upload built binary
+        if: steps.test.outcome == 'success'
+        uses: actions/upload-artifact@4.6.0
+        with:
+          name: include2import-${{ matrix.platform }}
+          path: ../src/include2import*
