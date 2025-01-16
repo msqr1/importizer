@@ -45,7 +45,9 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
     if(ext == opts.hdrExt) {
       for(const fs::path& p : opts.ignoredHeaders) {
         if(relPath == p) {
-          fs::copy_file(path, opts.outDir / relPath, fs::copy_options::overwrite_existing);
+          relPath = opts.outDir / relPath;
+          fs::create_directories(relPath.parent_path());
+          fs::copy_file(path, relPath, fs::copy_options::overwrite_existing);
           goto skipThisFile;
         }
       }

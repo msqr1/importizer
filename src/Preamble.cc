@@ -116,7 +116,7 @@ std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& d
   std::string preamble;
   const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   IncludeHandleResult res;
-  StdImportLvl lvl;
+  StdImportLvl lvl{StdImportLvl::Unused};
 
   // Only convert include to import for source with a main(), paired or unpaired
   if(file.type == FileType::SrcWithMain) {
@@ -189,12 +189,11 @@ std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& d
 
 std::string getTransitionalPreamble(const Opts& opts,
   const std::vector<Directive>& directives, const File& file, bool& manualExport) {
-  bool exportMacrosIncluded{false};
   const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   IncludeHandleResult res;
   std::string preamble;
   std::string includes;
-  StdImportLvl lvl;
+  StdImportLvl lvl{StdImportLvl::Unused};
   if(file.type == FileType::SrcWithMain) {
     preamble += "#ifdef ";
     preamble += opts.transitionalOpts->mi_control;
@@ -254,15 +253,6 @@ std::string getTransitionalPreamble(const Opts& opts,
     case DirectiveType::Define:
       if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
         preamble += directive.str;
-        preamble += "#include \"";
-        if(!exportMacrosIncluded) {
-
-          // Fake the same root path
-          preamble += ("." / opts.transitionalOpts->exportMacrosPath)
-            .lexically_relative("." / file.relPath);
-          preamble += "\"\n";
-          exportMacrosIncluded = true;
-        }
         continue;
       }
       [[fallthrough]];
@@ -276,27 +266,15 @@ std::string getTransitionalPreamble(const Opts& opts,
       break;
     case DirectiveType::PragmaOnce:
       preamble += directive.str;
-      if(!exportMacrosIncluded) {
-
-        // Fake the same root path
-        preamble += "#include \"";
-        preamble += ("." / opts.transitionalOpts->exportMacrosPath)
-          .lexically_relative("." / file.relPath);
-        preamble += "\"\n";
-        exportMacrosIncluded = true;
-      }
       break;
     case DirectiveType::Other:
     }
-    if(!exportMacrosIncluded) {
+    preamble += "#include \"";
 
-      // Fake the same root path
-      preamble += "#include \"";
-      preamble += ("." / opts.transitionalOpts->exportMacrosPath)
-        .lexically_relative("." / file.relPath);
-      preamble += "\"\n";
-    }
-    preamble += "#ifdef ";
+    // Fake the same root path
+    preamble += ("." / opts.transitionalOpts->exportMacrosPath)
+      .lexically_relative("." / file.relPath);
+    preamble += "\"\n#ifdef ";
     preamble += opts.transitionalOpts->mi_control;
     preamble += '\n';
     preamble += GMF;

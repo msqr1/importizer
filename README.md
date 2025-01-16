@@ -16,7 +16,6 @@ include2import supports two modularization scheme:
 # Usage
 - Build from source for now. Just clone, make a directory inside the cloned repo, and run CMake from there.
 - Add ```-DCMAKE_BUILD_TYPE=Release``` when running CMake to get an optimized program.
-- Requires libc++16 or higher and the clang compiler, I haven't tested with others yet.
 - Create a ```include2import.toml``` in the directory of the generated binary (or somewhere else and specify ```-c```), add some settings, and run the program.
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
 
