@@ -25,7 +25,7 @@ constexpr std::array<std::string_view, 114> cppOrCwrapHdrs {
 };
 
 constexpr std::array<std::string_view, 24> cCompatHdrs {
-  "assert.h", "ctype.h", "errno.h", "fenv.h", "float.h", "inttypes.h", "limits.h", 
+  "assert.h", "ctype.h", "errno.h", "fenv.h", "float.h", "inttypes.h", "limits.h",  
   "locale.h", "math.h", "setjmp.h", "signal.h", "stdarg.h", "stddef.h", "stdint.h", 
   "stdio.h", "stdlib.h", "string.h", "time.h", "uchar.h", "wchar.h", "wctype.h",
   "stdatomic.h", "complex.h", "tgmath.h"

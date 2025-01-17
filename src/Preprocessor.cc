@@ -157,10 +157,9 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
 
       // If you're a sane person you wouldn't write the main function like this:
       // int/*comment*/main/*comment*/(, right? Cuz it won't work.
-      if(lookForMain && code[i] == 'i' && code[i + 1] == 'n' && code[i + 2] == 't') {
+      if(lookForMain && std::string_view(code.c_str() + i, 3) == "int") {
         i = code.find_first_not_of(" \n\t", i + 3);
-        if(!(code[i] == 'm' && code[i + 1] == 'a' && code[i + 2] == 'i' && 
-          code[i + 3] == 'n')) break;
+        if(std::string_view(code.c_str() + i, 4) != "main") break;
         i = code.find_first_not_of(" \n\t", i + 4);
         if(code[i] == '(') {
           lookForMain = false;

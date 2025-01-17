@@ -4,25 +4,27 @@
 #include "Preamble.hpp"
 #include "Preprocessor.hpp"
 #include <fmt/base.h>
-#include <array>
+#include <fmt/format.h>
 #include <cmath>
 #include <exception>
-#include <string>
-#include <string_view>
 #include <vector>
 
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv)};
   if(opts.transitionalOpts) {
     const TransitionalOpts& t{*opts.transitionalOpts};
-    std::string exportMacros{"#ifdef "};
-    const std::array<std::string_view, 14> tokens{t.mi_control, "\n#define ", 
-      t.mi_exportKeyword, " export\n#define ", t.mi_exportBlockBegin,
-      " export {\n#define ", t.mi_exportBlockEnd, " }\n#else\n#define ",
-      t.mi_exportKeyword, "\n#define ", t.mi_exportBlockBegin, "\n#define ",
-      t.mi_exportBlockEnd, "\n#endif"};
-    for(std::string_view token : tokens) exportMacros += token;
-    writeToPath(opts.outDir / t.exportMacrosPath, exportMacros);
+    writeToPath(opts.outDir / t.exportMacrosPath, fmt::format(
+      "#ifdef {0}\n"
+      "#define {1} export\n"
+      "#define {2} export {{\n"
+      "#define {3} }}\n"
+      "#else\n"
+      "#define {1}\n"
+      "#define {2}\n"
+      "#define {3}\n"
+      "#endif", 
+      t.mi_control, t.mi_exportKeyword, t.mi_exportBlockBegin,
+      t.mi_exportBlockEnd));
   }
   for(File& file : getProcessableFiles(opts)) {
     if(opts.logCurrentFile) log("Current file: {}", file.relPath.native());

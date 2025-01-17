@@ -5,7 +5,9 @@
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
 #include "StdInclude.hpp"
+#include <fmt/base.h>
 #include <cstddef>
+#include <iterator>
 #include <optional>
 #include <string>
 #include <utility>
@@ -100,7 +102,7 @@ IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& 
     return "import " + path2ModuleName(includePath) + ";\n";
   }
   std::optional<StdIncludeType> maybeStdInclude;
-  if(opts.stdInclude2Import && (maybeStdInclude = getStdIncludeType(info.includeStr))) {
+  if(opts.stdIncludeToImport && (maybeStdInclude = getStdIncludeType(info.includeStr))) {
     if(lvl < StdImportLvl::StdCompat) {
       lvl = *maybeStdInclude == StdIncludeType::CppOrCwrap ?
         StdImportLvl::Std : StdImportLvl::StdCompat;
@@ -177,10 +179,10 @@ std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& d
       manualExport = true;
       preamble += "export ";
     }
-    preamble += "module ";
-    preamble += path2ModuleName(file.relPath);
-    preamble += ";\n";
-    preamble += imports;
+    fmt::format_to(std::back_inserter(preamble),
+      "module {};\n"
+      "{}",
+      path2ModuleName(file.relPath), imports);
   }
   if(lvl == StdImportLvl::StdCompat) preamble += "import std.compat;\n";
   else if(lvl == StdImportLvl::Std) preamble += "import std;\n";
@@ -195,9 +197,8 @@ std::string getTransitionalPreamble(const Opts& opts,
   std::string includes;
   StdImportLvl lvl{StdImportLvl::Unused};
   if(file.type == FileType::SrcWithMain) {
-    preamble += "#ifdef ";
-    preamble += opts.transitionalOpts->mi_control;
-    preamble += "\n";
+    fmt::format_to(std::back_inserter(preamble), "#ifdef {}\n",
+      opts.transitionalOpts->mi_control);
     for(const Directive& directive : directives) {
       if(directive.type == DirectiveType::Include) {
         res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
@@ -270,15 +271,13 @@ std::string getTransitionalPreamble(const Opts& opts,
       break;
     case DirectiveType::Other:;
     }
-    preamble += "#include \"";
-
-    // Fake the same root path
-    preamble += ("." / opts.transitionalOpts->exportMacrosPath)
-      .lexically_relative("." / file.relPath);
-    preamble += "\"\n#ifdef ";
-    preamble += opts.transitionalOpts->mi_control;
-    preamble += '\n';
-    preamble += GMF;
+    fmt::format_to(std::back_inserter(preamble),
+      "#include \"{}\"\n"
+      "#ifdef {}\n"
+      "{}",
+      ("." / opts.transitionalOpts->exportMacrosPath)
+      .lexically_relative("." / file.relPath).native(), 
+      opts.transitionalOpts->mi_control, GMF);
 
     // Convert header and unpaired source into module interface unit. Without 
     // the "export " the file is a module implementation unit
@@ -286,16 +285,17 @@ std::string getTransitionalPreamble(const Opts& opts,
       manualExport = true;
       preamble += "export ";
     }
-    preamble += "module ";
-    preamble += path2ModuleName(file.relPath);
-    preamble += ";\n";
-    preamble += imports;
+    fmt::format_to(std::back_inserter(preamble), 
+      "module {};\n"
+      "{}",
+      path2ModuleName(file.relPath), imports);
   }
   if(lvl == StdImportLvl::StdCompat) preamble += "import std.compat;\n";
   else if(lvl == StdImportLvl::Std) preamble += "import std;\n";
-  preamble += "#else\n";
-  preamble += includes;
-  preamble += "#endif\n";
+  fmt::format_to(std::back_inserter(preamble),
+    "#else\n{}"
+    "#endif\n"
+    , includes);
   return preamble;
 }
 

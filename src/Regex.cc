@@ -53,12 +53,15 @@ Pattern& Pattern::reset(std::string_view pat, size_t opts) {
   pcre2_match_data_free(matchData);
   int status;
   size_t _; // Unused
-  pattern = pcre2_compile(reinterpret_cast<PCRE2_SPTR>(pat.data()), pat.length(), opts, &status, &_, nullptr);
+  pattern = pcre2_compile(reinterpret_cast<PCRE2_SPTR>(pat.data()), pat.length(), opts,
+    &status, &_, nullptr);
   ckPCRE2Code(status);
   status = pcre2_jit_compile(pattern, PCRE2_JIT_COMPLETE);
   ckPCRE2Code(status);
   matchData = pcre2_match_data_create_from_pattern(pattern, nullptr);
-  if(matchData == nullptr) exitWithErr("Regex error: Unable to allocate memory for match");
+  if(matchData == nullptr) {
+    exitWithErr("Regex error: Unable to allocate memory for match");
+  }
   return *this;
 }
 
@@ -67,8 +70,9 @@ Pattern::~Pattern() {
   pcre2_match_data_free(matchData);
 }
 
-std::optional<Captures> Pattern::match(std::string_view subject, size_t startOffset) const {
-  int count{pcre2_jit_match(pattern, reinterpret_cast<PCRE2_SPTR>(subject.data()), 
+std::optional<Captures> Pattern::match(std::string_view subject, size_t startOffset)
+  const {
+  int count{pcre2_jit_match(pattern, reinterpret_cast<PCRE2_SPTR>(subject.data()),
     subject.length(), startOffset, 0, matchData, nullptr)};
   ckPCRE2Code(count);
   if(count < 1) return std::nullopt;

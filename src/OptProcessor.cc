@@ -49,7 +49,8 @@ auto getMustHave(const toml::table& tbl, std::string_view key) {
 Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
   ap::ArgumentParser parser("include2import", "0.0.1");
-  parser.add_description("C++ include to import converter. Takes you on the way of modularization!");
+  parser.add_description("C++ include to import converter. Takes you on the way of" 
+    "modularization!");
   parser.add_argument("-c", "--config")
     .help("Path to a TOML configuration file")
     .default_value("include2import.toml");
@@ -57,6 +58,20 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     .help("Output directory");
   parser.add_argument("-i", "--inDir")
     .help("Input directory");
+  parser.add_argument("--header-ext")
+    .help("Header file extension");
+  parser.add_argument("--source-ext")
+    .help("Source (also module implementation unit) file extension");
+  parser.add_argument("--module-interface-ext")
+    .help("Module interface unit file extension");
+  parser.add_argument("--include-guard-pat")
+    .help("Regex for the include guard identifier used in the project");
+  parser.add_argument("-l", "--log-current-file")
+    .help("Print the current file being processed")
+    .implicit_value(true);
+  parser.add_argument("--std-include-to-import")
+    .help("Convert standard includes to import std or import std.compat")
+    .implicit_value(true);
   parser.parse_args(argc, argv);
   const fs::path configPath{parser.get("-c")};
   const toml::parse_result parseRes{toml::parse_file(configPath.native())};
@@ -74,12 +89,22 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   path = parser.present("-o");
   opts.outDir = path ? 
     std::move(*path) : configDir / getMustHave<std::string>(config, "outDir");
-  opts.logCurrentFile = getOrDefault(config, "logCurrentFile", false);
-  opts.stdInclude2Import = getOrDefault(config, "stdInclude2Import", false);
-  opts.hdrExt = getOrDefault(config, "hdrExt", ".hpp");
-  opts.srcExt = getOrDefault(config, "srcExt", ".cpp");
-  opts.moduleInterfaceExt = getOrDefault(config, "moduleInterfaceExt", ".cppm");
-  opts.includeGuardPat.reset(getOrDefault(config, "includeGuardPat", R"([^\s]+_H)"));
+  std::optional<bool> boolean{parser.present<bool>("-l")};
+  opts.logCurrentFile = 
+    boolean ? *boolean : getOrDefault(config, "logCurrentFile", false);
+  boolean = parser.present<bool>("--std-include-to-import");
+  opts.stdIncludeToImport = 
+    boolean ? *boolean : getOrDefault(config, "stdIncludeToImport", false);
+  std::optional<std::string> str{parser.present("--header-ext")};
+  opts.hdrExt = str ? std::move(*str) : getOrDefault(config, "hdrExt", ".hpp");
+  str = parser.present("--source-ext");
+  opts.srcExt = str ? std::move(*str) : getOrDefault(config, "srcExt", ".cpp");
+  str = parser.present("--module-interface-ext");
+  opts.moduleInterfaceExt =
+    str ? std::move(*str) : getOrDefault(config, "moduleInterfaceExt", ".cppm");
+  str = parser.present("--include-guard-pat");
+  opts.includeGuardPat.reset(str ? std::move(*str) :
+    getOrDefault(config, "includeGuardPat", R"([^\s]+_H)"));
   auto getPathArr = [&](std::string_view key,
     std::vector<fs::path>& container, const std::optional<fs::path>& prefix) -> void {
     if(!config.contains(key)) return;

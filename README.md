@@ -18,36 +18,43 @@ include2import supports two modularization scheme:
 - Add ```-DCMAKE_BUILD_TYPE=Release``` when running CMake to get an optimized program.
 - Create a ```include2import.toml``` in the directory of the generated binary (or somewhere else and specify ```-c```), add some settings, and run the program.
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
+-  For default mode, just add ```export``` (value of ```mi_exportKeyword``` for transitional mode) around the entities that you want to be exported.
 
 # CLI
-- Some arguments will take precedence over those in the config file
+- Arguments will take precedence over those in the config file
 - Paths are relative to the current working directory
 
-| Flag         | Description                                                                         |
-|--------------|-------------------------------------------------------------------------------------|
-| -c --config  | Path to TOML configuration file (```.toml```), default to ```include2import.toml``` |
-| -h --help    | Print help and exit                                                                 |
-| -v --version | Print version and exit                                                              |
-| -o --outDir  | Output directory (required if not specified in the config file)                     |
-| -i --inDir   | Input directory (required if not specified in the config file)                      |
+| Name                    | Description                                                                         |
+|-------------------------|-------------------------------------------------------------------------------------|
+| -c --config             | Path to TOML configuration file (```.toml```), default to ```include2import.toml``` |
+| -h --help               | Print help and exit                                                                 |
+| -v --version            | Print version and exit                                                              |
+| -o --outDir             | Output directory (required if not specified in the config file)                     |
+| -i --inDir              | Input directory (required if not specified in the config file)                      |
+| --header-ext            | Header file extension                                                               |
+| --source-ext            | Source (also module implementation unit) file extension                             |
+| --module-interface-ext  | Module interface unit file extension                                                |
+| -l --log-current-file   | Print the current file being processed                                              |
+| --std-include-to-import | Convert standard includes to ```import std``` or ```import std.compat```            |
 
 # TOML setting file
 - Paths are relative to the config file by default, unless otherwise specified
 - Settings are optional, unless otherwise specified
+- Value types and default values are in the section below
 - General settings:
 
 | Setting name       | Description                                                                                                                                 | Value type   | Default value  |
 |--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
-| inDir              | Input directory (required if not specified on the command line)                                                                             | String       | N/A            |
-| outDir             | Output directory (required if not specified on the command line)                                                                            | String       | N/A            |
-| hdrExt             | Header file extension                                                                                                                       | String       | ```.hpp```     |
-| srcExt             | Source (also module implementation unit) file extension                                                                                     | String       | ```.cpp```     |
-| moduleInterfaceExt | Module interface unit file extension                                                                                                        | String       | ```.cppm```    |
-| includeGuardPat    | Regex for the include guard identifier used in the project to remove                                                                        | String       | ```[^\s]+_H``` |
+| inDir              | As in CLI (required if not specified on the command line)                                                                                   | String       | N/A            |
+| outDir             | As in CLI (required if not specified on the command line)                                                                                   | String       | N/A            |
+| hdrExt             | As in CLI                                                                                                                                   | String       | ```.hpp```     |
+| srcExt             | As in CLI                                                                                                                                   | String       | ```.cpp```     |
+| moduleInterfaceExt | As in CLI                                                                                                                                   | String       | ```.cppm```    |
+| includeGuardPat    | As in CLI                                                                                                                                   | String       | ```[^\s]+_H``` |
 | includePaths       | Include paths searched when converting include to import                                                                                    | String array | ```[]```       |
 | ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | Boolean      | ```false```    |
-| stdInclude2Import  | Convert standard includes to ```import std``` or ```import std.compat```                                                                    | Boolean      | ```false```    |
-| logCurrentFile     | Print the current file being processed. This is used when trying to find which file caused problems                                         | Boolean      | ```false```    |
+| stdIncludeToImport | As in CLI                                                                                                                                   | Boolean      | ```false```    |
+| logCurrentFile     | As in CLI                                                                                                                                   | Boolean      | ```false```    |
 
 - Transitional modularization settings (mi_ prefix = macro identifier):
 
