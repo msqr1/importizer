@@ -1,7 +1,6 @@
 add_executable(include2import Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
   Preprocessor.cc Preamble.cc Directive.cc StdInclude.cc)
 target_compile_features(include2import PRIVATE cxx_std_23)
-target_compile_options(include2import PRIVATE -Wall -Wextra)
 
 # 3rd-party headers rarely changes
 set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h)

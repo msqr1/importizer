@@ -49,6 +49,7 @@ elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
   endif()
 endif()
+add_compile_options(-Wall)
 
 add_subdirectory(src)
 

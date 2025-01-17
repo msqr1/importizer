@@ -1,6 +1,5 @@
 add_executable(cmpdir CmpDir.cc)
 target_compile_features(cmpdir PRIVATE cxx_std_23)
-target_compile_options(cmpdir PRIVATE -Wall -Wextra)
 target_link_libraries(cmpdir fmt::fmt)
 enable_testing()
 set(testResDir "${CMAKE_CURRENT_BINARY_DIR}/results")
