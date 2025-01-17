@@ -7,9 +7,7 @@
 // PCRE2 for non-matching capture groups, and
 // std::string(_view)::find* for not found return a -1 size_t (std::string::npos)
 constexpr size_t notFound{static_cast<size_t>(-1)};
-
 [[noreturn]] void exitOK();
-
 template <typename... T> struct exitWithErr {
 
   // Overload for direct callers, source location is implied
@@ -32,7 +30,6 @@ template <typename... T> exitWithErr(fmt::format_string<T...> fmt, T&&...)
   -> exitWithErr<T...>;
 template <typename... T> exitWithErr(const std::source_location& loc,
   fmt::format_string<T...> fmt, T&&...) -> exitWithErr<T...>;
-
 template <typename... T> void log(fmt::format_string<T...> fmt, T&&... args) {
   fmt::println(fmt, std::forward<T>(args)...);
 }

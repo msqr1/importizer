@@ -28,7 +28,6 @@ template <char open, char close> void balance(std::string_view str, size_t& pos)
     ++pos;
   } while(nest); 
 }
-
 enum class DirectiveAction : char {
   Continue,
   Emplace,
@@ -36,7 +35,7 @@ enum class DirectiveAction : char {
   Remove,
 };
 
-}
+} // namespace
 
 std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transitionalOpts, 
   File& file, const re::Pattern& includeGuardPat) {

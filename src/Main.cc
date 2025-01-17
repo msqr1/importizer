@@ -39,7 +39,6 @@ void run(int argc, const char* const* argv) {
     writeToPath(opts.outDir / file.relPath, file.content);
   }
 }
-
 int main(int argc, const char* const* argv) {
   try {
     run(argc, argv);

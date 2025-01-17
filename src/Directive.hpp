@@ -1,6 +1,7 @@
 #pragma once
 #include "FileOp.hpp"
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -8,7 +9,6 @@
 namespace re {
   class Pattern;
 }
-
 enum class IncludeGuardState : char {
   NotLooking,
   Looking,
@@ -16,7 +16,6 @@ enum class IncludeGuardState : char {
   GotDefine,
   GotEndif
 };
-
 struct IncludeGuardCtx {
   IncludeGuardState state;
   const re::Pattern& pat;
@@ -26,7 +25,6 @@ struct IncludeGuardCtx {
       IncludeGuardState::Looking : IncludeGuardState::NotLooking},
     pat{pat} {}
 };
-
 struct IncludeInfo {
   bool isAngle;
   size_t startOffset;
@@ -36,7 +34,6 @@ struct IncludeInfo {
 
 // For ifndef and define that matches opts.includeGuardPat
 struct IncludeGuard {};
-
 enum class DirectiveType : char {
   Define,
   Undef,
@@ -48,7 +45,6 @@ enum class DirectiveType : char {
   PragmaOnce,
   Other
 };
-
 struct Directive {
   DirectiveType type;
   std::string str;
@@ -57,3 +53,10 @@ struct Directive {
   Directive(std::string&& str, const IncludeGuardCtx& ctx);
   Directive(Directive&& other);
 };
+enum class StdIncludeType : char {
+  CppOrCwrap,
+  CCompat,
+};
+
+// std::nullopt when not a system include
+std::optional<StdIncludeType> getStdIncludeType(std::string_view include);

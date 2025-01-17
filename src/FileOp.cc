@@ -10,7 +10,6 @@
 #include <vector>
 
 namespace fs = std::filesystem;
-
 void readFromPath(const fs::path& path, std::string& str) {
   std::ifstream ifs{path};
   if(!ifs) exitWithErr("Unable to open {} for reading", path.native());
@@ -21,7 +20,6 @@ void readFromPath(const fs::path& path, std::string& str) {
   });
   if(ifs.fail() || ifs.bad()) exitWithErr("Unable to read from {}", path.native());
 }
-
 void writeToPath(const fs::path& path, std::string_view data) {
   fs::create_directories(path.parent_path());
   std::ofstream ofs{path};
@@ -30,7 +28,6 @@ void writeToPath(const fs::path& path, std::string_view data) {
   if(ofs.fail() || ofs.bad()) exitWithErr("Unable to write to {}", path.native());
   ofs.close();
 }
-
 std::vector<File> getProcessableFiles(const Opts& opts) {
   std::vector<File> files;
   fs::path path;

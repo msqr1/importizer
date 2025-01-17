@@ -4,7 +4,6 @@
 #include "Directive.hpp"
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
-#include "StdInclude.hpp"
 #include <fmt/base.h>
 #include <cstddef>
 #include <iterator>
@@ -299,7 +298,7 @@ std::string getTransitionalPreamble(const Opts& opts,
   return preamble;
 }
 
-}
+} // namespace
 
 bool insertPreamble(File& file, const std::vector<Directive>& directives, const Opts& opts) {
   bool manualExport{};

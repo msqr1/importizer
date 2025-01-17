@@ -10,6 +10,5 @@ namespace re {
 struct File;
 struct Opts;
 struct TransitionalOpts;
-
 std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transitionalOpts,
   File& file, const re::Pattern& includeGuardPat);

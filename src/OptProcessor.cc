@@ -30,21 +30,19 @@ auto getTypeCk(const toml::table& tbl, std::string_view key) {
   exitWithErr("Incorrect TOML type for {}", key);
 #pragma GCC diagnostic pop
 }
-
 template<typename T> 
 auto getOrDefault(const toml::table& tbl, std::string_view key, T&& defaultVal) {
   if(tbl.contains(key)) return getTypeCk<T>(tbl, key);
   if constexpr(std::is_convertible_v<T, std::string>) return std::string{defaultVal};
   else return std::forward<T>(defaultVal);
 }
-
 template<typename T> 
 auto getMustHave(const toml::table& tbl, std::string_view key) {
   if(!tbl.contains(key)) exitWithErr("{} must be specified", key);
   return getTypeCk<T>(tbl, key);
 }
 
-}
+} // namespace
 
 Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
@@ -95,6 +93,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   boolean = parser.present<bool>("--std-include-to-import");
   opts.stdIncludeToImport = 
     boolean ? *boolean : getOrDefault(config, "stdIncludeToImport", false);
+  log("{} {}", opts.logCurrentFile, opts.stdIncludeToImport);
   std::optional<std::string> str{parser.present("--header-ext")};
   opts.hdrExt = str ? std::move(*str) : getOrDefault(config, "hdrExt", ".hpp");
   str = parser.present("--source-ext");

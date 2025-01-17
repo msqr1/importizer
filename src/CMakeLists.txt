@@ -1,5 +1,5 @@
 add_executable(include2import Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
-  Preprocessor.cc Preamble.cc Directive.cc StdInclude.cc)
+  Preprocessor.cc Preamble.cc Directive.cc)
 target_compile_features(include2import PRIVATE cxx_std_23)
 
 # 3rd-party headers rarely changes
@@ -7,7 +7,7 @@ set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/
 list(TRANSFORM 3rdPartyHeaders PREPEND "../3rdParty/")
 
 # Project headers that should not be changed frequently
-set(stableHeaders Base.hpp Regex.hpp StdInclude.hpp)
+set(stableHeaders Base.hpp Regex.hpp)
 foreach(header IN LISTS 3rdPartyHeaders stableHeaders)
   target_precompile_headers(include2import PRIVATE ${header})
 endforeach()

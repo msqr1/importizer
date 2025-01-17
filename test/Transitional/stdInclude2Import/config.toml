@@ -1,5 +1,5 @@
 inDir = "Input"
 outDir = "CorrectOutput"
 srcExt = ".cc"
-stdInclude2Import = true
+stdIncludeToImport = true
 [Transitional]

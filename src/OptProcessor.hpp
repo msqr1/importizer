@@ -12,7 +12,6 @@ struct TransitionalOpts {
   std::string mi_exportBlockEnd;
   std::filesystem::path exportMacrosPath;
 };
-
 struct Opts {
   bool stdIncludeToImport;
   bool logCurrentFile;
@@ -26,5 +25,4 @@ struct Opts {
   std::vector<std::filesystem::path> ignoredHeaders;
   std::optional<TransitionalOpts> transitionalOpts;
 };
-
 Opts getOptsOrExit(int argc, const char* const* argv);
