@@ -49,7 +49,9 @@ elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
   endif()
 endif()
+set(BUILD_SHARED_LIBS OFF)
 add_compile_options(-Wall)
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 
 add_subdirectory(src)
 

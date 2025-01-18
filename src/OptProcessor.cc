@@ -94,7 +94,6 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   boolean = parser.present<bool>("--std-include-to-import");
   opts.stdIncludeToImport = 
     boolean ? *boolean : getOrDefault(config, "stdIncludeToImport", false);
-  log("{} {}", opts.logCurrentFile, opts.stdIncludeToImport);
   std::optional<std::string> str{parser.present("--header-ext")};
   opts.hdrExt = str ? std::move(*str) : getOrDefault(config, "hdrExt", ".hpp");
   str = parser.present("--source-ext");
@@ -109,10 +108,11 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     std::vector<fs::path>& container, const std::optional<fs::path>& prefix) -> void {
     if(!config.contains(key)) return;
     const toml::array arr{*config[key].as_array()};
+    fs::path p;
     for(const toml::node& elem : arr) {
       if(!elem.is<std::string>()) exitWithErr("{} must only contains strings", key);
-      if(prefix) container.emplace_back(*prefix / elem.ref<std::string>());
-      else container.emplace_back(elem.ref<std::string>());
+      container.emplace_back(prefix ? *prefix / elem.ref<std::string>() :
+        fs::path(elem.ref<std::string>()));
     }
   };
   getPathArr("includePaths", opts.includePaths, configDir);

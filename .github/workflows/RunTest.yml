@@ -17,7 +17,7 @@ jobs:
       - name: Test
         if: steps.build.outcome == 'success'
         id: test
-        run: cd ${{ github.workspace }}/build/test && ctest --output-on-failure
+        run: cd ${{ github.workspace }}/build/test && ctest --output-on-failure -C Debug
       - name: Upload built binary
         if: steps.test.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0

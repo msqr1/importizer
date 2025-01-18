@@ -5,6 +5,7 @@
 #include "Preprocessor.hpp"
 #include <fmt/base.h>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <cmath>
 #include <exception>
 #include <vector>
@@ -27,7 +28,7 @@ void run(int argc, const char* const* argv) {
       t.mi_exportBlockEnd));
   }
   for(File& file : getProcessableFiles(opts)) {
-    if(opts.logCurrentFile) log("Current file: {}", file.relPath.native());
+    if(opts.logCurrentFile) log("Current file: {}", file.relPath);
     readFromPath(file.path, file.content);
     const std::vector<Directive> directives{
       preprocess(opts.transitionalOpts, file, opts.includeGuardPat)};
@@ -35,7 +36,7 @@ void run(int argc, const char* const* argv) {
     if(file.type == FileType::Hdr) {
       file.relPath.replace_extension(opts.moduleInterfaceExt);
     }
-    if(manualExport) log("{}", file.relPath.native());
+    if(manualExport) log("{}", file.relPath);
     writeToPath(opts.outDir / file.relPath, file.content);
   }
 }

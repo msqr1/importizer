@@ -1,4 +1,5 @@
 #include <fmt/base.h>
+#include <fmt/std.h>
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
@@ -6,23 +7,19 @@
 namespace fs = std::filesystem;
 
 void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
-  try {
-    ifs.open(path);
+   ifs.open(path);
+  if (ifs.fail() || ifs.bad()) {
+    fmt::println("CmpDir: Unable open {} for reading", path);
+    throw 5;
   }
-  catch(...) {
-    fmt::println("Unable to open {} for reading", path.native());
-    throw 1;
-  }
-  try {
-    size_t fsize{fs::file_size(path)};
+  size_t fsize{fs::file_size(path)};
     str.resize_and_overwrite(fsize, [&](char* newBuf, size_t _) {
-      ifs.read(newBuf, fsize);
-      return fsize;
-    });
-  }
-  catch(...) {
-    fmt::println("Unable to read from {}", path.native());
-    throw 1;
+    ifs.read(newBuf, fsize);
+    return fsize;
+  });
+  if(ifs.fail() || ifs.bad()) {
+    fmt::println("CmpDir: Unable to read from {}", path);
+    throw 5;
   }
   ifs.close();
 }
@@ -35,7 +32,6 @@ int main([[maybe_unused]] int argc, const char* const* argv) {
   const fs::path compared{argv[1]};
   const fs::path reference{argv[2]};
   std::ifstream ifs;
-  ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   std::string cmpContent;
   std::string refContent;
   fs::path refPath;
@@ -47,7 +43,7 @@ int main([[maybe_unused]] int argc, const char* const* argv) {
     relPath = refPath.lexically_relative(reference);
     cmpPath = compared / relPath;
     if(!fs::exists(cmpPath)) {
-      fmt::println("File or directory doesn't exist: {}", relPath.native());
+      fmt::println("File or directory doesn't exist: {}", relPath);
       res = 1;
       continue;
     }
@@ -64,7 +60,7 @@ int main([[maybe_unused]] int argc, const char* const* argv) {
       return 2;
     }
     if(cmpContent == refContent) continue;
-    fmt::println("Mismatched content for: {}. Got:\n{}", relPath.native(), cmpContent);
+    fmt::println("CmpDir: Mismatched content for: {}. Got:\n{}", relPath, cmpContent);
     res = 1;
   }
   return res;

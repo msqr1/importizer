@@ -16,14 +16,17 @@ function(gitClone repo hash outDir)
   )
 endfunction(gitClone repo hash outDir)
 
+# 11.1.2
 if(NOT EXISTS fmt)
-  gitClone(fmtlib/fmt 0c9fce2ffefecfdce794e1859584e25877b7b592 fmt)
+  gitClone(fmtlib/fmt 8303d140a1a11f19b982a9f664bbe59a1ccda3f4 fmt)
 endif()
 
+# 3.4.0
 if(NOT EXISTS toml++)
   gitClone(marzer/tomlplusplus 30172438cee64926dc41fdd9c11fb3ba5b2ba9de toml++)
 endif()
 
+# 10.44
 if(NOT EXISTS pcre2)
   gitClone(PCRE2Project/pcre2 6ae58beca071f13ccfed31d03b3f479ab520639b pcre2)
 endif()
