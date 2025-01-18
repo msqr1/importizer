@@ -5,6 +5,7 @@
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
 #include <fmt/base.h>
+#include <fmt/std.h>
 #include <cstddef>
 #include <iterator>
 #include <optional>
@@ -49,7 +50,7 @@ std::optional<fs::path> getAngleInclude(const GetIncludeCtx& ctx, const fs::path
     p = includePath / include;
     if(fs::exists(p)) {
       p = fs::relative(p, ctx.inDir);
-      if(p.native().find("..") == notFound) return p;
+      if(*p.begin() != "..") return p;
     }
   };
   return std::nullopt;
@@ -63,7 +64,7 @@ std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::pat
   p /= include;
   if(fs::exists(p)) {
     p = fs::relative(p, ctx.inDir);
-    if(p.native().find("..") == notFound) return p;
+    if(*p.begin() != "..") return p;
   }
   return getAngleInclude(ctx, include);
 }
@@ -275,7 +276,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       "#ifdef {}\n"
       "{}",
       ("." / opts.transitionalOpts->exportMacrosPath)
-      .lexically_relative("." / file.relPath).native(), 
+      .lexically_relative("." / file.relPath), 
       opts.transitionalOpts->mi_control, GMF);
 
     // Convert header and unpaired source into module interface unit. Without 

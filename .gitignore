@@ -1,6 +1,7 @@
 .vscode
 .cache
 .clangd
+.vs
 3rdParty/*
 !3rdParty/Setup.cmake
 test*

@@ -65,7 +65,7 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx) : str{str_}
   default:;
   }
 }
-Directive::Directive(Directive&& other) {
+Directive::Directive(Directive&& other) noexcept {
   type = other.type;
   extraInfo = std::move(other.extraInfo);
   switch(other.extraInfo.index()) {

@@ -34,9 +34,9 @@ class Pattern {
 public:
   Pattern(const Pattern&) = delete;
   Pattern& operator=(const Pattern&) = delete;
-  Pattern(Pattern&& other);
-  Pattern(std::string_view pat, size_t opts = 0);
-  Pattern& reset(std::string_view pat, size_t opts = 0);
+  Pattern(Pattern&& other) noexcept;
+  Pattern(std::string_view pat, uint32_t opts = 0);
+  Pattern& reset(std::string_view pat, uint32_t opts = 0);
   Pattern();
   ~Pattern();
   std::optional<Captures> match(std::string_view subject, size_t startOffset = 0) const;

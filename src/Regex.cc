@@ -33,14 +33,15 @@ Capture Captures::operator[](int idx) const {
   return {ovector[idx], ovector[idx + 1]};
 }
 Pattern::Pattern() {}
-Pattern::Pattern(Pattern&& other): pattern{other.pattern}, matchData{other.matchData} {
+Pattern::Pattern(Pattern&& other) noexcept: pattern{other.pattern},
+  matchData{other.matchData} {
   other.pattern = nullptr;
   other.matchData = nullptr;
 }
-Pattern::Pattern(std::string_view pat, size_t opts) {
+Pattern::Pattern(std::string_view pat, uint32_t opts) {
   reset(pat, opts);
 }
-Pattern& Pattern::reset(std::string_view pat, size_t opts) {
+Pattern& Pattern::reset(std::string_view pat, uint32_t opts) {
   pcre2_code_free(pattern);
   pcre2_match_data_free(matchData);
   int status;

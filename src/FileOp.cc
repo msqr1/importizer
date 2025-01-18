@@ -1,6 +1,7 @@
 #include "FileOp.hpp"
 #include "Base.hpp"
 #include "OptProcessor.hpp"
+#include <fmt/std.h>
 #include <cstddef>
 #include <fstream>
 #include <filesystem>
@@ -12,32 +13,32 @@
 namespace fs = std::filesystem;
 void readFromPath(const fs::path& path, std::string& str) {
   std::ifstream ifs{path};
-  if(!ifs) exitWithErr("Unable to open {} for reading", path.native());
+  if(!ifs) exitWithErr("Unable to open {} for reading", path);
   size_t fsize{fs::file_size(path)};
   str.resize_and_overwrite(fsize, [&](char* newBuf, [[maybe_unused]] size_t _) {
     ifs.read(newBuf, fsize);
     return fsize;
   });
-  if(ifs.fail() || ifs.bad()) exitWithErr("Unable to read from {}", path.native());
+  if(ifs.fail() || ifs.bad()) exitWithErr("Unable to read from {}", path);
 }
 void writeToPath(const fs::path& path, std::string_view data) {
   fs::create_directories(path.parent_path());
   std::ofstream ofs{path};
-  if(!ofs) exitWithErr("Unable to open {} for writing", path.native());
+  if(!ofs) exitWithErr("Unable to open {} for writing", path);
   ofs.write(data.data(), data.length());
-  if(ofs.fail() || ofs.bad()) exitWithErr("Unable to write to {}", path.native());
+  if(ofs.fail() || ofs.bad()) exitWithErr("Unable to write to {}", path);
   ofs.close();
 }
 std::vector<File> getProcessableFiles(const Opts& opts) {
   std::vector<File> files;
   fs::path path;
   fs::path relPath;
-  std::string ext;
+  fs::path ext;
   for(const auto& ent : fs::recursive_directory_iterator(opts.inDir)) {
     if(!ent.is_regular_file()) continue;
     path = ent.path();
     relPath = path.lexically_relative(opts.inDir);
-    ext = relPath.extension().native();
+    ext = relPath.extension();
     File file;
     if(ext == opts.hdrExt) {
       for(const fs::path& p : opts.ignoredHeaders) {

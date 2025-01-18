@@ -1,6 +1,7 @@
 #include "OptProcessor.hpp"
 #include "Base.hpp"
 #include "../3rdParty/Argparse.hpp"
+#include <fmt/std.h>
 #include <toml++/toml.hpp>
 #include <utility>
 #include <vector>
@@ -76,7 +77,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   if(!parseRes) {
     const toml::parse_error err{parseRes.error()};
     const toml::source_region errSrc{err.source()};
-    exitWithErr("TOML++ error: {} at {}({}:{})", err.description(), configPath.native(), 
+    exitWithErr("TOML++ error: {} at {}({}:{})", err.description(), configPath,
     errSrc.begin.line, errSrc.begin.column);
   }
   const toml::table config{std::move(parseRes.table())};

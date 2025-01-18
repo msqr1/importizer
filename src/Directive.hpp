@@ -18,10 +18,10 @@ enum class IncludeGuardState : char {
 };
 struct IncludeGuardCtx {
   IncludeGuardState state;
-  const re::Pattern& pat;
   size_t counter;
+  const re::Pattern& pat;
   IncludeGuardCtx(FileType type, const re::Pattern& pat):
-    state{type == FileType::Hdr ? 
+    state{type == FileType::Hdr ?
       IncludeGuardState::Looking : IncludeGuardState::NotLooking},
     pat{pat} {}
 };
@@ -51,7 +51,7 @@ struct Directive {
 
   std::variant<std::monostate, IncludeInfo, IncludeGuard> extraInfo;
   Directive(std::string&& str, const IncludeGuardCtx& ctx);
-  Directive(Directive&& other);
+  Directive(Directive&& other) noexcept;
 };
 enum class StdIncludeType : char {
   CppOrCwrap,

@@ -22,7 +22,7 @@ void run(int argc, const char* const* argv) {
       "#define {1}\n"
       "#define {2}\n"
       "#define {3}\n"
-      "#endif", 
+      "#endif",
       t.mi_control, t.mi_exportKeyword, t.mi_exportBlockBegin,
       t.mi_exportBlockEnd));
   }
