@@ -11,6 +11,7 @@
 #include <vector>
 
 void run(int argc, const char* const* argv) {
+  std::ios::sync_with_stdio(false);
   const Opts opts{getOptsOrExit(argc, argv)};
   if(opts.transitionalOpts) {
     const TransitionalOpts& t{*opts.transitionalOpts};

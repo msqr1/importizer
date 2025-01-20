@@ -12,22 +12,24 @@
 
 namespace fs = std::filesystem;
 void readFromPath(const fs::path& path, std::string& str) {
-  std::ifstream ifs{path};
+  std::ifstream ifs{path, std::ios::binary};
   if(!ifs) exitWithErr("Unable to open {} for reading", path);
   size_t fsize{fs::file_size(path)};
   str.resize_and_overwrite(fsize, [&](char* newBuf, [[maybe_unused]] size_t _) {
     ifs.read(newBuf, fsize);
     return fsize;
   });
-  if(ifs.fail() || ifs.bad()) exitWithErr("Unable to read from {}", path);
+#ifdef WIN32
+  std::erase(str, '\r');
+#endif
+  if(!ifs) exitWithErr("Unable to read from {}", path);
 }
 void writeToPath(const fs::path& path, std::string_view data) {
   fs::create_directories(path.parent_path());
   std::ofstream ofs{path};
   if(!ofs) exitWithErr("Unable to open {} for writing", path);
   ofs.write(data.data(), data.length());
-  if(ofs.fail() || ofs.bad()) exitWithErr("Unable to write to {}", path);
-  ofs.close();
+  if(!ofs) exitWithErr("Unable to write to {}", path);
 }
 std::vector<File> getProcessableFiles(const Opts& opts) {
   std::vector<File> files;

@@ -1,11 +1,9 @@
 #include "Preamble.hpp"
 #include "OptProcessor.hpp"
-#include "Base.hpp"
 #include "Directive.hpp"
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
 #include <fmt/base.h>
-#include <fmt/std.h>
 #include <cstddef>
 #include <iterator>
 #include <optional>
@@ -271,12 +269,14 @@ std::string getTransitionalPreamble(const Opts& opts,
       break;
     case DirectiveType::Other:;
     }
+
+    // generic_string() to convert '\' to '/'
     fmt::format_to(std::back_inserter(preamble),
       "#include \"{}\"\n"
       "#ifdef {}\n"
       "{}",
       ("." / opts.transitionalOpts->exportMacrosPath)
-      .lexically_relative("." / file.relPath), 
+      .lexically_relative("." / file.relPath).generic_string(),
       opts.transitionalOpts->mi_control, GMF);
 
     // Convert header and unpaired source into module interface unit. Without 

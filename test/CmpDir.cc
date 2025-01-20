@@ -7,8 +7,8 @@
 namespace fs = std::filesystem;
 
 void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
-   ifs.open(path);
-  if (ifs.fail() || ifs.bad()) {
+  ifs.open(path, std::ios::binary);
+  if(!ifs) {
     fmt::println("CmpDir: Unable open {} for reading", path);
     throw 5;
   }
@@ -17,10 +17,13 @@ void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
     ifs.read(newBuf, fsize);
     return fsize;
   });
-  if(ifs.fail() || ifs.bad()) {
+  if(!ifs) {
     fmt::println("CmpDir: Unable to read from {}", path);
     throw 5;
   }
+#ifdef WIN32
+  std::erase(str, '\r');
+#endif
   ifs.close();
 }
 
