@@ -33,6 +33,8 @@ jobs:
         uses: actions/download-artifact@v4.1.8
         with:
           merge-multiple: true
+      - name: List available files
+        run: ls -R ${{ github.workspace }}
       - name: Tag continuous release
         uses: softprops/action-gh-release@v2.2.1
         with:
