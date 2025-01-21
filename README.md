@@ -16,7 +16,7 @@ include2import supports two modularization scheme:
 # Usage
 ## Prebuilt executable
 - There hasn't been an official release yet.
-- You can try to download and run one of those from the continuous tag. Note that these are debug versions with sanitizers and others things turned on.
+- You can try to download and run one of those for your OS from the continuous tag. Note that these are debug versions with sanitizers and others things turned on.
 
 ## Building from source
 - Just clone, make a directory inside the cloned repo, and run CMake from there.

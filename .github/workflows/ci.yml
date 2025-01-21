@@ -1,13 +1,24 @@
 name: Run test and tag continuous
-on: [push, workflow_dispatch]
+on:
+  - push
+  - workflow_dispatch
 permissions:
   contents: write
 jobs:
   build-test-upload:
     strategy:
       matrix:
-        platform: [ubuntu-22.04, ubuntu-24.04, windows-2019, windows-2022, macos-13, macos-14, macos-15]
-    runs-on: ${{ matrix.platform }}
+        os:
+          - ubuntu-22.04
+          - ubuntu-22.04-arm
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - windows-2019
+          - windows-2022
+          - macos-13
+          - macos-14
+          - macos-15
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -22,19 +33,15 @@ jobs:
         if: steps.test.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: include2import-${{ matrix.platform }}
+          name: include2import-${{ matrix.os }}
           path: ${{ github.workspace }}/build/include2import
           retention-days: 1
   download-and-release-continuous:
     needs: build-test-upload
-    runs-on: ubuntu-latest
-    steps:  
+    runs-on: ubuntu-24.04
+    steps:
       - name: Download built binaries
         uses: actions/download-artifact@v4.1.8
-
-      # Since actions/download-artifact put the artifacts in directories whose names are
-      # artifact names, and content is artifact's content, we rename binaries to 
-      # [artifact's name]
       - name: Rename binaries
         run: for a in */; do mv "$a/include2import" "$a/$(basename $a)"; done
       - name: Tag continuous release
@@ -42,5 +49,6 @@ jobs:
         with:
           prerelease: true
           tag_name: continuous
-          body: Latest test-passing unstable release. Download and try it out!
+          body: Latest test-passing unstable release. Select your OS, download and try it
+            out!
           files: ${{ github.workspace }}/include2import*/include2import*
