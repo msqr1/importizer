@@ -40,6 +40,7 @@ jobs:
       - name: Tag continuous release
         uses: softprops/action-gh-release@v2.2.1
         with:
+          prerelease: true
           tag_name: continuous
           body: Latest test-passing unstable release. Download and try it out!
           files: ${{ github.workspace }}/include2import*/include2import*
