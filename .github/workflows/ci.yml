@@ -39,3 +39,4 @@ jobs:
           tag_name: continuous
           body: Latest test-passing unstable release. Download and try it out!
           files: ${{ github.workspace }}/include2import*
+          token: ${{ secrets.include2import-release }}
