@@ -9,20 +9,25 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+#include <version>
 
 namespace fs = std::filesystem;
 void readFromPath(const fs::path& path, std::string& str) {
-  std::ifstream ifs{path, std::ios::binary};
+  std::ifstream ifs{path, std::fstream::binary};
   if(!ifs) exitWithErr("Unable to open {} for reading", path);
   size_t fsize{fs::file_size(path)};
-  str.resize_and_overwrite(fsize, [&](char* newBuf, [[maybe_unused]] size_t _) {
-    ifs.read(newBuf, fsize);
+#ifdef __cpp_lib_string_resize_and_overwrite
+  str.resize_and_overwrite(fsize, [&]([[maybe_unused]] char* _, [[maybe_unused]] size_t _1) {
     return fsize;
   });
+#else
+  str.resize(fsize);
+#endif
+  ifs.read(str.data(), fsize);
+  if(!ifs) exitWithErr("Unable to read from {}", path);
 #ifdef WIN32
   std::erase(str, '\r');
 #endif
-  if(!ifs) exitWithErr("Unable to read from {}", path);
 }
 void writeToPath(const fs::path& path, std::string_view data) {
   fs::create_directories(path.parent_path());

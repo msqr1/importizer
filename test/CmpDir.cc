@@ -4,19 +4,25 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <version>
+
 namespace fs = std::filesystem;
 
 void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
-  ifs.open(path, std::ios::binary);
+  ifs.open(path, std::fstream::binary);
   if(!ifs) {
     fmt::println("CmpDir: Unable open {} for reading", path);
     throw 5;
   }
   size_t fsize{fs::file_size(path)};
-    str.resize_and_overwrite(fsize, [&](char* newBuf, size_t _) {
-    ifs.read(newBuf, fsize);
+#ifdef __cpp_lib_string_resize_and_overwrite
+  str.resize_and_overwrite(fsize, [&]([[maybe_unused]] char* _, [[maybe_unused]] size_t _1) {
     return fsize;
   });
+#else
+  str.resize(fsize);
+#endif
+  ifs.read(str.data(), fsize);
   if(!ifs) {
     fmt::println("CmpDir: Unable to read from {}", path);
     throw 5;
