@@ -6,7 +6,7 @@ jobs:
   build-test-upload:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-15, windows-latest]
+        platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout code
@@ -32,9 +32,13 @@ jobs:
       - name: Download built binaries
         uses: actions/download-artifact@v4.1.8
         with:
+          path: ${{ github.workspace }}
           merge-multiple: true
       - name: List available files
-        run: ls -R ${{ github.workspace }}
+        run: |
+          ls -R ${{ github.workspace }}
+          echo ${{ github.workspace }}
+          echo $GITHUB_WORKSPACE
       - name: Tag continuous release
         uses: softprops/action-gh-release@v2.2.1
         with:
