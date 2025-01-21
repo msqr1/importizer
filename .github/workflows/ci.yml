@@ -1,7 +1,7 @@
 name: Run test and tag continuous
-
 on: [push, workflow_dispatch]
-
+permissions:
+  contents: write
 jobs:
   build-test-upload:
     strategy:
@@ -39,4 +39,3 @@ jobs:
           tag_name: continuous
           body: Latest test-passing unstable release. Download and try it out!
           files: ${{ github.workspace }}/include2import*
-          token: ${{ secrets.include2import-release }}
