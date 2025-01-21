@@ -1,0 +1,41 @@
+name: Run test and tag continuous
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build-test-upload:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-15, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+      - name: Build
+        id: build
+        run: mkdir build && cd build && cmake .. -DBUILD_TESTS=ON && cmake --build .
+      - name: Test
+        if: steps.build.outcome == 'success'
+        id: test
+        run: cd ${{ github.workspace }}/build/test && ctest --output-on-failure -C Debug
+      - name: Upload built binary as artifact
+        if: steps.test.outcome == 'success'
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: include2import-${{ matrix.platform }}
+          path: ${{ github.workspace }}/build/include2import
+          retention-days: 1
+  download-and-release-continuous:
+    needs: build-test-upload
+    runs-on: ubuntu-latest
+    steps:  
+      - name: Download built binaries
+        uses: actions/download-artifact@v4.1.8
+        with:
+          merge-multiple: true
+      - name: Tag continuous release
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          tag_name: continuous
+          body: "Latest test-passing unstable release. Download and try it out!"
+          files: *

@@ -11,15 +11,12 @@ set(stableHeaders Base.hpp Regex.hpp)
 foreach(header IN LISTS 3rdPartyHeaders stableHeaders)
   target_precompile_headers(include2import PRIVATE ${header})
 endforeach()
-
 add_subdirectory(../3rdParty/fmt "${CMAKE_BINARY_DIR}/fmt")
 target_link_libraries(include2import fmt::fmt)
-
 target_compile_definitions(include2import PRIVATE TOML_EXCEPTIONS=0)
 target_compile_definitions(include2import PRIVATE TOML_ENABLE_FORMATTERS=0)
 add_subdirectory(../3rdParty/toml++ "${CMAKE_BINARY_DIR}/toml++")
 target_link_libraries(include2import tomlplusplus::tomlplusplus)
-
 set(PCRE2_BUILD_TESTS off)
 set(PCRE2_BUILD_PCRE2GREP off)
 set(PCRE2_SUPPORT_JIT on CACHE BOOL "PCRE2 JIT")
@@ -29,3 +26,8 @@ set(PCRE2_SUPPORT_JIT on CACHE BOOL "PCRE2 JIT")
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 add_subdirectory(../3rdParty/pcre2 "${CMAKE_BINARY_DIR}/pcre2")
 target_link_libraries(include2import pcre2-8)
+
+# For actions/upload-artifact
+add_custom_command(POST_BUILD TARGET include2import 
+  COMMAND ${CMAKE_COMMAND} -E create_symlink
+  $<TARGET_FILE:include2import> ${CMAKE_BINARY_DIR}/include2import)

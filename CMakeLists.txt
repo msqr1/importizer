@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
 project(include2import)
-
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   message(FATAL_ERROR "In-source build is unsupported")
 endif()
@@ -10,11 +9,9 @@ execute_process(
   WORKING_DIRECTORY ../3rdParty 
   COMMAND ${CMAKE_COMMAND} -P Setup.cmake
 )
-
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
-
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   include(CheckCXXCompilerFlag)
   check_cxx_compiler_flag("-fno-omit-frame-pointer" OFP)
@@ -52,9 +49,7 @@ endif()
 set(BUILD_SHARED_LIBS OFF)
 add_compile_options(-Wall)
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-
 add_subdirectory(src)
-
 option(BUILD_TESTS "Build and run tests" OFF)
 if(${BUILD_TESTS})
   add_subdirectory(test)
