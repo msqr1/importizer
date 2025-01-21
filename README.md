@@ -11,17 +11,20 @@ What does it do?
 
 include2import supports two modularization scheme:
 - Complete modularization: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
-- Transtitional modularization: You want to have both a header-based interface and a module-based one for backward compatibility and a gradual switch. You can opt in by specifing ```[Transitional]``` in the setting file.
+- Transtitional modularization: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing ```[Transitional]``` in the setting file.
 
-# Usage
+# Getting started
 ## Prebuilt executable
 - There hasn't been an official release yet.
 - You can try to download and run one of those for your OS from the continuous tag. Note that these are debug versions with sanitizers and others things turned on.
 
 ## Building from source
-- Just clone, make a directory inside the cloned repo, and run CMake from there.
-- Add ```-DCMAKE_BUILD_TYPE=Release``` when running CMake to get an optimized program.
-- The generated binary right below the build directory you created
+- Execute:
+```
+git clone --depth 1 https://github.com/msqr1/include2import && cd include2import &&
+mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . 
+```
+- The generated binary is called ```include2import``` in the current working directory
 
 ## Using the program
 - Create a ```include2import.toml``` in the directory of the executable (or somewhere else and specify ```-c```), add some settings, and run the program.
@@ -99,6 +102,3 @@ include2import supports two modularization scheme:
     - Add the macro definition on the command line when compiling for the files that needed the macro (using ```-D...```).
     - Refactor the macro definition into a separate header, ```#include``` that where the macro is needed, and add the new header to the ```ignoredHeaders```.
     - Add the macro-containing headers to the ```ignoredHeaders``` (their paired sources, if available will be treated as if they have a ```main()```)
-
-# Maybe in the future
-- Automatic macro refactoring
