@@ -14,9 +14,17 @@ include2import supports two modularization scheme:
 - Transtitional modularization: You want to have both a header-based interface and a module-based one for backward compatibility and a gradual switch. You can opt in by specifing ```[Transitional]``` in the setting file.
 
 # Usage
-- Build from source for now. Just clone, make a directory inside the cloned repo, and run CMake from there.
+## Prebuilt executable
+- There hasn't been an official release yet.
+- You can try to download and run one of those from the continuous tag. Note that these are debug versions with sanitizers and others things turned on.
+
+## Building from source
+- Just clone, make a directory inside the cloned repo, and run CMake from there.
 - Add ```-DCMAKE_BUILD_TYPE=Release``` when running CMake to get an optimized program.
-- Create a ```include2import.toml``` in the directory of the generated binary (or somewhere else and specify ```-c```), add some settings, and run the program.
+- The generated binary right below the build directory you created
+
+## Using the program
+- Create a ```include2import.toml``` in the directory of the executable (or somewhere else and specify ```-c```), add some settings, and run the program.
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
 -  For default mode, just add ```export``` (value of ```mi_exportKeyword``` for transitional mode) around the entities that you want to be exported.
 
