@@ -33,8 +33,8 @@ jobs:
         if: steps.test.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: include2import-${{ matrix.os }}
-          path: ${{ github.workspace }}/build/include2import
+          name: importizer-${{ matrix.os }}
+          path: ${{ github.workspace }}/build/importizer
           retention-days: 1
   download-and-release-continuous:
     needs: build-test-upload
@@ -43,7 +43,7 @@ jobs:
       - name: Download built binaries
         uses: actions/download-artifact@v4.1.8
       - name: Rename binaries
-        run: for a in */; do mv "$a/include2import" "$a/$(basename $a)"; done
+        run: for a in */; do mv "$a/importizer" "$a/$(basename $a)"; done
       - name: Tag continuous release
         uses: softprops/action-gh-release@v2.2.1
         with:
@@ -51,4 +51,4 @@ jobs:
           tag_name: continuous
           body: Latest test-passing unstable release. Select your OS, download and try it
             out!
-          files: ${{ github.workspace }}/include2import*/include2import*
+          files: ${{ github.workspace }}/importizer*/importizer*
