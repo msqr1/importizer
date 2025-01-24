@@ -1,15 +1,15 @@
 # Introduction
 Do you need help converting your header-based codebase to C++20 modules?
-include2import can help.
+importizer can help.
 
-Please note that include2import is still very unstable, but I would love feedback for improvement!
+Please note that the tool not very stable, I would love feedback for improvement before 1.0.0!
 
 What does it do?
 - Convert ```#include``` statements to ```import``` statement, as well as creating the GMF
 - Takes you on the way to modularizing your codebase.
 - **You would still have to manually choose what to export after running.**
 
-include2import supports two modularization scheme:
+importizer supports two modularization scheme:
 - Complete modularization: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
 - Transtitional modularization: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing ```[Transitional]``` in the setting file.
 
@@ -21,13 +21,13 @@ include2import supports two modularization scheme:
 ## Building from source
 - Execute:
 ```
-git clone --depth 1 https://github.com/msqr1/include2import && cd include2import &&
+git clone --depth 1 https://github.com/msqr1/importizer && cd importizer &&
 mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . 
 ```
-- The generated binary is called ```include2import``` in the current working directory
+- The generated binary is called ```importizer``` in the current working directory
 
 ## Using the program
-- Create a ```include2import.toml``` in the directory of the executable (or somewhere else and specify ```-c```), add some settings, and run the program.
+- Create a ```importizer.toml``` in the directory of the executable (or somewhere else and specify ```-c```), add some settings, and run the program.
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
 -  For default mode, just add ```export``` (value of ```mi_exportKeyword``` for transitional mode) around the entities that you want to be exported.
 
@@ -37,7 +37,7 @@ mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build 
 
 | Name                    | Description                                                                         |
 |-------------------------|-------------------------------------------------------------------------------------|
-| -c --config             | Path to TOML configuration file (```.toml```), default to ```include2import.toml``` |
+| -c --config             | Path to TOML configuration file (```.toml```), default to ```importizer.toml``` |
 | -h --help               | Print help and exit                                                                 |
 | -v --version            | Print version and exit                                                              |
 | -o --outDir             | Output directory (required if not specified in the config file)                     |
@@ -79,7 +79,7 @@ mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build 
 
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 
-- include2import's behavior is undefined for a header-source pair and the source has a main function. This is extremely rare in real code, though.
+- importizer's behavior is undefined for a header-source pair and the source has a main function. This is extremely rare in real code, though.
 - Action by file type:
 
 | File type | Paired | Has ```main()``` | Conversion                 | Must do manual export |

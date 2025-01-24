@@ -86,14 +86,14 @@ IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& 
   if(resolvedInclude) {
     fs::path includePath{std::move(*resolvedInclude)};
 
-    // Skip include2import conversion of paired header
+    // Skip include to import conversion of paired header
     if(file.type == FileType::PairedSrc) {
       includePath.replace_extension(opts.srcExt);
       if(includePath == file.relPath) return Skip{};
       includePath.replace_extension(opts.hdrExt);
     }
 
-    // Don't include2import ignored headers, keep them as #include
+    // Don't include to import ignored headers, keep them as #include
     for(const fs::path& p : opts.ignoredHeaders) {
       if(includePath == p) return KeepAsInclude{};
     }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(include2import)
+project(importizer)
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   message(FATAL_ERROR "In-source build is unsupported")
 endif()
