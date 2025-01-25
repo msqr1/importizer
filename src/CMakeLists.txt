@@ -3,7 +3,8 @@ add_executable(importizer Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc
 target_compile_features(importizer PRIVATE cxx_std_23)
 
 # 3rd-party headers rarely changes
-set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h)
+set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h
+fmt/include/fmt/base.h fmt/include/fmt/std.h)
 list(TRANSFORM 3rdPartyHeaders PREPEND "../3rdParty/")
 
 # Project headers that should not be changed frequently

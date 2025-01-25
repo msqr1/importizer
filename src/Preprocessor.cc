@@ -89,15 +89,6 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         DirectiveAction directiveAction;
         Directive directive{code.substr(start, end - start), ctx};
         switch(directive.type) {
-        case DirectiveType::Ifndef:
-          if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
-            ctx.state = IncludeGuardState::GotIfndef;
-            ctx.counter = 1;
-            directiveAction = transitionalOpts ?
-              DirectiveAction::EmplaceRemove : DirectiveAction::Remove;
-          }
-          else directiveAction = DirectiveAction::Emplace;
-          break;
         case DirectiveType::Define:
           if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
             ctx.state = IncludeGuardState::GotDefine;
@@ -108,6 +99,13 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
           break;
         case DirectiveType::IfCond:
           if(ctx.state == IncludeGuardState::GotDefine) ctx.counter++;
+          else if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
+            ctx.state = IncludeGuardState::GotIfndef;
+            ctx.counter = 1;
+            directiveAction = transitionalOpts ?
+              DirectiveAction::EmplaceRemove : DirectiveAction::Remove;
+            break;
+          }
           directiveAction = DirectiveAction::Emplace;
           break;
         case DirectiveType::EndIf:

@@ -37,7 +37,6 @@ struct IncludeGuard {};
 enum class DirectiveType : char {
   Define,
   Undef,
-  Ifndef,
   IfCond,
   ElCond,
   EndIf,

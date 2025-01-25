@@ -158,7 +158,6 @@ std::string getDefaultPreamble(const Opts& opts, const std::vector<Directive>& d
         preamble += directive.str;
         break;
       }
-      case DirectiveType::Ifndef:
       case DirectiveType::IfCond:
       case DirectiveType::ElCond:
       case DirectiveType::EndIf:
@@ -239,25 +238,14 @@ std::string getTransitionalPreamble(const Opts& opts,
       }
       break;
     }
-    case DirectiveType::Ifndef:
-      if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
-        preamble += directive.str;
-        continue;
-      }
-      else {
-        GMF += directive.str;
-        imports += directive.str;
-        includes += directive.str;
-      }
-      [[fallthrough]];
     case DirectiveType::Define:
+    case DirectiveType::IfCond:
       if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
         preamble += directive.str;
         continue;
       }
       [[fallthrough]];
     case DirectiveType::Undef:
-    case DirectiveType::IfCond:
     case DirectiveType::ElCond:
     case DirectiveType::EndIf:
       GMF += directive.str;

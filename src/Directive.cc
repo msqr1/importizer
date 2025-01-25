@@ -23,30 +23,8 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx) : str{str_}
   std::string_view first2Chars{directive.substr(0, 2)};
   if(directive == "define") type = DirectiveType::Define;
   else if(directive == "undef") type = DirectiveType::Undef;
-  else if(directive == "include") type = DirectiveType::Include;
-  else if(directive == "ifndef") type = DirectiveType::Ifndef;
-  else if(directive == "endif") type = DirectiveType::EndIf;  
-  else if(first2Chars == "if") type = DirectiveType::IfCond;
-  else if(first2Chars == "el") type = DirectiveType::ElCond;
-  else if(directive == "pragma" && getWord(1 + directive.length(), str) == "once") {
-    type = DirectiveType::PragmaOnce;
-  }
-  else type = DirectiveType::Other;
-  switch(type) {
-  case DirectiveType::Ifndef:
-    if(ctx.state == IncludeGuardState::Looking && 
-      ctx.pat.match(getWord(1 + directive.length(), str))) {
-      extraInfo.emplace<IncludeGuard>();
-    }
-    break;
-  case DirectiveType::Define: {
-    if(ctx.state == IncludeGuardState::GotIfndef &&
-      ctx.pat.match(getWord(1 + directive.length(), str))) {
-      extraInfo.emplace<IncludeGuard>();
-    }
-    break;
-  }
-  case DirectiveType::Include: {
+  else if(directive == "include") {
+    type = DirectiveType::Include;
     size_t start{str.find('<', 1 + directive.length())};
     size_t end; 
     bool isAngle{start != notFound};
@@ -60,9 +38,18 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx) : str{str_}
     }
     extraInfo.emplace<IncludeInfo>(start, isAngle, 
       std::string_view(str.c_str() + start, end - start));
-    break;
   }
-  default:;
+  else if(directive == "endif") type = DirectiveType::EndIf;  
+  else if(first2Chars == "if") type = DirectiveType::IfCond;
+  else if(first2Chars == "el") type = DirectiveType::ElCond;
+  else if(directive == "pragma" && getWord(1 + directive.length(), str) == "once") {
+    type = DirectiveType::PragmaOnce;
+  }
+  else type = DirectiveType::Other;
+  if(((ctx.state == IncludeGuardState::Looking && directive == "ifndef") || 
+    (ctx.state == IncludeGuardState::GotIfndef && directive == "define")) &&
+    ctx.pat.match(getWord(1 + directive.length(), str))) {
+    extraInfo.emplace<IncludeGuard>();
   }
 }
 Directive::Directive(Directive&& other) noexcept {
