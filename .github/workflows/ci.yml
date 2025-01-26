@@ -29,14 +29,14 @@ jobs:
         id: build
         run: >
           mkdir build && cd build && cmake .. -DBUILD_TESTS=ON &&
-          cmake --build . -j$(cmake -P ${{ github.workspace }}/GetProcCnt.cmake 2>&1)
+          cmake --build . -j$(cmake -P ${{ github.workspace }}/GetProcCnt.cmake)
       - name: Test
         if: steps.build.outcome == 'success'
         id: test
         run: >
           cd ${{ github.workspace }}/build/test &&
           ctest --output-on-failure -C Debug
-          -j$(cmake -P ${{ github.workspace }}/GetProcCnt.cmake 2>&1)
+          -j$(cmake -P ${{ github.workspace }}/GetProcCnt.cmake)
       - name: Upload built binary as artifact
         if: steps.test.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
