@@ -52,7 +52,6 @@ std::optional<fs::path> getAngleInclude(const GetIncludeCtx& ctx, const fs::path
   };
   return std::nullopt;
 }
-
 std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::path& include, 
   const fs::path& currentFile) {
   fs::path p{currentFile};
@@ -65,13 +64,11 @@ std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::pat
   }
   return getAngleInclude(ctx, include);
 }
-
 enum class StdImportLvl : char {
   Unused,
   Std,
   StdCompat
 };
-
 struct Skip {};
 struct KeepAsInclude {};
 struct KeepForHdr {};
@@ -109,7 +106,6 @@ IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& 
   }
   return KeepAsInclude{};
 }
-
 std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directives,
   const File& file, bool& manualExport) {
   const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
@@ -120,68 +116,64 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
   // Only convert include to import for source with a main(), paired or unpaired
   if(file.type == FileType::SrcWithMain) {
     MinimizeCondCtx mcCtx;
-    for(Directive& directive : directives) {
-      switch(directive.type) {
-      case DirectiveType::IfCond:
-      case DirectiveType::ElCond:
-      case DirectiveType::Else:
-      case DirectiveType::EndIf:
-        mcCtx.emplace_back(std::move(directive));
-        break;
-      case DirectiveType::Include:
-        res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
-          lvl);
+    for(Directive& directive : directives) switch(directive.type) {
+    case DirectiveType::IfCond:
+    case DirectiveType::ElCond:
+    case DirectiveType::Else:
+    case DirectiveType::EndIf:
+      mcCtx.emplace_back(std::move(directive));
+      break;
+    case DirectiveType::Include:
+      res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
+        lvl);
 
-        // Case 3 never happens because we're in default mode, no need to handle it
-        switch(res.index()) {
-        case 2: // String
-          mcCtx.emplace_back(std::get<std::string>(std::move(res)));
-          continue;
-        case 0: // Skip
-          continue;
-        case 1:; // KeepAsInclude
-        }
-        [[fallthrough]];
-      default:
-        mcCtx.emplace_back(std::move(directive.str));
+      // We're in default mode, no need to handle switch case 3
+      switch(res.index()) {
+      case 2: // String
+        mcCtx.emplace_back(std::get<std::string>(std::move(res)));
+        continue;
+      case 0: // Skip
+        continue;
+      case 1:; // KeepAsInclude
       }
+      [[fallthrough]];
+    default:
+      mcCtx.emplace_back(std::move(directive.str));
     }
-    preamble = minimizeCondToStr(mcCtx); 
+    preamble = minimizeCondToStr(mcCtx);
   }
 
   // Convert to module interface/implementation
   else {
     MinimizeCondCtx includeCtx;
     MinimizeCondCtx importCtx;
-    for(Directive& directive : directives) {
-      switch(directive.type) {
-      case DirectiveType::IfCond:
-      case DirectiveType::Else:
-      case DirectiveType::ElCond:
-      case DirectiveType::EndIf:
-        includeCtx.emplace_back(directive);
-        importCtx.emplace_back(std::move(directive));
-        break;
-      case DirectiveType::Include:
-        res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
-          lvl);
+    for(Directive& directive : directives) switch(directive.type) {
+    case DirectiveType::IfCond:
+    case DirectiveType::Else:
+    case DirectiveType::ElCond:
+    case DirectiveType::EndIf:
+      includeCtx.emplace_back(directive);
+      importCtx.emplace_back(std::move(directive));
+      break;
+    case DirectiveType::Include:
+      res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
+        lvl);
 
-        // Case 3 never happens because we're in default mode, no need to handle it
-        switch(res.index()) {
-        case 0:
-          break;
-        case 2:
-          importCtx.emplace_back(std::get<std::string>(std::move(res)));
-          break;
-        case 1:;
-          includeCtx.emplace_back(std::move(directive.str));
-          break;
-        }
+      // Case 3 never happens because we're in default mode, no need to handle it
+      switch(res.index()) {
+      case 0:
         break;
-      default:
-        includeCtx.emplace_back(directive.str);
-        importCtx.emplace_back(std::move(directive.str));
+      case 2:
+        importCtx.emplace_back(std::get<std::string>(std::move(res)));
+        break;
+      case 1:
+        includeCtx.emplace_back(std::move(directive.str));
+        break;
       }
+      break;
+    default:
+      includeCtx.emplace_back(directive.str);
+      importCtx.emplace_back(std::move(directive.str));
     }
     fmt::format_to(std::back_inserter(preamble),
       "module;\n"
@@ -203,7 +195,6 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
   else if(lvl == StdImportLvl::Std) preamble += "import std;\n";
   return preamble;
 }
-
 std::string getTransitionalPreamble(const Opts& opts,
   std::vector<Directive>& directives, const File& file, bool& manualExport) {
   const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
@@ -213,34 +204,32 @@ std::string getTransitionalPreamble(const Opts& opts,
   StdImportLvl lvl{StdImportLvl::Unused};
   if(file.type == FileType::SrcWithMain) {
     MinimizeCondCtx moduleCtx;
-    for(Directive& directive : directives) {
-      switch(directive.type) {
-      case DirectiveType::IfCond:
-      case DirectiveType::ElCond:
-      case DirectiveType::Else:
-      case DirectiveType::EndIf:
-        includeCtx.emplace_back(directive);
-        moduleCtx.emplace_back(std::move(directive));
+    for(Directive& directive : directives) switch(directive.type) {
+    case DirectiveType::IfCond:
+    case DirectiveType::ElCond:
+    case DirectiveType::Else:
+    case DirectiveType::EndIf:
+      includeCtx.emplace_back(directive);
+      moduleCtx.emplace_back(std::move(directive));
+      break;
+    case DirectiveType::Include:
+      res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
+        lvl);
+      switch(res.index()) {
+      case 0: // Skip
+        continue;
+      case 2: // String
+        moduleCtx.emplace_back(std::get<std::string>(std::move(res)));
         break;
-      case DirectiveType::Include:
-        res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
-          lvl);
-        switch(res.index()) {
-        case 0: // Skip
-          continue;
-        case 2: // String
-          moduleCtx.emplace_back(std::get<std::string>(std::move(res)));
-          break;
-        case 3: // KeepForHdr
-          includeCtx.emplace_back(std::move(directive.str));
-          break;
-        case 1:; // KeepAsInclude
-        }
-        [[fallthrough]];
-      default:
-        includeCtx.emplace_back(directive.str);
-        moduleCtx.emplace_back(std::move(directive.str));
+      case 3: // KeepForHdr
+        includeCtx.emplace_back(std::move(directive.str));
+        break;
+      case 1:; // KeepAsInclude
       }
+      [[fallthrough]];
+    default:
+      includeCtx.emplace_back(directive.str);
+      moduleCtx.emplace_back(std::move(directive.str));
     }
     fmt::format_to(std::back_inserter(preamble), 
       "#ifdef {}\n"
@@ -333,7 +322,9 @@ std::string getTransitionalPreamble(const Opts& opts,
 
 bool insertPreamble(File& file, std::vector<Directive>&& directives, const Opts& opts) {
   bool manualExport{};
-  file.content.insert(0, opts.transitionalOpts ?
+  fmt::format_to(std::inserter(file.content, file.content.begin()),
+    "{}\n",
+    opts.transitionalOpts ?
     getTransitionalPreamble(opts, directives, file, manualExport) : 
     getDefaultPreamble(opts, directives, file, manualExport));
   return manualExport;

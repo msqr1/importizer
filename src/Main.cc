@@ -5,7 +5,6 @@
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/std.h>
-#include <cmath>
 #include <exception>
 
 void run(int argc, const char* const* argv) {

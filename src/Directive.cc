@@ -55,8 +55,8 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx):
     extraInfo.emplace<IncludeGuard>();
   }
 }
-Directive::Directive(Directive&& other) noexcept: 
-  type{other.type}, extraInfo(std::move(other.extraInfo)) {
+Directive::Directive(Directive&& other) noexcept: type{other.type},
+  extraInfo(std::move(other.extraInfo)) {
   switch(extraInfo.index()) {
   case 1: {
     IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
