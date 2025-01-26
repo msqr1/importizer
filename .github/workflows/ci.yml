@@ -4,6 +4,9 @@ on:
   - workflow_dispatch
 permissions:
   contents: write
+defaults:
+  run:
+    shell: bash
 jobs:
   build-test-upload:
     strategy:
