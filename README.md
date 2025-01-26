@@ -22,7 +22,8 @@ importizer supports two modularization scheme:
 - Execute:
 ```
 git clone --depth 1 https://github.com/msqr1/importizer && cd importizer &&
-mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . 
+mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release &&
+cmake --build . -j$(cmake -P ../GetProcCnt.cmake 2>&1)
 ```
 - The generated binary is called ```importizer``` in the current working directory
 

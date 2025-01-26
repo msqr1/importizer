@@ -24,11 +24,16 @@ jobs:
         uses: actions/checkout@v4.2.2
       - name: Build
         id: build
-        run: mkdir build && cd build && cmake .. -DBUILD_TESTS=ON && cmake --build .
+        run: >
+          mkdir build && cd build && cmake .. -DBUILD_TESTS=ON &&
+          cmake --build . -j$(cmake -P ${{ github.workspace }}/GetProcCnt.cmake 2>&1) &&
       - name: Test
         if: steps.build.outcome == 'success'
         id: test
-        run: cd ${{ github.workspace }}/build/test && ctest --output-on-failure -C Debug
+        run: >
+          cd ${{ github.workspace }}/build/test &&
+          ctest --output-on-failure -C Debug
+          -j$(cmake -P ${{ github.workspace }}/GetProcCnt.cmake 2>&1)
       - name: Upload built binary as artifact
         if: steps.test.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
