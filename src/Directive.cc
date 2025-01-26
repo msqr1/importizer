@@ -9,6 +9,8 @@
 #include <utility>
 #include <variant>
 
+IncludeInfo::IncludeInfo(bool isAngle, size_t startOffset, std::string_view includeStr): 
+  isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
 Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx): 
   str{std::move(str_)} {
   if(str.back() != '\n') str += '\n';

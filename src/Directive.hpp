@@ -26,10 +26,12 @@ public:
       IncludeGuardState::Looking : IncludeGuardState::NotLooking},
     pat{pat} {}
 };
-struct IncludeInfo {
+class IncludeInfo {
+public:
   bool isAngle;
   size_t startOffset;
   std::string_view includeStr;
+  IncludeInfo(bool isAngle, size_t startOffset, std::string_view includeStr);
 };
 
 // For ifndef and define that matches opts.includeGuardPat
