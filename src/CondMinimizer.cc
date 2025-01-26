@@ -1,7 +1,18 @@
 #include "CondMinimizer.hpp"
 #include "Directive.hpp"
-#include <vector>
+#include <string>
+#include <variant>
 
-void minimizeCond(std::vector<Directive>& directives) {
-  
+std::string minimizeCondToStr(MinimizeCondCtx& mcCtx) {
+  std::string rtn;
+  for(const std::variant<std::string, Directive>& i : mcCtx) {
+    switch(i.index()) {
+    case 0:
+      rtn += std::get<std::string>(i);
+      break;
+    case 1:
+      rtn += std::get<Directive>(i).str;
+    }
+  }
+  return rtn;
 }

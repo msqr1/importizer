@@ -1,4 +1,8 @@
 #include "Directive.hpp"
+#include <string>
 #include <vector>
+#include <variant>
 
-void minimizeCond(std::vector<Directive>& directives);
+using MinimizeCondCtx = std::vector<std::variant<std::string, Directive>>;
+
+std::string minimizeCondToStr(MinimizeCondCtx& mcCtx);

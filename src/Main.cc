@@ -1,5 +1,4 @@
 #include "OptProcessor.hpp"
-#include "Directive.hpp"
 #include "FileOp.hpp"
 #include "Preamble.hpp"
 #include "Preprocessor.hpp"
@@ -8,7 +7,6 @@
 #include <fmt/std.h>
 #include <cmath>
 #include <exception>
-#include <vector>
 
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv)};
@@ -27,12 +25,13 @@ void run(int argc, const char* const* argv) {
       t.mi_control, t.mi_exportKeyword, t.mi_exportBlockBegin,
       t.mi_exportBlockEnd));
   }
+
   for(File& file : getProcessableFiles(opts)) {
     if(opts.logCurrentFile) log("Current file: {}", file.relPath);
     readFromPath(file.path, file.content);
-    const std::vector<Directive> directives{
-      preprocess(opts.transitionalOpts, file, opts.includeGuardPat)};
-    bool manualExport{insertPreamble(file, directives, opts)};
+
+    bool manualExport{insertPreamble(file,
+      preprocess(opts.transitionalOpts, file, opts.includeGuardPat), opts)};
     if(file.type == FileType::Hdr) {
       file.relPath.replace_extension(opts.moduleInterfaceExt);
     }

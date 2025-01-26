@@ -7,10 +7,10 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <variant>
 
-IncludeInfo::IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr): 
-  isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
-Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx) : str{str_} {
+Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx): 
+  str{std::move(str_)} {
   if(str.back() != '\n') str += '\n';
   auto getWord = [](size_t start, std::string_view str) {
     while(str[start] == ' ') start++;
@@ -36,11 +36,12 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx) : str{str_}
       start = str.find('"') + 1;
       end = str.find('"', start);
     }
-    extraInfo.emplace<IncludeInfo>(start, isAngle, 
+    extraInfo.emplace<IncludeInfo>(isAngle, start,
       std::string_view(str.c_str() + start, end - start));
   }
   else if(directive == "endif") type = DirectiveType::EndIf;  
   else if(first2Chars == "if") type = DirectiveType::IfCond;
+  else if(directive == "else") type = DirectiveType::Else;
   else if(first2Chars == "el") type = DirectiveType::ElCond;
   else if(directive == "pragma" && getWord(1 + directive.length(), str) == "once") {
     type = DirectiveType::PragmaOnce;
@@ -52,10 +53,9 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx) : str{str_}
     extraInfo.emplace<IncludeGuard>();
   }
 }
-Directive::Directive(Directive&& other) noexcept {
-  type = other.type;
-  extraInfo = std::move(other.extraInfo);
-  switch(other.extraInfo.index()) {
+Directive::Directive(Directive&& other) noexcept: 
+  type{other.type}, extraInfo(std::move(other.extraInfo)) {
+  switch(extraInfo.index()) {
   case 1: {
     IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
     size_t len{includeInfo.includeStr.length()};
@@ -65,6 +65,14 @@ Directive::Directive(Directive&& other) noexcept {
   }
   default:
     str = std::move(other.str);
+  }
+}
+Directive::Directive(const Directive& other): type{other.type}, str{other.str},
+  extraInfo(other.extraInfo) {
+  if(std::holds_alternative<IncludeInfo>(extraInfo)) {
+    IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
+    size_t len{includeInfo.includeStr.length()};
+    includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
   }
 }
 namespace {

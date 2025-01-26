@@ -102,3 +102,7 @@ mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build 
     - Add the macro definition on the command line when compiling for the files that needed the macro (using ```-D...```).
     - Refactor the macro definition into a separate header, ```#include``` that where the macro is needed, and add the new header to the ```ignoredHeaders```.
     - Add the macro-containing headers to the ```ignoredHeaders``` (their paired sources, if available will be treated as if they have a ```main()```)
+
+# Some code writing rules
+- Max column width: 90
+- Put comment to denote what type after case label for variant switch

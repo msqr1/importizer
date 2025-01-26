@@ -16,7 +16,8 @@ enum class IncludeGuardState : char {
   GotDefine,
   GotEndif
 };
-struct IncludeGuardCtx {
+class IncludeGuardCtx {
+public:
   IncludeGuardState state;
   size_t counter;
   const re::Pattern& pat;
@@ -29,28 +30,34 @@ struct IncludeInfo {
   bool isAngle;
   size_t startOffset;
   std::string_view includeStr;
-  IncludeInfo(size_t startOffset, bool isAngle, std::string_view includeStr);
 };
 
 // For ifndef and define that matches opts.includeGuardPat
 struct IncludeGuard {};
+
+// For else statement, only possible if type is ElCond to differentiate from el(...)
+struct Else {};
 enum class DirectiveType : char {
   Define,
   Undef,
   IfCond,
+  Else,
   ElCond,
   EndIf,
   Include,
   PragmaOnce,
   Other
 };
-struct Directive {
+class Directive {
+public:
   DirectiveType type;
   std::string str;
 
+  // Only hold other information beside the type
   std::variant<std::monostate, IncludeInfo, IncludeGuard> extraInfo;
   Directive(std::string&& str, const IncludeGuardCtx& ctx);
   Directive(Directive&& other) noexcept;
+  Directive(const Directive& other);
 };
 enum class StdIncludeType : char {
   CppOrCwrap,

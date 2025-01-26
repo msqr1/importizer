@@ -119,6 +119,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
             }
           }
           [[fallthrough]];
+        case DirectiveType::Else:
         case DirectiveType::ElCond:
         case DirectiveType::Undef:
           directiveAction = DirectiveAction::Emplace;
