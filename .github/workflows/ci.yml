@@ -26,7 +26,7 @@ jobs:
         id: build
         run: >
           mkdir build && cd build && cmake .. -DBUILD_TESTS=ON &&
-          cmake --build . -j$(cmake -P ${{ github.workspace }}/GetProcCnt.cmake 2>&1) &&
+          cmake --build . -j$(cmake -P ${{ github.workspace }}/GetProcCnt.cmake 2>&1)
       - name: Test
         if: steps.build.outcome == 'success'
         id: test
