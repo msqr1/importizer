@@ -30,5 +30,5 @@ target_link_libraries(importizer pcre2-8)
 
 # For actions/upload-artifact
 add_custom_command(POST_BUILD TARGET importizer 
-  COMMAND ${CMAKE_COMMAND} -E create_symlink
-  $<TARGET_FILE:importizer> ${CMAKE_BINARY_DIR}/importizer)
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:importizer> 
+   ${CMAKE_BINARY_DIR}/importizer)

@@ -20,7 +20,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_link_options(-fno-omit-frame-pointer)
   endif()
 
-  # Also needs to be a link flag for test to pass
+  # Also needs to be a link flag for the test to pass
   set(CMAKE_REQUIRED_LINK_OPTIONS -fsanitize=address)
   check_cxx_compiler_flag("-fsanitize=address" ASAN)
   if(ASAN)

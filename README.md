@@ -19,11 +19,11 @@ importizer supports two modularization scheme:
 - You can try to download and run one of those for your OS from the continuous tag. Note that these are debug versions with sanitizers and others things turned on.
 
 ## Building from source
-- Execute:
+- Run:
 ```
 git clone --depth 1 https://github.com/msqr1/importizer && cd importizer &&
 mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release &&
-cmake --build . -j$(cmake -P ../GetProcCnt.cmake 2>&1)
+cmake --build . -j $(cmake -P ../nproc.cmake)
 ```
 - The generated binary is called ```importizer``` in the current working directory
 

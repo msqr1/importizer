@@ -7,23 +7,24 @@
 #include <version>
 
 namespace fs = std::filesystem;
+namespace {
 
 void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
   ifs.open(path, std::fstream::binary);
-  if(!ifs) {
+  if (!ifs) {
     fmt::println("CmpDir: Unable open {} for reading", path);
     throw 5;
   }
-  size_t fsize{fs::file_size(path)};
+  size_t fsize{ fs::file_size(path) };
 #ifdef __cpp_lib_string_resize_and_overwrite
   str.resize_and_overwrite(fsize, [&]([[maybe_unused]] char* _, [[maybe_unused]] size_t _1) {
     return fsize;
-  });
+    });
 #else
   str.resize(fsize);
 #endif
   ifs.read(str.data(), fsize);
-  if(!ifs) {
+  if (!ifs) {
     fmt::println("CmpDir: Unable to read from {}", path);
     throw 5;
   }
@@ -31,6 +32,8 @@ void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
   std::erase(str, '\r');
 #endif
   ifs.close();
+}
+
 }
 
 // Compares two directories for structure and file content
