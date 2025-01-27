@@ -4,6 +4,6 @@ module;
 export module Folder.IncludeOuterHdr;
 import Header;
 #else
-#include <Header.hpp>
+#include <Header.cppm>
 #endif
 

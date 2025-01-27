@@ -9,6 +9,7 @@
 #include <iterator>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -30,6 +31,12 @@ std::string path2ModuleName(const fs::path& inDirRel) {
     else if(c == '-') c = '_';
   }
   return pathStr;
+}
+std::string replaceIncludeExt(Directive&& include, std::string_view moduleInterfaceExt) {
+  const IncludeInfo& info{std::get<IncludeInfo>(include.extraInfo)};
+  fs::path includePath{info.includeStr};
+  includePath.replace_extension(moduleInterfaceExt);
+  return include.str.replace(info.startOffset, info.includeStr.length(), includePath);
 }
 
 // Just for the sake of making the lines not irritatingly long
@@ -71,8 +78,11 @@ enum class StdImportLvl : char {
 };
 struct Skip {};
 struct KeepAsInclude {};
+using ConvertToImport = std::string;
 struct KeepForHdr {};
-using IncludeHandleResult = std::variant<Skip, KeepAsInclude, std::string, KeepForHdr>;
+struct ReplaceExtForPair {};
+using IncludeHandleResult = std::variant<Skip, KeepAsInclude, ConvertToImport,
+  KeepForHdr, ReplaceExtForPair>;
 IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, 
   const File& file, const Opts& opts, StdImportLvl& lvl) {
   std::optional<fs::path> resolvedInclude{
@@ -85,7 +95,10 @@ IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& 
     // Skip include to import conversion of paired header
     if(file.type == FileType::PairedSrc) {
       includePath.replace_extension(opts.srcExt);
-      if(includePath == file.relPath) return Skip{};
+      if(includePath == file.relPath) {
+        if(opts.transitionalOpts) return ReplaceExtForPair{};
+        return Skip{};
+      }
       includePath.replace_extension(opts.hdrExt);
     }
 
@@ -102,7 +115,7 @@ IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& 
         StdImportLvl::Std : StdImportLvl::StdCompat;
     }
     if(opts.transitionalOpts) return KeepForHdr{};
-    else return Skip{};
+    return Skip{};
   }
   return KeepAsInclude{};
 }
@@ -127,10 +140,10 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
         lvl);
 
-      // We're in default mode, no need to handle switch case 3
+      // We're in default mode, no need to handle switch case 3 or 4
       switch(res.index()) {
-      case 2: // String
-        mcCtx.emplace_back(std::get<std::string>(std::move(res)));
+      case 2: // ConvertToImport
+        mcCtx.emplace_back(std::get<ConvertToImport>(std::move(res)));
         continue;
       case 0: // Skip
         continue;
@@ -159,12 +172,12 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
         lvl);
 
-      // Case 3 never happens because we're in default mode, no need to handle it
+      // We're in default mode, no need to handle switch case 3 or 4
       switch(res.index()) {
       case 0:
         break;
       case 2:
-        importCtx.emplace_back(std::get<std::string>(std::move(res)));
+        importCtx.emplace_back(std::get<ConvertToImport>(std::move(res)));
         break;
       case 1:
         includeCtx.emplace_back(std::move(directive.str));
@@ -215,15 +228,19 @@ std::string getTransitionalPreamble(const Opts& opts,
     case DirectiveType::Include:
       res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
         lvl);
+
+      // PairedSrc is not going in here, no need to handle case 4
       switch(res.index()) {
       case 0: // Skip
         continue;
-      case 2: // String
-        moduleCtx.emplace_back(std::get<std::string>(std::move(res)));
-        break;
+      case 2: // ConvertToImport
+        includeCtx.emplace_back(
+          replaceIncludeExt(std::move(directive), opts.moduleInterfaceExt));
+        moduleCtx.emplace_back(std::get<ConvertToImport>(std::move(res)));
+        continue;
       case 3: // KeepForHdr
         includeCtx.emplace_back(std::move(directive.str));
-        break;
+        continue;
       case 1:; // KeepAsInclude
       }
       [[fallthrough]];
@@ -266,9 +283,14 @@ std::string getTransitionalPreamble(const Opts& opts,
       case 3: // KeepForHdr
         includeCtx.emplace_back(std::move(directive.str));
         break;
-      case 2: // String
-        includeCtx.emplace_back(std::move(directive.str));
-        importCtx.emplace_back(std::get<std::string>(std::move(res)));
+      case 2: // ConvertToImport
+        includeCtx.emplace_back(
+          replaceIncludeExt(std::move(directive), opts.moduleInterfaceExt));
+        importCtx.emplace_back(std::get<ConvertToImport>(std::move(res)));
+        break;
+      case 4: // ReplaceExtForPair
+        includeCtx.emplace_back(
+          replaceIncludeExt(std::move(directive), opts.moduleInterfaceExt));
       }
       break;
     case DirectiveType::PragmaOnce:

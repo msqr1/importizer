@@ -1,0 +1,5 @@
+inDir = "Input"
+outDir = "CorrectOutput"
+srcExt = ".cc"
+[Transitional]
+backCompatHdrs = true

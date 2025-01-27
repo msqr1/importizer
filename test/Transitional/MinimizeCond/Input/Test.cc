@@ -11,3 +11,8 @@
 #elifdef b 
 #else 
 #endif
+#ifdef COND3
+// Do something
+#else
+// Do something else
+#endif

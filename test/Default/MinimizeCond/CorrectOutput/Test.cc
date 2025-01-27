@@ -8,9 +8,13 @@ module;
 #ifdef COND2
 #define a
 #endif
+#ifdef COND3
+#endif
 export module Test;
 #ifdef COND2
 #define a
+#endif
+#ifdef COND3
 #endif
 
 #ifdef COND 
@@ -23,4 +27,9 @@ export module Test;
 #define a
 #elifdef b 
 #else 
+#endif
+#ifdef COND3
+// Do something
+#else
+// Do something else
 #endif

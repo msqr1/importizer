@@ -124,7 +124,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   const toml::table transitionalConfig{getTypeCk<toml::table>(config, "Transitional")};
   opts.transitionalOpts.emplace();
   opts.transitionalOpts->backCompatHdrs =
-    getOrDefault(transitionalConfig, "backCompatHdrs", true);
+    getOrDefault(transitionalConfig, "backCompatHdrs", false);
   opts.transitionalOpts->mi_control = 
     getOrDefault(transitionalConfig, "mi_control", "CPP_MODULES");
   opts.transitionalOpts->mi_exportKeyword =

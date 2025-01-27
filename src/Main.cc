@@ -24,15 +24,18 @@ void run(int argc, const char* const* argv) {
       t.mi_control, t.mi_exportKeyword, t.mi_exportBlockBegin,
       t.mi_exportBlockEnd));
   }
-
   for(File& file : getProcessableFiles(opts)) {
     if(opts.logCurrentFile) log("Current file: {}", file.relPath);
     readFromPath(file.path, file.content);
-
     bool manualExport{insertPreamble(file,
       preprocess(opts.transitionalOpts, file, opts.includeGuardPat), opts)};
     if(file.type == FileType::Hdr) {
-      file.relPath.replace_extension(opts.moduleInterfaceExt);
+      if(opts.transitionalOpts && opts.transitionalOpts->backCompatHdrs) {
+        writeToPath(opts.outDir / file.relPath, fmt::format(
+          "#include \"{}\"\n",
+          file.relPath.replace_extension(opts.moduleInterfaceExt).filename()));
+      }
+      else file.relPath.replace_extension(opts.moduleInterfaceExt);
     }
     if(manualExport) log("{}", file.relPath);
     writeToPath(opts.outDir / file.relPath, file.content);
