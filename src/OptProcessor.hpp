@@ -6,6 +6,7 @@
 #include <vector>
 
 struct TransitionalOpts {
+  bool backCompatHdrs;
   std::string mi_control;
   std::string mi_exportKeyword;
   std::string mi_exportBlockBegin;
@@ -16,13 +17,13 @@ struct Opts {
   bool stdIncludeToImport;
   bool logCurrentFile;
   re::Pattern includeGuardPat;
-  std::vector<std::filesystem::path> includePaths;
-  std::vector<std::filesystem::path> ignoredHeaders;
   std::filesystem::path inDir;
   std::filesystem::path outDir;
   std::string hdrExt;
   std::string srcExt;
   std::string moduleInterfaceExt;
+  std::vector<std::filesystem::path> includePaths;
+  std::vector<std::filesystem::path> ignoredHeaders;
   std::optional<TransitionalOpts> transitionalOpts;
 };
 Opts getOptsOrExit(int argc, const char* const* argv);

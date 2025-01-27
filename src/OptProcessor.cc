@@ -53,24 +53,24 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   parser.add_argument("-c", "--config")
     .help("Path to a TOML configuration file")
     .default_value("importizer.toml");
-  parser.add_argument("-o", "--outDir")
-    .help("Output directory");
+  parser.add_argument("--std-include-to-import")
+    .help("Convert standard includes to import std or import std.compat")
+    .implicit_value(true);
+  parser.add_argument("-l", "--log-current-file")
+    .help("Print the current file being processed")
+    .implicit_value(true);
+  parser.add_argument("--include-guard-pat")
+    .help("Regex to match include guards. #pragma once is processed by default");
   parser.add_argument("-i", "--inDir")
     .help("Input directory");
+  parser.add_argument("-o", "--outDir")
+    .help("Output directory");
   parser.add_argument("--header-ext")
     .help("Header file extension");
   parser.add_argument("--source-ext")
     .help("Source (also module implementation unit) file extension");
   parser.add_argument("--module-interface-ext")
     .help("Module interface unit file extension");
-  parser.add_argument("--include-guard-pat")
-    .help("Regex for the include guard identifier used in the project");
-  parser.add_argument("-l", "--log-current-file")
-    .help("Print the current file being processed")
-    .implicit_value(true);
-  parser.add_argument("--std-include-to-import")
-    .help("Convert standard includes to import std or import std.compat")
-    .implicit_value(true);
   parser.parse_args(argc, argv);
   const fs::path configPath{parser.get("-c")};
   const toml::parse_result parseRes{toml::parse_file(configPath.native())};
@@ -82,28 +82,28 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   }
   const toml::table config{std::move(parseRes.table())};
   const fs::path configDir{configPath.parent_path()};
-  std::optional<fs::path> path{parser.present("-i")};
-  opts.inDir = path ? 
-    std::move(*path) : configDir / getMustHave<std::string>(config, "inDir");
-  path = parser.present("-o");
-  opts.outDir = path ? 
-    std::move(*path) : configDir / getMustHave<std::string>(config, "outDir");
-  std::optional<bool> boolean{parser.present<bool>("-l")};
-  opts.logCurrentFile = 
-    boolean ? *boolean : getOrDefault(config, "logCurrentFile", false);
-  boolean = parser.present<bool>("--std-include-to-import");
+  std::optional<bool> boolean{parser.present<bool>("--std-include-to-import")};
   opts.stdIncludeToImport = 
     boolean ? *boolean : getOrDefault(config, "stdIncludeToImport", false);
-  std::optional<std::string> str{parser.present("--header-ext")};
+  boolean = parser.present<bool>("-l");
+  opts.logCurrentFile = 
+    boolean ? *boolean : getOrDefault(config, "logCurrentFile", false);
+  std::optional<fs::path> path{parser.present("-i")};
+  opts.inDir = path ?
+    std::move(*path) : configDir / getMustHave<std::string>(config, "inDir");
+  path = parser.present("-o");
+  opts.outDir = path ?
+    std::move(*path) : configDir / getMustHave<std::string>(config, "outDir");
+  std::optional<std::string> str{parser.present("--include-guard-pat")};
+  opts.includeGuardPat.reset(str ? std::move(*str) :
+    getOrDefault(config, "includeGuardPat", R"([^\s]+_H)"));
+  str = parser.present("--header-ext");
   opts.hdrExt = str ? std::move(*str) : getOrDefault(config, "hdrExt", ".hpp");
   str = parser.present("--source-ext");
   opts.srcExt = str ? std::move(*str) : getOrDefault(config, "srcExt", ".cpp");
   str = parser.present("--module-interface-ext");
   opts.moduleInterfaceExt =
     str ? std::move(*str) : getOrDefault(config, "moduleInterfaceExt", ".cppm");
-  str = parser.present("--include-guard-pat");
-  opts.includeGuardPat.reset(str ? std::move(*str) :
-    getOrDefault(config, "includeGuardPat", R"([^\s]+_H)"));
   auto getPathArr = [&](std::string_view key,
     std::vector<fs::path>& container, const std::optional<fs::path>& prefix) -> void {
     if(!config.contains(key)) return;
@@ -123,6 +123,8 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   }
   const toml::table transitionalConfig{getTypeCk<toml::table>(config, "Transitional")};
   opts.transitionalOpts.emplace();
+  opts.transitionalOpts->backCompatHdrs =
+    getOrDefault(transitionalConfig, "backCompatHdrs", true);
   opts.transitionalOpts->mi_control = 
     getOrDefault(transitionalConfig, "mi_control", "CPP_MODULES");
   opts.transitionalOpts->mi_exportKeyword =

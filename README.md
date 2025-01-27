@@ -36,18 +36,19 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 - Arguments will take precedence over those in the config file
 - Paths are relative to the current working directory
 
-| Name                    | Description                                                                         |
-|-------------------------|-------------------------------------------------------------------------------------|
+| Name                    | Description                                                                     |
+|-------------------------|---------------------------------------------------------------------------------|
 | -c --config             | Path to TOML configuration file (```.toml```), default to ```importizer.toml``` |
-| -h --help               | Print help and exit                                                                 |
-| -v --version            | Print version and exit                                                              |
-| -o --outDir             | Output directory (required if not specified in the config file)                     |
-| -i --inDir              | Input directory (required if not specified in the config file)                      |
-| --header-ext            | Header file extension                                                               |
-| --source-ext            | Source (also module implementation unit) file extension                             |
-| --module-interface-ext  | Module interface unit file extension                                                |
-| -l --log-current-file   | Print the current file being processed                                              |
-| --std-include-to-import | Convert standard includes to ```import std``` or ```import std.compat```            |
+| -h --help               | Print help and exit                                                             |
+| -v --version            | Print version and exit                                                          |
+| --std-include-to-import | Convert standard includes to ```import std``` or ```import std.compat```        |
+| -l --log-current-file   | Print the current file being processed                                          |
+| --include-guard-pat     | Regex to match include guards. #pragma once is processed by default             |
+| -i --inDir              | Input directory (required if not specified in the config file)                  |
+| -o --outDir             | Output directory (required if not specified in the config file)                 |
+| --header-ext            | Header file extension                                                           |
+| --source-ext            | Source (also module implementation unit) file extension                         |
+| --module-interface-ext  | Module interface unit file extension                                            |
 
 # TOML setting file
 - Paths are relative to the config file by default, unless otherwise specified
@@ -57,26 +58,28 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 
 | Setting name       | Description                                                                                                                                 | Value type   | Default value  |
 |--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
+| stdIncludeToImport | As in CLI                                                                                                                                   | Boolean      | ```false```    |
+| logCurrentFile     | As in CLI                                                                                                                                   | Boolean      | ```false```    |
+| includeGuardPat    | As in CLI                                                                                                                                   | String       | ```[^\s]+_H``` |
 | inDir              | As in CLI (required if not specified on the command line)                                                                                   | String       | N/A            |
 | outDir             | As in CLI (required if not specified on the command line)                                                                                   | String       | N/A            |
 | hdrExt             | As in CLI                                                                                                                                   | String       | ```.hpp```     |
 | srcExt             | As in CLI                                                                                                                                   | String       | ```.cpp```     |
 | moduleInterfaceExt | As in CLI                                                                                                                                   | String       | ```.cppm```    |
-| includeGuardPat    | As in CLI                                                                                                                                   | String       | ```[^\s]+_H``` |
 | includePaths       | Include paths searched when converting include to import                                                                                    | String array | ```[]```       |
-| ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | Boolean      | ```false```    |
-| stdIncludeToImport | As in CLI                                                                                                                                   | Boolean      | ```false```    |
-| logCurrentFile     | As in CLI                                                                                                                                   | Boolean      | ```false```    |
+| ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | String array | ```false```    |
 
 - Transitional modularization settings (mi_ prefix = macro identifier):
 
-| Setting name        | Description                                | Value type | Default value      |
-|---------------------|--------------------------------------------|------------|--------------------|
-| mi_control          | Header-module switching macro identifier   | string     | ```CPP_MODULES```  |
-| mi_exportKeyword    | Exported symbol macro identifier           | string     | ```EXPORT```       |
-| mi_exportBlockBegin | Export block begin macro identifier        | string     | ```BEGIN_EXPORT``` |
-| mi_exportBlockEnd   | Export block end macro identifier          | string     | ```END_EXPORT```   |
-| exportMacrosPath    | Export macros file path relative to outDir | string     | ```Export.hpp```   |
+| Setting name        | Description                                                                                                                                                | Value type | Default value      |
+|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|--------------------|
+| backCompatHdrs      | Generate headers that include the module file to preserve #include for users. Note that in the codebase itself the module file is still included directly. | Boolean    | ```false```        |
+| mi_control          | Header-module switching macro identifier                                                                                                                   | string     | ```CPP_MODULES```  |
+| mi_exportKeyword    | Exported symbol macro identifier                                                                                                                           | string     | ```EXPORT```       |
+| mi_exportBlockBegin | Export block begin macro identifier                                                                                                                        | string     | ```BEGIN_EXPORT``` |
+| mi_exportBlockEnd   | Export block end macro identifier                                                                                                                          | string     | ```END_EXPORT```   |
+| exportMacrosPath    | Export macros file path relative to outDir                                                                                                                 | string     | ```Export.hpp```   |
+
 
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 
@@ -104,6 +107,8 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
     - Refactor the macro definition into a separate header, ```#include``` that where the macro is needed, and add the new header to the ```ignoredHeaders```.
     - Add the macro-containing headers to the ```ignoredHeaders``` (their paired sources, if available will be treated as if they have a ```main()```)
 
-# Some code writing rules
+# Some code style rule
 - Max column width: 90
 - Put comment to denote what type after case label for variant switch
+- Keep settings' order in the README, the option struct, and their value-checking order the same.
+- To determine order for new settings, optimize for the option struct size
