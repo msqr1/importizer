@@ -11,15 +11,16 @@ namespace {
 
 void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
   ifs.open(path, std::fstream::binary);
-  if (!ifs) {
+  if(!ifs) {
     fmt::println("CmpDir: Unable open {} for reading", path);
     throw 5;
   }
   size_t fsize{ fs::file_size(path) };
 #ifdef __cpp_lib_string_resize_and_overwrite
-  str.resize_and_overwrite(fsize, [&]([[maybe_unused]] char* _, [[maybe_unused]] size_t _1) {
+  str.resize_and_overwrite(fsize, [fsize]
+    ([[maybe_unused]] char* _, [[maybe_unused]] size_t _1) {
     return fsize;
-    });
+  });
 #else
   str.resize(fsize);
 #endif
@@ -55,7 +56,7 @@ int main([[maybe_unused]] int argc, const char* const* argv) {
     relPath = refPath.lexically_relative(reference);
     cmpPath = compared / relPath;
     if(!fs::exists(cmpPath)) {
-      fmt::println("File or directory doesn't exist: {}", relPath);
+      fmt::println("CmpDir: File or directory doesn't exist: {}", relPath);
       res = 1;
       continue;
     }
@@ -71,9 +72,10 @@ int main([[maybe_unused]] int argc, const char* const* argv) {
     catch(...) {
       return 2;
     }
-    if(cmpContent == refContent) continue;
-    fmt::println("CmpDir: Mismatched content for: {}. Got:\n{}", relPath, cmpContent);
-    res = 1;
+    if(cmpContent != refContent) {
+      fmt::println("CmpDir: Mismatched content for: {}. Got:\n{}", relPath, cmpContent);
+      res = 1;
+    }
   }
   return res;
 }
