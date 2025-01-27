@@ -4,9 +4,6 @@ on:
   - workflow_dispatch
 permissions:
   contents: write
-defaults:
-  run:
-    shell: bash
 jobs:
   build-test-upload:
     strategy:
@@ -36,7 +33,7 @@ jobs:
         run: >
           cd ${{ github.workspace }}/build/test &&
           ctest --output-on-failure -C Debug
-          -j$(cmake -P ${{ github.workspace }}/nproc.cmake)
+          -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
       - name: Upload built binary as artifact
         if: steps.test.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
