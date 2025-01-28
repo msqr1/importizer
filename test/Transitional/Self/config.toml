@@ -1,0 +1,4 @@
+inDir = "../../../src"
+outDir = "CorrectOutput"
+srcExt = ".cc"
+[Transitional]

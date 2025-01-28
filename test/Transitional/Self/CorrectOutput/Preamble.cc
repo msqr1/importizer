@@ -1,9 +1,6 @@
-#include "Preamble.hpp"
-#include "OptProcessor.hpp"
-#include "Directive.hpp"
-#include "CondMinimizer.hpp"
-#include "FileOp.hpp"
-#include "Preprocessor.hpp"
+#include "Export.hpp"
+#ifdef CPP_MODULES
+module;
 #include <fmt/base.h>
 #include <cstddef>
 #include <iterator>
@@ -14,6 +11,31 @@
 #include <variant>
 #include <vector>
 #include <filesystem>
+module Preamble;
+import OptProcessor;
+import Directive;
+import CondMinimizer;
+import FileOp;
+import Preprocessor;
+#else
+#include "Preamble.cppm"
+#include "OptProcessor.cppm"
+#include "Directive.cppm"
+#include "CondMinimizer.cppm"
+#include "FileOp.cppm"
+#include "Preprocessor.cppm"
+#include <fmt/base.h>
+#include <cstddef>
+#include <iterator>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <variant>
+#include <vector>
+#include <filesystem>
+#endif
+
 
 namespace fs = std::filesystem;
 

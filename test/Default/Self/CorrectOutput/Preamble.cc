@@ -1,9 +1,4 @@
-#include "Preamble.hpp"
-#include "OptProcessor.hpp"
-#include "Directive.hpp"
-#include "CondMinimizer.hpp"
-#include "FileOp.hpp"
-#include "Preprocessor.hpp"
+module;
 #include <fmt/base.h>
 #include <cstddef>
 #include <iterator>
@@ -14,6 +9,13 @@
 #include <variant>
 #include <vector>
 #include <filesystem>
+module Preamble;
+import OptProcessor;
+import Directive;
+import CondMinimizer;
+import FileOp;
+import Preprocessor;
+
 
 namespace fs = std::filesystem;
 
@@ -34,8 +36,9 @@ std::string path2ModuleName(const fs::path& inDirRel) {
 }
 std::string replaceIncludeExt(Directive&& include, std::string_view moduleInterfaceExt) {
   const IncludeInfo& info{std::get<IncludeInfo>(include.extraInfo)};
-  return include.str.replace(info.startOffset, info.includeStr.length(),
-    fs::path(info.includeStr).replace_extension(moduleInterfaceExt).string());
+  fs::path includePath{info.includeStr};
+  includePath.replace_extension(moduleInterfaceExt);
+  return include.str.replace(info.startOffset, info.includeStr.length(), includePath.string());
 }
 
 // Just for the sake of making the lines not irritatingly long
@@ -307,14 +310,13 @@ std::string getTransitionalPreamble(const Opts& opts,
     }
 
     // generic_string() to convert '\' to '/'
-    fs::path exportMacroPath{};
     fmt::format_to(std::back_inserter(preamble),
       "#include \"{}\"\n"
       "#ifdef {}\n"
       "module;\n"
       "{}",
       ("." / opts.transitionalOpts->exportMacrosPath)
-      .lexically_relative("." / file.relPath.parent_path()).generic_string(),
+      .lexically_relative("." / file.relPath).generic_string(),
       opts.transitionalOpts->mi_control, minimizeCondToStr(GMFCtx));
 
     // Convert header and unpaired source into module interface unit. Without 
