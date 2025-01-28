@@ -36,7 +36,7 @@ std::string replaceIncludeExt(Directive&& include, std::string_view moduleInterf
   const IncludeInfo& info{std::get<IncludeInfo>(include.extraInfo)};
   fs::path includePath{info.includeStr};
   includePath.replace_extension(moduleInterfaceExt);
-  return include.str.replace(info.startOffset, info.includeStr.length(), includePath);
+  return include.str.replace(info.startOffset, info.includeStr.length(), includePath.string());
 }
 
 // Just for the sake of making the lines not irritatingly long

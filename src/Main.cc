@@ -6,7 +6,9 @@
 #include <fmt/format.h>
 #include <fmt/std.h>
 #include <exception>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv)};
   if(opts.transitionalOpts) {
@@ -24,6 +26,7 @@ void run(int argc, const char* const* argv) {
       t.mi_control, t.mi_exportKeyword, t.mi_exportBlockBegin,
       t.mi_exportBlockEnd));
   }
+  fs::path backCompatHdr;
   for(File& file : getProcessableFiles(opts)) {
     if(opts.logCurrentFile) log("Current file: {}", file.relPath);
     readFromPath(file.path, file.content);
@@ -31,7 +34,8 @@ void run(int argc, const char* const* argv) {
       preprocess(opts.transitionalOpts, file, opts.includeGuardPat), opts)};
     if(file.type == FileType::Hdr) {
       if(opts.transitionalOpts && opts.transitionalOpts->backCompatHdrs) {
-        writeToPath(opts.outDir / file.relPath, fmt::format(
+        backCompatHdr = opts.outDir / file.relPath;
+        writeToPath(backCompatHdr, fmt::format(
           "#include \"{}\"",
           file.relPath.replace_extension(opts.moduleInterfaceExt).filename()));
       }
