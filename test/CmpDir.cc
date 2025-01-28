@@ -25,7 +25,7 @@ void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
   str.resize(fsize);
 #endif
   ifs.read(str.data(), fsize);
-  if (!ifs) {
+  if(!ifs) {
     fmt::println("CmpDir: Unable to read from {}", path);
     throw 5;
   }

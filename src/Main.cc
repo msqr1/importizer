@@ -32,7 +32,7 @@ void run(int argc, const char* const* argv) {
     if(file.type == FileType::Hdr) {
       if(opts.transitionalOpts && opts.transitionalOpts->backCompatHdrs) {
         writeToPath(opts.outDir / file.relPath, fmt::format(
-          "#include \"{}\"\n",
+          "#include \"{}\"",
           file.relPath.replace_extension(opts.moduleInterfaceExt).filename()));
       }
       else file.relPath.replace_extension(opts.moduleInterfaceExt);

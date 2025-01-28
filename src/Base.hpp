@@ -21,11 +21,11 @@ template <typename... T> struct exitWithErr {
   // Custom source location is here to give correct error location
   [[noreturn]] exitWithErr(const std::source_location& loc, fmt::format_string<T...> fmt
     , T&&... args) {
-    std::filesystem::path p{loc.file_name()};
-    fmt::print(stderr, "Exception thrown at {}({}:{}): ", p.filename(), loc.line(), loc.column());
+    fmt::print(stderr, "Exception thrown at {}({}:{}): ",
+      std::filesystem::path(loc.file_name()).filename(), loc.line(), loc.column());
     fmt::println(stderr, fmt, std::forward<T>(args)...);
     throw 1;
-  }  
+  }
 };
 template <typename... T> exitWithErr(fmt::format_string<T...> fmt, T&&...)
   -> exitWithErr<T...>;

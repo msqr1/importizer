@@ -229,7 +229,6 @@ std::string getTransitionalPreamble(const Opts& opts,
       res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
         lvl);
 
-      // PairedSrc is not going in here, no need to handle case 4
       switch(res.index()) {
       case 0: // Skip
         continue;

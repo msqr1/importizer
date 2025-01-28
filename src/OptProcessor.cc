@@ -49,7 +49,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
   ap::ArgumentParser parser("importizer", "0.0.1");
   parser.add_description("C++ include to import converter. Takes you on the way of" 
-    "modularization!");
+    " modularization!");
   parser.add_argument("-c", "--config")
     .help("Path to a TOML configuration file")
     .default_value("importizer.toml");

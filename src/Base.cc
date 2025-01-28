@@ -4,4 +4,3 @@ bool verbose;
 void exitOK() {
   throw 0;
 }
-
