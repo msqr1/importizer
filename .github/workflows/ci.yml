@@ -5,7 +5,7 @@ on:
 permissions:
   contents: write
 jobs:
-  build-test-upload:
+  build-upload-test:
     strategy:
       matrix:
         os:
@@ -27,22 +27,23 @@ jobs:
         run: >
           mkdir build && cd build && cmake .. -DBUILD_TESTS=ON &&
           cmake --build . -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
-      - name: Test
-        if: steps.build.outcome == 'success'
-        id: test
-        run: >
-          cd ${{ github.workspace }}/build/test &&
-          ctest --output-on-failure -C Debug
-          -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
       - name: Upload built binary as artifact
-        if: steps.test.outcome == 'success'
+        id: upload
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
         with:
           name: importizer-${{ matrix.os }}
           path: ${{ github.workspace }}/build/importizer
           retention-days: 1
+      - name: Test
+        if: steps.upload.outcome == 'success'
+        id: test
+        run: >
+          cd ${{ github.workspace }}/build/test &&
+          ctest --output-on-failure -C Debug
+          -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
   download-and-release-continuous:
-    needs: build-test-upload
+    needs: build-upload-test
     runs-on: ubuntu-24.04
     steps:
       - name: Download built binaries
