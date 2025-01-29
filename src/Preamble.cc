@@ -102,7 +102,7 @@ IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& 
     }
 
     // Don't include to import ignored headers, keep them as #include
-    for(const fs::path& p : opts.ignoredHeaders) {
+    for(const fs::path& p : opts.ignoredHdrs) {
       if(includePath == p) return KeepAsInclude{};
     }
     return "import " + path2ModuleName(includePath) + ";\n";

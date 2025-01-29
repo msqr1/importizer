@@ -36,19 +36,21 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 - Arguments will take precedence over those in the config file
 - Paths are relative to the current working directory
 
-| Name                    | Description                                                                     |
-|-------------------------|---------------------------------------------------------------------------------|
-| -c --config             | Path to TOML configuration file (```.toml```), default to ```importizer.toml``` |
-| -h --help               | Print help and exit                                                             |
-| -v --version            | Print version and exit                                                          |
-| --std-include-to-import | Convert standard includes to ```import std``` or ```import std.compat```        |
-| -l --log-current-file   | Print the current file being processed                                          |
-| --include-guard-pat     | Regex to match include guards. #pragma once is processed by default             |
-| -i --inDir              | Input directory (required if not specified in the config file)                  |
-| -o --outDir             | Output directory (required if not specified in the config file)                 |
-| --header-ext            | Header file extension                                                           |
-| --source-ext            | Source (also module implementation unit) file extension                         |
-| --module-interface-ext  | Module interface unit file extension                                            |
+| Name                    | Description                                                                                                                                 |
+|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| -c --config             | Path to TOML configuration file (```.toml```), default to ```importizer.toml```                                                             |
+| -h --help               | Print help and exit                                                                                                                         |
+| -v --version            | Print version and exit                                                                                                                      |
+| --std-include-to-import | Convert standard includes to ```import std``` or ```import std.compat```                                                                    |
+| -l --log-current-file   | Print the current file being processed                                                                                                      |
+| --include-guard-pat     | Regex to match include guards. #pragma once is processed by default                                                                         |
+| -i --inDir              | Input directory (required if not specified in the config file)                                                                              |
+| -o --outDir             | Output directory (required if not specified in the config file)                                                                             |
+| --hdr-ext               | Header file extension                                                                                                                       |
+| --src-ext               | Source (also module implementation unit) file extension                                                                                     |
+| --module-interface-ext  | Module interface unit file extension                                                                                                        |
+| includePaths            | Include paths searched when converting include to import                                                                                    |
+| ignoredHdrs          | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` |
 
 # TOML setting file
 - Paths are relative to the config file by default, unless otherwise specified
@@ -56,18 +58,18 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 - Value types and default values are in the section below
 - General settings:
 
-| Setting name       | Description                                                                                                                                 | Value type   | Default value  |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
-| stdIncludeToImport | As in CLI                                                                                                                                   | Boolean      | ```false```    |
-| logCurrentFile     | As in CLI                                                                                                                                   | Boolean      | ```false```    |
-| includeGuardPat    | As in CLI                                                                                                                                   | String       | ```[^\s]+_H``` |
-| inDir              | As in CLI (required if not specified on the command line)                                                                                   | String       | N/A            |
-| outDir             | As in CLI (required if not specified on the command line)                                                                                   | String       | N/A            |
-| hdrExt             | As in CLI                                                                                                                                   | String       | ```.hpp```     |
-| srcExt             | As in CLI                                                                                                                                   | String       | ```.cpp```     |
-| moduleInterfaceExt | As in CLI                                                                                                                                   | String       | ```.cppm```    |
-| includePaths       | Include paths searched when converting include to import                                                                                    | String array | ```[]```       |
-| ignoredHeaders     | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | String array | ```false```    |
+| Setting name       | Description                                               | Value type   | Default value  |
+|--------------------|-----------------------------------------------------------|--------------|----------------|
+| stdIncludeToImport | As in CLI                                                 | Boolean      | ```false```    |
+| logCurrentFile     | As in CLI                                                 | Boolean      | ```false```    |
+| includeGuardPat    | As in CLI                                                 | String       | ```[^\s]+_H``` |
+| inDir              | As in CLI (required if not specified on the command line) | String       | N/A            |
+| outDir             | As in CLI (required if not specified on the command line) | String       | N/A            |
+| hdrExt             | As in CLI                                                 | String       | ```.hpp```     |
+| srcExt             | As in CLI                                                 | String       | ```.cpp```     |
+| moduleInterfaceExt | As in CLI                                                 | String       | ```.cppm```    |
+| includePaths       | As in CLI                                                 | String array | ```[]```       |
+| ignoredHdrs     | As in CLI                                                 | String array | ```[]```       |
 
 - Transitional modularization settings (mi_ prefix = macro identifier):
 
@@ -79,7 +81,6 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 | mi_exportBlockBegin | Export block begin macro identifier                                                                                                                        | string     | ```BEGIN_EXPORT``` |
 | mi_exportBlockEnd   | Export block end macro identifier                                                                                                                          | string     | ```END_EXPORT```   |
 | exportMacrosPath    | Export macros file path relative to outDir                                                                                                                 | string     | ```Export.hpp```   |
-
 
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp```. 
@@ -104,8 +105,8 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 # Macros
 - Modules, unlike headers, were explicitly designed to be encapsulated from macros and so they wouldn't leak macros. If a macro is defined in a header, and the header get modularized, it will only exist in that module only. Some ways to remedy:
     - Add the macro definition on the command line when compiling for the files that needed the macro (using ```-D...```).
-    - Refactor the macro definition into a separate header, ```#include``` that where the macro is needed, and add the new header to the ```ignoredHeaders```.
-    - Add the macro-containing headers to the ```ignoredHeaders``` (their paired sources, if available will be treated as if they have a ```main()```)
+    - Refactor the macro definition into a separate header, ```#include``` that where the macro is needed, and add the new header to the ```ignoredHdrs```.
+    - Add the macro-containing headers to the ```ignoredHdrs``` (their paired sources, if available will be treated as if they have a ```main()```)
 
 # Some code style rule
 - Max column width: 90

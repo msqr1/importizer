@@ -23,7 +23,7 @@ struct Opts {
   std::string srcExt;
   std::string moduleInterfaceExt;
   std::vector<std::filesystem::path> includePaths;
-  std::vector<std::filesystem::path> ignoredHeaders;
+  std::vector<std::filesystem::path> ignoredHdrs;
   std::optional<TransitionalOpts> transitionalOpts;
 };
 Opts getOptsOrExit(int argc, const char* const* argv);

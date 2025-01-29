@@ -49,7 +49,7 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
     ext = relPath.extension();
     File file;
     if(ext == opts.hdrExt) {
-      for(const fs::path& p : opts.ignoredHeaders) {
+      for(const fs::path& p : opts.ignoredHdrs) {
         if(relPath == p) {
           relPath = opts.outDir / relPath;
           fs::create_directories(relPath.parent_path());
@@ -65,7 +65,7 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
       if(fs::exists(path)) file.type = FileType::PairedSrc;
       path.replace_extension(opts.srcExt);
       relPath.replace_extension(opts.hdrExt);
-      for(const fs::path& p : opts.ignoredHeaders) {
+      for(const fs::path& p : opts.ignoredHdrs) {
         if(relPath == p) {
           file.type = FileType::SrcWithMain;
           break;

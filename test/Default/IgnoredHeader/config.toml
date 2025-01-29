@@ -1,4 +1,4 @@
 inDir = "Input"
 outDir = "CorrectOutput"
 srcExt = ".cc"
-ignoredHeaders = ["IgnoredHdr.hpp"]
+ignoredHdrs = ["IgnoredHdr.hpp"]

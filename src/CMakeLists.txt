@@ -8,7 +8,7 @@ fmt/include/fmt/base.h fmt/include/fmt/std.h)
 list(TRANSFORM 3rdPartyHeaders PREPEND "../3rdParty/")
 
 # Project headers that should not be changed frequently
-set(stableHeaders Base.hpp Regex.hpp)
+set(stableHeaders Base.hpp Regex.hpp FileOp.hpp)
 foreach(header IN LISTS 3rdPartyHeaders stableHeaders)
   target_precompile_headers(importizer PRIVATE ${header})
 endforeach()

@@ -1,6 +1,7 @@
 #include "OptProcessor.hpp"
 #include "Base.hpp"
 #include "../3rdParty/Argparse.hpp"
+#include <algorithm>
 #include <fmt/std.h>
 #include <toml++/toml.hpp>
 #include <utility>
@@ -32,11 +33,19 @@ auto getTypeCk(const toml::table& tbl, std::string_view key) {
 #pragma GCC diagnostic pop
 }
 template<typename T> 
-auto getOrDefault(const toml::table& tbl, std::string_view key, T&& defaultVal) {
-  if(tbl.contains(key)) return getTypeCk<T>(tbl, key);
+auto getOrDefault(const ap::ArgumentParser& parser, std::string_view cliKey,
+  const std::optional<toml::table>& tbl, std::string_view configKey, T&& defaultVal) {
+  if(parser.is_used(cliKey)) {
+    if constexpr(std::is_convertible_v<T, std::string>) {
+      return parser.get<std::string>(cliKey);
+    }
+    else parser.get<T>(cliKey);
+  }
+  else if(tbl && tbl->contains(configKey)) return getTypeCk<T>(*tbl, configKey);
   if constexpr(std::is_convertible_v<T, std::string>) return std::string{defaultVal};
   else return std::forward<T>(defaultVal);
 }
+
 template<typename T> 
 auto getMustHave(const toml::table& tbl, std::string_view key) {
   if(!tbl.contains(key)) exitWithErr("{} must be specified", key);
@@ -47,32 +56,55 @@ auto getMustHave(const toml::table& tbl, std::string_view key) {
 
 Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
-  ap::ArgumentParser parser("importizer", "0.0.1");
-  parser.add_description("C++ include to import converter. Takes you on the way of" 
+  ap::ArgumentParser defaultParser("importizer", "0.0.1");
+  defaultParser.add_description("C++ include to import converter. Takes you on the way of" 
     " modularization!");
-  parser.add_argument("-c", "--config")
+  defaultParser.add_argument("-c", "--config")
     .help("Path to a TOML configuration file")
     .default_value("importizer.toml");
-  parser.add_argument("--std-include-to-import")
+  defaultParser.add_argument("--std-include-to-import")
     .help("Convert standard includes to import std or import std.compat")
     .implicit_value(true);
-  parser.add_argument("-l", "--log-current-file")
+  defaultParser.add_argument("-l", "--log-current-file")
     .help("Print the current file being processed")
     .implicit_value(true);
-  parser.add_argument("--include-guard-pat")
+  defaultParser.add_argument("--include-guard-pat")
     .help("Regex to match include guards. #pragma once is processed by default");
-  parser.add_argument("-i", "--inDir")
+  defaultParser.add_argument("-i", "--inDir")
     .help("Input directory");
-  parser.add_argument("-o", "--outDir")
+  defaultParser.add_argument("-o", "--outDir")
     .help("Output directory");
-  parser.add_argument("--header-ext")
+  defaultParser.add_argument("--hdr-ext")
     .help("Header file extension");
-  parser.add_argument("--source-ext")
+  defaultParser.add_argument("--src-ext")
     .help("Source (also module implementation unit) file extension");
-  parser.add_argument("--module-interface-ext")
+  defaultParser.add_argument("--module-interface-ext")
     .help("Module interface unit file extension");
-  parser.parse_args(argc, argv);
-  const fs::path configPath{parser.get("-c")};
+  defaultParser.add_argument("--include-paths")
+    .help("Include paths searched when converting include to import")
+    .nargs(ap::nargs_pattern::at_least_one);
+  defaultParser.add_argument("--ignored-hdrs")
+    .help("Paths relative to ```inDir``` of header files to ignore. Their paired sources,"
+      " if available, will be treated as if they have a ```main()```")
+    .nargs(ap::nargs_pattern::at_least_one);
+  ap::ArgumentParser transitionalParser{"transitional", "", ap::default_arguments::help};
+  transitionalParser.add_argument("--back-compat-hdrs")
+    .help("Generate headers that include the module file to preserve #include for users." 
+      " Note that in the codebase itself the module file is still included directly.")
+    .implicit_value(true);
+  transitionalParser.add_argument("--mi-control")
+    .help("Header-module switching macro identifier");
+  transitionalParser.add_argument("--mi-export-keyword")
+    .help("Exported symbol macro identifier");
+  transitionalParser.add_argument("--mi-export-block-begin")
+    .help("Export block begin macro identifier");
+  transitionalParser.add_argument("--mi-export-block-end")
+    .help("Export block end macro identifier");
+  transitionalParser.add_argument("--export-macros-path")
+    .help("Export macros file path relative to outDir");
+  defaultParser.add_subparser(transitionalParser);
+  defaultParser.parse_args(argc, argv);
+  const fs::path configPath{defaultParser.get("-c")};
   const toml::parse_result parseRes{toml::parse_file(configPath.native())};
   if(!parseRes) {
     const toml::parse_error err{parseRes.error()};
@@ -82,28 +114,26 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   }
   const toml::table config{std::move(parseRes.table())};
   const fs::path configDir{configPath.parent_path()};
-  std::optional<bool> boolean{parser.present<bool>("--std-include-to-import")};
-  opts.stdIncludeToImport = 
-    boolean ? *boolean : getOrDefault(config, "stdIncludeToImport", false);
-  boolean = parser.present<bool>("-l");
-  opts.logCurrentFile = 
-    boolean ? *boolean : getOrDefault(config, "logCurrentFile", false);
-  std::optional<fs::path> path{parser.present("-i")};
+  opts.stdIncludeToImport = getOrDefault(defaultParser, "--std-include-to-import",
+    config, "stdIncludeToImport", false);
+  log("stdIncludeToImport: {}", opts.stdIncludeToImport);
+  opts.logCurrentFile = getOrDefault(defaultParser, "--log-current-file", config,
+    "logCurrentFile", false);
+  log("logCurrentFile: {}", false);
+  std::optional<fs::path> path{defaultParser.present("-i")};
   opts.inDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "inDir");
-  path = parser.present("-o");
+  path = defaultParser.present("-o");
   opts.outDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "outDir");
-  std::optional<std::string> str{parser.present("--include-guard-pat")};
-  opts.includeGuardPat.reset(str ? std::move(*str) :
-    getOrDefault(config, "includeGuardPat", R"([^\s]+_H)"));
-  str = parser.present("--header-ext");
-  opts.hdrExt = str ? std::move(*str) : getOrDefault(config, "hdrExt", ".hpp");
-  str = parser.present("--source-ext");
-  opts.srcExt = str ? std::move(*str) : getOrDefault(config, "srcExt", ".cpp");
-  str = parser.present("--module-interface-ext");
-  opts.moduleInterfaceExt =
-    str ? std::move(*str) : getOrDefault(config, "moduleInterfaceExt", ".cppm");
+  opts.includeGuardPat.reset(getOrDefault(defaultParser, "--include-guard-pat",
+    config, "includeGuardPat", R"([^\s]+_H)"));
+  opts.hdrExt = getOrDefault(defaultParser, "--hdr-ext", config, "hdrExt", ".hpp");
+  log("hdrExt: {}", opts.hdrExt);
+  opts.srcExt = getOrDefault(defaultParser, "--src-ext", config, "srcExt", ".cpp");
+  log("srcExt: {}", opts.srcExt);
+  opts.moduleInterfaceExt = getOrDefault(defaultParser, "--module-interface-ext", config,
+    "moduleInterfaceExt", ".cppm");
   auto getPathArr = [&](std::string_view key,
     std::vector<fs::path>& container, const std::optional<fs::path>& prefix) -> void {
     if(!config.contains(key)) return;
@@ -115,25 +145,47 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
         fs::path(elem.ref<std::string>()));
     }
   };
-  getPathArr("includePaths", opts.includePaths, configDir);
-  getPathArr("ignoredHeaders", opts.ignoredHeaders, std::nullopt);
-  if(!config.contains("Transitional")) {
-    opts.transitionalOpts = std::nullopt;
+  auto strRval = [](std::string& s){ return std::move(s); };
+  std::optional<std::vector<std::string>> pathArr{
+    defaultParser.present<std::vector<std::string>>("--include-paths")};
+  if(pathArr) {
+    opts.includePaths.resize(pathArr->size());
+    std::transform(pathArr->begin(), pathArr->end(), opts.includePaths.begin(), strRval);
+  }
+  else getPathArr("includePaths", opts.includePaths, configDir);
+  pathArr = defaultParser.present<std::vector<std::string>>("--ignored-hdrs");
+  if(pathArr) {
+    opts.ignoredHdrs.resize(pathArr->size());
+    std::transform(pathArr->begin(), pathArr->end(), opts.ignoredHdrs.begin(), strRval);
+  }
+  else getPathArr("ignoredHdrs", opts.ignoredHdrs, std::nullopt);
+  opts.transitionalOpts.emplace();
+  if(!(config.contains("Transtional") ||
+    defaultParser.is_subcommand_used("transitional"))) {
     return opts;
   }
-  const toml::table transitionalConfig{getTypeCk<toml::table>(config, "Transitional")};
-  opts.transitionalOpts.emplace();
+  std::optional<toml::table> transitionalConfig;
+  if(config.contains("Transtional")) {
+    transitionalConfig = getTypeCk<toml::table>(config, "Transitional");
+  }
+  else transitionalConfig = std::nullopt;
   opts.transitionalOpts->backCompatHdrs =
-    getOrDefault(transitionalConfig, "backCompatHdrs", false);
-  opts.transitionalOpts->mi_control = 
-    getOrDefault(transitionalConfig, "mi_control", "CPP_MODULES");
+    getOrDefault(transitionalParser, "--back-compat-hdrs", transitionalConfig,
+    "backCompatHdrs", false);
+  opts.transitionalOpts->mi_control =
+    getOrDefault(transitionalParser, "--mi-control", transitionalConfig,
+    "mi_control", "CPP_MODULES");
   opts.transitionalOpts->mi_exportKeyword =
-    getOrDefault(transitionalConfig, "mi_exportKeyword", "EXPORT");
+    getOrDefault(transitionalParser, "--mi-export-keyword", transitionalConfig,
+    "mi_exportKeyword", "EXPORT");
   opts.transitionalOpts->mi_exportBlockBegin = 
-    getOrDefault(transitionalConfig, "mi_exportBlockBegin", "BEGIN_EXPORT");
+    getOrDefault(transitionalParser, "--mi-export-block-begin", transitionalConfig,
+    "mi_exportBlockBegin", "BEGIN_EXPORT");
   opts.transitionalOpts->mi_exportBlockEnd = 
-    getOrDefault(transitionalConfig, "mi_exportBlockEnd", "END_EXPORT");
+    getOrDefault(transitionalParser, "--mi-export-block-end", transitionalConfig,
+    "mi_exportBlockEnd", "END_EXPORT");
   opts.transitionalOpts->exportMacrosPath =
-    getOrDefault(transitionalConfig, "exportMacrosPath", "Export.hpp");
+    getOrDefault(transitionalParser, "--export-macros-path", transitionalConfig,
+    "exportMacrosPath", "Export.hpp");
   return opts;
 }
