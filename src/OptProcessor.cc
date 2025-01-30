@@ -62,7 +62,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   defaultParser.add_argument("-c", "--config")
     .help("Path to a TOML configuration file")
     .default_value("importizer.toml");
-  defaultParser.add_argument("--std-include-to-import")
+  defaultParser.add_argument("-s", "--std-include-to-import")
     .help("Convert standard includes to import std or import std.compat")
     .implicit_value(true);
   defaultParser.add_argument("-l", "--log-current-file")
@@ -70,9 +70,9 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     .implicit_value(true);
   defaultParser.add_argument("--include-guard-pat")
     .help("Regex to match include guards. #pragma once is processed by default");
-  defaultParser.add_argument("-i", "--inDir")
+  defaultParser.add_argument("-i", "--in-dir")
     .help("Input directory");
-  defaultParser.add_argument("-o", "--outDir")
+  defaultParser.add_argument("-o", "--out-dir")
     .help("Output directory");
   defaultParser.add_argument("--hdr-ext")
     .help("Header file extension");
@@ -88,7 +88,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
       " if available, will be treated as if they have a ```main()```")
     .nargs(ap::nargs_pattern::at_least_one);
   ap::ArgumentParser transitionalParser{"transitional", "", ap::default_arguments::help};
-  transitionalParser.add_argument("--back-compat-hdrs")
+  transitionalParser.add_argument("-b", "--back-compat-hdrs")
     .help("Generate headers that include the module file to preserve #include for users." 
       " Note that in the codebase itself the module file is still included directly.")
     .implicit_value(true);
@@ -114,10 +114,9 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   }
   const toml::table config{std::move(parseRes.table())};
   const fs::path configDir{configPath.parent_path()};
-  opts.stdIncludeToImport = getOrDefault(defaultParser, "--std-include-to-import",
-    config, "stdIncludeToImport", false);
-  opts.logCurrentFile = getOrDefault(defaultParser, "--log-current-file", config,
-    "logCurrentFile", false);
+  opts.stdIncludeToImport = getOrDefault(defaultParser, "-s", config,
+    "stdIncludeToImport", false);
+  opts.logCurrentFile = getOrDefault(defaultParser, "-l", config, "logCurrentFile", false);
   std::optional<fs::path> path{defaultParser.present("-i")};
   opts.inDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "inDir");
@@ -178,8 +177,8 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     tConfig = getTypeCk<toml::table>(config, "Transitional");
   }
   else tConfig = std::nullopt;
-  tOpts.backCompatHdrs = getOrDefault(transitionalParser, "--back-compat-hdrs",
-    tConfig, "backCompatHdrs", false);
+  tOpts.backCompatHdrs = getOrDefault(transitionalParser, "-b", tConfig,
+    "backCompatHdrs", false);
   tOpts.mi_control = getOrDefault(transitionalParser, "--mi-control", tConfig,
   "mi_control", "CPP_MODULES");
   tOpts.mi_exportKeyword = getOrDefault(transitionalParser, "--mi-export-keyword", tConfig,
