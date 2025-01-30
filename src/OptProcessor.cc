@@ -116,10 +116,8 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   const fs::path configDir{configPath.parent_path()};
   opts.stdIncludeToImport = getOrDefault(defaultParser, "--std-include-to-import",
     config, "stdIncludeToImport", false);
-  log("stdIncludeToImport: {}", opts.stdIncludeToImport);
   opts.logCurrentFile = getOrDefault(defaultParser, "--log-current-file", config,
     "logCurrentFile", false);
-  log("logCurrentFile: {}", false);
   std::optional<fs::path> path{defaultParser.present("-i")};
   opts.inDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "inDir");
@@ -129,9 +127,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   opts.includeGuardPat.reset(getOrDefault(defaultParser, "--include-guard-pat",
     config, "includeGuardPat", R"([^\s]+_H)"));
   opts.hdrExt = getOrDefault(defaultParser, "--hdr-ext", config, "hdrExt", ".hpp");
-  log("hdrExt: {}", opts.hdrExt);
   opts.srcExt = getOrDefault(defaultParser, "--src-ext", config, "srcExt", ".cpp");
-  log("srcExt: {}", opts.srcExt);
   opts.moduleInterfaceExt = getOrDefault(defaultParser, "--module-interface-ext", config,
     "moduleInterfaceExt", ".cppm");
   auto getPathArr = [&](std::string_view key,
@@ -159,33 +155,51 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     std::transform(pathArr->begin(), pathArr->end(), opts.ignoredHdrs.begin(), strRval);
   }
   else getPathArr("ignoredHdrs", opts.ignoredHdrs, std::nullopt);
-  opts.transitionalOpts.emplace();
-  if(!(config.contains("Transtional") ||
+  /*
+  log(
+    "stdIncludeToImport: {}\n"
+    "logCurrentFile: {}\n"
+    "inDir: {}\n"
+    "outDir: {}\n"
+    "hdrExt: {}\n"
+    "srcExt: {}\n"
+    "moduleInterfaceExt: {}\n",
+    opts.stdIncludeToImport, opts.logCurrentFile, opts.inDir, opts.outDir, opts.hdrExt,
+    opts.srcExt, opts.moduleInterfaceExt);
+  */
+  if(!(config.contains("Transitional") ||
     defaultParser.is_subcommand_used("transitional"))) {
+    opts.transitionalOpts = std::nullopt;
     return opts;
   }
-  std::optional<toml::table> transitionalConfig;
-  if(config.contains("Transtional")) {
-    transitionalConfig = getTypeCk<toml::table>(config, "Transitional");
+  TransitionalOpts& tOpts{opts.transitionalOpts.emplace()};
+  std::optional<toml::table> tConfig;
+  if(config.contains("Transitional")) {
+    tConfig = getTypeCk<toml::table>(config, "Transitional");
   }
-  else transitionalConfig = std::nullopt;
-  opts.transitionalOpts->backCompatHdrs =
-    getOrDefault(transitionalParser, "--back-compat-hdrs", transitionalConfig,
-    "backCompatHdrs", false);
-  opts.transitionalOpts->mi_control =
-    getOrDefault(transitionalParser, "--mi-control", transitionalConfig,
-    "mi_control", "CPP_MODULES");
-  opts.transitionalOpts->mi_exportKeyword =
-    getOrDefault(transitionalParser, "--mi-export-keyword", transitionalConfig,
+  else tConfig = std::nullopt;
+  tOpts.backCompatHdrs = getOrDefault(transitionalParser, "--back-compat-hdrs",
+    tConfig, "backCompatHdrs", false);
+  tOpts.mi_control = getOrDefault(transitionalParser, "--mi-control", tConfig,
+  "mi_control", "CPP_MODULES");
+  tOpts.mi_exportKeyword = getOrDefault(transitionalParser, "--mi-export-keyword", tConfig,
     "mi_exportKeyword", "EXPORT");
-  opts.transitionalOpts->mi_exportBlockBegin = 
-    getOrDefault(transitionalParser, "--mi-export-block-begin", transitionalConfig,
-    "mi_exportBlockBegin", "BEGIN_EXPORT");
-  opts.transitionalOpts->mi_exportBlockEnd = 
-    getOrDefault(transitionalParser, "--mi-export-block-end", transitionalConfig,
-    "mi_exportBlockEnd", "END_EXPORT");
-  opts.transitionalOpts->exportMacrosPath =
-    getOrDefault(transitionalParser, "--export-macros-path", transitionalConfig,
-    "exportMacrosPath", "Export.hpp");
+  tOpts.mi_exportBlockBegin =  getOrDefault(transitionalParser, "--mi-export-block-begin",
+    tConfig, "mi_exportBlockBegin", "BEGIN_EXPORT");
+  tOpts.mi_exportBlockEnd =  getOrDefault(transitionalParser, "--mi-export-block-end",
+    tConfig, "mi_exportBlockEnd", "END_EXPORT");
+  tOpts.exportMacrosPath = getOrDefault(transitionalParser, "--export-macros-path",
+    tConfig, "exportMacrosPath", "Export.hpp");
+  /*
+  log(
+    "backCompatHdrs: {}\n"
+    "mi_control: {}\n"
+    "mi_exportKeyword: {}\n"
+    "mi_exportBlockBegin: {}\n"
+    "mi_exportBlockEnd: {}\n"
+    "exportMacrosPath: {}\n",
+    tOpts.backCompatHdrs, tOpts.mi_control, tOpts.mi_exportKeyword, tOpts.mi_exportBlockBegin,
+    tOpts.mi_exportBlockEnd, tOpts.exportMacrosPath);
+  */
   return opts;
 }
