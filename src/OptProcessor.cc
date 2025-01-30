@@ -56,34 +56,34 @@ auto getMustHave(const toml::table& tbl, std::string_view key) {
 
 Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
-  ap::ArgumentParser defaultParser("importizer", "0.0.1");
-  defaultParser.add_description("C++ include to import converter. Takes you on the way of"
+  ap::ArgumentParser generalParser("importizer", "0.0.1");
+  generalParser.add_description("C++ include to import converter. Takes you on the way of"
     " modularization!");
-  defaultParser.add_argument("-c", "--config")
+  generalParser.add_argument("-c", "--config")
     .help("Path to a TOML configuration file")
     .default_value("importizer.toml");
-  defaultParser.add_argument("-s", "--std-include-to-import")
+  generalParser.add_argument("-s", "--std-include-to-import")
     .help("Convert standard includes to import std or import std.compat")
     .implicit_value(true);
-  defaultParser.add_argument("-l", "--log-current-file")
+  generalParser.add_argument("-l", "--log-current-file")
     .help("Print the current file being processed")
     .implicit_value(true);
-  defaultParser.add_argument("--include-guard-pat")
+  generalParser.add_argument("--include-guard-pat")
     .help("Regex to match include guards. #pragma once is processed by default");
-  defaultParser.add_argument("-i", "--in-dir")
+  generalParser.add_argument("-i", "--in-dir")
     .help("Input directory");
-  defaultParser.add_argument("-o", "--out-dir")
+  generalParser.add_argument("-o", "--out-dir")
     .help("Output directory");
-  defaultParser.add_argument("--hdr-ext")
+  generalParser.add_argument("--hdr-ext")
     .help("Header file extension");
-  defaultParser.add_argument("--src-ext")
+  generalParser.add_argument("--src-ext")
     .help("Source (also module implementation unit) file extension");
-  defaultParser.add_argument("--module-interface-ext")
+  generalParser.add_argument("--module-interface-ext")
     .help("Module interface unit file extension");
-  defaultParser.add_argument("--include-paths")
+  generalParser.add_argument("--include-paths")
     .help("Include paths searched when converting include to import")
     .nargs(ap::nargs_pattern::at_least_one);
-  defaultParser.add_argument("--ignored-hdrs")
+  generalParser.add_argument("--ignored-hdrs")
     .help("Paths relative to ```inDir``` of header files to ignore. Their paired sources,"
       " if available, will be treated as if they have a ```main()```")
     .nargs(ap::nargs_pattern::at_least_one);
@@ -102,9 +102,9 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     .help("Export block end macro identifier");
   transitionalParser.add_argument("--export-macros-path")
     .help("Export macros file path relative to outDir");
-  defaultParser.add_subparser(transitionalParser);
-  defaultParser.parse_args(argc, argv);
-  const fs::path configPath{defaultParser.get("-c")};
+  generalParser.add_subparser(transitionalParser);
+  generalParser.parse_args(argc, argv);
+  const fs::path configPath{generalParser.get("-c")};
   const toml::parse_result parseRes{toml::parse_file(configPath.native())};
   if(!parseRes) {
     const toml::parse_error err{parseRes.error()};
@@ -114,20 +114,20 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   }
   const toml::table config{std::move(parseRes.table())};
   const fs::path configDir{configPath.parent_path()};
-  opts.stdIncludeToImport = getOrDefault(defaultParser, "-s", config,
+  opts.stdIncludeToImport = getOrDefault(generalParser, "-s", config,
     "stdIncludeToImport", false);
-  opts.logCurrentFile = getOrDefault(defaultParser, "-l", config, "logCurrentFile", false);
-  std::optional<fs::path> path{defaultParser.present("-i")};
+  opts.logCurrentFile = getOrDefault(generalParser, "-l", config, "logCurrentFile", false);
+  std::optional<fs::path> path{generalParser.present("-i")};
   opts.inDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "inDir");
-  path = defaultParser.present("-o");
+  path = generalParser.present("-o");
   opts.outDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "outDir");
-  opts.includeGuardPat.reset(getOrDefault(defaultParser, "--include-guard-pat",
+  opts.includeGuardPat.reset(getOrDefault(generalParser, "--include-guard-pat",
     config, "includeGuardPat", R"([^\s]+_H)"));
-  opts.hdrExt = getOrDefault(defaultParser, "--hdr-ext", config, "hdrExt", ".hpp");
-  opts.srcExt = getOrDefault(defaultParser, "--src-ext", config, "srcExt", ".cpp");
-  opts.moduleInterfaceExt = getOrDefault(defaultParser, "--module-interface-ext", config,
+  opts.hdrExt = getOrDefault(generalParser, "--hdr-ext", config, "hdrExt", ".hpp");
+  opts.srcExt = getOrDefault(generalParser, "--src-ext", config, "srcExt", ".cpp");
+  opts.moduleInterfaceExt = getOrDefault(generalParser, "--module-interface-ext", config,
     "moduleInterfaceExt", ".cppm");
   auto getPathArr = [&](std::string_view key,
     std::vector<fs::path>& container, const std::optional<fs::path>& prefix) -> void {
@@ -142,13 +142,13 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   };
   auto strRval = [](std::string& s){ return std::move(s); };
   std::optional<std::vector<std::string>> pathArr{
-    defaultParser.present<std::vector<std::string>>("--include-paths")};
+    generalParser.present<std::vector<std::string>>("--include-paths")};
   if(pathArr) {
     opts.includePaths.resize(pathArr->size());
     std::transform(pathArr->begin(), pathArr->end(), opts.includePaths.begin(), strRval);
   }
   else getPathArr("includePaths", opts.includePaths, configDir);
-  pathArr = defaultParser.present<std::vector<std::string>>("--ignored-hdrs");
+  pathArr = generalParser.present<std::vector<std::string>>("--ignored-hdrs");
   if(pathArr) {
     opts.ignoredHdrs.resize(pathArr->size());
     std::transform(pathArr->begin(), pathArr->end(), opts.ignoredHdrs.begin(), strRval);
@@ -167,7 +167,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     opts.srcExt, opts.moduleInterfaceExt);
   */
   if(!(config.contains("Transitional") ||
-    defaultParser.is_subcommand_used("transitional"))) {
+    generalParser.is_subcommand_used("transitional"))) {
     opts.transitionalOpts = std::nullopt;
     return opts;
   }

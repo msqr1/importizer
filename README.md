@@ -8,8 +8,8 @@ What does it do?
 - **The only thing left to do is manually choosing what to export.**
 
 importizer supports two modularization scheme:
-- Complete modularization: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
-- Transtitional modularization: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing ```[Transitional]``` in the setting file or ```transitional``` on the command line.
+- **Complete modularization**: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
+- **Transtitional modularization**: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing ```[Transitional]``` in the setting file or ```transitional``` on the command line.
 
 # Getting started
 ## Prebuilt executable
@@ -33,9 +33,9 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
 - For default mode, just add ```export``` (value of ```mi_exportKeyword``` for transitional mode) around the entities that you want to be exported.
 
-# Settings
-- Arguments will take precedence over those in the config file
-- Paths are relative to the current working directory unless specified otherwise
+# Settings/Testing
+- CLI settings will override config file settings
+- Paths are relative to the current working directory for CLI settings, and relative to the config file for TOML settings.
 - General flags/settings:
 
 | CLI flag name               | TOML setting name  | Description                                                                                                                                 | Value type   | Default value  |
