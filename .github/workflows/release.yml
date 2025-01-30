@@ -1,0 +1,58 @@
+name: Run test and upload to the latest release
+on:
+  - workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  build-upload-test:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-22.04-arm
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - windows-2019
+          - windows-2022
+          - macos-13
+          - macos-14
+          - macos-15
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+      - name: Build
+        id: build
+        run: >
+          mkdir build && cd build &&
+          cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release &&
+          cmake --build . -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
+      - name: Upload built binary as artifact
+        id: upload
+        if: steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: importizer-${{ matrix.os }}
+          path: ${{ github.workspace }}/build/importizer
+          retention-days: 1
+      - name: Test
+        if: steps.upload.outcome == 'success'
+        id: test
+        run: >
+          cd ${{ github.workspace }}/build/test &&
+          ctest --output-on-failure -C Release
+          -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
+  download-and-release-continuous:
+    needs: build-upload-test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download built binaries
+        uses: actions/download-artifact@v4.1.8
+      - name: Rename binaries
+        run: for a in */; do mv "$a/importizer" "$a/$(basename $a)"; done
+      - name: Upload to tag
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          tag_name: 1.0.0
+          body: First release, yay!
+          files: ${{ github.workspace }}/importizer*/importizer*

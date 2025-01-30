@@ -2,12 +2,10 @@
 Do you need help converting your header-based codebase to C++20 modules?
 importizer can help.
 
-Please note that the tool not very stable, I would love feedback for improvement before 1.0.0!
-
 What does it do?
 - Convert ```#include``` statements to ```import``` statement, as well as creating the GMF
 - Takes you on the way to modularizing your codebase.
-- **You would still have to manually choose what to export after running.**
+- **The only thing left to do is manually choosing what to export.**
 
 importizer supports two modularization scheme:
 - Complete modularization: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
@@ -15,8 +13,9 @@ importizer supports two modularization scheme:
 
 # Getting started
 ## Prebuilt executable
-- There hasn't been an official release yet.
-- You can try to download and run one of those for your OS from the continuous tag. Note that these are debug versions with sanitizers and others things turned on.
+- Choose your OS
+- Download from the continuous tag. These are ***debug** versions with sanitizers and no optimization.
+- Download from other release tags. These are **release** versions with optimizations.
 
 ## Building from source
 - Run:
@@ -28,9 +27,11 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 - The generated binary is called ```importizer``` in the current working directory
 
 ## Usage
-- Create a ```importizer.toml``` in the directory of the executable (or somewhere else and specify ```-c```), add some settings, and run the program.
+- Specify command line arguments or
+- Create a ```importizer.toml``` in the directory of the executable (or somewhere else and specify ```-c```), add some settings.
+- Run the program
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
--  For default mode, just add ```export``` (value of ```mi_exportKeyword``` for transitional mode) around the entities that you want to be exported.
+- For default mode, just add ```export``` (value of ```mi_exportKeyword``` for transitional mode) around the entities that you want to be exported.
 
 # CLI
 - Arguments will take precedence over those in the config file
@@ -70,18 +71,18 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 - Value types and default values are in the section below
 - General settings:
 
-| Name               | Description                                               | Value type   | Default value  |
-|--------------------|-----------------------------------------------------------|--------------|----------------|
-| stdIncludeToImport | As in CLI                                                 | Boolean      | ```false```    |
-| logCurrentFile     | As in CLI                                                 | Boolean      | ```false```    |
-| includeGuardPat    | As in CLI                                                 | String       | ```[^\s]+_H``` |
-| inDir              | As in CLI (required if not specified on the command line) | String       | N/A            |
-| outDir             | As in CLI (required if not specified on the command line) | String       | N/A            |
-| hdrExt             | As in CLI                                                 | String       | ```.hpp```     |
-| srcExt             | As in CLI                                                 | String       | ```.cpp```     |
-| moduleInterfaceExt | As in CLI                                                 | String       | ```.cppm```    |
-| includePaths       | As in CLI                                                 | String array | ```[]```       |
-| ignoredHdrs        | As in CLI                                                 | String array | ```[]```       |
+| Name               | Description                                    | Value type   | Default value  |
+|--------------------|------------------------------------------------|--------------|----------------|
+| stdIncludeToImport | As in CLI                                      | Boolean      | ```false```    |
+| logCurrentFile     | As in CLI                                      | Boolean      | ```false```    |
+| includeGuardPat    | As in CLI                                      | String       | ```[^\s]+_H``` |
+| inDir              | As in CLI (required if unspecified on the CLI) | String       | N/A            |
+| outDir             | As in CLI (required if unspecified on the CLI) | String       | N/A            |
+| hdrExt             | As in CLI                                      | String       | ```.hpp```     |
+| srcExt             | As in CLI                                      | String       | ```.cpp```     |
+| moduleInterfaceExt | As in CLI                                      | String       | ```.cppm```    |
+| includePaths       | As in CLI                                      | String array | ```[]```       |
+| ignoredHdrs        | As in CLI                                      | String array | ```[]```       |
 
 - Transitional modularization settings (mi_ prefix = macro identifier):
 
@@ -116,9 +117,9 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 
 # Macros
 - Modules, unlike headers, were explicitly designed to be encapsulated from macros and so they wouldn't leak macros. If a macro is defined in a header, and the header get modularized, it will only exist in that module only. Some ways to remedy:
-    - Add the macro definition on the command line when compiling for the files that needed the macro (using ```-D...```).
-    - Refactor the macro definition into a separate header, ```#include``` that where the macro is needed, and add the new header to the ```ignoredHdrs```.
-    - Add the macro-containing headers to the ```ignoredHdrs``` (their paired sources, if available will be treated as if they have a ```main()```)
+  - Add the macro definition on the command line when compiling for the files that needed the macro (using ```-D...```).
+  - Refactor the macro definition into a separate header, ```#include``` that where the macro is needed, and add the new header to the ```ignoredHdrs```.
+  - Add the macro-containing headers to the ```ignoredHdrs``` (their paired sources, if available will be treated as if they have a ```main()```)
 
 # Some code style rule
 - Max column width: 90
