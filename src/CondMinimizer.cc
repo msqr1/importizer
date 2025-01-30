@@ -1,25 +1,36 @@
 #include "CondMinimizer.hpp"
 #include "Directive.hpp"
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <variant>
 
+std::optional<size_t> getIfSkip(const MinimizeCondCtx& mcCtx, size_t currentIdx) {
+  currentIdx++;
+  for(; currentIdx < mcCtx.size(); currentIdx++) {
+    if(std::holds_alternative<CondDirective>(mcCtx[currentIdx])) {
+      if(std::get<CondDirective>(mcCtx[currentIdx]).type == DirectiveType::EndIf) {
+        return currentIdx;
+      }
+    }
+    else return std::nullopt;
+  }
+  return std::nullopt;
+}
 std::string minimizeCondToStr(MinimizeCondCtx& mcCtx) {
   std::string rtn;
   for(size_t i{}; i < mcCtx.size(); i++) switch(mcCtx[i].index()) {
-  case 0:
+  case 0: // std::string
     rtn += std::get<std::string>(mcCtx[i]);
     break;
-  case 1:
-    const Directive& current{std::get<Directive>(mcCtx[i])};
-    if(i < mcCtx.size() - 1 && std::holds_alternative<Directive>(mcCtx[i + 1])) {
-      const Directive& next{std::get<Directive>(mcCtx[i + 1])};
+  case 1: // CondDirective
+    const CondDirective& current{std::get<CondDirective>(mcCtx[i])};
+    if(i < mcCtx.size() - 1 && std::holds_alternative<CondDirective>(mcCtx[i + 1])) {
+      const CondDirective& next{std::get<CondDirective>(mcCtx[i + 1])};
       switch(current.type) {
       case DirectiveType::IfCond:
-        if(next.type == DirectiveType::EndIf) {
-          i++;
-          continue;
-        }
+        if(std::optional<size_t> ifSkip{getIfSkip(mcCtx, i)}) i = *ifSkip;
+        continue;
       case DirectiveType::Else:
         if(next.type == DirectiveType::EndIf) {
           i++;
@@ -34,7 +45,7 @@ std::string minimizeCondToStr(MinimizeCondCtx& mcCtx) {
           rtn += next.str;
           i++;
           continue;
-        case DirectiveType::Else:      
+        case DirectiveType::Else:     
           continue;
         default:;
         }
@@ -44,5 +55,5 @@ std::string minimizeCondToStr(MinimizeCondCtx& mcCtx) {
     }
     rtn += current.str;
   }
-  return rtn; 
+  return rtn;
 }
