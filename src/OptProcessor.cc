@@ -32,7 +32,7 @@ auto getTypeCk(const toml::table& tbl, std::string_view key) {
   exitWithErr("Incorrect TOML type for {}", key);
 #pragma GCC diagnostic pop
 }
-template<typename T> 
+template<typename T>
 auto getOrDefault(const ap::ArgumentParser& parser, std::string_view cliKey,
   const std::optional<toml::table>& tbl, std::string_view configKey, T&& defaultVal) {
   if(parser.is_used(cliKey)) {
@@ -46,7 +46,7 @@ auto getOrDefault(const ap::ArgumentParser& parser, std::string_view cliKey,
   else return std::forward<T>(defaultVal);
 }
 
-template<typename T> 
+template<typename T>
 auto getMustHave(const toml::table& tbl, std::string_view key) {
   if(!tbl.contains(key)) exitWithErr("{} must be specified", key);
   return getTypeCk<T>(tbl, key);
@@ -57,7 +57,7 @@ auto getMustHave(const toml::table& tbl, std::string_view key) {
 Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
   ap::ArgumentParser defaultParser("importizer", "0.0.1");
-  defaultParser.add_description("C++ include to import converter. Takes you on the way of" 
+  defaultParser.add_description("C++ include to import converter. Takes you on the way of"
     " modularization!");
   defaultParser.add_argument("-c", "--config")
     .help("Path to a TOML configuration file")
@@ -89,7 +89,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     .nargs(ap::nargs_pattern::at_least_one);
   ap::ArgumentParser transitionalParser{"transitional", "", ap::default_arguments::help};
   transitionalParser.add_argument("-b", "--back-compat-hdrs")
-    .help("Generate headers that include the module file to preserve #include for users." 
+    .help("Generate headers that include the module file to preserve #include for users."
       " Note that in the codebase itself the module file is still included directly.")
     .implicit_value(true);
   transitionalParser.add_argument("--mi-control")

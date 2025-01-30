@@ -19,9 +19,9 @@ struct Opts {
   re::Pattern includeGuardPat;
   std::filesystem::path inDir;
   std::filesystem::path outDir;
-  std::string hdrExt;
-  std::string srcExt;
-  std::string moduleInterfaceExt;
+  std::filesystem::path hdrExt;
+  std::filesystem::path srcExt;
+  std::filesystem::path moduleInterfaceExt;
   std::vector<std::filesystem::path> includePaths;
   std::vector<std::filesystem::path> ignoredHdrs;
   std::optional<TransitionalOpts> transitionalOpts;

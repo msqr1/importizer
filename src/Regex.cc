@@ -12,9 +12,9 @@ namespace re {
 
 namespace {
 
-void ckPCRE2Code(int status, const std::source_location& loc 
+void ckPCRE2Code(int status, const std::source_location& loc
   = std::source_location::current()) {
- 
+
   // Code inside this range is OK
   if(status > -2 && status < 101) return;
   char errMsg[256];

@@ -32,7 +32,7 @@ std::string path2ModuleName(const fs::path& inDirRel) {
   }
   return pathStr;
 }
-std::string replaceIncludeExt(Directive&& include, std::string_view moduleInterfaceExt) {
+std::string replaceIncludeExt(Directive&& include, const fs::path& moduleInterfaceExt) {
   const IncludeInfo& info{std::get<IncludeInfo>(include.extraInfo)};
   return include.str.replace(info.startOffset, info.includeStr.length(),
     fs::path(info.includeStr).replace_extension(moduleInterfaceExt).string());
@@ -45,7 +45,7 @@ struct GetIncludeCtx {
   const std::vector<fs::path>& includePaths;
 };
 
-// Returns a resolved include, the path of the include relative to inDir, 
+// Returns a resolved include, the path of the include relative to inDir,
 // return std::nullopt when the include doesn't exist, or not under inDir
 std::optional<fs::path> getAngleInclude(const GetIncludeCtx& ctx, const fs::path& include) {
   fs::path p;
@@ -58,7 +58,7 @@ std::optional<fs::path> getAngleInclude(const GetIncludeCtx& ctx, const fs::path
   };
   return std::nullopt;
 }
-std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::path& include, 
+std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::path& include,
   const fs::path& currentFile) {
   fs::path p{currentFile};
   p.remove_filename();
@@ -82,13 +82,11 @@ struct KeepForHdr {};
 struct ReplaceExtForPair {};
 using IncludeHandleResult = std::variant<Skip, KeepAsInclude, ConvertToImport,
   KeepForHdr, ReplaceExtForPair>;
-IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx, 
+IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& ctx,
   const File& file, const Opts& opts, StdImportLvl& lvl) {
-  std::optional<fs::path> resolvedInclude{
-    info.isAngle ?  getAngleInclude(ctx, info.includeStr) :
-    getQuotedInclude(ctx, info.includeStr, file.relPath)
-  };
-  if(resolvedInclude) {
+  if(std::optional<fs::path> resolvedInclude{info.isAngle ?
+    getAngleInclude(ctx, info.includeStr) :
+    getQuotedInclude(ctx, info.includeStr, file.relPath)}) {
     fs::path includePath{std::move(*resolvedInclude)};
 
     // Skip include to import conversion of paired header
@@ -192,7 +190,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       "{}",
       minimizeCondToStr(includeCtx));
 
-    // Convert header and unpaired source into module interface unit. Without 
+    // Convert header and unpaired source into module interface unit. Without
     // the "export " the file is a module implementation unit
     if(file.type == FileType::Hdr || file.type == FileType::UnpairedSrc)  {
       manualExport = true;
@@ -246,7 +244,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       includeCtx.emplace_back(directive.str);
       moduleCtx.emplace_back(std::move(directive.str));
     }
-    fmt::format_to(std::back_inserter(preamble), 
+    fmt::format_to(std::back_inserter(preamble),
       "#ifdef {}\n"
       "{}",
       opts.transitionalOpts->mi_control, minimizeCondToStr(moduleCtx));
@@ -317,13 +315,13 @@ std::string getTransitionalPreamble(const Opts& opts,
       .lexically_relative("." / file.relPath.parent_path()).generic_string(),
       opts.transitionalOpts->mi_control, minimizeCondToStr(GMFCtx));
 
-    // Convert header and unpaired source into module interface unit. Without 
+    // Convert header and unpaired source into module interface unit. Without
     // the "export " the file is a module implementation unit
     if(file.type == FileType::Hdr || file.type == FileType::UnpairedSrc)  {
       manualExport = true;
       preamble += "export ";
     }
-    fmt::format_to(std::back_inserter(preamble), 
+    fmt::format_to(std::back_inserter(preamble),
       "module {};\n"
       "{}",
       path2ModuleName(file.relPath), minimizeCondToStr(importCtx));
@@ -346,7 +344,7 @@ bool insertPreamble(File& file, std::vector<Directive>&& directives, const Opts&
   fmt::format_to(std::inserter(file.content, file.content.begin()),
     "{}\n",
     opts.transitionalOpts ?
-    getTransitionalPreamble(opts, directives, file, manualExport) : 
+    getTransitionalPreamble(opts, directives, file, manualExport) :
     getDefaultPreamble(opts, directives, file, manualExport));
   return manualExport;
 }
