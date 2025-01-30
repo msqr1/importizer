@@ -14,7 +14,7 @@ importizer supports two modularization scheme:
 # Getting started
 ## Prebuilt executable
 - Choose your OS
-- Download from the continuous tag. These are ***debug** versions with sanitizers and no optimization.
+- Download from the continuous tag. These are **debug** versions with sanitizers and no optimization.
 - Download from other release tags. These are **release** versions with optimizations.
 
 ## Building from source
@@ -33,67 +33,37 @@ cmake --build . -j $(cmake -P ../nproc.cmake)
 - The output will be a list of file path, relative to ```outDir``` that need to go through manual exporting
 - For default mode, just add ```export``` (value of ```mi_exportKeyword``` for transitional mode) around the entities that you want to be exported.
 
-# CLI
+# Settings
 - Arguments will take precedence over those in the config file
 - Paths are relative to the current working directory unless specified otherwise
-- General flags:
+- General flags/settings:
 
-| Name                        | Description                                                                                                                                 |
-|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| -c, --config                | Path to TOML configuration file (```.toml```), default to ```importizer.toml```                                                             |
-| -h, --help                  | Print help and exit                                                                                                                         |
-| -v, --version               | Print version and exit                                                                                                                      |
-| -s, --std-include-to-import | Convert standard includes to ```import std``` or ```import std.compat```                                                                    |
-| -l, --log-current-file      | Print the current file being processed                                                                                                      |
-| --include-guard-pat         | Regex to match include guards. #pragma once is processed by default                                                                         |
-| -i, --in-dir                | Input directory (required if not specified in the config file)                                                                              |
-| -o, --out-dir               | Output directory (required if not specified in the config file)                                                                             |
-| --hdr-ext                   | Header file extension                                                                                                                       |
-| --src-ext                   | Source (also module implementation unit) file extension                                                                                     |
-| --module-interface-ext      | Module interface unit file extension                                                                                                        |
-| --include-paths             | Include paths searched when converting include to import                                                                                    |
-| --ignored-hdrs              | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` |
+| CLI flag name               | TOML setting name  | Description                                                                                                                                 | Value type   | Default value  |
+|-----------------------------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
+| -c, --config                | N/A                | Path to TOML configuration file (```.toml```), default to ```importizer.toml```                                                             | String       | N/A            |
+| -h, --help                  | N/A                | Print help and exit                                                                                                                         | N/A          | N/A            |
+| -v, --version               | N/A                | Print version and exit                                                                                                                      | N/A          | N/A            |
+| -s, --std-include-to-import | stdIncludeToImport | Convert standard includes to ```import std``` or ```import std.compat```                                                                    | Boolean      | ```false```    |
+| -l, --log-current-file      | logCurrentFile     | Print the current file being processed                                                                                                      | Boolean      | ```false```    |
+| --include-guard-pat         | includeGuardPat    | Regex to match include guards. #pragma once is processed by default                                                                         | String       | ```[^\s]+_H``` |
+| -i, --in-dir                | inDir              | Input directory (required on the CLI or in the TOML file)                                                                                   | String       | N/A            |
+| -o, --out-dir               | outDir             | Output directory (required on the CLI or in the TOML file)                                                                                  | String       | N/A            |
+| --hdr-ext                   | hdrExt             | Header file extension                                                                                                                       | String       | ```.hpp```     |
+| --src-ext                   | srcExt             | Source (also module implementation unit) file extension                                                                                     | String       | ```.cpp```     |
+| --module-interface-ext      | moduleInterfaceExt | Module interface unit file extension                                                                                                        | String       | ```.cppm```    |
+| --include-paths             | includePaths       | Include paths searched when converting include to import                                                                                    | String array | ```[]```       |
+| --ignored-hdrs              | ignoredHdrs        | Paths relative to ```inDir``` of header files to ignore. Their paired sources, if available, will be treated as if they have a ```main()``` | String array | ```[]```       |
 
-- Transitional modularization flag (must be specified after ```transitional``` on the CLI):
+- Transitional flags/settings (must be specified after ```transitional``` on the CLI or under ```[Transitional]``` in the setting file):
 
-| Name                    | Description                                                                                                                                                | Value type | Default value      |
-|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|--------------------|
-| -b, --back-compat-hdrs  | Generate headers that include the module file to preserve #include for users. Note that in the codebase itself the module file is still included directly. | Boolean    | ```false```        |
-| --mi-control            | Header-module switching macro identifier                                                                                                                   | string     | ```CPP_MODULES```  |
-| --mi-export-keyword     | Exported symbol macro identifier                                                                                                                           | string     | ```EXPORT```       |
-| --mi-export-block-begin | Export block begin macro identifier                                                                                                                        | string     | ```BEGIN_EXPORT``` |
-| --mi-export-block-end   | Export block end macro identifier                                                                                                                          | string     | ```END_EXPORT```   |
-| --export-macros-path    | Export macros file path relative to outDir                                                                                                                 | string     | ```Export.hpp```   |
-
-# TOML setting file
-- Paths are relative to the config file by default, unless otherwise specified
-- Settings are optional, unless otherwise specified
-- Value types and default values are in the section below
-- General settings:
-
-| Name               | Description                                    | Value type   | Default value  |
-|--------------------|------------------------------------------------|--------------|----------------|
-| stdIncludeToImport | As in CLI                                      | Boolean      | ```false```    |
-| logCurrentFile     | As in CLI                                      | Boolean      | ```false```    |
-| includeGuardPat    | As in CLI                                      | String       | ```[^\s]+_H``` |
-| inDir              | As in CLI (required if unspecified on the CLI) | String       | N/A            |
-| outDir             | As in CLI (required if unspecified on the CLI) | String       | N/A            |
-| hdrExt             | As in CLI                                      | String       | ```.hpp```     |
-| srcExt             | As in CLI                                      | String       | ```.cpp```     |
-| moduleInterfaceExt | As in CLI                                      | String       | ```.cppm```    |
-| includePaths       | As in CLI                                      | String array | ```[]```       |
-| ignoredHdrs        | As in CLI                                      | String array | ```[]```       |
-
-- Transitional modularization settings (mi_ prefix = macro identifier):
-
-| Name                | Description | Value type | Default value      |
-|---------------------|-------------|------------|--------------------|
-| backCompatHdrs      | As in CLI   | Boolean    | ```false```        |
-| mi_control          | As in CLI   | string     | ```CPP_MODULES```  |
-| mi_exportKeyword    | As in CLI   | string     | ```EXPORT```       |
-| mi_exportBlockBegin | As in CLI   | string     | ```BEGIN_EXPORT``` |
-| mi_exportBlockEnd   | As in CLI   | string     | ```END_EXPORT```   |
-| exportMacrosPath    | As in CLI   | string     | ```Export.hpp```   |
+| CLI flag name           | TOML setting name   | Description                                                                                                                                                | Value type | Default value      |
+|-------------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|--------------------|
+| -b, --back-compat-hdrs  | backCompatHdrs      | Generate headers that include the module file to preserve #include for users. Note that in the codebase itself the module file is still included directly. | Boolean    | ```false```        |
+| --mi-control            | mi_control          | Header-module switching macro identifier                                                                                                                   | String     | ```CPP_MODULES```  |
+| --mi-export-keyword     | mi_exportKeyword    | Exported symbol macro identifier                                                                                                                           | String     | ```EXPORT```       |
+| --mi-export-block-begin | mi_exportBlockBegin | Export block begin macro identifier                                                                                                                        | String     | ```BEGIN_EXPORT``` |
+| --mi-export-block-end   | mi_exportBlockEnd   | Export block end macro identifier                                                                                                                          | String     | ```END_EXPORT```   |
+| --export-macros-path    | exportMacrosPath    | Export macros file path relative to outDir                                                                                                                 | String     | ```Export.hpp```   |
 
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, ```input/directory/file.cpp``` and ```input/directory/file.hpp
