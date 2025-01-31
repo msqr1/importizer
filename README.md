@@ -12,7 +12,7 @@ importizer supports two modularization scheme:
 - **Transtitional modularization**: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing `[Transitional]` in the setting file or `transitional` on the command line.
 
 # Example
-- See [Example.md](Example.md)
+- See [Example.md](Example.md#output-example)
 
 # Getting started
 ## Prebuilt executable
@@ -34,7 +34,14 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - Create a `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`), add some settings.
 - Run the program
 - The output will be a list of file path, relative to `outDir` that need to go through manual exporting
-- For default mode, just add `export` (value of `mi_exportKeyword` for transitional mode) around the entities that you want to be exported.
+- For default mode:
+  - Add `export`/`export{`/`}` around exported entities
+  - Compile using modules right away
+- For transitional mode:
+  - Add values of `mi_exportKeyword`/`mi_exportBlockBegin`/`mi_exportBlockEnd` around exported entities
+  - You can keep the same compilation command to do a header-based compilation
+  - To compile using modules, add `-D[value of mi_control]` when compiling every file, the compilation command will have to change.
+  - See [an example](Example.md#transitional-compilation-example)
 
 ## Testing
 - Add `-DTESTS=1` when configuring cmake
