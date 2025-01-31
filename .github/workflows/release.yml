@@ -24,17 +24,18 @@ jobs:
       - name: Build
         id: build
         run: >
-          mkdir build && cd build &&
-          cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release &&
-          cmake --build . -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
+          mkdir build && cd build && cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release &&
+          cmake --build . --config Release
+          -j $(cmake -P ${{ github.workspace }}/nproc.cmake) 
       - name: Upload built binary as artifact
         id: upload
         if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
         with:
           name: importizer-${{ matrix.os }}
-          path: ${{ github.workspace }}/build/importizer
+          path: ${{ github.workspace }}/build/importizer*
           retention-days: 1
+          compression-level: 0
       - name: Test
         if: steps.upload.outcome == 'success'
         id: test
@@ -46,10 +47,10 @@ jobs:
     needs: build-upload-test
     runs-on: ubuntu-24.04
     steps:
-      - name: Download built binaries
+      - name: Download built executables
         uses: actions/download-artifact@v4.1.8
-      - name: Rename binaries
-        run: for a in */; do mv "$a/importizer" "$a/$(basename $a)"; done
+      - name: Rename executables
+        run: for exe in */importizer*; do mv "$exe" "$a/$(basename $a)"; done
       - name: Upload to tag
         uses: softprops/action-gh-release@v2.2.1
         with:

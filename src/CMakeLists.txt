@@ -29,6 +29,6 @@ add_subdirectory(../3rdParty/pcre2 "${CMAKE_BINARY_DIR}/pcre2")
 target_link_libraries(importizer pcre2-8)
 
 # For actions/upload-artifact
-add_custom_command(POST_BUILD TARGET importizer 
+add_custom_command(POST_BUILD TARGET importizer
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:importizer> 
-   ${CMAKE_BINARY_DIR}/importizer)
+  ${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:importizer>)
