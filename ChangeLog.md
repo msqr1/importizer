@@ -1,2 +1,2 @@
-# 1.0.0 (in progress)
+# 1.0.0
 - First release

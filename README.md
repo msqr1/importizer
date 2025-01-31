@@ -1,11 +1,11 @@
 # Introduction
 Do you need help converting your header-based codebase to C++20 modules?
-importizer can help.
+importizer can help
 
 What can it do?
 - Convert `#include` statements to `import` statement, as well as creating the GMF.
-- Takes you on the way to modularizing your codebase by reducing lots of trivial work.
-- **The only thing left to do is manually choosing what to export.**
+- Takes you on the way to modularizing your codebase by reducing lots of trivial work
+- **The only thing left to do is manually choosing what to export**
 
 importizer supports two modularization scheme:
 - **Complete modularization**: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
