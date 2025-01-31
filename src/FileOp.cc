@@ -27,6 +27,8 @@ void readFromPath(const fs::path& path, std::string& str) {
   ifs.read(str.data(), fsize);
   if(!ifs) exitWithErr("Unable to read from {}", path);
 #ifdef WIN32
+  
+  // Normalize line endings
   std::erase(str, '\r');
 #endif
 }

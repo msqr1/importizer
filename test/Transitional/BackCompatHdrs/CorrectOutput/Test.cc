@@ -3,5 +3,6 @@
 module;
 module Test;
 #else
+#include "Test.cppm"
 #endif
 
