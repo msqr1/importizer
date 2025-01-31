@@ -24,10 +24,10 @@ jobs:
       - name: Build
         id: build
         run: >
-          mkdir build && cd build && cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release &&
+          mkdir build && cd build && cmake .. -DTESTS=1 -DCMAKE_BUILD_TYPE=Release &&
           cmake --build . --config Release
-          -j $(cmake -P ${{ github.workspace }}/nproc.cmake) 
-      - name: Upload built binary as artifact
+          -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
+      - name: Upload built executable as artifact
         id: upload
         if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4.6.0
@@ -50,7 +50,13 @@ jobs:
       - name: Download built executables
         uses: actions/download-artifact@v4.1.8
       - name: Rename executables
-        run: for exe in */importizer*; do mv "$exe" "$a/$(basename $a)"; done
+        run: |
+          for exe in */importizer*; do
+            platform=$(dirname $exe)
+            filename=$(basename $exe)
+            mv $exe "$platform/${filename%.*}-$platform \
+            $([[ $filename = *.* ]] && echo .${filename##*.} || echo '')"
+          done
       - name: Upload to tag
         uses: softprops/action-gh-release@v2.2.1
         with:
