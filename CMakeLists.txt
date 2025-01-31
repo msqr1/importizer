@@ -16,8 +16,7 @@ set(releaseCompileFlags)
 set(debugLinkFlags)
 set(releaseLinkFlags)
 
-# Pay the price that flags will be tested on every configure but it's a lot cleaner
-# Can take in another argument if neccessary
+# Can take in another arg for linkFlagVar if required
 function(ckAddFlag ckName compileFlagsVar flag)
   if(${ARGC} GREATER 3)
     set(CMAKE_REQUIRED_LINK_OPTIONS ${flag})
@@ -46,7 +45,7 @@ else()
   ckAddFlag(UBSAN debugFlags -fsanitize=undefined debugLinkFlags)
   ckAddFlag(LSAN debugFlags -fsanitize=leak debugLinkFlags)
   ckAddFlag(noRTTI releaseFlags -fno-rtti)
-  ckAddFlag(LTO releaseFlags-flto releaseLinkFlags)
+  ckAddFlag(LTO releaseFlags -flto releaseLinkFlags)  
 endif()
 add_compile_options($<$<CONFIG:Debug>:${debugCompileFlags}> $<$<CONFIG:Release>:${releaseCompileFlag}>)
 add_link_options($<$<CONFIG:Debug>:${debugLinkFlags}>  $<$<CONFIG:Release>:${releaseLinkFlag}>)
