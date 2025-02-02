@@ -1,5 +1,5 @@
-function(ckRes res)
-  if(${res} EQUAL 0)
+function(ckRes res_)
+  if(NOT ${res_} EQUAL 0)
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.29) 
       cmake_language(EXIT 1)
     else()

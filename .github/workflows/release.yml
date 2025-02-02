@@ -43,7 +43,7 @@ jobs:
         id: test
         run: >
           cd ${{ github.workspace }}/build/test &&
-          ctest --output-on-failure -C Release
+          ctest --output-on-failure -C Release --progress
           -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
   download-and-release-continuous:
     needs: build-upload-test
