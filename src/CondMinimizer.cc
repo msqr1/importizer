@@ -19,6 +19,7 @@ std::optional<size_t> getIfSkip(const MinimizeCondCtx& mcCtx, size_t currentIdx)
 }
 std::string minimizeCondToStr(MinimizeCondCtx& mcCtx) {
   std::string rtn;
+  std::optional<size_t> ifSkip;
   for(size_t i{}; i < mcCtx.size(); i++) switch(mcCtx[i].index()) {
   case 0: // std::string
     rtn += std::get<std::string>(mcCtx[i]);
@@ -29,8 +30,11 @@ std::string minimizeCondToStr(MinimizeCondCtx& mcCtx) {
       const CondDirective& next{std::get<CondDirective>(mcCtx[i + 1])};
       switch(current.type) {
       case DirectiveType::IfCond:
-        if(std::optional<size_t> ifSkip{getIfSkip(mcCtx, i)}) i = *ifSkip;
-        continue;
+        if((ifSkip = getIfSkip(mcCtx, i))) {
+          i = *ifSkip;
+          continue;
+        }
+        break;
       case DirectiveType::Else:
         if(next.type == DirectiveType::EndIf) {
           i++;
