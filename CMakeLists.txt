@@ -30,7 +30,7 @@ function(ckAddFlag ckName compileFlagsVar flag)
       set(${ARGN} "${${ARGN}};${flag}" PARENT_SCOPE)
     endif()
   endif()
-endfunction(ckAddFlag)
+endfunction()
 
 # No ASAN until I figure out how to bring the .dll/.so into the executables' directory
 if(MSVC)
