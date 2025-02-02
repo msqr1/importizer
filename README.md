@@ -61,7 +61,6 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | Source    |                    |                    | Module interface unit      | :heavy_check_mark:    |
 | Source    | :heavy_check_mark: |                    | Module implementation unit |                       |
 | Source    |                    | :heavy_check_mark: | Only include to import     |                       |
-                     |
 
 - Behavior of include path searching (similar concept to specifying `-I`):
 
