@@ -54,13 +54,14 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - importizer's behavior is undefined for a header-source pair and the source has a main function. Very rare in real code.
 - Action by file type:
 
-| File type | Paired | Has `main()` | Conversion                 | Must do manual export |
-|-----------|--------|--------------|----------------------------|-----------------------|
-| Header    |        | N/A          | Module interface unit      | ✔                     |
-| Header    | ✔      | N/A          | Module interface unit      | ✔                     |
-| Source    |        |              | Module interface unit      | ✔                     |
-| Source    | ✔      |              | Module implementation unit |                       |
-| Source    |        | ✔            | Only include to import     |                       |
+| File type | Paired             | Has `main()`       | Conversion                 | Must do manual export |
+|-----------|--------------------|--------------------|----------------------------|-----------------------|
+| Header    |                    | N/A                | Module interface unit      | :heavy_check_mark:    |
+| Header    | :heavy_check_mark: | N/A                | Module interface unit      | :heavy_check_mark:    |
+| Source    |                    |                    | Module interface unit      | :heavy_check_mark:    |
+| Source    | :heavy_check_mark: |                    | Module implementation unit |                       |
+| Source    |                    | :heavy_check_mark: | Only include to import     |                       |
+                     |
 
 - Behavior of include path searching (similar concept to specifying `-I`):
 
@@ -80,21 +81,21 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - Paths are relative to the current working directory for CLI settings, and relative to the config file for TOML settings.
 - General flags/settings:
 
-| CLI flag name               | TOML setting name  | Description                                                                                                                                 | Value type   | Default value  |
-|-----------------------------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|----------------|
-| -c, --config                | N/A                | Path to TOML configuration file (`.toml`), default to `importizer.toml`                                                             | String       | N/A            |
-| -h, --help                  | N/A                | Print help and exit                                                                                                                         | N/A          | N/A            |
-| -v, --version               | N/A                | Print version and exit                                                                                                                      | N/A          | N/A            |
-| -s, --std-include-to-import | stdIncludeToImport | Convert standard includes to `import std` or `import std.compat`                                                                    | Boolean      | `false`    |
-| -l, --log-current-file      | logCurrentFile     | Print the current file being processed                                                                                                      | Boolean      | `false`    |
-| --include-guard-pat         | includeGuardPat    | Regex to match include guards. #pragma once is processed by default                                                                         | String       | `[^\s]+_H` |
-| -i, --in-dir                | inDir              | Input directory (required on the CLI or in the TOML file)                                                                                   | String       | N/A            |
-| -o, --out-dir               | outDir             | Output directory (required on the CLI or in the TOML file)                                                                                  | String       | N/A            |
-| --hdr-ext                   | hdrExt             | Header file extension                                                                                                                       | String       | `.hpp`     |
-| --src-ext                   | srcExt             | Source (also module implementation unit) file extension                                                                                     | String       | `.cpp`     |
-| --module-interface-ext      | moduleInterfaceExt | Module interface unit file extension                                                                                                        | String       | `.cppm`    |
-| --include-paths             | includePaths       | Include paths searched when converting include to import                                                                                    | String array | `[]`       |
-| --ignored-hdrs              | ignoredHdrs        | Paths relative to `inDir` of header files to ignore. Their paired sources, if available, will be treated as if they have a `main()` | String array | `[]`       |
+| CLI flag name               | TOML setting name  | Description                                                                                                                         | Value type   | Default value |
+|-----------------------------|--------------------|-------------------------------------------------------------------------------------------------------------------------------------|--------------|---------------|
+| -c, --config                | N/A                | Path to TOML configuration file (`.toml`), default to `importizer.toml`                                                             | String       | N/A           |
+| -h, --help                  | N/A                | Print help and exit                                                                                                                 | N/A          | N/A           |
+| -v, --version               | N/A                | Print version and exit                                                                                                              | N/A          | N/A           |
+| -s, --std-include-to-import | stdIncludeToImport | Convert standard includes to `import std` or `import std.compat`                                                                    | Boolean      | `false`       |
+| -l, --log-current-file      | logCurrentFile     | Print the current file being processed                                                                                              | Boolean      | `false`       |
+| --include-guard-pat         | includeGuardPat    | Regex to match include guards. #pragma once is processed by default. ^ and $ will be inserted, so it must match the whole guard     | String       | `[^\s]+_H`    |
+| -i, --in-dir                | inDir              | Input directory (required on the CLI or in the TOML file)                                                                           | String       | N/A           |
+| -o, --out-dir               | outDir             | Output directory (required on the CLI or in the TOML file)                                                                          | String       | N/A           |
+| --hdr-ext                   | hdrExt             | Header file extension                                                                                                               | String       | `.hpp`        |
+| --src-ext                   | srcExt             | Source (also module implementation unit) file extension                                                                             | String       | `.cpp`        |
+| --module-interface-ext      | moduleInterfaceExt | Module interface unit file extension                                                                                                | String       | `.cppm`       |
+| --include-paths             | includePaths       | Include paths searched when converting include to import                                                                            | String array | `[]`          |
+| --ignored-hdrs              | ignoredHdrs        | Paths relative to `inDir` of header files to ignore. Their paired sources, if available, will be treated as if they have a `main()` | String array | `[]`          |
 
 - Transitional flags/settings (must be specified after `transitional` on the CLI or under `[Transitional]` in the setting file):
 

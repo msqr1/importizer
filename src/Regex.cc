@@ -29,6 +29,7 @@ Capture::Capture(size_t start, size_t end): start{start}, end{end} {}
 Captures::Captures() {}
 Captures::Captures(size_t* ovector): ovector{ovector} {}
 Capture Captures::operator[](int idx) const {
+  
   // ovector comes in pairs of (start, end), so multiply by 2 to get correct index
   idx *= 2;
   return {ovector[idx], ovector[idx + 1]};

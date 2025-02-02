@@ -89,11 +89,12 @@ IncludeHandleResult handleInclude(const IncludeInfo& info, const GetIncludeCtx& 
     getQuotedInclude(ctx, info.includeStr, file.relPath)}) {
     fs::path includePath{std::move(*resolvedInclude)};
 
-    // Skip include to import conversion of paired header
     if(file.type == FileType::PairedSrc) {
       includePath.replace_extension(opts.srcExt);
       if(includePath == file.relPath) {
         if(opts.transitionalOpts) return ReplaceExtForPair{};
+
+        // Skip include to import conversion of paired header
         return Skip{};
       }
       includePath.replace_extension(opts.hdrExt);

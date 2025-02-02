@@ -1,6 +1,7 @@
 #include "OptProcessor.hpp"
 #include "Base.hpp"
 #include "../3rdParty/Argparse.hpp"
+#include <fmt/format.h>
 #include <algorithm>
 #include <fmt/std.h>
 #include <toml++/toml.hpp>
@@ -123,8 +124,10 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   path = generalParser.present("-o");
   opts.outDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "outDir");
-  opts.includeGuardPat.reset(getOrDefault(generalParser, "--include-guard-pat",
-    config, "includeGuardPat", R"([^\s]+_H)"));
+  opts.includeGuardPat.reset(fmt::format(
+    "^{}$",
+    getOrDefault(generalParser, "--include-guard-pat",
+    config, "includeGuardPat", R"([^\s]+_H)")));
   opts.hdrExt = getOrDefault(generalParser, "--hdr-ext", config, "hdrExt", ".hpp");
   opts.srcExt = getOrDefault(generalParser, "--src-ext", config, "srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault(generalParser, "--module-interface-ext", config,
