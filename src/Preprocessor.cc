@@ -29,6 +29,13 @@ template <char open, char close> void balance(std::string_view str, size_t& pos)
     ++pos;
   } while(nest); 
 }
+
+bool isDigit(char c) {
+  for(char n : "0123456789") {
+    if(c == n) return true;
+  }
+  return false;
+}
 enum class DirectiveAction : char {
   Continue,
   Emplace,
@@ -53,18 +60,21 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
     // Comments
     case '/':
       i++;
-      if(code[i] == '/') {
-        while(i < codeLen && code[i] != '\n') i++;
-      }
+      if(code[i] == '/') while(i < codeLen && code[i] != '\n') i++;
       else if(code[i] == '*') {
         i++;
         while(!(code[i - 1] == '*' && code[i] == '/')) i++;
       }
       break;
 
-    // Character literals
+    // Character/Integer literal
     case '\'':
       i++;
+
+      // Integer literals
+      if(isDigit(code[i]) && isDigit(code[i - 2]) && code[i - 3] != 'u') break;
+
+      // Character literals
       while(code[i] != '\'') i += (code[i] == '\\') + 1;
       break;
 

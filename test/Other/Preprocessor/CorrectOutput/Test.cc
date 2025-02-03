@@ -22,6 +22,13 @@ char c{'a'};
 char c1{'\''};
 char c2{'\32'};
 
+// An separated integer literal
+int oneThousand{1'000};
+
+// Possible false positives for integer literals
+char u{'2'};
+char c3{u8'1'};
+
 // A main function
 int          main        () {
 
