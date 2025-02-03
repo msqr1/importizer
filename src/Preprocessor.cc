@@ -49,6 +49,8 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
   size_t codeLen{code.length()};
   while(i < codeLen) {
     switch(code[i]) {
+    
+    // Comments
     case '/':
       i++;
       if(code[i] == '/') {
@@ -59,14 +61,18 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         while(!(code[i - 1] == '*' && code[i] == '/')) i++;
       }
       break;
+
+    // Character literals
     case '\'':
       i++;
       while(code[i] != '\'') i += (code[i] == '\\') + 1;
       break;
+
+    // String literals
     case '"':
       i++;
 
-      // Raw string literal
+      // Raw
       if(code[i - 2] == 'R') {
         const size_t start{i};
         while(code[i] != '(') i++;
@@ -80,6 +86,8 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
       whitespaceAfterNewline = true;
       break;
     default:
+
+      // Preprocessor directive
       if(whitespaceAfterNewline && code[i] == '#') {
         const size_t start{i};
         while(i < codeLen && (code[i] != '\n' || code[i - 1] == '\\')) i++;
