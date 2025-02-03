@@ -11,7 +11,7 @@ importizer supports two modularization scheme:
 - **Complete modularization**: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
 - **Transtitional modularization**: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing `[Transitional]` in the setting file or `transitional` on the command line.
 
-# Example
+# Output example
 - See [Example.md](Example.md#output-example)
 
 # Getting started
@@ -35,10 +35,10 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - Run the program
 - The output will be a list of file path, relative to `outDir` that need to go through manual exporting
 - For default mode:
-  - Add `export`/`export{`/`}` around exported entities
+  - Add `export` or `export {` or `}` around exported entities
   - Compile using modules right away
 - For transitional mode:
-  - Add values of `mi_exportKeyword`/`mi_exportBlockBegin`/`mi_exportBlockEnd` around exported entities
+  - Add values of `mi_exportKeyword` or `mi_exportBlockBegin` or`mi_exportBlockEnd` around exported entities
   - You can keep the same compilation command to do a header-based compilation
   - To compile using modules, add `-D[value of mi_control]` when compiling every file, the compilation command will have to change.
   - See [an example](Example.md#transitional-compilation-example)

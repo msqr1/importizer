@@ -15,8 +15,9 @@
 
 namespace {
 
+// Return the position one-past the closing character
 template <char open, char close> void balance(std::string_view str, size_t& pos) {
-  int nest{1};
+  size_t nest{1};
   do {
     switch(str[pos]) {
     case open:
@@ -70,7 +71,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         const size_t start{i};
         while(code[i] != '(') i++;
         const size_t delimSize{i - start};
-        balance<'(',')'>(code, i);
+        balance<'(',')'>(code, ++i);
         i += delimSize;
       }
       else while(code[i] != '"') i += (code[i] == '\\') + 1;
