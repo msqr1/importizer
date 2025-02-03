@@ -26,6 +26,7 @@ export module Test;
 #endif
 #ifdef COND3
 // Do something
-#else
+#ifdef NESTED
 // Do something else
+#endif
 #endif

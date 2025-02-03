@@ -7,10 +7,14 @@
 
 std::optional<size_t> getIfSkip(const MinimizeCondCtx& mcCtx, size_t currentIdx) {
   currentIdx++;
+  size_t nest{1};
   for(; currentIdx < mcCtx.size(); currentIdx++) {
     if(std::holds_alternative<CondDirective>(mcCtx[currentIdx])) {
-      if(std::get<CondDirective>(mcCtx[currentIdx]).type == DirectiveType::EndIf) {
-        return currentIdx;
+      DirectiveType type{std::get<CondDirective>(mcCtx[currentIdx]).type};
+      if(type == DirectiveType::IfCond) nest++;
+      else if(type == DirectiveType::EndIf) {
+        nest--;
+        if(nest == 0) return currentIdx;
       }
     }
     else return std::nullopt;
