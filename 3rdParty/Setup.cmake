@@ -8,11 +8,15 @@ function(gitClone repo hash outDir)
   )
   execute_process(
     WORKING_DIRECTORY ${outDir} 
-    COMMAND git fetch --depth 1 "https://github.com/${repo}" ${hash} 
+    COMMAND git fetch --depth 1 "https://github.com/${repo}" ${hash}
   )
   execute_process(
     WORKING_DIRECTORY ${outDir} 
     COMMAND git -c advice.detachedHead=false checkout ${hash}
+  )
+  execute_process(
+    WORKING_DIRECTORY ${outDir}
+    COMMAND git submodule update --init --recursive --depth 1
   )
 endfunction(gitClone repo hash outDir)
 
