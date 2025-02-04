@@ -24,19 +24,19 @@ importizer supports two modularization scheme:
 - **Complete modularization**: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
 - **Transtitional modularization**: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing `[Transitional]` in the setting file or `transitional` on the command line.
 
-<!-- TOC --><a name="output-example"></a>
+Requirements:
+- Code and options are valid UTF-8
+- Code is valid C++
+
 # Output example
 - See [Example.md](Example.md#output-example)
 
-<!-- TOC --><a name="getting-started"></a>
 # Getting started
-<!-- TOC --><a name="prebuilt-executable"></a>
 ## Prebuilt executable
 - Choose your OS
 - Download from the continuous tag. These are **debug** versions with sanitizers and no optimization.
 - Download from other release tags. These are **release** versions with optimizations.
 
-<!-- TOC --><a name="building-from-source"></a>
 ## Building from source
 - Run:
 ```bash
@@ -46,7 +46,6 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 ```
 - The generated binary is called `importizer` in the current working directory
 
-<!-- TOC --><a name="usage"></a>
 ## Usage
 - Specify command line arguments or
 - Create a `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`), add some settings.
@@ -61,14 +60,12 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
   - To compile using modules, add `-D[value of mi_control]` when compiling every file, the compilation command will have to change.
   - See [an example](Example.md#transitional-compilation-example)
 
-<!-- TOC --><a name="testing"></a>
 ## Testing
 - Add `-DTESTS=1` when configuring cmake
 - Build, then `cd [build root]/test`
 - Run `ctest`
 - If possible, file an issue for test(s) that failed.
 
-<!-- TOC --><a name="behavior"></a>
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, `input/directory/file.cpp` and `input/directory/file.hpp`. The paired source must #include and defines everything declared in the paired header.
 - importizer's behavior is undefined for a header-source pair and the source has a main function. Very rare in real code.
@@ -89,14 +86,12 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | Quoted        | 1. Relative to directory of the current file<br>2. Same as angle-bracket |
 | Angle bracket | 1. Relative to each of `includePaths`                                    |
 
-<!-- TOC --><a name="macros"></a>
 # Macros
 - Modules, unlike headers, were explicitly designed to be encapsulated from macros and so they wouldn't leak them. If a macro is defined in a header, and the header get modularized, it will only exist in that module. Some ways to remedy:
   - Add the macro definition on the command line when compiling for the files that needed the macro (using `-D...`).
   - Refactor the macro definition into a separate header, `#include` that where the macro is needed, and add the new header to `ignoredHdrs`.
   - Add the macro-containing headers to the `ignoredHdrs` (their paired sources, if available will be treated as if they have a `main()`)
 
-<!-- TOC --><a name="settings"></a>
 # Settings
 - CLI settings will override config file settings
 - Paths are relative to the current working directory for CLI settings, and relative to the config file for TOML settings.
@@ -129,7 +124,6 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | --mi-export-block-end   | mi_exportBlockEnd   | Export block end macro identifier                                                                                                                          | String     | `END_EXPORT`   |
 | --export-macros-path    | exportMacrosPath    | Export macros file path relative to outDir                                                                                                                 | String     | `Export.hpp`   |
 
-<!-- TOC --><a name="some-code-style-rule"></a>
 # Some code style rule
 - Max column width: 90
 - Put comment to denote what type after case label for variant switch

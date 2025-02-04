@@ -8,11 +8,11 @@ function(gitClone repo hash outDir)
   )
   execute_process(
     WORKING_DIRECTORY ${outDir} 
-    COMMAND git fetch --depth 1 "https://github.com/${repo}" ${hash}
+    COMMAND git fetch --depth 1 "https://github.com/${repo}" ${hash} 
   )
   execute_process(
     WORKING_DIRECTORY ${outDir} 
-    COMMAND git checkout ${hash}
+    COMMAND git -c advice.detachedHead=false checkout ${hash}
   )
 endfunction(gitClone repo hash outDir)
 
@@ -26,9 +26,9 @@ if(NOT EXISTS toml++)
   gitClone(marzer/tomlplusplus 30172438cee64926dc41fdd9c11fb3ba5b2ba9de toml++)
 endif()
 
-# 10.44
+# 10.45-RC1
 if(NOT EXISTS pcre2)
-  gitClone(PCRE2Project/pcre2 6ae58beca071f13ccfed31d03b3f479ab520639b pcre2)
+  gitClone(PCRE2Project/pcre2 e2985c439b7fa374b4bd3052ca413e29ed1ad590 pcre2)
 endif()
 
 if(NOT EXISTS Argparse.hpp)

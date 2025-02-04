@@ -19,7 +19,7 @@ void ckPCRE2Code(int status, const std::source_location& loc
   if(status > -2 && status < 101) return;
   char errMsg[256];
   pcre2_get_error_message(status, reinterpret_cast<PCRE2_UCHAR*>(errMsg), 256);
-  exitWithErr(loc, "Regex error: {}", errMsg);
+  exitWithErr(loc, "Regex: {}", errMsg);
 }
 
 } // namespace
@@ -48,15 +48,13 @@ Pattern& Pattern::reset(std::string_view pat, uint32_t opts) {
   pcre2_match_data_free(matchData);
   int status;
   size_t _; // Unused
-  pattern = pcre2_compile(reinterpret_cast<PCRE2_SPTR>(pat.data()), pat.length(), opts,
-    &status, &_, nullptr);
+  pattern = pcre2_compile(reinterpret_cast<PCRE2_SPTR>(pat.data()), pat.length(), 
+    opts | PCRE2_UTF | PCRE2_NO_UTF_CHECK, &status, &_, nullptr);
   ckPCRE2Code(status);
   status = pcre2_jit_compile(pattern, PCRE2_JIT_COMPLETE);
-  ckPCRE2Code(status);
+  if(status != PCRE2_ERROR_JIT_BADOPTION) ckPCRE2Code(status);
   matchData = pcre2_match_data_create_from_pattern(pattern, nullptr);
-  if(matchData == nullptr) {
-    exitWithErr("Regex error: Unable to allocate memory for match");
-  }
+  if(matchData == nullptr) exitWithErr("Regex: Unable to allocate memory for match");
   return *this;
 }
 Pattern::~Pattern() {
@@ -65,8 +63,8 @@ Pattern::~Pattern() {
 }
 std::optional<Captures> Pattern::match(std::string_view subject, size_t startOffset)
   const {
-  int count{pcre2_jit_match(pattern, reinterpret_cast<PCRE2_SPTR>(subject.data()),
-    subject.length(), startOffset, 0, matchData, nullptr)};
+  int count{pcre2_match(pattern, reinterpret_cast<PCRE2_SPTR>(subject.data()),
+    subject.length(), startOffset, PCRE2_NO_UTF_CHECK, matchData, nullptr)};
   ckPCRE2Code(count);
   if(count < 1) return std::nullopt;
   return pcre2_get_ovector_pointer(matchData);
