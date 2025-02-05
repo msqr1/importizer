@@ -10,7 +10,6 @@ module;
 #include "../3rdParty/pcre2/src/pcre2.h.generic"
 module Regex;
 import Base;
-#define PCRE2_CODE_UNIT_WIDTH 8
 #else
 #include "Regex.cppm"
 #include "Base.cppm"

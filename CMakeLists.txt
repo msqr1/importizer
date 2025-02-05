@@ -6,11 +6,8 @@ if(CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 
 # Setup the 3rdParty folder
-execute_process(
-  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/3rdParty"
-  COMMAND ${CMAKE_COMMAND} -P Setup.cmake
-)
-
+execute_process( WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/3rdParty" COMMAND 
+  "${CMAKE_COMMAND}" -P Setup.cmake COMMAND_ERROR_IS_FATAL ANY)
 set(debugCompileFlags)
 set(releaseCompileFlags)
 set(debugLinkFlags)

@@ -11,9 +11,6 @@ module;
 #define a
 #endif
 export module Test;
-#ifdef COND2
-#define a
-#endif
 #else
 #if __has_include(<iostream>)
 #include <iostream>

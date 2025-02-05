@@ -121,18 +121,19 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
   const File& file, bool& manualExport) {
   const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::string preamble;
+  std::string imports;
   IncludeHandleResult res;
   StdImportLvl lvl{StdImportLvl::Unused};
 
   // Only convert include to import for source with a main(), paired or unpaired
   if(file.type == FileType::SrcWithMain) {
-    MinimizeCondCtx mcCtx;
+    MinimizeCondCtx NoImportCtx;
     for(Directive& directive : directives) switch(directive.type) {
     case DirectiveType::IfCond:
     case DirectiveType::ElCond:
     case DirectiveType::Else:
     case DirectiveType::EndIf:
-      mcCtx.emplace_back(std::move(directive));
+      NoImportCtx.emplace_back(std::move(directive));
       break;
     case DirectiveType::Include:
       res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
@@ -141,7 +142,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       // We're in default mode, no need to handle switch case 3 or 4
       switch(res.index()) {
       case 2: // ConvertToImport
-        mcCtx.emplace_back(std::get<ConvertToImport>(std::move(res)));
+        imports += std::get<ConvertToImport>(res);
         continue;
       case 0: // Skip
         continue;
@@ -149,22 +150,20 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       }
       [[fallthrough]];
     default:
-      mcCtx.emplace_back(std::move(directive.str));
+      NoImportCtx.emplace_back(std::move(directive.str));
     }
-    preamble = minimizeCondToStr(mcCtx);
+    preamble = minimizeCondToStr(NoImportCtx);
   }
 
   // Convert to module interface/implementation
   else {
-    MinimizeCondCtx includeCtx;
-    MinimizeCondCtx importCtx;
+    MinimizeCondCtx GMFCtx;
     for(Directive& directive : directives) switch(directive.type) {
     case DirectiveType::IfCond:
     case DirectiveType::Else:
     case DirectiveType::ElCond:
     case DirectiveType::EndIf:
-      includeCtx.emplace_back(directive);
-      importCtx.emplace_back(std::move(directive));
+        GMFCtx.emplace_back((std::move(directive)));
       break;
     case DirectiveType::Include:
       res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
@@ -172,24 +171,22 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
 
       // We're in default mode, no need to handle switch case 3 or 4
       switch(res.index()) {
-      case 0:
+      case 0: // Skip
         break;
-      case 2:
-        importCtx.emplace_back(std::get<ConvertToImport>(std::move(res)));
+      case 2: // ConvertToImport
+        imports += std::get<ConvertToImport>(std::move(res));
         break;
-      case 1:
-        includeCtx.emplace_back(std::move(directive.str));
-        break;
+      case 1: // KeepAsInclude
+        GMFCtx.emplace_back(std::move(directive.str));
       }
       break;
     default:
-      includeCtx.emplace_back(directive.str);
-      importCtx.emplace_back(std::move(directive.str));
+      GMFCtx.emplace_back(directive.str);
     }
     fmt::format_to(std::back_inserter(preamble),
       "module;\n"
       "{}",
-      minimizeCondToStr(includeCtx));
+      minimizeCondToStr(GMFCtx));
 
     // Convert header and unpaired source into module interface unit. Without
     // the "export " the file is a module implementation unit
@@ -198,10 +195,10 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       preamble += "export ";
     }
     fmt::format_to(std::back_inserter(preamble),
-      "module {};\n"
-      "{}",
-      path2ModuleName(file.relPath), minimizeCondToStr(importCtx));
+      "module {};\n",
+      path2ModuleName(file.relPath));
   }
+  preamble += imports;
   if(lvl == StdImportLvl::StdCompat) preamble += "import std.compat;\n";
   else if(lvl == StdImportLvl::Std) preamble += "import std;\n";
   return preamble;
@@ -214,14 +211,15 @@ std::string getTransitionalPreamble(const Opts& opts,
   MinimizeCondCtx includeCtx;
   StdImportLvl lvl{StdImportLvl::Unused};
   if(file.type == FileType::SrcWithMain) {
-    MinimizeCondCtx moduleCtx;
+    MinimizeCondCtx NoImportCtx;
+    std::string imports;
     for(Directive& directive : directives) switch(directive.type) {
     case DirectiveType::IfCond:
     case DirectiveType::ElCond:
     case DirectiveType::Else:
     case DirectiveType::EndIf:
       includeCtx.emplace_back(directive);
-      moduleCtx.emplace_back(std::move(directive));
+      NoImportCtx.emplace_back(std::move(directive));
       break;
     case DirectiveType::Include:
       res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts,
@@ -233,7 +231,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       case 2: // ConvertToImport
         includeCtx.emplace_back(
           replaceIncludeExt(std::move(directive), opts.moduleInterfaceExt));
-        moduleCtx.emplace_back(std::get<ConvertToImport>(std::move(res)));
+        imports += std::get<ConvertToImport>(res);
         continue;
       case 3: // KeepForHdr
         includeCtx.emplace_back(std::move(directive.str));
@@ -243,18 +241,18 @@ std::string getTransitionalPreamble(const Opts& opts,
       [[fallthrough]];
     default:
       includeCtx.emplace_back(directive.str);
-      moduleCtx.emplace_back(std::move(directive.str));
+      NoImportCtx.emplace_back(std::move(directive.str));
     }
     fmt::format_to(std::back_inserter(preamble),
       "#ifdef {}\n"
-      "{}",
-      opts.transitionalOpts->mi_control, minimizeCondToStr(moduleCtx));
+      "{}{}",
+      opts.transitionalOpts->mi_control, minimizeCondToStr(NoImportCtx), imports);
   }
 
   // Convert to module interface/implementation
   else {
     MinimizeCondCtx GMFCtx;
-    MinimizeCondCtx importCtx;
+    std::string imports;
     for(Directive& directive : directives) switch(directive.type) {
     case DirectiveType::IfCond:
       if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
@@ -267,7 +265,6 @@ std::string getTransitionalPreamble(const Opts& opts,
     case DirectiveType::EndIf:
       includeCtx.emplace_back(directive);
       GMFCtx.emplace_back(directive);
-      importCtx.emplace_back(std::move(directive));
       break;
     case DirectiveType::Include:
       res = handleInclude(std::get<IncludeInfo>(directive.extraInfo), ctx, file, opts, lvl);
@@ -283,7 +280,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       case 2: // ConvertToImport
         includeCtx.emplace_back(
           replaceIncludeExt(std::move(directive), opts.moduleInterfaceExt));
-        importCtx.emplace_back(std::get<ConvertToImport>(std::move(res)));
+        imports += std::get<ConvertToImport>(res);
         break;
       case 4: // ReplaceExtForPair
         includeCtx.emplace_back(
@@ -301,8 +298,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       [[fallthrough]];
     default:
       includeCtx.emplace_back(directive.str);
-      GMFCtx.emplace_back(directive.str);
-      importCtx.emplace_back(std::move(directive.str));
+      GMFCtx.emplace_back(std::move(directive.str));
     }
 
     // generic_string() to convert '\' to '/'
@@ -325,7 +321,7 @@ std::string getTransitionalPreamble(const Opts& opts,
     fmt::format_to(std::back_inserter(preamble),
       "module {};\n"
       "{}",
-      path2ModuleName(file.relPath), minimizeCondToStr(importCtx));
+      path2ModuleName(file.relPath), imports);
   }
 
   // From here import section should be added, but not include section
@@ -333,8 +329,8 @@ std::string getTransitionalPreamble(const Opts& opts,
   else if(lvl == StdImportLvl::Std) preamble += "import std;\n";
   fmt::format_to(std::back_inserter(preamble),
     "#else\n{}"
-    "#endif\n"
-    , minimizeCondToStr(includeCtx));
+    "#endif\n",
+    minimizeCondToStr(includeCtx));
   return preamble;
 }
 

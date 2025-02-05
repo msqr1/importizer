@@ -9,6 +9,8 @@
 #include <filesystem>
 
 namespace fs = std::filesystem;
+namespace {
+
 void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv)};
   if(opts.transitionalOpts) {
@@ -44,6 +46,8 @@ void run(int argc, const char* const* argv) {
     if(manualExport) log("{}", file.relPath);
     writeToPath(opts.outDir / file.relPath, file.content);
   }
+}
+
 }
 int main(int argc, const char* const* argv) {
   try {

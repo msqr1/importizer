@@ -5,7 +5,7 @@ target_compile_features(importizer PRIVATE cxx_std_23)
 # 3rd-party headers rarely changes
 set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h
 fmt/include/fmt/base.h fmt/include/fmt/std.h)
-list(TRANSFORM 3rdPartyHeaders PREPEND "../3rdParty/")
+list(TRANSFORM 3rdPartyHeaders PREPEND ../3rdParty/)
 
 # Project headers that should not be changed frequently
 set(stableHeaders Base.hpp Regex.hpp FileOp.hpp)
@@ -30,5 +30,5 @@ target_link_libraries(importizer pcre2-8)
 
 # For actions/upload-artifact
 add_custom_command(POST_BUILD TARGET importizer
-  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:importizer> 
-  ${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:importizer>)
+  COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:importizer>" 
+  "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:importizer>")

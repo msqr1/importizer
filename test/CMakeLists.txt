@@ -8,9 +8,9 @@ function(addTestsFromDir dir)
   foreach(testDir ${testDirs})
     get_filename_component(testName ${testDir} NAME)
     add_test(NAME "${dir}.${testName}" 
-      COMMAND ${CMAKE_COMMAND} -P Driver.cmake $<TARGET_FILE:importizer>
-      "${testDir}/config.toml" "${testResDir}/${dir}/${testName}" $<TARGET_FILE:cmpDir>
-      "${testDir}/CorrectOutput" WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+      COMMAND ${CMAKE_COMMAND} -P Driver.cmake "$<TARGET_FILE:importizer>"
+      "${testDir}/config.toml" "${testResDir}/${dir}/${testName}" "$<TARGET_FILE:cmpDir>"
+      "${testDir}/CorrectOutput" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
   endforeach()
 endfunction(addTestsFromDir)
 addTestsFromDir(Other)  
