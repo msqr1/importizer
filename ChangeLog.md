@@ -1,4 +1,6 @@
 # 1.1.0 (in progress)
+- Add a shared directive section in transitional mode to shorten the preamble
+- CondMinimizer renamed to Minimizer that will also remove empty #define/#undef pair
 
 # 1.0.1
 - Fix includeGuardPat not matching the entire string to qualify as a guard

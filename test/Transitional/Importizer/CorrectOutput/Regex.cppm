@@ -1,17 +1,15 @@
 #pragma once
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
 #include <optional>
+#ifdef CPP_MODULES
 export module Regex;
 #else
-#include <cstddef>
-#include <cstdint>
-#include <string_view>
-#include <optional>
 #endif
 
 

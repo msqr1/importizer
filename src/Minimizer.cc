@@ -1,16 +1,16 @@
-#include "CondMinimizer.hpp"
+#include "Minimizer.hpp"
 #include "Directive.hpp"
 #include <cstddef>
 #include <optional>
 #include <string>
 #include <variant>
 
-std::optional<size_t> getIfSkip(const MinimizeCondCtx& mcCtx, size_t currentIdx) {
+std::optional<size_t> getIfSkip(const MinimizeCtx& mCtx, size_t currentIdx) {
   currentIdx++;
   size_t nest{1};
-  for(; currentIdx < mcCtx.size(); currentIdx++) {
-    if(std::holds_alternative<CondDirective>(mcCtx[currentIdx])) {
-      DirectiveType type{std::get<CondDirective>(mcCtx[currentIdx]).type};
+  for(; currentIdx < mCtx.size(); currentIdx++) {
+    if(std::holds_alternative<Directive>(mCtx[currentIdx])) {
+      DirectiveType type{std::get<Directive>(mCtx[currentIdx]).type};
       if(type == DirectiveType::IfCond) nest++;
       else if(type == DirectiveType::EndIf) {
         nest--;
@@ -21,20 +21,26 @@ std::optional<size_t> getIfSkip(const MinimizeCondCtx& mcCtx, size_t currentIdx)
   }
   return std::nullopt;
 }
-std::string minimizeCondToStr(MinimizeCondCtx& mcCtx) {
+std::string minimizeToStr(MinimizeCtx& mCtx) {
   std::string rtn;
   std::optional<size_t> ifSkip;
-  for(size_t i{}; i < mcCtx.size(); i++) switch(mcCtx[i].index()) {
+  for(size_t i{}; i < mCtx.size(); i++) switch(mCtx[i].index()) {
   case 0: // std::string
-    rtn += std::get<std::string>(mcCtx[i]);
+    rtn += std::get<std::string>(mCtx[i]);
     break;
-  case 1: // CondDirective
-    const CondDirective& current{std::get<CondDirective>(mcCtx[i])};
-    if(i < mcCtx.size() - 1 && std::holds_alternative<CondDirective>(mcCtx[i + 1])) {
-      const CondDirective& next{std::get<CondDirective>(mcCtx[i + 1])};
+  case 1: // Directive
+    const Directive& current{std::get<Directive>(mCtx[i])};
+    if(i < mCtx.size() - 1 && std::holds_alternative<Directive>(mCtx[i + 1])) {
+      const Directive& next{std::get<Directive>(mCtx[i + 1])};
       switch(current.type) {
+      case DirectiveType::Define:
+        if(next.type == DirectiveType::Undef) {
+          i++;
+          continue;
+        }
+        break;
       case DirectiveType::IfCond:
-        if((ifSkip = getIfSkip(mcCtx, i))) {
+        if((ifSkip = getIfSkip(mCtx, i))) {
           i = *ifSkip;
           continue;
         }

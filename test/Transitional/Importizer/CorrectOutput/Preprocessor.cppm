@@ -1,17 +1,17 @@
 #pragma once
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <vector>
 #include <optional>
+#ifdef CPP_MODULES
 export module Preprocessor;
 import OptProcessor;
 import Directive;
 #else
 #include "OptProcessor.cppm"
 #include "Directive.cppm"
-#include <vector>
-#include <optional>
 #endif
 
 

@@ -1,19 +1,17 @@
 #pragma once
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <vector>
+#ifdef CPP_MODULES
 export module OptProcessor;
 import Regex;
 #else
 #include "Regex.cppm"
-#include <filesystem>
-#include <optional>
-#include <string>
-#include <vector>
 #endif
 
 

@@ -1,19 +1,17 @@
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <cstddef>
 #include <optional>
 #include <string>
 #include <variant>
+#ifdef CPP_MODULES
 module CondMinimizer;
 import Directive;
 #else
 #include "CondMinimizer.cppm"
 #include "Directive.cppm"
-#include <cstddef>
-#include <optional>
-#include <string>
-#include <variant>
 #endif
 
 

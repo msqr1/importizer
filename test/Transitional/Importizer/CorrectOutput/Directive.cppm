@@ -1,21 +1,18 @@
 #pragma once
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <cstddef>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
+#ifdef CPP_MODULES
 export module Directive;
 import FileOp;
 #else
 #include "FileOp.cppm"
-#include <cstddef>
-#include <optional>
-#include <string>
-#include <string_view>
-#include <variant>
 #endif
 
 

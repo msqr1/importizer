@@ -17,3 +17,5 @@
 // Do something else
 #endif
 #endif
+#define A
+#undef A

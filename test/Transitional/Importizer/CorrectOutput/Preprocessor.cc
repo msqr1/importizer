@@ -1,6 +1,7 @@
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
@@ -10,6 +11,7 @@ module;
 #include <utility>
 #include <variant>
 #include <vector>
+#ifdef CPP_MODULES
 module Preprocessor;
 import OptProcessor;
 import Regex;
@@ -21,15 +23,6 @@ import Directive;
 #include "Regex.cppm"
 #include "FileOp.cppm"
 #include "Directive.cppm"
-#include <algorithm>
-#include <cctype>
-#include <cstddef>
-#include <string>
-#include <string_view>
-#include <optional>
-#include <utility>
-#include <variant>
-#include <vector>
 #endif
 
 

@@ -1,19 +1,16 @@
 #pragma once
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <fmt/base.h>
 #include <fmt/std.h>
 #include <cstddef>
 #include <source_location>
 #include <filesystem>
+#ifdef CPP_MODULES
 export module Base;
 #else
-#include <fmt/base.h>
-#include <fmt/std.h>
-#include <cstddef>
-#include <source_location>
-#include <filesystem>
 #endif
 
 

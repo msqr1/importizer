@@ -1,6 +1,7 @@
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <fmt/std.h>
 #include <cstddef>
 #include <fstream>
@@ -10,6 +11,7 @@ module;
 #include <utility>
 #include <vector>
 #include <version>
+#ifdef CPP_MODULES
 module FileOp;
 import Base;
 import OptProcessor;
@@ -17,15 +19,6 @@ import OptProcessor;
 #include "FileOp.cppm"
 #include "Base.cppm"
 #include "OptProcessor.cppm"
-#include <fmt/std.h>
-#include <cstddef>
-#include <fstream>
-#include <filesystem>
-#include <string>
-#include <string_view>
-#include <utility>
-#include <vector>
-#include <version>
 #endif
 
 

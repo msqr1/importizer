@@ -1,6 +1,7 @@
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <fmt/base.h>
 #include <cstddef>
 #include <iterator>
@@ -11,6 +12,7 @@ module;
 #include <variant>
 #include <vector>
 #include <filesystem>
+#ifdef CPP_MODULES
 module Preamble;
 import OptProcessor;
 import Directive;
@@ -24,16 +26,6 @@ import Preprocessor;
 #include "CondMinimizer.cppm"
 #include "FileOp.cppm"
 #include "Preprocessor.cppm"
-#include <fmt/base.h>
-#include <cstddef>
-#include <iterator>
-#include <optional>
-#include <string>
-#include <string_view>
-#include <utility>
-#include <variant>
-#include <vector>
-#include <filesystem>
 #endif
 
 

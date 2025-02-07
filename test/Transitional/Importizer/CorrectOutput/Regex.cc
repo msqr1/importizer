@@ -1,6 +1,7 @@
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -8,18 +9,13 @@ module;
 #include <string_view>
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include "../3rdParty/pcre2/src/pcre2.h.generic"
+#ifdef CPP_MODULES
 module Regex;
 import Base;
 #else
 #include "Regex.cppm"
 #include "Base.cppm"
-#include <cstddef>
-#include <cstdint>
-#include <optional>
-#include <source_location>
-#include <string_view>
 #define PCRE2_CODE_UNIT_WIDTH 8
-#include "../3rdParty/pcre2/src/pcre2.h.generic"
 #endif
 
 #define PCRE2_CODE_UNIT_WIDTH 8

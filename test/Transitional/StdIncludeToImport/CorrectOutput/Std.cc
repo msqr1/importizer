@@ -1,9 +1,8 @@
-#ifdef CPP_MODULES
 #include "RandomHeader.hpp"
+#ifdef CPP_MODULES
 import std;
 #else
 #include <iostream>
-#include "RandomHeader.hpp"
 #include <fstream>
 #endif
 

@@ -1,5 +1,5 @@
 add_executable(importizer Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
-  Preprocessor.cc Preamble.cc Directive.cc CondMinimizer.cc)
+  Preprocessor.cc Preamble.cc Directive.cc Minimizer.cc)
 target_compile_features(importizer PRIVATE cxx_std_23)
 
 # 3rd-party headers rarely changes

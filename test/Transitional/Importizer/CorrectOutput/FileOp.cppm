@@ -1,17 +1,15 @@
 #pragma once
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <string>
 #include <filesystem>
 #include <string_view>
 #include <vector>
+#ifdef CPP_MODULES
 export module FileOp;
 #else
-#include <string>
-#include <filesystem>
-#include <string_view>
-#include <vector>
 #endif
 
 

@@ -1,9 +1,9 @@
-#ifdef CPP_MODULES
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/std.h>
 #include <exception>
 #include <filesystem>
+#ifdef CPP_MODULES
 import OptProcessor;
 import FileOp;
 import Preamble;
@@ -13,11 +13,6 @@ import Preprocessor;
 #include "FileOp.cppm"
 #include "Preamble.cppm"
 #include "Preprocessor.cppm"
-#include <fmt/base.h>
-#include <fmt/format.h>
-#include <fmt/std.h>
-#include <exception>
-#include <filesystem>
 #endif
 
 

@@ -1,6 +1,7 @@
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <array>
 #include <cstddef>
 #include <optional>
@@ -8,6 +9,7 @@ module;
 #include <string_view>
 #include <utility>
 #include <variant>
+#ifdef CPP_MODULES
 module Directive;
 import Base;
 import Regex;
@@ -15,13 +17,6 @@ import Regex;
 #include "Directive.cppm"
 #include "Base.cppm"
 #include "Regex.cppm"
-#include <array>
-#include <cstddef>
-#include <optional>
-#include <string>
-#include <string_view>
-#include <utility>
-#include <variant>
 #endif
 
 

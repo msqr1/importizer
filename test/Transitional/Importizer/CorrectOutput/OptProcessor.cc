@@ -1,6 +1,7 @@
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include "../3rdParty/Argparse.hpp"
 #include <algorithm>
 #include <fmt/std.h>
@@ -11,21 +12,12 @@ module;
 #include <optional>
 #include <string>
 #include <string_view>
+#ifdef CPP_MODULES
 module OptProcessor;
 import Base;
 #else
 #include "OptProcessor.cppm"
 #include "Base.cppm"
-#include "../3rdParty/Argparse.hpp"
-#include <algorithm>
-#include <fmt/std.h>
-#include <toml++/toml.hpp>
-#include <utility>
-#include <vector>
-#include <filesystem>
-#include <optional>
-#include <string>
-#include <string_view>
 #endif
 
 
