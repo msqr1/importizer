@@ -5,6 +5,9 @@ module;
 #ifdef COND1
 #include "RandomHeader.hpp"
 #endif
+#ifdef COND2
+#define a
+#endif
 export module Test;
 
 #ifdef COND 

@@ -9,15 +9,22 @@ std::optional<size_t> getIfSkip(const MinimizeCtx& mCtx, size_t currentIdx) {
   currentIdx++;
   size_t nest{1};
   for(; currentIdx < mCtx.size(); currentIdx++) {
-    if(std::holds_alternative<Directive>(mCtx[currentIdx])) {
-      DirectiveType type{std::get<Directive>(mCtx[currentIdx]).type};
-      if(type == DirectiveType::IfCond) nest++;
-      else if(type == DirectiveType::EndIf) {
-        nest--;
-        if(nest == 0) return currentIdx;
-      }
+    if(!std::holds_alternative<Directive>(mCtx[currentIdx])) return std::nullopt;
+    DirectiveType type{std::get<Directive>(mCtx[currentIdx]).type};
+    switch(type) {
+    case DirectiveType::IfCond:
+      nest++;
+      break;
+    case DirectiveType::EndIf:
+      nest--;
+      if(nest == 0) return currentIdx;
+      break;
+    case DirectiveType::ElCond:
+    case DirectiveType::Else:
+      break;
+    default:
+      return std::nullopt;
     }
-    else return std::nullopt;
   }
   return std::nullopt;
 }

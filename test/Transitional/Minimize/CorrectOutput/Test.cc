@@ -8,9 +8,15 @@ module;
 #ifdef COND1
 #include "RandomHeader.hpp"
 #endif
+#ifdef COND2
+#define a
+#endif
 #ifdef CPP_MODULES
 export module Test;
 #else
+#ifdef COND2
+#define a
+#endif
 #endif
 
 #ifdef COND 
