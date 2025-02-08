@@ -53,15 +53,15 @@ void readFromPath(const fs::path& path, std::string& str) {
 - FileOp.cppm:
 ```cpp
 #pragma once
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <string>
 #include <filesystem>
+#ifdef CPP_MODULES
 export module FileOp;
 #else
-#include <string>
-#include <filesystem>
 #endif
 
 
@@ -69,18 +69,16 @@ void readFromPath(const std::filesystem::path& path, std::string& str);
 ```
 - FileOp.cpp:
 ```cpp
-#include "Export.hpp"
 #ifdef CPP_MODULES
 module;
+#endif
+#include "Export.hpp"
 #include <fstream>
 #include <filesystem>
-#include <string>
+#ifdef CPP_MODULES
 module FileOp;
 #else
 #include "FileOp.cppm"
-#include <fstream>
-#include <filesystem>
-#include <string>
 #endif
 
 
@@ -108,6 +106,9 @@ void readFromPath(const fs::path& path, std::string& str) {
 ## Say we have
 - moduleTest.cppm:
 ```cpp
+#ifdef CPP_MODULES
+module;
+#endif
 #include "Export.hpp"
 #ifdef CPP_MODULES
 export module test;
@@ -117,6 +118,9 @@ EXPORT int x();
 ```
 - moduleTest.cpp:
 ```cpp
+#ifdef CPP_MODULES
+module;
+#endif
 #ifdef CPP_MODULES
 module test;
 #define A 1

@@ -4,7 +4,6 @@
 #include "FileOp.hpp"
 #include "Directive.hpp"
 #include <algorithm>
-#include <cctype>
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -32,6 +31,12 @@ template <char open, char close> void balance(std::string_view str, uintmax_t& p
 
 bool isDigit(char c) {
   for(char n : "0123456789") {
+    if(c == n) return true;
+  }
+  return false;
+}
+bool isSpace(char c) {
+  for(char n : " \t\v\f") {
     if(c == n) return true;
   }
   return false;
@@ -170,7 +175,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         }
         continue;
       }
-      else whitespaceAfterNewline = std::isspace(code[i]);
+      else whitespaceAfterNewline = isSpace(code[i]);
 
       // If you're a sane person you wouldn't write the main function like this:
       // int/*comment*/main/*comment*/(, right? Cuz it won't work.
