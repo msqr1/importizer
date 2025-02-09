@@ -5,7 +5,7 @@
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
 #include <fmt/base.h>
-#include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <optional>
 #include <string>

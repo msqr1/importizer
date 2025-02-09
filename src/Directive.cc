@@ -2,21 +2,21 @@
 #include "Base.hpp"
 #include "Regex.hpp"
 #include <array>
-#include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <variant>
 
-IncludeInfo::IncludeInfo(bool isAngle, size_t startOffset, std::string_view includeStr):
+IncludeInfo::IncludeInfo(bool isAngle, uintmax_t startOffset, std::string_view includeStr):
   isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
 Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx):
   str{std::move(str_)} {
   if(str.back() != '\n') str += '\n';
-  auto getWord = [](size_t start, std::string_view str) {
+  auto getWord = [](uintmax_t start, std::string_view str) {
     while(str[start] == ' ') start++;
-    size_t end{start};
+    uintmax_t end{start};
     while(str[end] != ' ' && str[end] != '\n'
       && str[end] != '/') end++;
     return str.substr(start, end - start);
@@ -27,8 +27,8 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx):
   else if(directive == "undef") type = DirectiveType::Undef;
   else if(directive == "include") {
     type = DirectiveType::Include;
-    size_t start{str.find('<', 1 + directive.length())};
-    size_t end;
+    uintmax_t start{str.find('<', 1 + directive.length())};
+    uintmax_t end;
     bool isAngle{start != notFound};
     if(isAngle) {
       start++;
@@ -60,7 +60,7 @@ Directive::Directive(Directive&& other) noexcept: type{other.type},
   switch(extraInfo.index()) {
   case 1: {
     IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
-    size_t len{includeInfo.includeStr.length()};
+    uintmax_t len{includeInfo.includeStr.length()};
     str = std::move(other.str);
     includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
     break;
@@ -73,7 +73,7 @@ Directive::Directive(const Directive& other): type{other.type}, str{other.str},
   extraInfo(other.extraInfo) {
   if(std::holds_alternative<IncludeInfo>(extraInfo)) {
     IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
-    size_t len{includeInfo.includeStr.length()};
+    uintmax_t len{includeInfo.includeStr.length()};
     includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
   }
 }

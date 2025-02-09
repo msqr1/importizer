@@ -1,13 +1,13 @@
 #include "Minimizer.hpp"
 #include "Directive.hpp"
-#include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <variant>
 
-std::optional<size_t> getIfSkip(const MinimizeCtx& mCtx, size_t currentIdx) {
+std::optional<uintmax_t> getIfSkip(const MinimizeCtx& mCtx, uintmax_t currentIdx) {
   currentIdx++;
-  size_t nest{1};
+  uintmax_t nest{1};
   for(; currentIdx < mCtx.size(); currentIdx++) {
     if(!std::holds_alternative<Directive>(mCtx[currentIdx])) return std::nullopt;
     DirectiveType type{std::get<Directive>(mCtx[currentIdx]).type};
@@ -30,8 +30,8 @@ std::optional<size_t> getIfSkip(const MinimizeCtx& mCtx, size_t currentIdx) {
 }
 std::string minimizeToStr(MinimizeCtx& mCtx) {
   std::string rtn;
-  std::optional<size_t> ifSkip;
-  for(size_t i{}; i < mCtx.size(); i++) switch(mCtx[i].index()) {
+  std::optional<uintmax_t> ifSkip;
+  for(uintmax_t i{}; i < mCtx.size(); i++) switch(mCtx[i].index()) {
   case 0: // std::string
     rtn += std::get<std::string>(mCtx[i]);
     break;

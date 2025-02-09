@@ -5,7 +5,7 @@
 #include "Directive.hpp"
 #include <algorithm>
 #include <cctype>
-#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <optional>
@@ -16,8 +16,8 @@
 namespace {
 
 // Return the position one-past the closing character
-template <char open, char close> void balance(std::string_view str, size_t& pos) {
-  size_t nest{1};
+template <char open, char close> void balance(std::string_view str, uintmax_t& pos) {
+  uintmax_t nest{1};
   do {
     switch(str[pos]) {
     case open:
@@ -52,8 +52,8 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
   IncludeGuardCtx ctx{file.type, includeGuardPat};
   bool whitespaceAfterNewline{true};
   std::string& code{file.content};
-  size_t i{};
-  size_t codeLen{code.length()};
+  uintmax_t i{};
+  uintmax_t codeLen{code.length()};
   while(i < codeLen) {
     switch(code[i]) {
     
@@ -84,9 +84,9 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
 
       // Raw
       if(code[i - 2] == 'R') {
-        const size_t start{i};
+        const uintmax_t start{i};
         while(code[i] != '(') i++;
-        const size_t delimSize{i - start};
+        const uintmax_t delimSize{i - start};
         balance<'(',')'>(code, ++i);
         i += delimSize;
       }
@@ -99,12 +99,12 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
 
       // Preprocessor directive
       if(whitespaceAfterNewline && code[i] == '#') {
-        const size_t start{i};
+        const uintmax_t start{i};
         while(i < codeLen && (code[i] != '\n' || code[i - 1] == '\\')) i++;
         
         // Get the \n if available
-        const size_t end{i + (i < codeLen)};
-        const size_t len{end - start};
+        const uintmax_t end{i + (i < codeLen)};
+        const uintmax_t len{end - start};
         DirectiveAction directiveAction;
         Directive directive{code.substr(start, end - start), ctx};
         switch(directive.type) {

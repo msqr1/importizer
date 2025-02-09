@@ -1,7 +1,7 @@
 #pragma once
 #include <fmt/base.h>
 #include <fmt/std.h>
-#include <cstddef>
+#include <cstdint>
 #include <source_location>
 #include <filesystem>
 

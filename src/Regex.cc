@@ -1,6 +1,5 @@
 #include "Regex.hpp"
 #include "Base.hpp"
-#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <source_location>
@@ -25,9 +24,9 @@ void ckPCRE2Code(int status, const std::source_location& loc
 } // namespace
 
 Capture::Capture(): start{}, end{} {};
-Capture::Capture(size_t start, size_t end): start{start}, end{end} {}
+Capture::Capture(uintmax_t start, uintmax_t end): start{start}, end{end} {}
 Captures::Captures() {}
-Captures::Captures(size_t* ovector): ovector{ovector} {}
+Captures::Captures(uintmax_t* ovector): ovector{ovector} {}
 Capture Captures::operator[](int idx) const {
   
   // ovector comes in pairs of (start, end), so multiply by 2 to get correct index
@@ -47,7 +46,7 @@ Pattern& Pattern::reset(std::string_view pat, uint32_t opts) {
   pcre2_code_free(pattern);
   pcre2_match_data_free(matchData);
   int status;
-  size_t _; // Unused
+  uintmax_t _; // Unused
   pattern = pcre2_compile(reinterpret_cast<PCRE2_SPTR>(pat.data()), pat.length(), 
     opts | PCRE2_UTF | PCRE2_NO_UTF_CHECK, &status, &_, nullptr);
   ckPCRE2Code(status);
@@ -61,7 +60,7 @@ Pattern::~Pattern() {
   pcre2_code_free(pattern);
   pcre2_match_data_free(matchData);
 }
-std::optional<Captures> Pattern::match(std::string_view subject, size_t startOffset)
+std::optional<Captures> Pattern::match(std::string_view subject, uintmax_t startOffset)
   const {
   int count{pcre2_match(pattern, reinterpret_cast<PCRE2_SPTR>(subject.data()),
     subject.length(), startOffset, PCRE2_NO_UTF_CHECK, matchData, nullptr)};

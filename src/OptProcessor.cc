@@ -2,9 +2,10 @@
 #include "Base.hpp"
 #include "../3rdParty/Argparse.hpp"
 #include <fmt/format.h>
-#include <algorithm>
 #include <fmt/std.h>
 #include <toml++/toml.hpp>
+
+#include <algorithm>
 #include <utility>
 #include <vector>
 #include <filesystem>

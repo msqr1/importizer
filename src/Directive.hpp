@@ -1,6 +1,6 @@
 #pragma once
 #include "FileOp.hpp"
-#include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -19,7 +19,7 @@ enum class IncludeGuardState : char {
 class IncludeGuardCtx {
 public:
   IncludeGuardState state;
-  size_t counter;
+  uintmax_t counter;
   const re::Pattern& pat;
   IncludeGuardCtx(FileType type, const re::Pattern& pat):
     state{type == FileType::Hdr ?
@@ -29,9 +29,9 @@ public:
 class IncludeInfo {
 public:
   bool isAngle;
-  size_t startOffset;
+  uintmax_t startOffset;
   std::string_view includeStr;
-  IncludeInfo(bool isAngle, size_t startOffset, std::string_view includeStr);
+  IncludeInfo(bool isAngle, uintmax_t startOffset, std::string_view includeStr);
 };
 
 // For ifndef and define that matches opts.includeGuardPat

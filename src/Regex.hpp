@@ -1,5 +1,4 @@
 #pragma once
-#include <cstddef>
 #include <cstdint>
 #include <string_view>
 #include <optional>
@@ -11,20 +10,20 @@ namespace re {
 
 class Capture {
 friend class Captures;
-  Capture(size_t start, size_t end);
+  Capture(uintmax_t start, uintmax_t end);
 public:
-  size_t start;
-  size_t end;
+  uintmax_t start;
+  uintmax_t end;
   Capture();
 };
 
 // Captures doesn't own anything, it's just a pointer to the ovector, so we can copy
 class Captures {
 friend class Pattern;
-  size_t* ovector;
+  uintmax_t* ovector;
 public:
   Captures();
-  Captures(size_t* ovector);
+  Captures(uintmax_t* ovector);
   Capture operator[](int idx) const;
 };
 
@@ -40,7 +39,7 @@ public:
   Pattern& reset(std::string_view pat, uint32_t opts = 0);
   Pattern();
   ~Pattern();
-  std::optional<Captures> match(std::string_view subject, size_t startOffset = 0) const;
+  std::optional<Captures> match(std::string_view subject, uintmax_t startOffset = 0) const;
 };
 
 } // namespace re

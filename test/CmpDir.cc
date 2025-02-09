@@ -1,6 +1,5 @@
 #include <fmt/base.h>
 #include <fmt/std.h>
-#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -15,10 +14,10 @@ void read(const fs::path& path, std::ifstream& ifs, std::string& str) {
     fmt::println("CmpDir: Unable open {} for reading", path);
     throw 5;
   }
-  size_t fsize{ fs::file_size(path) };
+  uintmax_t fsize{ fs::file_size(path) };
 #ifdef __cpp_lib_string_resize_and_overwrite
   str.resize_and_overwrite(fsize, [fsize]
-    ([[maybe_unused]] char* _, [[maybe_unused]] size_t _1) {
+    ([[maybe_unused]] char* _, [[maybe_unused]] uintmax_t _1) {
     return fsize;
   });
 #else
