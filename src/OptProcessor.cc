@@ -4,7 +4,6 @@
 #include <fmt/format.h>
 #include <fmt/std.h>
 #include <toml++/toml.hpp>
-
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -86,9 +85,13 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     .help("Include paths searched when converting include to import")
     .nargs(ap::nargs_pattern::at_least_one);
   generalParser.add_argument("--ignored-hdrs")
-    .help("Paths relative to ```inDir``` of header files to ignore. Their paired sources,"
-      " if available, will be treated as if they have a ```main()```")
+    .help("Paths relative to inDir of header files to ignore. Their paired sources,"
+      " if available, will be treated as if they have a main()")
     .nargs(ap::nargs_pattern::at_least_one);
+  generalParser.add_argument("--bootstrap-std-module")
+    .help("Generate a bootstrap standard modules. Recommended name is something like"
+      " 'bootstrapStd'. '.compat' will be added automatically. Ineffective if"
+      " stdIncludeToImport is off");
   ap::ArgumentParser transitionalParser{"transitional", "", ap::default_arguments::help};
   transitionalParser.add_argument("-b", "--back-compat-hdrs")
     .help("Generate headers that include the module file to preserve #include for users."
@@ -158,6 +161,12 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     std::transform(pathArr->begin(), pathArr->end(), opts.ignoredHdrs.begin(), strRval);
   }
   else getPathArr("ignoredHdrs", opts.ignoredHdrs, std::nullopt);
+  if(opts.stdIncludeToImport && (generalParser.is_used("--bootstrap-std-module")
+    || config.contains("bootstrapStdModule"))) {
+    getOrDefault(generalParser, "--bootstrap-std-module", config, "bootstrapStdModule",
+    "");
+  }
+  else opts.bootstrapStdModule = std::nullopt;
   /*
   log(
     "stdIncludeToImport: {}\n"

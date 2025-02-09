@@ -75,6 +75,19 @@ enum class StdImportLvl : char {
   Std,
   StdCompat
 };
+void addStdImport(std::string& str, StdImportLvl lvl,
+  const std::optional<std::string>& bootstrapStdModule) {
+  if(lvl == StdImportLvl::StdCompat) {
+    fmt::format_to(std::back_inserter(str),
+      "import {}.compat;\n",
+      bootstrapStdModule ? *bootstrapStdModule : "std");
+  }
+  else if(lvl == StdImportLvl::Std) {
+    fmt::format_to(std::back_inserter(str),
+      "import {};\n",
+      bootstrapStdModule ? *bootstrapStdModule : "std");
+  }
+}
 struct Skip {};
 struct KeepAsInclude {};
 using ConvertToImport = std::string;
@@ -203,8 +216,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       path2ModuleName(file.relPath));
   }
   preamble += imports;
-  if(lvl == StdImportLvl::StdCompat) preamble += "import std.compat;\n";
-  else if(lvl == StdImportLvl::Std) preamble += "import std;\n";
+  addStdImport(preamble, lvl, opts.bootstrapStdModule);
   return preamble;
 }
 std::string getTransitionalPreamble(const Opts& opts,
@@ -318,10 +330,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       ("." / opts.transitionalOpts->exportMacrosPath)
       .lexically_relative("." / file.relPath.parent_path()).generic_string());
   }
-
-  // From here import section should be added, but not include section
-  if(lvl == StdImportLvl::StdCompat) moduleStr += "import std.compat;\n";
-  else if(lvl == StdImportLvl::Std) moduleStr += "import std;\n";
+  addStdImport(moduleStr, lvl, opts.bootstrapStdModule);
   fmt::format_to(std::back_inserter(preamble),
     "{}"
     "#ifdef {}\n"
