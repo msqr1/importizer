@@ -146,9 +146,13 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
 
     // Convert header and unpaired source into module interface unit. Without
     // the "export " the file is a module implementation unit
-    if(file.type == FileType::Hdr || file.type == FileType::UnpairedSrc)  {
+    switch(file.type) {
+    case FileType::Hdr:
+    case FileType::UmbrellaHdr:
+    case FileType::UnpairedSrc:
       manualExport = true;
       preamble += "export ";
+    default:;
     }
     fmt::format_to(std::back_inserter(preamble),
       "module {};\n",
@@ -191,9 +195,13 @@ std::string getTransitionalPreamble(const Opts& opts,
 
     // Convert header and unpaired source into module interface unit. Without
     // the "export " the file is a module implementation unit
-    if(file.type == FileType::Hdr || file.type == FileType::UnpairedSrc)  {
+    switch(file.type) {
+    case FileType::Hdr:
+    case FileType::UmbrellaHdr:
+    case FileType::UnpairedSrc:
       manualExport = true;
       moduleStr += "export ";
+    default:;
     }
     fmt::format_to(std::back_inserter(moduleStr),
       "module {};\n",

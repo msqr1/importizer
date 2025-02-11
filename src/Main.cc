@@ -32,12 +32,12 @@ void run(int argc, const char* const* argv) {
   for(File& file : getProcessableFiles(opts)) {
     if(opts.logCurrentFile) log("Current file: {}", file.relPath);
     readFromPath(file.path, file.content);
-/*  if(file.type == FileType::IgnoredHdr) {
+    /*if(file.type == FileType::IgnoredHdr) {
       preprocess(opts, file)
     }
     else {*/
     bool manualExport{addPreamble(file, preprocess(opts, file), opts)};
-    if(file.type == FileType::Hdr) {
+    if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
       if(opts.transitionalOpts && opts.transitionalOpts->backCompatHdrs) {
         backCompatHdr = opts.outDir / file.relPath;
         writeToPath(backCompatHdr, fmt::format(
@@ -47,7 +47,7 @@ void run(int argc, const char* const* argv) {
       else file.relPath.replace_extension(opts.moduleInterfaceExt);
     }
     if(manualExport) log("{}", file.relPath);
-//    }
+    //}
     writeToPath(opts.outDir / file.relPath, file.content);
   }
 }
