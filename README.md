@@ -102,7 +102,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | -c, --config                | N/A                | Path to TOML configuration file (`.toml`), default to `importizer.toml`                                                                                                     | String       | N/A           |
 | -h, --help                  | N/A                | Print help and exit                                                                                                                                                         | N/A          | N/A           |
 | -v, --version               | N/A                | Print version and exit                                                                                                                                                      | N/A          | N/A           |
-| -s, --std-include-to-import | stdIncludeToImport | Convert standard includes to `import std` or `import std.compat` or a bootstrapped name if `bootstrapStdModule` is chosen                                                  | Boolean      | `false`       |
+| -s, --std-include-to-import | stdIncludeToImport | Convert standard includes to `import std` or `import std.compat` or a bootstrapped name if `bootstrapStdModule` is chosen                                                   | Boolean      | `false`       |
 | -l, --log-current-file      | logCurrentFile     | Print the current file being processed                                                                                                                                      | Boolean      | `false`       |
 | --include-guard-pat         | includeGuardPat    | Regex to match include guards that must match the entire guard. #pragma once is processed by default.                                                                       | String       | `[^\s]+_H`    |
 | -i, --in-dir                | inDir              | Input directory (required on the CLI or in the TOML file)                                                                                                                   | String       | N/A           |
@@ -112,6 +112,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | --module-interface-ext      | moduleInterfaceExt | Module interface unit file extension                                                                                                                                        | String       | `.cppm`       |
 | --include-paths             | includePaths       | Include paths searched when converting include to import                                                                                                                    | String array | `[]`          |
 | --ignored-hdrs              | ignoredHdrs        | Paths relative to `inDir` of header files to ignore. Their paired sources, if available, will be treated as if they have a `main()`                                         | String array | `[]`          |
+| --umbrella-hdrs             | umbrellaHdrs       | Paths relative to `inDir` of modularized headers, but their `import` are turned into `export import`                                                                        | String array | `[]`          |       
 | --bootstrap-std-module      | bootstrapStdModule | Generate a bootstrap standard modules. Recommended name is something like `bootstrapStd`. `.compat` will be added automatically. Ineffective if `stdIncludeToImport` is off | String       | N/A           |
 
 - Transitional flags/settings (must be specified after `transitional` on the CLI or under `[Transitional]` in the setting file):
@@ -129,4 +130,4 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - Max column width: 90
 - Put comment to denote what type after case label for variant switch
 - Keep settings' order in the README, the option struct, and their value-checking order the same.
-- To determine order for new settings, optimize for the option struct size
+- To determine order for new settings, optimize for the option struct size and follow chronological order

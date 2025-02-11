@@ -41,12 +41,6 @@ bool isSpace(char c) {
   }
   return false;
 }
-enum class DirectiveAction : char {
-  Continue,
-  Emplace,
-  EmplaceRemove,
-  Remove,
-};
 
 } // namespace
 
@@ -59,6 +53,14 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
   std::string& code{file.content};
   uintmax_t i{};
   uintmax_t codeLen{code.length()};
+  uintmax_t start;
+  uintmax_t end;
+  uintmax_t len;
+  auto rmDirective = [&] {
+    std::copy(code.begin() + end, code.end(), code.begin() + start);
+    i = start;
+    codeLen -= len;
+  };
   while(i < codeLen) {
     switch(code[i]) {
     
@@ -104,41 +106,39 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
 
       // Preprocessor directive
       if(whitespaceAfterNewline && code[i] == '#') {
-        const uintmax_t start{i};
+        start = i;
         while(i < codeLen && (code[i] != '\n' || code[i - 1] == '\\')) i++;
         
         // Get the \n if available
-        const uintmax_t end{i + (i < codeLen)};
-        const uintmax_t len{end - start};
-        DirectiveAction directiveAction;
-        Directive directive{code.substr(start, end - start), ctx};
+        end = i + (i < codeLen);
+        len = end - start;
+        Directive directive{code.substr(start, len), ctx};
         switch(directive.type) {
         case DirectiveType::Define:
           if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
             ctx.state = IncludeGuardState::GotDefine;
-            directiveAction = transitionalOpts ?
-              DirectiveAction::EmplaceRemove : DirectiveAction::Remove;
+            if(transitionalOpts) directives.emplace_back(std::move(directive));
+            rmDirective();
           }
-          else directiveAction = DirectiveAction::Emplace;
+          else directives.emplace_back(std::move(directive));
           break;
         case DirectiveType::IfCond:
           if(ctx.state == IncludeGuardState::GotDefine) ctx.counter++;
           else if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
             ctx.state = IncludeGuardState::GotIfndef;
             ctx.counter = 1;
-            directiveAction = transitionalOpts ?
-              DirectiveAction::EmplaceRemove : DirectiveAction::Remove;
+            if(transitionalOpts) directives.emplace_back(std::move(directive));
+            rmDirective();
             break;
           }
-          directiveAction = DirectiveAction::Emplace;
+          directives.emplace_back(std::move(directive));
           break;
         case DirectiveType::EndIf:
           if(ctx.state == IncludeGuardState::GotDefine) {
             ctx.counter--;
             if(ctx.counter == 0) {
               ctx.state = IncludeGuardState::GotEndif;
-              directiveAction = transitionalOpts ?
-                DirectiveAction::Continue : DirectiveAction::Remove;
+              if(!transitionalOpts) rmDirective();
               break;
             }
           }
@@ -146,32 +146,17 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         case DirectiveType::Else:
         case DirectiveType::ElCond:
         case DirectiveType::Undef:
-          directiveAction = DirectiveAction::Emplace;
+          directives.emplace_back(std::move(directive));
           break;
         case DirectiveType::PragmaOnce:
-          directiveAction = transitionalOpts ?
-            DirectiveAction::EmplaceRemove : DirectiveAction::Remove;
+          if(transitionalOpts) directives.emplace_back(std::move(directive));
+          rmDirective();
           break;
         case DirectiveType::Include:
-          directiveAction = DirectiveAction::EmplaceRemove;
-          break;
-        case DirectiveType::Other:
-          directiveAction = DirectiveAction::Continue;
-          break;
-        }
-        switch(directiveAction) {
-        case DirectiveAction::Emplace:
           directives.emplace_back(std::move(directive));
+          rmDirective();
           break;
-        case DirectiveAction::EmplaceRemove:
-          directives.emplace_back(std::move(directive));
-          [[fallthrough]];
-        case DirectiveAction::Remove:
-          std::copy(code.begin() + end, code.end(), code.begin() + start);
-          i = start;
-          codeLen -= len;
-          break;
-        case DirectiveAction::Continue:;
+        case DirectiveType::Other:;
         }
         continue;
       }

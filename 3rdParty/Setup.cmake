@@ -25,9 +25,9 @@ if(NOT EXISTS toml++)
   gitClone(marzer/tomlplusplus 30172438cee64926dc41fdd9c11fb3ba5b2ba9de toml++)
 endif()
 
-# 10.45-RC1
+# 10.45
 if(NOT EXISTS pcre2)
-  gitClone(PCRE2Project/pcre2 e2985c439b7fa374b4bd3052ca413e29ed1ad590 pcre2)
+  gitClone(PCRE2Project/pcre2 2dce7761b1831fd3f82a9c2bd5476259d945da4d pcre2)
 endif()
 if(NOT EXISTS Argparse.hpp)
   file(DOWNLOAD https://raw.githubusercontent.com/p-ranav/argparse/refs/tags/v3.2/include/argparse/argparse.hpp Argparse.hpp)

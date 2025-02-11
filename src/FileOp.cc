@@ -1,6 +1,7 @@
 #include "FileOp.hpp"
 #include "Base.hpp"
 #include "OptProcessor.hpp"
+#include <cstdint>
 #include <fmt/std.h>
 #include <fstream>
 #include <filesystem>
@@ -58,6 +59,7 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
           goto skipThisFile;
         }
       }
+      
       file.type = FileType::Hdr;
     }
     else if(ext == opts.srcExt) {

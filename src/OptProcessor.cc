@@ -35,22 +35,38 @@ auto getTypeCk(const toml::table& tbl, std::string_view key) {
 }
 template<typename T>
 auto getOrDefault(const ap::ArgumentParser& parser, std::string_view cliKey,
-  const std::optional<toml::table>& tbl, std::string_view configKey, T&& defaultVal) {
+  const std::optional<toml::table>& tbl, std::string_view tblKey, T&& defaultVal) {
   if(parser.is_used(cliKey)) {
     if constexpr(std::is_convertible_v<T, std::string>) {
       return parser.get<std::string>(cliKey);
     }
     else parser.get<T>(cliKey);
   }
-  else if(tbl && tbl->contains(configKey)) return getTypeCk<T>(*tbl, configKey);
+  else if(tbl && tbl->contains(tblKey)) return getTypeCk<T>(*tbl, tblKey);
   if constexpr(std::is_convertible_v<T, std::string>) return std::string{defaultVal};
   else return std::forward<T>(defaultVal);
 }
-
 template<typename T>
 auto getMustHave(const toml::table& tbl, std::string_view key) {
   if(!tbl.contains(key)) exitWithErr("{} must be specified", key);
   return getTypeCk<T>(tbl, key);
+}
+void getPathArr(const ap::ArgumentParser& parser, std::string_view cliKey,
+  const std::optional<toml::table>& tbl, std::string_view tblKey, 
+  const std::optional<fs::path>& prefix, std::vector<fs::path>& container) {
+  if(std::optional<std::vector<std::string>> pathArr{
+    parser.present<std::vector<std::string>>(cliKey)}) {
+    for(std::string& str : *pathArr) container.emplace_back(std::move(str));
+  }
+  else if(tbl->contains(tblKey)) {
+    toml::array arr{*tbl->get(tblKey)->as_array()};
+    fs::path p;
+    for(toml::node& elem : arr) {
+      if(!elem.is<std::string>()) exitWithErr("{} must only contains strings", tblKey);
+      if(prefix) container.emplace_back(*prefix / std::move(elem.ref<std::string>()));
+      else container.emplace_back(std::move(elem.ref<std::string>()));
+    }
+  }
 }
 
 } // namespace
@@ -85,8 +101,11 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     .help("Include paths searched when converting include to import")
     .nargs(ap::nargs_pattern::at_least_one);
   generalParser.add_argument("--ignored-hdrs")
-    .help("Paths relative to inDir of header files to ignore. Their paired sources,"
+    .help("Paths relative to inDir of headers to ignore. Their paired sources,"
       " if available, will be treated as if they have a main()")
+    .nargs(ap::nargs_pattern::at_least_one);
+  generalParser.add_argument("--umbrella-hdrs")
+    .help("Paths relative to inDir of modularized headers, but their 'import' are turned into 'export import'")
     .nargs(ap::nargs_pattern::at_least_one);
   generalParser.add_argument("--bootstrap-std-module")
     .help("Generate a bootstrap standard modules. Recommended name is something like"
@@ -110,10 +129,10 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   generalParser.add_subparser(transitionalParser);
   generalParser.parse_args(argc, argv);
   const fs::path configPath{generalParser.get("-c")};
-  const toml::parse_result parseRes{toml::parse_file(configPath.native())};
+  toml::parse_result parseRes{toml::parse_file(configPath.native())};
   if(!parseRes) {
-    const toml::parse_error err{parseRes.error()};
-    const toml::source_region errSrc{err.source()};
+    toml::parse_error err{std::move(parseRes.error())};
+    const toml::source_region errSrc{std::move(err.source())};
     exitWithErr("TOML++ error: {} at {}({}:{})", err.description(), configPath,
     errSrc.begin.line, errSrc.begin.column);
   }
@@ -136,31 +155,12 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   opts.srcExt = getOrDefault(generalParser, "--src-ext", config, "srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault(generalParser, "--module-interface-ext", config,
     "moduleInterfaceExt", ".cppm");
-  auto getPathArr = [&](std::string_view key,
-    std::vector<fs::path>& container, const std::optional<fs::path>& prefix) -> void {
-    if(!config.contains(key)) return;
-    const toml::array arr{*config[key].as_array()};
-    fs::path p;
-    for(const toml::node& elem : arr) {
-      if(!elem.is<std::string>()) exitWithErr("{} must only contains strings", key);
-      container.emplace_back(prefix ? *prefix / elem.ref<std::string>() :
-        fs::path(elem.ref<std::string>()));
-    }
-  };
-  auto strRval = [](std::string& s){ return std::move(s); };
-  std::optional<std::vector<std::string>> pathArr{
-    generalParser.present<std::vector<std::string>>("--include-paths")};
-  if(pathArr) {
-    opts.includePaths.resize(pathArr->size());
-    std::transform(pathArr->begin(), pathArr->end(), opts.includePaths.begin(), strRval);
-  }
-  else getPathArr("includePaths", opts.includePaths, configDir);
-  pathArr = generalParser.present<std::vector<std::string>>("--ignored-hdrs");
-  if(pathArr) {
-    opts.ignoredHdrs.resize(pathArr->size());
-    std::transform(pathArr->begin(), pathArr->end(), opts.ignoredHdrs.begin(), strRval);
-  }
-  else getPathArr("ignoredHdrs", opts.ignoredHdrs, std::nullopt);
+  getPathArr(generalParser, "--include-paths", config, "includePaths", configDir,
+    opts.includePaths);
+  getPathArr(generalParser, "--ignored-hdrs", config, "ignoredHdrs", std::nullopt,
+    opts.ignoredHdrs);
+  getPathArr(generalParser, "--umbrella-hdrs", config, "umbrellaHdrs", std::nullopt,
+    opts.umbrellaHdrs);
   if(opts.stdIncludeToImport && (generalParser.is_used("--bootstrap-std-module")
     || config.contains("bootstrapStdModule"))) {
     getOrDefault(generalParser, "--bootstrap-std-module", config, "bootstrapStdModule",
