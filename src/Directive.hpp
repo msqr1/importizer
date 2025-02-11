@@ -1,10 +1,12 @@
 #pragma once
 #include "FileOp.hpp"
 #include <cstdint>
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 namespace re {
   class Pattern;
@@ -65,3 +67,15 @@ enum class StdIncludeType : char {
 
 // std::nullopt when not a standard include
 std::optional<StdIncludeType> getStdIncludeType(std::string_view include);
+
+// Just for the sake of making the lines not irritatingly long
+// Also these fixed from the start
+struct ResolveIncludeCtx {
+  const std::filesystem::path& inDir;
+  const std::vector<std::filesystem::path>& includePaths;
+};
+
+// Resolve an include, the path of the include relative to inDir,
+// return std::nullopt when the include doesn't exist, or not under inDir
+std::optional<std::filesystem::path> resolveInclude(const ResolveIncludeCtx& ctx,
+  const IncludeInfo& info, const std::filesystem::path& currentFilePath);

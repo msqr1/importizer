@@ -7,8 +7,6 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include "../3rdParty/pcre2/src/pcre2.h.generic"
 
-namespace re {
-
 namespace {
 
 void ckPCRE2Code(int status, const std::source_location& loc
@@ -22,6 +20,7 @@ void ckPCRE2Code(int status, const std::source_location& loc
 }
 
 } // namespace
+namespace re {
 
 Capture::Capture(): start{}, end{} {};
 Capture::Capture(uintmax_t start, uintmax_t end): start{start}, end{end} {}

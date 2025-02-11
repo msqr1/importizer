@@ -3,6 +3,7 @@
 - CondMinimizer renamed to Minimizer that will also remove empty #define/#undef pair
 - Remove all *Action return from function. Perform the action directly and shorten code with a lambda
 - Add umbrella header support, converting includes to `export import` instead of `import`
+- Replace extension for internal includes in ignored headers
 - Bump PCRE2 to 10.45
 
 # 1.0.1

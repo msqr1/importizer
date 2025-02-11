@@ -2,13 +2,15 @@
 - [Introduction](#introduction)
 - [Output example](#output-example)
 - [Getting started](#getting-started)
-   * [Prebuilt executable](#prebuilt-executable)
-   * [Building from source](#building-from-source)
-   * [Usage](#usage)
-   * [Testing](#testing)
+  - [Prebuilt executable](#prebuilt-executable)
+  - [Building from source](#building-from-source)
+  - [Usage](#usage)
+  - [Testing](#testing)
 - [Behavior](#behavior)
-- [Macros](#macros)
 - [Settings](#settings)
+- [Side effects of modules](#side-effects-of-modules)
+  - [Transitive include](#transitive-include)
+  - [Macros](#macros)
 - [Some code style rule](#some-code-style-rule)
 
 # Introduction
@@ -86,12 +88,6 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | Quoted        | 1. Relative to directory of the current file<br>2. Same as angle-bracket |
 | Angle bracket | 1. Relative to each of `includePaths`                                    |
 
-# Macros
-- Modules, unlike headers, were explicitly designed to be encapsulated from macros and so they wouldn't leak them. If a macro is defined in a header, and the header get modularized, it will only exist in that module. Some ways to remedy:
-  - Add the macro definition on the command line when compiling for the files that needed the macro (using `-D...`).
-  - Refactor the macro definition into a separate header, `#include` that where the macro is needed, and add the new header to `ignoredHdrs`.
-  - Add the macro-containing headers to the `ignoredHdrs` (their paired sources, if available will be treated as if they have a `main()`)
-
 # Settings
 - CLI settings will override config file settings
 - Paths are relative to the current working directory for CLI settings, and relative to the config file for TOML settings.
@@ -125,6 +121,19 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | --mi-export-block-begin | mi_exportBlockBegin | Export block begin macro identifier                                                                                                                        | String     | `BEGIN_EXPORT` |
 | --mi-export-block-end   | mi_exportBlockEnd   | Export block end macro identifier                                                                                                                          | String     | `END_EXPORT`   |
 | --export-macros-path    | exportMacrosPath    | Export macros file path relative to outDir                                                                                                                 | String     | `Export.hpp`   |
+
+# Side effects of modules
+- Applies in default modularization, or in transitional modularization when compiling with modules
+
+## Transitive include
+- Modules are completely separate from each other. Transitive include is not propogated across imported modules. Way(s) to remedy:
+  - Include everything you use before modularization, so the tool would keep it automatically
+
+## Macros
+- Modules, unlike headers, were explicitly designed to be encapsulated from macros and so they wouldn't leak them. If a macro is defined in a header, and the header get modularized, it will only exist in that module. Way(s) to remedy:
+  - Add the macro definition on the command line when compiling for the files that needed the macro (using `-D...`)
+  - Refactor the macro definition into a separate header, `#include` that where the macro is needed, and add the new header to `ignoredHdrs`
+  - Add the macro-containing headers to the `ignoredHdrs`
 
 # Some code style rule
 - Max column width: 90

@@ -15,7 +15,6 @@
 #include <filesystem>
 
 namespace fs = std::filesystem;
-
 namespace {
 
 std::string path2ModuleName(const fs::path& inDirRel) {
@@ -30,39 +29,6 @@ std::string path2ModuleName(const fs::path& inDirRel) {
     else if(c == '-') c = '_';
   }
   return pathStr;
-}
-
-// Just for the sake of making the lines not irritatingly long
-// Also these fixed from the start
-struct GetIncludeCtx {
-  const fs::path& inDir;
-  const std::vector<fs::path>& includePaths;
-};
-
-// Returns a resolved include, the path of the include relative to inDir,
-// return std::nullopt when the include doesn't exist, or not under inDir
-std::optional<fs::path> getAngleInclude(const GetIncludeCtx& ctx, const fs::path& include) {
-  fs::path p;
-  for(const fs::path& includePath : ctx.includePaths) {
-    p = includePath / include;
-    if(fs::exists(p)) {
-      p = fs::relative(p, ctx.inDir);
-      if(*p.begin() != "..") return p;
-    }
-  };
-  return std::nullopt;
-}
-std::optional<fs::path> getQuotedInclude(const GetIncludeCtx& ctx, const fs::path& include,
-  const fs::path& currentFile) {
-  fs::path p{currentFile};
-  p.remove_filename();
-  p = ctx.inDir / p;
-  p /= include;
-  if(fs::exists(p)) {
-    p = fs::relative(p, ctx.inDir);
-    if(*p.begin() != "..") return p;
-  }
-  return getAngleInclude(ctx, include);
 }
 enum class StdImportLvl : char {
   Unused,
@@ -82,9 +48,9 @@ void addStdImport(std::string& str, StdImportLvl lvl,
       bootstrapStdModule ? *bootstrapStdModule : "std");
   }
 }
-void handleInclude(const Opts& opts, Directive& include, const GetIncludeCtx& ctx,
+void handleInclude(const Opts& opts, Directive& include, const ResolveIncludeCtx& ctx,
   const File& file, StdImportLvl& lvl, std::string& imports, MinimizeCtx& sharedCtx,
-  MinimizeCtx* transitionalIncludeCtx) {
+  MinimizeCtx* transitionalIncludeCtx = nullptr) {
   const IncludeInfo& info{std::get<IncludeInfo>(include.extraInfo)};
   std::optional<StdIncludeType> stdIncludeType;
   auto replaceExtPush = [&]() {
@@ -93,9 +59,7 @@ void handleInclude(const Opts& opts, Directive& include, const GetIncludeCtx& ct
       fs::path(info.includeStr).replace_extension(opts.moduleInterfaceExt).string());
     transitionalIncludeCtx->emplace_back(std::move(include.str));
   };
-  if(std::optional<fs::path> resolvedInclude{info.isAngle ?
-    getAngleInclude(ctx, info.includeStr) :
-    getQuotedInclude(ctx, info.includeStr, file.relPath)}) {
+  if(std::optional<fs::path> resolvedInclude{resolveInclude(ctx, info, file.path)}) {
     fs::path includePath{std::move(*resolvedInclude)};
     
     // Ignored headers
@@ -112,14 +76,7 @@ void handleInclude(const Opts& opts, Directive& include, const GetIncludeCtx& ct
       }
       includePath.replace_extension(opts.hdrExt);
     }
-
-    // Umbrella headers
-    for(const fs::path& p : opts.umbrellaHdrs) {
-      if(file.relPath == p) {
-        imports += "export ";
-        break;
-      }
-    }
+    if(file.type == FileType::UmbrellaHdr) imports += "export ";
     fmt::format_to(std::back_inserter(imports), "import {};\n",
       path2ModuleName(includePath));
     replaceExtPush();
@@ -138,7 +95,7 @@ void handleInclude(const Opts& opts, Directive& include, const GetIncludeCtx& ct
 }
 std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directives,
   const File& file, bool& manualExport) {
-  const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
+  const ResolveIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::string preamble;
   std::string imports;
   StdImportLvl lvl{StdImportLvl::Unused};
@@ -148,7 +105,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
     MinimizeCtx noImportCtx;
     for(Directive& directive : directives) switch(directive.type) {
     case DirectiveType::Include:
-      handleInclude(opts, directive, ctx, file, lvl, imports, noImportCtx, nullptr); 
+      handleInclude(opts, directive, ctx, file, lvl, imports, noImportCtx); 
       break;
     case DirectiveType::IfCond:
     case DirectiveType::ElCond:
@@ -169,7 +126,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
     MinimizeCtx GMFCtx;
     for(Directive& directive : directives) switch(directive.type) {
     case DirectiveType::Include:
-      handleInclude(opts, directive, ctx, file, lvl, imports, GMFCtx, nullptr); 
+      handleInclude(opts, directive, ctx, file, lvl, imports, GMFCtx); 
       break;
     case DirectiveType::IfCond:
     case DirectiveType::Else:
@@ -203,7 +160,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
 }
 std::string getTransitionalPreamble(const Opts& opts,
   std::vector<Directive>& directives, const File& file, bool& manualExport) {
-  const GetIncludeCtx ctx{opts.inDir, opts.includePaths};
+  const ResolveIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::string preamble;
   MinimizeCtx sharedCtx;
   MinimizeCtx includeCtx;

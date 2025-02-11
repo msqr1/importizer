@@ -46,27 +46,27 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
   bool lookForMain{file.type == FileType::UnpairedSrc};
   IncludeGuardCtx ctx{file.type, opts.includeGuardPat};
   bool whitespaceAfterNewline{true};
-  std::string& code{file.content};
   uintmax_t i{};
-  uintmax_t codeLen{code.length()};
+  uintmax_t codeLen{file.content.length()};
   uintmax_t start;
   uintmax_t end;
   uintmax_t len;
   auto rmDirective = [&] {
-    std::copy(code.begin() + end, code.end(), code.begin() + start);
+    std::copy(file.content.begin() + end, file.content.end(),
+      file.content.begin() + start);
     i = start;
     codeLen -= len;
   };
   while(i < codeLen) {
-    switch(code[i]) {
+    switch(file.content[i]) {
     
     // Comments
     case '/':
       i++;
-      if(code[i] == '/') while(i < codeLen && code[i] != '\n') i++;
-      else if(code[i] == '*') {
+      if(file.content[i] == '/') while(i < codeLen && file.content[i] != '\n') i++;
+      else if(file.content[i] == '*') {
         i++;
-        while(!(code[i - 1] == '*' && code[i] == '/')) i++;
+        while(!(file.content[i - 1] == '*' && file.content[i] == '/')) i++;
       }
       break;
 
@@ -75,10 +75,10 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
       i++;
 
       // Integer literals
-      if(isDigit(code[i]) && isDigit(code[i - 2]) && code[i - 3] != 'u') break;
+      if(isDigit(file.content[i]) && isDigit(file.content[i - 2]) && file.content[i - 3] != 'u') break;
 
       // Character literals
-      while(code[i] != '\'') i += (code[i] == '\\') + 1;
+      while(file.content[i] != '\'') i += (file.content[i] == '\\') + 1;
       break;
 
     // String literals
@@ -86,14 +86,14 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
       i++;
 
       // Raw
-      if(code[i - 2] == 'R') {
+      if(file.content[i - 2] == 'R') {
         const uintmax_t start{i};
-        while(code[i] != '(') i++;
+        while(file.content[i] != '(') i++;
         const uintmax_t delimSize{i - start};
-        balance<'(',')'>(code, ++i);
+        balance<'(',')'>(file.content, ++i);
         i += delimSize;
       }
-      else while(code[i] != '"') i += (code[i] == '\\') + 1;
+      else while(file.content[i] != '"') i += (file.content[i] == '\\') + 1;
       break;
     case '\n':
       whitespaceAfterNewline = true;
@@ -101,14 +101,18 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
     default:
 
       // Preprocessor directive
-      if(whitespaceAfterNewline && code[i] == '#') {
+      if(whitespaceAfterNewline && file.content[i] == '#') {
         start = i;
-        while(i < codeLen && (code[i] != '\n' || code[i - 1] == '\\')) i++;
+        while(i < codeLen && (file.content[i] != '\n' || file.content[i - 1] == '\\')) i++;
         
         // Get the \n if available
         end = i + (i < codeLen);
         len = end - start;
-        Directive directive{code.substr(start, len), ctx};
+        Directive directive{file.content.substr(start, len), ctx};
+        /*if(file.type == FileType::IgnoredHdr) {
+          
+        }
+        else */
         switch(directive.type) {
         case DirectiveType::Define:
           if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
@@ -156,15 +160,15 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
         }
         continue;
       }
-      else whitespaceAfterNewline = isSpace(code[i]);
+      else whitespaceAfterNewline = isSpace(file.content[i]);
 
       // If you're a sane person you wouldn't write the main function like this:
       // int/*comment*/main/*comment*/(, right? Cuz it won't work.
-      if(lookForMain && std::string_view(code.c_str() + i, 3) == "int") {
-        i = code.find_first_not_of(" \n\t", i + 3);
-        if(std::string_view(code.c_str() + i, 4) != "main") break;
-        i = code.find_first_not_of(" \n\t", i + 4);
-        if(code[i] == '(') {
+      if(lookForMain && std::string_view(file.content.c_str() + i, 3) == "int") {
+        i = file.content.find_first_not_of(" \n\t", i + 3);
+        if(std::string_view(file.content.c_str() + i, 4) != "main") break;
+        i = file.content.find_first_not_of(" \n\t", i + 4);
+        if(file.content[i] == '(') {
           lookForMain = false;
           file.type = FileType::SrcWithMain;
         }
@@ -172,6 +176,6 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
     }
     i++;
   }
-  code.resize(codeLen);
+  file.content.resize(codeLen);
   return directives;
 }

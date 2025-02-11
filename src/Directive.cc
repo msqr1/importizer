@@ -3,12 +3,14 @@
 #include "Regex.hpp"
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <variant>
 
+namespace fs = std::filesystem;
 IncludeInfo::IncludeInfo(bool isAngle, uintmax_t startOffset, std::string_view includeStr):
   isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
 Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx):
@@ -111,6 +113,27 @@ std::optional<StdIncludeType> getStdIncludeType(std::string_view include) {
   }
   for(std::string_view cCompatHdr : cCompatHdrs) {
     if(include == cCompatHdr) return StdIncludeType::CCompat;
+  }
+  return std::nullopt;
+}
+std::optional<std::filesystem::path> resolveInclude(const ResolveIncludeCtx& ctx,
+  const IncludeInfo& info, const std::filesystem::path& currentFilePath) {
+  fs::path p;
+  if(!info.isAngle) {
+    p = currentFilePath;
+    p.remove_filename();
+    p /= info.includeStr;
+    if(fs::exists(p)) {
+      p = fs::relative(p, ctx.inDir);
+      if(*p.begin() != "..") return p;
+    }
+  }
+  for(const fs::path& includePath : ctx.includePaths) {
+    p = includePath / info.includeStr;
+    if(fs::exists(p)) {
+      p = fs::relative(p, ctx.inDir);
+      if(*p.begin() != "..") return p;
+    }
   }
   return std::nullopt;
 }

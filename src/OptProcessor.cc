@@ -51,8 +51,8 @@ auto getMustHave(const toml::table& tbl, std::string_view key) {
   return getTypeCk<T>(tbl, key);
 }
 void getPathArr(const ap::ArgumentParser& parser, std::string_view cliKey,
-  const std::optional<toml::table>& tbl, std::string_view tblKey, 
-  const std::optional<fs::path>& prefix, std::vector<fs::path>& container) {
+  const std::optional<toml::table>& tbl, std::string_view tblKey,
+  std::vector<fs::path>& container, const std::optional<fs::path>& prefix = std::nullopt) {
   if(std::optional<std::vector<std::string>> pathArr{
     parser.present<std::vector<std::string>>(cliKey)}) {
     for(std::string& str : *pathArr) container.emplace_back(std::move(str));
@@ -69,7 +69,6 @@ void getPathArr(const ap::ArgumentParser& parser, std::string_view cliKey,
 }
 
 } // namespace
-
 Opts getOptsOrExit(int argc, const char* const* argv) {
   Opts opts;
   ap::ArgumentParser generalParser("importizer", "0.0.1");
@@ -154,12 +153,10 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   opts.srcExt = getOrDefault(generalParser, "--src-ext", config, "srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault(generalParser, "--module-interface-ext", config,
     "moduleInterfaceExt", ".cppm");
-  getPathArr(generalParser, "--include-paths", config, "includePaths", configDir,
-    opts.includePaths);
-  getPathArr(generalParser, "--ignored-hdrs", config, "ignoredHdrs", std::nullopt,
-    opts.ignoredHdrs);
-  getPathArr(generalParser, "--umbrella-hdrs", config, "umbrellaHdrs", std::nullopt,
-    opts.umbrellaHdrs);
+  getPathArr(generalParser, "--include-paths", config, "includePaths", opts.includePaths,
+    configDir);
+  getPathArr(generalParser, "--ignored-hdrs", config, "ignoredHdrs", opts.ignoredHdrs);
+  getPathArr(generalParser, "--umbrella-hdrs", config, "umbrellaHdrs", opts.umbrellaHdrs);
   if(opts.stdIncludeToImport && (generalParser.is_used("--bootstrap-std-module")
     || config.contains("bootstrapStdModule"))) {
     getOrDefault(generalParser, "--bootstrap-std-module", config, "bootstrapStdModule",

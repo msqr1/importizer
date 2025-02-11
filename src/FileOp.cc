@@ -51,16 +51,25 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
     ext = relPath.extension();
     File file;
     if(ext == opts.hdrExt) {
+      file.type = FileType::Hdr;
       for(const fs::path& p : opts.ignoredHdrs) {
         if(relPath == p) {
+          //if(opts.transitionalOpts) file.type = FileType::IgnoredHdr;
+          //else {
           relPath = opts.outDir / relPath;
           fs::create_directories(relPath.parent_path());
           fs::copy_file(path, relPath, fs::copy_options::overwrite_existing);
           goto skipThisFile;
+          //}
+          break;
         }
       }
-      
-      file.type = FileType::Hdr;
+      if(file.type == FileType::Hdr) for(const fs::path& p : opts.umbrellaHdrs) {
+        if(relPath == p) {
+          file.type = FileType::UmbrellaHdr;
+          break;
+        }
+      }
     }
     else if(ext == opts.srcExt) {
       file.type = FileType::UnpairedSrc;
