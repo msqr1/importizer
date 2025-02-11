@@ -4,4 +4,4 @@
 
 struct Opts;
 struct File;
-bool insertPreamble(File& file, std::vector<Directive>&& directives, const Opts& opts);
+bool addPreamble(File& file, std::vector<Directive>&& directives, const Opts& opts);

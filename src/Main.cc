@@ -32,8 +32,7 @@ void run(int argc, const char* const* argv) {
   for(File& file : getProcessableFiles(opts)) {
     if(opts.logCurrentFile) log("Current file: {}", file.relPath);
     readFromPath(file.path, file.content);
-    bool manualExport{insertPreamble(file,
-      preprocess(opts.transitionalOpts, file, opts.includeGuardPat), opts)};
+    bool manualExport{addPreamble(file, preprocess(opts, file), opts)};
     if(file.type == FileType::Hdr) {
       if(opts.transitionalOpts && opts.transitionalOpts->backCompatHdrs) {
         backCompatHdr = opts.outDir / file.relPath;

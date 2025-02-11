@@ -112,6 +112,14 @@ void handleInclude(const Opts& opts, Directive& include, const GetIncludeCtx& ct
       }
       includePath.replace_extension(opts.hdrExt);
     }
+
+    // Umbrella headers
+    for(const fs::path& p : opts.umbrellaHdrs) {
+      if(file.relPath == p) {
+        imports += "export ";
+        break;
+      }
+    }
     fmt::format_to(std::back_inserter(imports), "import {};\n",
       path2ModuleName(includePath));
     replaceExtPush();
@@ -284,7 +292,7 @@ std::string getTransitionalPreamble(const Opts& opts,
 
 } // namespace
 
-bool insertPreamble(File& file, std::vector<Directive>&& directives, const Opts& opts) {
+bool addPreamble(File& file, std::vector<Directive>&& directives, const Opts& opts) {
   bool manualExport{};
   fmt::format_to(std::inserter(file.content, file.content.begin()),
     "{}\n",

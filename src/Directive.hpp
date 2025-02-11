@@ -36,9 +36,6 @@ public:
 
 // For ifndef and define that matches opts.includeGuardPat
 struct IncludeGuard {};
-
-// For else statement, only possible if type is ElCond to differentiate from el(...)
-struct Else {};
 enum class DirectiveType : char {
   Define,
   Undef,
@@ -66,5 +63,5 @@ enum class StdIncludeType : char {
   CCompat,
 };
 
-// std::nullopt when not a system include
+// std::nullopt when not a standard include
 std::optional<StdIncludeType> getStdIncludeType(std::string_view include);

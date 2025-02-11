@@ -1,13 +1,11 @@
 #include "Preprocessor.hpp"
 #include "OptProcessor.hpp"
-#include "Regex.hpp"
 #include "FileOp.hpp"
 #include "Directive.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <string>
 #include <string_view>
-#include <optional>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -28,7 +26,6 @@ template <char open, char close> void balance(std::string_view str, uintmax_t& p
     ++pos;
   } while(nest); 
 }
-
 bool isDigit(char c) {
   for(char n : "0123456789") {
     if(c == n) return true;
@@ -44,11 +41,10 @@ bool isSpace(char c) {
 
 } // namespace
 
-std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transitionalOpts, 
-  File& file, const re::Pattern& includeGuardPat) {
+std::vector<Directive> preprocess(const Opts& opts, File& file) {
   std::vector<Directive> directives;
-  bool lookForMain{file.type == FileType::PairedSrc || file.type == FileType::UnpairedSrc};
-  IncludeGuardCtx ctx{file.type, includeGuardPat};
+  bool lookForMain{file.type == FileType::UnpairedSrc};
+  IncludeGuardCtx ctx{file.type, opts.includeGuardPat};
   bool whitespaceAfterNewline{true};
   std::string& code{file.content};
   uintmax_t i{};
@@ -117,7 +113,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
         case DirectiveType::Define:
           if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
             ctx.state = IncludeGuardState::GotDefine;
-            if(transitionalOpts) directives.emplace_back(std::move(directive));
+            if(opts.transitionalOpts) directives.emplace_back(std::move(directive));
             rmDirective();
           }
           else directives.emplace_back(std::move(directive));
@@ -127,7 +123,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
           else if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
             ctx.state = IncludeGuardState::GotIfndef;
             ctx.counter = 1;
-            if(transitionalOpts) directives.emplace_back(std::move(directive));
+            if(opts.transitionalOpts) directives.emplace_back(std::move(directive));
             rmDirective();
             break;
           }
@@ -138,7 +134,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
             ctx.counter--;
             if(ctx.counter == 0) {
               ctx.state = IncludeGuardState::GotEndif;
-              if(!transitionalOpts) rmDirective();
+              if(!opts.transitionalOpts) rmDirective();
               break;
             }
           }
@@ -149,7 +145,7 @@ std::vector<Directive> preprocess(const std::optional<TransitionalOpts>& transit
           directives.emplace_back(std::move(directive));
           break;
         case DirectiveType::PragmaOnce:
-          if(transitionalOpts) directives.emplace_back(std::move(directive));
+          if(opts.transitionalOpts) directives.emplace_back(std::move(directive));
           rmDirective();
           break;
         case DirectiveType::Include:

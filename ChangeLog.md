@@ -1,7 +1,8 @@
 # 1.1.0 (in progress)
 - Add a shared directive section in transitional mode to shorten the preamble
 - CondMinimizer renamed to Minimizer that will also remove empty #define/#undef pair
-- Refactor include handler
+- Remove all *Action return from function. Perform the action directly and shorten code with a lambda
+- Add umbrella header support, converting includes to `export import` instead of `import`
 - Bump PCRE2 to 10.45
 
 # 1.0.1

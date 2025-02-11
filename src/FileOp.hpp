@@ -4,9 +4,6 @@
 #include <string_view>
 #include <vector>
 
-namespace re {
-  class Pattern;
-}
 struct Opts;
 enum class FileType : char {
   Hdr,

@@ -1,4 +1,4 @@
 inDir = "Input"
 outDir = "CorrectOutput"
-ignoredHdrs = ["IgnoredHdr.hpp"]
+umbrellaHdrs = ["UmbrellaHdr.hpp"]
 [Transitional]

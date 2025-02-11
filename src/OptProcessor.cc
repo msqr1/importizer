@@ -4,7 +4,6 @@
 #include <fmt/format.h>
 #include <fmt/std.h>
 #include <toml++/toml.hpp>
-#include <algorithm>
 #include <utility>
 #include <vector>
 #include <filesystem>
