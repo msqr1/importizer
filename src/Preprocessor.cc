@@ -51,6 +51,7 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
   uintmax_t start;
   uintmax_t end;
   uintmax_t len;
+  Directive directive;
   auto rmDirective = [&] {
     std::copy(file.content.begin() + end, file.content.end(),
       file.content.begin() + start);
@@ -108,11 +109,7 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
         // Get the \n if available
         end = i + (i < codeLen);
         len = end - start;
-        Directive directive{file.content.substr(start, len), ctx};
-        /*if(file.type == FileType::IgnoredHdr) {
-          
-        }
-        else */
+        directive = {file.content.substr(start, len), ctx};
         switch(directive.type) {
         case DirectiveType::Define:
           if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {

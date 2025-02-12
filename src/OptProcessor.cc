@@ -13,9 +13,8 @@
 
 namespace fs = std::filesystem;
 namespace ap = argparse;
-
 namespace {
-
+  //IgnoredHdr, // Only possible in transitional mode
 template <typename keyTp>
 auto getTypeCk(const toml::table& tbl, std::string_view key) {
   const toml::node_view<const toml::node> node{tbl[key]};
@@ -105,10 +104,6 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   generalParser.add_argument("--umbrella-hdrs")
     .help("Paths relative to inDir of modularized headers, but their 'import' are turned into 'export import'")
     .nargs(ap::nargs_pattern::at_least_one);
-  generalParser.add_argument("--bootstrap-std-module")
-    .help("Generate a bootstrap standard modules. Recommended name is something like"
-      " 'bootstrapStd'. '.compat' will be added automatically. Ineffective if"
-      " stdIncludeToImport is off");
   ap::ArgumentParser transitionalParser{"transitional", "", ap::default_arguments::help};
   transitionalParser.add_argument("-b", "--back-compat-hdrs")
     .help("Generate headers that include the module file to preserve #include for users."
@@ -157,12 +152,6 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     configDir);
   getPathArr(generalParser, "--ignored-hdrs", config, "ignoredHdrs", opts.ignoredHdrs);
   getPathArr(generalParser, "--umbrella-hdrs", config, "umbrellaHdrs", opts.umbrellaHdrs);
-  if(opts.stdIncludeToImport && (generalParser.is_used("--bootstrap-std-module")
-    || config.contains("bootstrapStdModule"))) {
-    getOrDefault(generalParser, "--bootstrap-std-module", config, "bootstrapStdModule",
-    "");
-  }
-  else opts.bootstrapStdModule = std::nullopt;
   /*
   log(
     "stdIncludeToImport: {}\n"

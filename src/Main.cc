@@ -32,10 +32,6 @@ void run(int argc, const char* const* argv) {
   for(File& file : getProcessableFiles(opts)) {
     if(opts.logCurrentFile) log("Current file: {}", file.relPath);
     readFromPath(file.path, file.content);
-    /*if(file.type == FileType::IgnoredHdr) {
-      preprocess(opts, file)
-    }
-    else {*/
     bool manualExport{addPreamble(file, preprocess(opts, file), opts)};
     if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
       if(opts.transitionalOpts && opts.transitionalOpts->backCompatHdrs) {

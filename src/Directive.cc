@@ -57,8 +57,12 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx):
     extraInfo.emplace<IncludeGuard>();
   }
 }
-Directive::Directive(Directive&& other) noexcept: type{other.type},
-  extraInfo(std::move(other.extraInfo)) {
+Directive::Directive(Directive&& other) noexcept {
+  operator=(std::move(other));
+}
+Directive& Directive::operator=(Directive&& other) noexcept {
+  type = other.type;
+  extraInfo = std::move(other.extraInfo);
   switch(extraInfo.index()) {
   case 1: {
     IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
@@ -70,6 +74,7 @@ Directive::Directive(Directive&& other) noexcept: type{other.type},
   default:
     str = std::move(other.str);
   }
+  return *this;
 }
 Directive::Directive(const Directive& other): type{other.type}, str{other.str},
   extraInfo(other.extraInfo) {
@@ -78,6 +83,9 @@ Directive::Directive(const Directive& other): type{other.type}, str{other.str},
     uintmax_t len{includeInfo.includeStr.length()};
     includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
   }
+}
+Directive::Directive() {
+
 }
 namespace {
 

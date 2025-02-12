@@ -35,18 +35,9 @@ enum class StdImportLvl : char {
   Std,
   StdCompat
 };
-void addStdImport(std::string& str, StdImportLvl lvl,
-  const std::optional<std::string>& bootstrapStdModule) {
-  if(lvl == StdImportLvl::StdCompat) {
-    fmt::format_to(std::back_inserter(str),
-      "import {}.compat;\n",
-      bootstrapStdModule ? *bootstrapStdModule : "std");
-  }
-  else if(lvl == StdImportLvl::Std) {
-    fmt::format_to(std::back_inserter(str),
-      "import {};\n",
-      bootstrapStdModule ? *bootstrapStdModule : "std");
-  }
+void addStdImport(std::string& str, StdImportLvl lvl) {
+  if(lvl == StdImportLvl::Std) str += "import std;\n";
+  else if(lvl == StdImportLvl::StdCompat) str += "import std.compat;\n";
 }
 void handleInclude(const Opts& opts, Directive& include, const ResolveIncludeCtx& ctx,
   const File& file, StdImportLvl& lvl, std::string& imports, MinimizeCtx& sharedCtx,
@@ -159,7 +150,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       path2ModuleName(file.relPath));
   }
   preamble += imports;
-  addStdImport(preamble, lvl, opts.bootstrapStdModule);
+  addStdImport(preamble, lvl);
   return preamble;
 }
 std::string getTransitionalPreamble(const Opts& opts,
@@ -242,7 +233,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       ("." / opts.transitionalOpts->exportMacrosPath)
       .lexically_relative("." / file.relPath.parent_path()).generic_string());
   }
-  addStdImport(moduleStr, lvl, opts.bootstrapStdModule);
+  addStdImport(moduleStr, lvl);
   fmt::format_to(std::back_inserter(preamble),
     "{}"
     "#ifdef {}\n"

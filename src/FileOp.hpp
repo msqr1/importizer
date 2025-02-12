@@ -8,7 +8,6 @@ struct Opts;
 enum class FileType : char {
   Hdr,
   UmbrellaHdr,
-  //IgnoredHdr, // Only possible in transitional mode
   UnpairedSrc,
   SrcWithMain,
   PairedSrc

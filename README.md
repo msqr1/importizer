@@ -30,6 +30,8 @@ Requirements:
 - Code and options are valid UTF-8
 - Code is valid C++
 
+This project uses [semantic versioning](https://semver.org)
+
 # Output example
 - See [Example.md](Example.md#output-example)
 
@@ -108,8 +110,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | --module-interface-ext      | moduleInterfaceExt | Module interface unit file extension                                                                                                                                        | String       | `.cppm`       |
 | --include-paths             | includePaths       | Include paths searched when converting include to import                                                                                                                    | String array | `[]`          |
 | --ignored-hdrs              | ignoredHdrs        | Paths relative to `inDir` of header files to ignore. Their paired sources, if available, will be treated as if they have a `main()`                                         | String array | `[]`          |
-| --umbrella-hdrs             | umbrellaHdrs       | Paths relative to `inDir` of modularized headers, but their `import` are turned into `export import`                                                                        | String array | `[]`          |       
-| --bootstrap-std-module      | bootstrapStdModule | Generate a bootstrap standard modules. Recommended name is something like `bootstrapStd`. `.compat` will be added automatically. Ineffective if `stdIncludeToImport` is off | String       | N/A           |
+| --umbrella-hdrs             | umbrellaHdrs       | Paths relative to `inDir` of modularized headers, but their `import` are turned into `export import`                                                                        | String array | `[]`          |
 
 - Transitional flags/settings (must be specified after `transitional` on the CLI or under `[Transitional]` in the setting file):
 

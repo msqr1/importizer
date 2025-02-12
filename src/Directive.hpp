@@ -58,7 +58,9 @@ public:
   std::variant<std::monostate, IncludeInfo, IncludeGuard> extraInfo;
   Directive(std::string&& str, const IncludeGuardCtx& ctx);
   Directive(Directive&& other) noexcept;
+  Directive& operator=(Directive&& other) noexcept;
   Directive(const Directive& other);
+  Directive();
 };
 enum class StdIncludeType : char {
   CppOrCwrap,

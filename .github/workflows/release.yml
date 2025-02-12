@@ -61,6 +61,6 @@ jobs:
       - name: Upload to tag
         uses: softprops/action-gh-release@v2.2.1
         with:
-          tag_name: 1.0.1
-          body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.md#101)"
+          tag_name: 1.1.0
+          body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.md#110)"
           files: ${{ github.workspace }}/importizer*/importizer*
