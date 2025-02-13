@@ -1,10 +1,10 @@
 # Table of contents
 - [Introduction](#introduction)
-- [Output example](#output-example)
 - [Getting started](#getting-started)
   - [Prebuilt executable](#prebuilt-executable)
   - [Building from source](#building-from-source)
   - [Usage](#usage)
+  - [Output example](#output-example)
   - [Testing](#testing)
 - [Behavior](#behavior)
 - [Settings](#settings)
@@ -31,9 +31,6 @@ Requirements:
 - Code is valid C++
 
 This project uses [semantic versioning](https://semver.org)
-
-# Output example
-- See [Example.md](Example.md#output-example)
 
 # Getting started
 ## Prebuilt executable
@@ -62,7 +59,9 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
   - Add values of `mi_exportKeyword` or `mi_exportBlockBegin` or`mi_exportBlockEnd` around exported entities
   - You can keep the same compilation command to do a header-based compilation
   - To compile using modules, add `-D[value of mi_control]` when compiling every file, the compilation command will have to change.
-  - See [an example](Example.md#transitional-compilation-example)
+  - See [an example](Examples/Compile.md)
+
+## [Output example](Examples/Output.md)
 
 ## Testing
 - Add `-DTESTS=1` when configuring cmake

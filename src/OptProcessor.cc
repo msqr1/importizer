@@ -14,7 +14,7 @@
 namespace fs = std::filesystem;
 namespace ap = argparse;
 namespace {
-  //IgnoredHdr, // Only possible in transitional mode
+
 template <typename keyTp>
 auto getTypeCk(const toml::table& tbl, std::string_view key) {
   const toml::node_view<const toml::node> node{tbl[key]};
