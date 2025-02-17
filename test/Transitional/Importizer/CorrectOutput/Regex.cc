@@ -15,7 +15,6 @@ import Base;
 #else
 #include "Regex.cppm"
 #include "Base.cppm"
-#define PCRE2_CODE_UNIT_WIDTH 8
 #endif
 
 #define PCRE2_CODE_UNIT_WIDTH 8

@@ -14,9 +14,6 @@ module;
 #ifdef CPP_MODULES
 export module Test;
 #else
-#ifdef COND2
-#define a
-#endif
 #endif
 
 #ifdef COND 
