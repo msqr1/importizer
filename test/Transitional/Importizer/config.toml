@@ -1,4 +1,5 @@
 inDir = "Input"
 outDir = "CorrectOutput"
 srcExt = ".cc"
+pragmaOnce = true
 [Transitional]
