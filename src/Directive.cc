@@ -1,5 +1,7 @@
 #include "Directive.hpp"
 #include "Base.hpp"
+#include "FileOp.hpp"
+#include "OptProcessor.hpp"
 #include "Regex.hpp"
 #include <array>
 #include <cstdint>
@@ -11,9 +13,12 @@
 #include <variant>
 
 namespace fs = std::filesystem;
+IncludeGuardCtx::IncludeGuardCtx(FileType type, const std::optional<re::Regex>& pat): 
+  state{type == FileType::Hdr && pat ?
+  IncludeGuardState::Looking : IncludeGuardState::NotLooking} {}
 IncludeInfo::IncludeInfo(bool isAngle, uintmax_t startOffset, std::string_view includeStr):
   isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
-Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx):
+Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts& opts):
   str{std::move(str_)} {
   if(str.back() != '\n') str += '\n';
   auto getWord = [](uintmax_t start, std::string_view str) {
@@ -47,13 +52,14 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx):
   else if(first2Chars == "if") type = DirectiveType::IfCond;
   else if(directive == "else") type = DirectiveType::Else;
   else if(first2Chars == "el") type = DirectiveType::ElCond;
-  else if(directive == "pragma" && getWord(1 + directive.length(), str) == "once") {
+  else if(opts.pragmaOnce && directive == "pragma" &&
+    getWord(1 + directive.length(), str) == "once") {
     type = DirectiveType::PragmaOnce;
   }
   else type = DirectiveType::Other;
   if(((ctx.state == IncludeGuardState::Looking && directive == "ifndef") ||
     (ctx.state == IncludeGuardState::GotIfndef && directive == "define")) &&
-    ctx.pat.match(getWord(1 + directive.length(), str))) {
+    opts.includeGuard->match(getWord(1 + directive.length(), str))) {
     extraInfo.emplace<IncludeGuard>();
   }
 }

@@ -44,7 +44,7 @@ bool isSpace(char c) {
 std::vector<Directive> preprocess(const Opts& opts, File& file) {
   std::vector<Directive> directives;
   bool lookForMain{file.type == FileType::UnpairedSrc};
-  IncludeGuardCtx ctx{file.type, opts.includeGuardPat};
+  IncludeGuardCtx ctx{file.type, opts.includeGuard};
   bool whitespaceAfterNewline{true};
   uintmax_t i{};
   uintmax_t codeLen{file.content.length()};
@@ -109,7 +109,7 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
         // Get the \n if available
         end = i + (i < codeLen);
         len = end - start;
-        directive = {file.content.substr(start, len), ctx};
+        directive = {file.content.substr(start, len), ctx, opts};
         switch(directive.type) {
         case DirectiveType::Define:
           if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
@@ -134,7 +134,7 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
           if(ctx.state == IncludeGuardState::GotDefine) {
             ctx.counter--;
             if(ctx.counter == 0) {
-              ctx.state = IncludeGuardState::GotEndif;
+              ctx.state = IncludeGuardState::GotEndIf;
               if(!opts.transitionalOpts) rmDirective();
               break;
             }

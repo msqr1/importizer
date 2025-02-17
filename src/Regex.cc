@@ -32,16 +32,16 @@ Capture Captures::operator[](int idx) const {
   idx *= 2;
   return {ovector[idx], ovector[idx + 1]};
 }
-Pattern::Pattern() {}
-Pattern::Pattern(Pattern&& other) noexcept: pattern{other.pattern},
+Regex::Regex() {}
+Regex::Regex(Regex&& other) noexcept: pattern{other.pattern},
   matchData{other.matchData} {
   other.pattern = nullptr;
   other.matchData = nullptr;
 }
-Pattern::Pattern(std::string_view pat, uint32_t opts) {
+Regex::Regex(std::string_view pat, uint32_t opts) {
   reset(pat, opts);
 }
-Pattern& Pattern::reset(std::string_view pat, uint32_t opts) {
+Regex& Regex::reset(std::string_view pat, uint32_t opts) {
   pcre2_code_free(pattern);
   pcre2_match_data_free(matchData);
   int status;
@@ -55,11 +55,11 @@ Pattern& Pattern::reset(std::string_view pat, uint32_t opts) {
   if(matchData == nullptr) exitWithErr("Regex: Unable to allocate memory for match");
   return *this;
 }
-Pattern::~Pattern() {
+Regex::~Regex() {
   pcre2_code_free(pattern);
   pcre2_match_data_free(matchData);
 }
-std::optional<Captures> Pattern::match(std::string_view subject, uintmax_t startOffset)
+std::optional<Captures> Regex::match(std::string_view subject, uintmax_t startOffset)
   const {
   int count{pcre2_match(pattern, reinterpret_cast<PCRE2_SPTR>(subject.data()),
     subject.length(), startOffset, PCRE2_NO_UTF_CHECK, matchData, nullptr)};

@@ -9,24 +9,20 @@
 #include <vector>
 
 namespace re {
-  class Pattern;
+  class Regex;
 }
 enum class IncludeGuardState : char {
   NotLooking,
   Looking,
   GotIfndef,
   GotDefine,
-  GotEndif
+  GotEndIf
 };
 class IncludeGuardCtx {
 public:
   IncludeGuardState state;
   uintmax_t counter;
-  const re::Pattern& pat;
-  IncludeGuardCtx(FileType type, const re::Pattern& pat):
-    state{type == FileType::Hdr ?
-      IncludeGuardState::Looking : IncludeGuardState::NotLooking},
-    pat{pat} {}
+  IncludeGuardCtx(FileType type, const std::optional<re::Regex>& pat);
 };
 class IncludeInfo {
 public:
@@ -36,7 +32,7 @@ public:
   IncludeInfo(bool isAngle, uintmax_t startOffset, std::string_view includeStr);
 };
 
-// For ifndef and define that matches opts.includeGuardPat
+// For ifndef and define that matches opts.includeGuard
 struct IncludeGuard {};
 enum class DirectiveType : char {
   Define,
@@ -56,7 +52,7 @@ public:
 
   // Only hold other information beside the type
   std::variant<std::monostate, IncludeInfo, IncludeGuard> extraInfo;
-  Directive(std::string&& str, const IncludeGuardCtx& ctx);
+  Directive(std::string&& str, const IncludeGuardCtx& ctx, const Opts& opts);
   Directive(Directive&& other) noexcept;
   Directive& operator=(Directive&& other) noexcept;
   Directive(const Directive& other);

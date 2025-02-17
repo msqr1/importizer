@@ -82,7 +82,15 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   generalParser.add_argument("-l", "--log-current-file")
     .help("Print the current file being processed")
     .implicit_value(true);
-  generalParser.add_argument("--include-guard-pat")
+  generalParser.add_argument("-p", "--pragma-once")
+    .help("Declare that you use '#pragma once' so importizer handles them")
+    .implicit_value(true);
+  generalParser.add_argument("-S", "--SOF-comments")
+    .help("Declare that your files may start with comments (usually to specify a license)" 
+      " so importizer handles them. Note that it scans for the largest continuous SOF"
+      " comment chain.")
+    .implicit_value(true);
+  generalParser.add_argument("--include-guard")
     .help("Regex to match include guards. #pragma once is processed by default");
   generalParser.add_argument("-i", "--in-dir")
     .help("Input directory");
@@ -134,16 +142,24 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   opts.stdIncludeToImport = getOrDefault(generalParser, "-s", config,
     "stdIncludeToImport", false);
   opts.logCurrentFile = getOrDefault(generalParser, "-l", config, "logCurrentFile", false);
+  opts.pragmaOnce = getOrDefault(generalParser, "-p", config, "pragmaOnce", false);
+  opts.SOFComments = getOrDefault(generalParser, "-S", config, "SOFComments",
+    false);
   std::optional<fs::path> path{generalParser.present("-i")};
+  if(!(generalParser.is_used("--include-guard") || config.contains("includeGuard"))) {
+    opts.includeGuard = std::nullopt;
+  }
+
+  // A slight hack using getOrDefault even though the default value is never used. I don't
+  // want to write more code lol
+  else opts.includeGuard.emplace(fmt::format(
+    "^{}$",
+    getOrDefault(generalParser, "--include-guard", config, "includeGuard", "")));
   opts.inDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "inDir");
   path = generalParser.present("-o");
   opts.outDir = path ?
     std::move(*path) : configDir / getMustHave<std::string>(config, "outDir");
-  opts.includeGuardPat.reset(fmt::format(
-    "^{}$",
-    getOrDefault(generalParser, "--include-guard-pat",
-    config, "includeGuardPat", R"([^\s]+_H)")));
   opts.hdrExt = getOrDefault(generalParser, "--hdr-ext", config, "hdrExt", ".hpp");
   opts.srcExt = getOrDefault(generalParser, "--src-ext", config, "srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault(generalParser, "--module-interface-ext", config,
@@ -152,18 +168,6 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     configDir);
   getPathArr(generalParser, "--ignored-hdrs", config, "ignoredHdrs", opts.ignoredHdrs);
   getPathArr(generalParser, "--umbrella-hdrs", config, "umbrellaHdrs", opts.umbrellaHdrs);
-  /*
-  log(
-    "stdIncludeToImport: {}\n"
-    "logCurrentFile: {}\n"
-    "inDir: {}\n"
-    "outDir: {}\n"
-    "hdrExt: {}\n"
-    "srcExt: {}\n"
-    "moduleInterfaceExt: {}\n",
-    opts.stdIncludeToImport, opts.logCurrentFile, opts.inDir, opts.outDir, opts.hdrExt,
-    opts.srcExt, opts.moduleInterfaceExt);
-  */
   if(!(config.contains("Transitional") ||
     generalParser.is_subcommand_used("transitional"))) {
     opts.transitionalOpts = std::nullopt;
@@ -187,16 +191,5 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
     tConfig, "mi_exportBlockEnd", "END_EXPORT");
   tOpts.exportMacrosPath = getOrDefault(transitionalParser, "--export-macros-path",
     tConfig, "exportMacrosPath", "Export.hpp");
-  /*
-  log(
-    "backCompatHdrs: {}\n"
-    "mi_control: {}\n"
-    "mi_exportKeyword: {}\n"
-    "mi_exportBlockBegin: {}\n"
-    "mi_exportBlockEnd: {}\n"
-    "exportMacrosPath: {}\n",
-    tOpts.backCompatHdrs, tOpts.mi_control, tOpts.mi_exportKeyword, tOpts.mi_exportBlockBegin,
-    tOpts.mi_exportBlockEnd, tOpts.exportMacrosPath);
-  */
   return opts;
 }

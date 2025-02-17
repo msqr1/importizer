@@ -1,0 +1,3 @@
+inDir = "Input"
+outDir = "CorrectOutput"
+includeGuard = '[^\s]+_H'

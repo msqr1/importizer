@@ -16,7 +16,9 @@ struct TransitionalOpts {
 struct Opts {
   bool stdIncludeToImport;
   bool logCurrentFile;
-  re::Pattern includeGuardPat;
+  bool pragmaOnce;
+  bool SOFComments;
+  std::optional<re::Regex> includeGuard;
   std::filesystem::path inDir;
   std::filesystem::path outDir;
   std::filesystem::path hdrExt;
