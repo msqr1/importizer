@@ -1,4 +1,5 @@
 #include "Preamble.hpp"
+#include "Base.hpp"
 #include "OptProcessor.hpp"
 #include "Directive.hpp"
 #include "Minimizer.hpp"
@@ -175,7 +176,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       sharedCtx.emplace_back(std::move(directive));
       break;
     default:
-      std::unreachable();
+      unreachable();
     }
   }
 
@@ -217,7 +218,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       sharedCtx.emplace_back(std::move(directive));
       break;
     default:
-      std::unreachable();
+      unreachable();
     }
 
     // generic_string() to convert '\' to '/'

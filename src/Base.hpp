@@ -9,6 +9,7 @@
 // std::string(_view)::find* for not found return a -1 size_t (std::string::npos)
 constexpr size_t notFound{static_cast<size_t>(-1)};
 [[noreturn]] void exitOK();
+[[noreturn]] void unreachable();
 template <typename... T> struct exitWithErr {
 
   // Overload for direct callers, source location is implied

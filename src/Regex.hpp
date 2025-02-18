@@ -5,8 +5,6 @@
 
 struct pcre2_real_code_8;
 struct pcre2_real_match_data_8;
-namespace re {
-
 class Capture {
 friend class Captures;
   Capture(uintmax_t start, uintmax_t end);
@@ -40,6 +38,4 @@ public:
   ~Regex();
   std::optional<Captures> match(std::string_view subject, uintmax_t startOffset = 0) const;
 };
-
-} // namespace re
 

@@ -20,8 +20,6 @@ void ckPCRE2Code(int status, const std::source_location& loc
 }
 
 } // namespace
-namespace re {
-
 Capture::Capture(): start{}, end{} {};
 Capture::Capture(uintmax_t start, uintmax_t end): start{start}, end{end} {}
 Captures::Captures() {}
@@ -67,5 +65,3 @@ std::optional<Captures> Regex::match(std::string_view subject, uintmax_t startOf
   if(count < 1) return std::nullopt;
   return pcre2_get_ovector_pointer(matchData);
 }
-
-} // namespace re

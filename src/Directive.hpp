@@ -8,9 +8,7 @@
 #include <variant>
 #include <vector>
 
-namespace re {
-  class Regex;
-}
+class Regex;
 enum class IncludeGuardState : char {
   NotLooking,
   Looking,
@@ -22,7 +20,7 @@ class IncludeGuardCtx {
 public:
   IncludeGuardState state;
   uintmax_t counter;
-  IncludeGuardCtx(FileType type, const std::optional<re::Regex>& pat);
+  IncludeGuardCtx(FileType type, const std::optional<Regex>& pat);
 };
 class IncludeInfo {
 public:

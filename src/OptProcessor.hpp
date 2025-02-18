@@ -18,7 +18,7 @@ struct Opts {
   bool logCurrentFile;
   bool pragmaOnce;
   bool SOFComments;
-  std::optional<re::Regex> includeGuard;
+  std::optional<Regex> includeGuard;
   std::filesystem::path inDir;
   std::filesystem::path outDir;
   std::filesystem::path hdrExt;

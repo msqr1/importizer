@@ -13,7 +13,7 @@
 #include <variant>
 
 namespace fs = std::filesystem;
-IncludeGuardCtx::IncludeGuardCtx(FileType type, const std::optional<re::Regex>& pat): 
+IncludeGuardCtx::IncludeGuardCtx(FileType type, const std::optional<Regex>& pat): 
   state{type == FileType::Hdr && pat ?
   IncludeGuardState::Looking : IncludeGuardState::NotLooking} {}
 IncludeInfo::IncludeInfo(bool isAngle, uintmax_t startOffset, std::string_view includeStr):
