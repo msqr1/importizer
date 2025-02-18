@@ -1,4 +1,0 @@
-inDir = "Input"
-outDir = "CorrectOutput"
-umbrellaHdrs = ["UmbrellaHdr.hpp"]
-[Transitional]

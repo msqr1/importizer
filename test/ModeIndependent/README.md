@@ -1,0 +1,1 @@
+Tests for behaviors that are the same in both modes (code tested in these tests doesn't check for mode). We will run them in default mode though.

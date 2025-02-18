@@ -41,13 +41,14 @@ bool isSpace(char c) {
 
 } // namespace
 
-std::vector<Directive> preprocess(const Opts& opts, File& file) {
-  std::vector<Directive> directives;
+PreprocessRes preprocess(const Opts& opts, File& file) {
+  PreprocessRes res;
   bool lookForMain{file.type == FileType::UnpairedSrc};
+  bool SOFComment{opts.SOFComments};
   IncludeGuardCtx ctx{file.type, opts.includeGuard};
   bool whitespaceAfterNewline{true};
   uintmax_t i{};
-  uintmax_t codeLen{file.content.length()};
+  uintmax_t totalLen{file.content.length()};
   uintmax_t start;
   uintmax_t end;
   uintmax_t len;
@@ -56,29 +57,41 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
     std::copy(file.content.begin() + end, file.content.end(),
       file.content.begin() + start);
     i = start;
-    codeLen -= len;
+    totalLen -= len;
   };
-  while(i < codeLen) {
+  auto emplaceDirective = [&] {
+    res.directives.emplace_back(std::move(directive));
+  };
+  while(i < totalLen) {
+    if(SOFComment && file.content[i] != '/' && file.content[i] != '\n') {
+      SOFComment = false;
+    }
     switch(file.content[i]) {
     
     // Comments
     case '/':
       i++;
-      if(file.content[i] == '/') while(i < codeLen && file.content[i] != '\n') i++;
+      if(file.content[i] == '/') {
+        while(i < totalLen && file.content[i] != '\n') i++;
+        if(SOFComment) res.prefixNewlineCnt = 1;
+      }
       else if(file.content[i] == '*') {
         i++;
         while(!(file.content[i - 1] == '*' && file.content[i] == '/')) i++;
+        if(SOFComment) res.prefixNewlineCnt = 2;
       }
+      if(SOFComment) res.insertionPos = i + 1;
       break;
 
-    // Character/Integer literal
+    // Char/Int literal
     case '\'':
       i++;
 
-      // Integer literals
-      if(isDigit(file.content[i]) && isDigit(file.content[i - 2]) && file.content[i - 3] != 'u') break;
+      // Int literals
+      if(isDigit(file.content[i]) && isDigit(file.content[i - 2]) &&
+        file.content[i - 3] != 'u') break;
 
-      // Character literals
+      // Char literals
       while(file.content[i] != '\'') i += (file.content[i] == '\\') + 1;
       break;
 
@@ -96,68 +109,68 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
       }
       else while(file.content[i] != '"') i += (file.content[i] == '\\') + 1;
       break;
+
+    // Preprocessor directives
+    case '#':
+      if(!whitespaceAfterNewline) break;
+      start = i;
+      while(i < totalLen && (file.content[i] != '\n' || file.content[i - 1] == '\\')) i++;
+      
+      // Get the \n if available
+      end = i + (i < totalLen);
+      len = end - start;
+      directive = {file.content.substr(start, len), ctx, opts};
+      switch(directive.type) {
+      case DirectiveType::Define:
+        if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
+          ctx.state = IncludeGuardState::GotDefine;
+          if(opts.transitionalOpts) emplaceDirective();
+          rmDirective();
+        }
+        else emplaceDirective();
+        break;
+      case DirectiveType::IfCond:
+        if(ctx.state == IncludeGuardState::GotDefine) ctx.counter++;
+        else if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
+          ctx.state = IncludeGuardState::GotIfndef;
+          ctx.counter = 1;
+          if(opts.transitionalOpts) emplaceDirective();
+          rmDirective();
+          break;
+        }
+        emplaceDirective();
+        break;
+      case DirectiveType::EndIf:
+        if(ctx.state == IncludeGuardState::GotDefine) {
+          ctx.counter--;
+          if(ctx.counter == 0) {
+            ctx.state = IncludeGuardState::GotEndIf;
+            if(!opts.transitionalOpts) rmDirective();
+            break;
+          }
+        }
+        [[fallthrough]];
+      case DirectiveType::Else:
+      case DirectiveType::ElCond:
+      case DirectiveType::Undef:
+        emplaceDirective();
+        break;
+      case DirectiveType::PragmaOnce:
+        if(opts.transitionalOpts) emplaceDirective();
+        rmDirective();
+        break;
+      case DirectiveType::Include:
+        emplaceDirective();
+        rmDirective();
+        break;
+      case DirectiveType::Other:;
+      }
+      continue;
     case '\n':
       whitespaceAfterNewline = true;
       break;
     default:
-
-      // Preprocessor directive
-      if(whitespaceAfterNewline && file.content[i] == '#') {
-        start = i;
-        while(i < codeLen && (file.content[i] != '\n' || file.content[i - 1] == '\\')) i++;
-        
-        // Get the \n if available
-        end = i + (i < codeLen);
-        len = end - start;
-        directive = {file.content.substr(start, len), ctx, opts};
-        switch(directive.type) {
-        case DirectiveType::Define:
-          if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
-            ctx.state = IncludeGuardState::GotDefine;
-            if(opts.transitionalOpts) directives.emplace_back(std::move(directive));
-            rmDirective();
-          }
-          else directives.emplace_back(std::move(directive));
-          break;
-        case DirectiveType::IfCond:
-          if(ctx.state == IncludeGuardState::GotDefine) ctx.counter++;
-          else if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
-            ctx.state = IncludeGuardState::GotIfndef;
-            ctx.counter = 1;
-            if(opts.transitionalOpts) directives.emplace_back(std::move(directive));
-            rmDirective();
-            break;
-          }
-          directives.emplace_back(std::move(directive));
-          break;
-        case DirectiveType::EndIf:
-          if(ctx.state == IncludeGuardState::GotDefine) {
-            ctx.counter--;
-            if(ctx.counter == 0) {
-              ctx.state = IncludeGuardState::GotEndIf;
-              if(!opts.transitionalOpts) rmDirective();
-              break;
-            }
-          }
-          [[fallthrough]];
-        case DirectiveType::Else:
-        case DirectiveType::ElCond:
-        case DirectiveType::Undef:
-          directives.emplace_back(std::move(directive));
-          break;
-        case DirectiveType::PragmaOnce:
-          if(opts.transitionalOpts) directives.emplace_back(std::move(directive));
-          rmDirective();
-          break;
-        case DirectiveType::Include:
-          directives.emplace_back(std::move(directive));
-          rmDirective();
-          break;
-        case DirectiveType::Other:;
-        }
-        continue;
-      }
-      else whitespaceAfterNewline = isSpace(file.content[i]);
+      if(whitespaceAfterNewline) whitespaceAfterNewline = isSpace(file.content[i]);
 
       // If you're a sane person you wouldn't write the main function like this:
       // int/*comment*/main/*comment*/(, right? Cuz it won't work.
@@ -173,6 +186,12 @@ std::vector<Directive> preprocess(const Opts& opts, File& file) {
     }
     i++;
   }
-  file.content.resize(codeLen);
-  return directives;
+
+  // In case the file only contains commments
+  if(SOFComment) {
+    res.prefixNewlineCnt = 2;
+    res.insertionPos = i;
+  }
+  file.content.resize(totalLen);
+  return res;
 }

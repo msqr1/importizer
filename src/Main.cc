@@ -43,7 +43,6 @@ void run(int argc, const char* const* argv) {
       else file.relPath.replace_extension(opts.moduleInterfaceExt);
     }
     if(manualExport) log("{}", file.relPath);
-    //}
     writeToPath(opts.outDir / file.relPath, file.content);
   }
 }

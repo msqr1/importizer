@@ -174,7 +174,8 @@ std::string getTransitionalPreamble(const Opts& opts,
     case DirectiveType::EndIf:
       sharedCtx.emplace_back(std::move(directive));
       break;
-    default:;
+    default:
+      std::unreachable();
     }
   }
 
@@ -215,7 +216,8 @@ std::string getTransitionalPreamble(const Opts& opts,
     case DirectiveType::EndIf:
       sharedCtx.emplace_back(std::move(directive));
       break;
-    default:;
+    default:
+      std::unreachable();
     }
 
     // generic_string() to convert '\' to '/'
@@ -243,12 +245,12 @@ std::string getTransitionalPreamble(const Opts& opts,
 
 } // namespace
 
-bool addPreamble(File& file, std::vector<Directive>&& directives, const Opts& opts) {
+bool addPreamble(File& file, PreprocessRes&& res, const Opts& opts) {
   bool manualExport{};
-  fmt::format_to(std::inserter(file.content, file.content.begin()),
-    "{}\n",
-    opts.transitionalOpts ?
-    getTransitionalPreamble(opts, directives, file, manualExport) :
-    getDefaultPreamble(opts, directives, file, manualExport));
+  fmt::format_to(std::inserter(file.content, file.content.begin() + res.insertionPos),
+    "{:\n<{}}{}\n", "",
+    res.prefixNewlineCnt, opts.transitionalOpts ?
+    getTransitionalPreamble(opts, res.directives, file, manualExport) :
+    getDefaultPreamble(opts, res.directives, file, manualExport));
   return manualExport;
 }

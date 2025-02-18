@@ -7,6 +7,7 @@
 - Split IncludePrevention test into include guard and pragma once tests.
 - Remove condition generation for local include section in transitional mode. Modules build can't use macros from other file, so it's safe to assume regular build also can't.
 - Update descriptions of settings.
+- Change other test to mode independent test
 
 # 1.1.0
 - Add a shared directive section in transitional mode to shorten the preamble.
