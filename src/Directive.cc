@@ -57,8 +57,8 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts&
     type = DirectiveType::PragmaOnce;
   }
   else type = DirectiveType::Other;
-  if(((ctx.state == IncludeGuardState::Looking && directive == "ifndef") ||
-    (ctx.state == IncludeGuardState::GotIfndef && directive == "define")) &&
+  if(((ctx.state == IncludeGuardState::GotIfndef && type == DirectiveType::Define) ||
+    (ctx.state == IncludeGuardState::Looking && directive == "ifndef")) &&
     opts.includeGuard->match(getWord(1 + directive.length(), str))) {
     extraInfo.emplace<IncludeGuard>();
   }

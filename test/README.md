@@ -1,0 +1,2 @@
+Default tests are for behaviors that only exist in default mode, vice versa for transitional tests
+ModeIndependent are for behaviors that are the same in both modes. We will run them in default mode though.
