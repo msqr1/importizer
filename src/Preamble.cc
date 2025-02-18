@@ -5,7 +5,6 @@
 #include "Minimizer.hpp"
 #include "FileOp.hpp"
 #include "Preprocessor.hpp"
-#include <fmt/base.h>
 #include <iterator>
 #include <optional>
 #include <string>
@@ -52,7 +51,7 @@ void addModuleDecl(const File& file, bool& manualExport, std::string& moduleDecl
     moduleDecl += "export ";
   default:;
   }
-  fmt::format_to(std::back_inserter(moduleDecl),
+  formatTo(std::back_inserter(moduleDecl),
     "module {};\n",
     path2ModuleName(file.relPath));
 }
@@ -85,7 +84,7 @@ void handleInclude(const Opts& opts, Directive& include, const ResolveIncludeCtx
       includePath.replace_extension(opts.hdrExt);
     }
     if(file.type == FileType::UmbrellaHdr) imports += "export ";
-    fmt::format_to(std::back_inserter(imports), "import {};\n",
+    formatTo(std::back_inserter(imports), "import {};\n",
       path2ModuleName(includePath));
     replaceExtPush();
   }
@@ -147,7 +146,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
     default:
       GMFCtx.emplace_back(std::move(directive.str));
     }
-    fmt::format_to(std::back_inserter(preamble),
+    formatTo(std::back_inserter(preamble),
       "module;\n"
       "{}",
       minimizeToStr(GMFCtx));
@@ -211,7 +210,7 @@ std::string getTransitionalPreamble(const Opts& opts,
     }
 
     // generic_string() to convert '\' to '/'
-    fmt::format_to(std::back_inserter(preamble),
+    formatTo(std::back_inserter(preamble),
       "#ifdef {}\n"
       "module;\n"
       "#endif\n"
@@ -221,7 +220,7 @@ std::string getTransitionalPreamble(const Opts& opts,
       .lexically_relative("." / file.relPath.parent_path()).generic_string());
   }
   addStdImport(moduleStr, lvl);
-  fmt::format_to(std::back_inserter(preamble),
+  formatTo(std::back_inserter(preamble),
     "{}"
     "#ifdef {}\n"
     "{}"
@@ -237,7 +236,7 @@ std::string getTransitionalPreamble(const Opts& opts,
 
 bool addPreamble(File& file, PreprocessRes&& res, const Opts& opts) {
   bool manualExport{};
-  fmt::format_to(std::inserter(file.content, file.content.begin() + res.insertionPos),
+  formatTo(std::inserter(file.content, file.content.begin() + res.insertionPos),
     "{:\n<{}}{}\n", 
     "", res.prefixNewlineCnt, opts.transitionalOpts ?
     getTransitionalPreamble(opts, res.directives, file, manualExport) :

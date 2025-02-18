@@ -1,10 +1,8 @@
+#include "Base.hpp"
 #include "OptProcessor.hpp"
 #include "FileOp.hpp"
 #include "Preamble.hpp"
 #include "Preprocessor.hpp"
-#include <fmt/base.h>
-#include <fmt/format.h>
-#include <fmt/std.h>
 #include <exception>
 #include <filesystem>
 
@@ -15,7 +13,7 @@ void run(int argc, const char* const* argv) {
   const Opts opts{getOptsOrExit(argc, argv)};
   if(opts.transitionalOpts) {
     const TransitionalOpts& t{*opts.transitionalOpts};
-    writeToPath(opts.outDir / t.exportMacrosPath, fmt::format(
+    writeToPath(opts.outDir / t.exportMacrosPath, format(
       "#ifdef {0}\n"
       "#define {1} export\n"
       "#define {2} export {{\n"
@@ -36,7 +34,7 @@ void run(int argc, const char* const* argv) {
     if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
       if(opts.transitionalOpts && opts.transitionalOpts->backCompatHdrs) {
         backCompatHdr = opts.outDir / file.relPath;
-        writeToPath(backCompatHdr, fmt::format(
+        writeToPath(backCompatHdr, format(
           "#include \"{}\"",
           file.relPath.replace_extension(opts.moduleInterfaceExt).filename()));
       }
@@ -53,7 +51,7 @@ int main(int argc, const char* const* argv) {
     run(argc, argv);
   }
   catch(const std::exception& exc) {
-    fmt::println(stderr, "std::exception thrown: {}", exc.what());
+    log("std::exception thrown: {}", exc.what());
     return 1;
   }
   catch(int exitCode) {

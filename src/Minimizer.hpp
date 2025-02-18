@@ -4,4 +4,4 @@
 #include <variant>
 
 using MinimizeCtx = std::vector<std::variant<std::string, Directive>>;
-std::string minimizeToStr(MinimizeCtx& mCtx);
+std::string minimizeToStr(const MinimizeCtx& mCtx);

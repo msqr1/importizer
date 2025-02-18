@@ -1,8 +1,6 @@
 #include "OptProcessor.hpp"
 #include "Base.hpp"
 #include "../3rdParty/Argparse.hpp"
-#include <fmt/format.h>
-#include <fmt/std.h>
 #include <toml++/toml.hpp>
 #include <utility>
 #include <vector>
@@ -152,7 +150,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
 
   // A slight hack using getOrDefault even though the default value is never used. I don't
   // want to write more code lol
-  else opts.includeGuard.emplace(fmt::format(
+  else opts.includeGuard.emplace(format(
     "^{}$",
     getOrDefault(generalParser, "--include-guard", config, "includeGuard", "")));
   opts.inDir = path ?

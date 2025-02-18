@@ -163,14 +163,14 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
         emplaceDirective();
         rmDirective();
         break;
-      case DirectiveType::Other:;
+      default:;
       }
       continue;
     case '\n':
       whitespaceAfterNewline = true;
       break;
     default:
-      if(whitespaceAfterNewline) whitespaceAfterNewline = isSpace(file.content[i]);
+      whitespaceAfterNewline = isSpace(file.content[i]);
 
       // If you're a sane person you wouldn't write the main function like this:
       // int/*comment*/main/*comment*/(, right? Cuz it won't work.

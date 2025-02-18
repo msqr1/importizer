@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <source_location>
 #include <filesystem>
+#include <string>
 
 // PCRE2 for non-matching capture groups, and
 // std::string(_view)::find* for not found return a -1 size_t (std::string::npos)
@@ -34,4 +35,12 @@ template <typename... T> exitWithErr(const std::source_location& loc,
   fmt::format_string<T...> fmt, T&&...) -> exitWithErr<T...>;
 template <typename... T> void log(fmt::format_string<T...> fmt, T&&... args) {
   fmt::println(fmt, std::forward<T>(args)...);
+}
+template <typename OutputIt, typename... T> void formatTo(OutputIt&& out,
+  fmt::format_string<T...> fmt, T&&... args) {
+  fmt::format_to(std::forward<OutputIt>(out), fmt, std::forward<T>(args)...);
+}
+template <typename... T> std::string format( fmt::format_string<T...> fmt,
+  T&&... args) {
+  return fmt::format(fmt, std::forward<T>(args)...);
 }

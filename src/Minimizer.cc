@@ -28,7 +28,7 @@ std::optional<uintmax_t> getIfSkip(const MinimizeCtx& mCtx, uintmax_t currentIdx
   }
   return std::nullopt;
 }
-std::string minimizeToStr(MinimizeCtx& mCtx) {
+std::string minimizeToStr(const MinimizeCtx& mCtx) {
   std::string rtn;
   std::optional<uintmax_t> ifSkip;
   for(uintmax_t i{}; i < mCtx.size(); i++) switch(mCtx[i].index()) {
