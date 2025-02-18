@@ -37,8 +37,24 @@ enum class StdImportLvl : char {
   StdCompat
 };
 void addStdImport(std::string& str, StdImportLvl lvl) {
-  if(lvl == StdImportLvl::Std) str += "import std;\n";
-  else if(lvl == StdImportLvl::StdCompat) str += "import std.compat;\n";
+  if(lvl == StdImportLvl::StdCompat) str += "import std.compat;\n";
+  else if(lvl == StdImportLvl::Std) str += "import std;\n";
+}
+void addModuleDecl(const File& file, bool& manualExport, std::string& moduleDecl) {
+
+  // Convert header and unpaired source into module interface unit. Without
+  // the "export " the file is a module implementation unit
+  switch(file.type) {
+  case FileType::Hdr:
+  case FileType::UmbrellaHdr:
+  case FileType::UnpairedSrc:
+    manualExport = true;
+    moduleDecl += "export ";
+  default:;
+  }
+  fmt::format_to(std::back_inserter(moduleDecl),
+    "module {};\n",
+    path2ModuleName(file.relPath));
 }
 void handleInclude(const Opts& opts, Directive& include, const ResolveIncludeCtx& ctx,
   const File& file, StdImportLvl& lvl, std::string& imports, MinimizeCtx& sharedCtx,
@@ -135,20 +151,7 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       "module;\n"
       "{}",
       minimizeToStr(GMFCtx));
-
-    // Convert header and unpaired source into module interface unit. Without
-    // the "export " the file is a module implementation unit
-    switch(file.type) {
-    case FileType::Hdr:
-    case FileType::UmbrellaHdr:
-    case FileType::UnpairedSrc:
-      manualExport = true;
-      preamble += "export ";
-    default:;
-    }
-    fmt::format_to(std::back_inserter(preamble),
-      "module {};\n",
-      path2ModuleName(file.relPath));
+    addModuleDecl(file, manualExport, preamble);
   }
   preamble += imports;
   addStdImport(preamble, lvl);
@@ -182,21 +185,7 @@ std::string getTransitionalPreamble(const Opts& opts,
 
   // Convert to module interface/implementation
   else {
-
-    // Convert header and unpaired source into module interface unit. Without
-    // the "export " the file is a module implementation unit
-    switch(file.type) {
-    case FileType::Hdr:
-    case FileType::UmbrellaHdr:
-    case FileType::UnpairedSrc:
-      manualExport = true;
-      moduleStr += "export ";
-    default:;
-    }
-    fmt::format_to(std::back_inserter(moduleStr),
-      "module {};\n",
-      path2ModuleName(file.relPath));
-    
+    addModuleDecl(file, manualExport, moduleStr); 
     for(Directive& directive : directives) switch(directive.type) {
     case DirectiveType::Include:
       handleInclude(opts, directive, ctx, file, lvl, moduleStr, sharedCtx, &localIncludes);
@@ -249,8 +238,8 @@ std::string getTransitionalPreamble(const Opts& opts,
 bool addPreamble(File& file, PreprocessRes&& res, const Opts& opts) {
   bool manualExport{};
   fmt::format_to(std::inserter(file.content, file.content.begin() + res.insertionPos),
-    "{:\n<{}}{}\n", "",
-    res.prefixNewlineCnt, opts.transitionalOpts ?
+    "{:\n<{}}{}\n", 
+    "", res.prefixNewlineCnt, opts.transitionalOpts ?
     getTransitionalPreamble(opts, res.directives, file, manualExport) :
     getDefaultPreamble(opts, res.directives, file, manualExport));
   return manualExport;
