@@ -1,6 +1,7 @@
 #pragma once
 #include <fmt/base.h>
 #include <fmt/std.h>
+#include <fmt/format.h>
 #include <cstddef>
 #include <source_location>
 #include <filesystem>

@@ -94,9 +94,7 @@ void handleInclude(const Opts& opts, Directive& include, const ResolveIncludeCtx
       lvl = *stdIncludeType == StdIncludeType::CppOrCwrap ?
         StdImportLvl::Std : StdImportLvl::StdCompat;
     }
-    if(transitionalLocalIncludes != nullptr) {
-      *transitionalLocalIncludes += include.str;
-    }
+    if(transitionalLocalIncludes != nullptr) *transitionalLocalIncludes += include.str;
   }
   else sharedCtx.emplace_back(std::move(include.str));
 }
@@ -176,7 +174,7 @@ std::string getTransitionalPreamble(const Opts& opts,
     case DirectiveType::Else:
     case DirectiveType::EndIf:
       sharedCtx.emplace_back(std::move(directive));
-      break;
+      break; 
     default:
       unreachable();
     }

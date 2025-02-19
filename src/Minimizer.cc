@@ -5,7 +5,8 @@
 #include <string>
 #include <variant>
 
-std::optional<uintmax_t> getIfSkip(const MinimizeCtx& mCtx, uintmax_t currentIdx) {
+std::optional<uintmax_t> getIfElSkip(const MinimizeCtx& mCtx, uintmax_t currentIdx,
+  DirectiveType currentType) {
   currentIdx++;
   uintmax_t nest{1};
   for(; currentIdx < mCtx.size(); currentIdx++) {
@@ -17,7 +18,7 @@ std::optional<uintmax_t> getIfSkip(const MinimizeCtx& mCtx, uintmax_t currentIdx
       break;
     case DirectiveType::EndIf:
       nest--;
-      if(nest == 0) return currentIdx;
+      if(nest == 0) return currentIdx - (currentType == DirectiveType::ElCond);
       break;
     case DirectiveType::ElCond:
     case DirectiveType::Else:
@@ -47,29 +48,14 @@ std::string minimizeToStr(const MinimizeCtx& mCtx) {
         }
         break;
       case DirectiveType::IfCond:
-        if((ifSkip = getIfSkip(mCtx, i))) {
+      case DirectiveType::ElCond:
+        if((ifSkip = getIfElSkip(mCtx, i, current.type))) {
           i = *ifSkip;
           continue;
         }
         break;
       case DirectiveType::Else:
-        if(next.type == DirectiveType::EndIf) {
-          i++;
-          rtn += next.str;
-          continue;
-        }
-        break;
-      case DirectiveType::ElCond:
-        switch(next.type) {
-        case DirectiveType::ElCond:
-        case DirectiveType::EndIf:
-          rtn += next.str;
-          i++;
-          continue;
-        case DirectiveType::Else:     
-          continue;
-        default:;
-        }
+        if(next.type == DirectiveType::EndIf) continue;
         break;
       default:;
       }
