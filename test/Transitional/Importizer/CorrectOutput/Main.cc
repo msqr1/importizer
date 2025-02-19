@@ -9,10 +9,10 @@ import FileOp;
 import Preamble;
 import Preprocessor;
 #else
-#include "OptProcessor.cppm"
-#include "FileOp.cppm"
-#include "Preamble.cppm"
-#include "Preprocessor.cppm"
+#include "OptProcessor.ixx"
+#include "FileOp.ixx"
+#include "Preamble.ixx"
+#include "Preprocessor.ixx"
 #endif
 
 

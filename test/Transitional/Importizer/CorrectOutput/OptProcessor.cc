@@ -16,8 +16,8 @@ module;
 module OptProcessor;
 import Base;
 #else
-#include "OptProcessor.cppm"
-#include "Base.cppm"
+#include "OptProcessor.ixx"
+#include "Base.ixx"
 #endif
 
 

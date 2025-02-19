@@ -9,7 +9,7 @@ module;
 export module CondMinimizer;
 import Directive;
 #else
-#include "Directive.cppm"
+#include "Directive.ixx"
 #endif
 
 

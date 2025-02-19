@@ -18,11 +18,11 @@ import Regex;
 import FileOp;
 import Directive;
 #else
-#include "Preprocessor.cppm"
-#include "OptProcessor.cppm"
-#include "Regex.cppm"
-#include "FileOp.cppm"
-#include "Directive.cppm"
+#include "Preprocessor.ixx"
+#include "OptProcessor.ixx"
+#include "Regex.ixx"
+#include "FileOp.ixx"
+#include "Directive.ixx"
 #endif
 
 

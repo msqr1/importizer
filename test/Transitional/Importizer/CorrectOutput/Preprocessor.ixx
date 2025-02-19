@@ -10,8 +10,8 @@ export module Preprocessor;
 import OptProcessor;
 import Directive;
 #else
-#include "OptProcessor.cppm"
-#include "Directive.cppm"
+#include "OptProcessor.ixx"
+#include "Directive.ixx"
 #endif
 
 

@@ -14,9 +14,9 @@ module Directive;
 import Base;
 import Regex;
 #else
-#include "Directive.cppm"
-#include "Base.cppm"
-#include "Regex.cppm"
+#include "Directive.ixx"
+#include "Base.ixx"
+#include "Regex.ixx"
 #endif
 
 

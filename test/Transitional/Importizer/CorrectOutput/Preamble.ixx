@@ -8,7 +8,7 @@ module;
 export module Preamble;
 import Directive;
 #else
-#include "Directive.cppm"
+#include "Directive.ixx"
 #endif
 
 

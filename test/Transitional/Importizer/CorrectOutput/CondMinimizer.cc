@@ -10,8 +10,8 @@ module;
 module CondMinimizer;
 import Directive;
 #else
-#include "CondMinimizer.cppm"
-#include "Directive.cppm"
+#include "CondMinimizer.ixx"
+#include "Directive.ixx"
 #endif
 
 

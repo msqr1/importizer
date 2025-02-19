@@ -20,12 +20,12 @@ import CondMinimizer;
 import FileOp;
 import Preprocessor;
 #else
-#include "Preamble.cppm"
-#include "OptProcessor.cppm"
-#include "Directive.cppm"
-#include "CondMinimizer.cppm"
-#include "FileOp.cppm"
-#include "Preprocessor.cppm"
+#include "Preamble.ixx"
+#include "OptProcessor.ixx"
+#include "Directive.ixx"
+#include "CondMinimizer.ixx"
+#include "FileOp.ixx"
+#include "Preprocessor.ixx"
 #endif
 
 

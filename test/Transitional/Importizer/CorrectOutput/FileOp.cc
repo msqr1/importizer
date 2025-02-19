@@ -16,9 +16,9 @@ module FileOp;
 import Base;
 import OptProcessor;
 #else
-#include "FileOp.cppm"
-#include "Base.cppm"
-#include "OptProcessor.cppm"
+#include "FileOp.ixx"
+#include "Base.ixx"
+#include "OptProcessor.ixx"
 #endif
 
 

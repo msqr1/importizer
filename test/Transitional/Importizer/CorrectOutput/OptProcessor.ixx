@@ -11,7 +11,7 @@ module;
 export module OptProcessor;
 import Regex;
 #else
-#include "Regex.cppm"
+#include "Regex.ixx"
 #endif
 
 

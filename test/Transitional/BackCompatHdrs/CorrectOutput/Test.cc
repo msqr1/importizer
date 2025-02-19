@@ -5,6 +5,6 @@ module;
 #ifdef CPP_MODULES
 module Test;
 #else
-#include "Test.cppm"
+#include "Test.ixx"
 #endif
 

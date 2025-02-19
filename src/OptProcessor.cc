@@ -161,7 +161,7 @@ Opts getOptsOrExit(int argc, const char* const* argv) {
   opts.hdrExt = getOrDefault(generalParser, "--hdr-ext", config, "hdrExt", ".hpp");
   opts.srcExt = getOrDefault(generalParser, "--src-ext", config, "srcExt", ".cpp");
   opts.moduleInterfaceExt = getOrDefault(generalParser, "--module-interface-ext", config,
-    "moduleInterfaceExt", ".cppm");
+    "moduleInterfaceExt", ".ixx");
   getPathArr(generalParser, "--include-paths", config, "includePaths", opts.includePaths,
     configDir);
   getPathArr(generalParser, "--ignored-hdrs", config, "ignoredHdrs", opts.ignoredHdrs);

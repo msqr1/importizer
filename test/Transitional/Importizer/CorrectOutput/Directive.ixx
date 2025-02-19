@@ -12,7 +12,7 @@ module;
 export module Directive;
 import FileOp;
 #else
-#include "FileOp.cppm"
+#include "FileOp.ixx"
 #endif
 
 

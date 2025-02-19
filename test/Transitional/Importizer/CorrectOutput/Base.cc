@@ -5,7 +5,7 @@ module;
 #ifdef CPP_MODULES
 module Base;
 #else
-#include "Base.cppm"
+#include "Base.ixx"
 #endif
 
 

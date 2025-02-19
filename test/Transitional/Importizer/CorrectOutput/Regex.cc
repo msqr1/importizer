@@ -13,8 +13,8 @@ module;
 module Regex;
 import Base;
 #else
-#include "Regex.cppm"
-#include "Base.cppm"
+#include "Regex.ixx"
+#include "Base.ixx"
 #endif
 
 #define PCRE2_CODE_UNIT_WIDTH 8
