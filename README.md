@@ -68,18 +68,11 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
       1. **Try to compile using header**, you shouldn't have to change anything for this to work. If it doesn't, then importizer has an issue, please report it.
       2. **Export**: Add values of `mi_exportKeyword` or `mi_exportBlockBegin` and `mi_exportBlockEnd` around exported entities in the files outputted by the program.
       3. **Try compile using modules**, add `-D[value of mi_control]` when compiling every file to enable module mode.
-4. **Refactor** (this list will get shorter over time):
-    - **Refactor directives**: Importizer doesn't have enough context for the project it's modularizing, so it recreate the exact directive structure to ensure outside includes only happens in the original conditions.
+4. **Refactor** (list will shorten over time):
+    - **Refactor directives**: Importizer recreate the exact directive structure to ensure outside includes only happens in the original conditions. The minimizer try its best to shorten this structure, but it isn't context aware (eg. this define is not needed by this include).
     - **Refactor directives 2**: Since includes are moved up, they may leave unecessary directives at their original location.
-    - **Reposition the SOF (start-of-file) (usually license) comments** because importizer always place the preamble on the very top of the file.
 
 ## [Output example](Examples/Output.md)
-
-## Testing
-- Add `-DTESTS=1` when configuring cmake.
-- Build, then `cd [build root]/test`.
-- Run `ctest`.
-- If possible, file an issue for test(s) that failed.
 
 # Behavior
 - A file pair is defined as one header and one with the same basename (filename without extension) in the same directory. For example, `input/directory/file.cpp` and `input/directory/file.hpp`. The paired source must #include and defines everything declared in the paired header.
@@ -102,6 +95,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | Angle bracket | 1. Relative to each of `includePaths`                                    |
 
 # Settings
+- Customize your behavior
 - CLI settings will override config file settings.
 - Paths are relative to the current working directory for CLI settings, and relative to the config file for TOML settings.
 - General flags/settings:
@@ -115,7 +109,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | -l, --log-current-file      | logCurrentFile     | Print the current file being processed.                                                                                                                                     | Boolean      | `false`       |
 | -p, --pragma-once           | pragmaOnce         | Declare that you use `#pragma once` so importizer handles them.                                                                                                             | Boolean      | `false`       |
 | -S, --SOF-comments          | SOFComments        | Declare that your files may start with comments (usually to specify a license) so importizer handles them. Note that it scans for the largest continuous SOF comment chain. | Boolean      | `false`       |
-| --include-guard             | includeGuard       | Declare that you use include guards so the tool handles them. You will provide a regex to match match the entire guard. Example: `[^\s]+_H`.                                | String       | N/A           |
+| --include-guard             | includeGuard       | Declare that you use include guards so the tool handles them. You will provide a regex to match match the entire guard, for example: `[^\s]+_HPP`.                          | String       | N/A           |
 | -i, --in-dir                | inDir              | Input directory (required on the CLI or in the TOML file).                                                                                                                  | String       | N/A           |
 | -o, --out-dir               | outDir             | Output directory (required on the CLI or in the TOML file).                                                                                                                 | String       | N/A           |
 | --hdr-ext                   | hdrExt             | Header file extension.                                                                                                                                                      | String       | `.hpp`        |
@@ -148,7 +142,20 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
   - Refactor the macro definition into a separate header, `#include` that where the macro is needed, and add the new header to `ignoredHdrs`.
   - Add the macro-containing headers to the `ignoredHdrs` (recommended when the header's sole purpose is to provide macros).
 
-# Some rules
+# Developing
+
+## Testing
+- Add `-DTESTS=1` when configuring CMake.
+- Build, then `cd [build root]/test`.
+- Run `ctest`.
+- If possible, file an issue for test(s) that failed.
+
+## Precompiled headers
+- Compile times are quite long, and it's only getting longer, so I made use of CMake precompiled headers. Some workarounds are required, so I prepared a setting.
+- This can significantly reduce compile time by around 70%.
+- Add `-DPCH=1` when configuring CMake.
+
+## Contribution rules
 - Max column width: 90, one or two past that is fine, but should not be abused.
 - Put comment to denote what type after case label for variant switch.
 - Keep settings' order in the README, the option struct, and their value-checking order the same.

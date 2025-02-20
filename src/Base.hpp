@@ -18,6 +18,10 @@ template <typename... T> struct exitWithErr {
   [[noreturn]] exitWithErr(fmt::format_string<T...> fmt, T&&... args, 
   const std::source_location& loc = std::source_location::current()) {
     exitWithErr(loc, fmt, std::forward<T>(args)...);
+
+    // Idk why but my compiler warns on the noreturn function returning without this,
+    // even if its literally unreachable
+    unreachable();
   }
   
   // Overload for indirect callers (ie. calling from an error handling function). 

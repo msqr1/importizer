@@ -1,21 +1,28 @@
 add_executable(importizer Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
   Preprocessor.cc Preamble.cc Directive.cc Minimizer.cc)
 target_compile_features(importizer PRIVATE cxx_std_23)
+option(PCH "Use precompiled headers" OFF)
+if(PCH)
 
-# 3rd-party headers rarely changes
-set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h
-fmt/include/fmt/base.h fmt/include/fmt/std.h)
-list(TRANSFORM 3rdPartyHeaders PREPEND ../3rdParty/)
+  # CMake doesn't realize these are also required when going with PCH,
+  # and there is no way to add it just in the PCH, so I just do it here
+  target_compile_definitions(importizer PRIVATE TOML_EXCEPTIONS=0)
+  target_compile_definitions(importizer PRIVATE TOML_ENABLE_FORMATTERS=0)
 
-# Project headers that should not be changed frequently
-set(stableHeaders Base.hpp Regex.hpp FileOp.hpp)
-foreach(header IN LISTS 3rdPartyHeaders stableHeaders)
-  target_precompile_headers(importizer PRIVATE ${header})
-endforeach()
+  # 3rd-party headers rarely changes
+  set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h
+  fmt/include/fmt/base.h fmt/include/fmt/std.h)
+  list(TRANSFORM 3rdPartyHeaders PREPEND ../3rdParty/)
+
+  # Project headers that should not be changed frequently
+  set(stableHeaders Base.hpp Regex.hpp FileOp.hpp)
+  foreach(header IN LISTS 3rdPartyHeaders stableHeaders)
+    target_precompile_headers(importizer PRIVATE ${header})
+  endforeach()
+endif()
+
 add_subdirectory(../3rdParty/fmt "${CMAKE_BINARY_DIR}/fmt")
 target_link_libraries(importizer fmt::fmt)
-target_compile_definitions(importizer PRIVATE TOML_EXCEPTIONS=0)
-target_compile_definitions(importizer PRIVATE TOML_ENABLE_FORMATTERS=0)
 add_subdirectory(../3rdParty/toml++ "${CMAKE_BINARY_DIR}/toml++")
 target_link_libraries(importizer tomlplusplus::tomlplusplus)
 set(PCRE2_BUILD_TESTS off)

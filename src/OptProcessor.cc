@@ -1,6 +1,8 @@
 #include "OptProcessor.hpp"
 #include "Base.hpp"
 #include "../3rdParty/Argparse.hpp"
+#define TOML_EXCEPTIONS 0
+#define TOML_ENABLE_FORMATTERS 0
 #include <toml++/toml.hpp>
 #include <utility>
 #include <vector>
@@ -16,14 +18,14 @@ namespace {
 template <typename keyTp>
 auto getTypeCk(const toml::table& tbl, std::string_view key) {
   const toml::node_view<const toml::node> node{tbl[key]};
-
+  
   // TOML need std::string, not const char*, string_view, etc.
   if constexpr(std::is_convertible_v<keyTp, std::string>) {
     if(node.is_string()) return node.ref<std::string>();
   }
   else if(node.is<keyTp>()) return node.ref<keyTp>();
 
-// Clang++ < 20 can't handle [[noreturn]] in constructors (eg. exitWithErr).
+  // Clang++ < 20 can't handle [[noreturn]] in constructors (eg. exitWithErr).
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #pragma GCC diagnostic push
   exitWithErr("Incorrect TOML type for {}", key);

@@ -69,16 +69,10 @@ Directive::Directive(Directive&& other) noexcept {
 Directive& Directive::operator=(Directive&& other) noexcept {
   type = other.type;
   extraInfo = std::move(other.extraInfo);
-  switch(extraInfo.index()) {
-  case 1: {
-    IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
-    uintmax_t len{includeInfo.includeStr.length()};
-    str = std::move(other.str);
-    includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
-    break;
-  }
-  default:
-    str = std::move(other.str);
+  str = std::move(other.str);
+  if(std::holds_alternative<IncludeInfo>(extraInfo)) {
+    IncludeInfo& info{std::get<IncludeInfo>(extraInfo)};
+    info.includeStr = {str.c_str() + info.startOffset, info.includeStr.length()};
   }
   return *this;
 }
