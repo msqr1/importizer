@@ -1,9 +1,10 @@
 # 2.0.0 (in progress)
-- Breaking: change includeGuardPat to includeGuard.
+- Breaking: Change includeGuardPat to includeGuard.
 - Breaking: Add and implement the off-by-default rule:
   - Include guards are no longer handled by default with a default regex.
   - Pragma once is no longer handled by default (new `pragmaOnce` setting).
-- Maybe breaking: Default value of moduleInterfaceExt setting is now ".ixx" instead of ".cppm" to work by default on MSVC .
+- Maybe breaking: Default value of moduleInterfaceExt setting is now ".ixx" instead of ".cppm" to work by default on MSVC.
+- Maybe breaking: `transitional` now needed to be specified at the start of the CLI instead of anywhere
 - Add `SOFComments` setting to handle start-of-file comments (usually license).
 - Split IncludePrevention test into include guard and pragma once tests.
 - Remove condition generation for local include section in transitional mode. Modules build can't use macros from other file, so it's safe to assume regular build also don't.
@@ -12,6 +13,7 @@
 - Change the test name `Other` to `ModeIndependent`
 - Make the minimizer and umbrella header tests ModeIndependent.
 - CMake precompiled headers are now optional, opt in with the PCH option (like the TEST option).
+- The argument parser is now Taywee/Args because it doesn't use std::any which can fail on Windows clang (#13)
 
 # 1.1.0
 - Add a shared directive section in transitional mode to shorten the preamble.

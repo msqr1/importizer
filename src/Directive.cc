@@ -4,7 +4,7 @@
 #include "OptProcessor.hpp"
 #include "Regex.hpp"
 #include <array>
-#include <cstdint>
+#include <cstddef>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -16,14 +16,14 @@ namespace fs = std::filesystem;
 IncludeGuardCtx::IncludeGuardCtx(FileType type, const std::optional<Regex>& pat): 
   state{type == FileType::Hdr && pat ?
   IncludeGuardState::Looking : IncludeGuardState::NotLooking} {}
-IncludeInfo::IncludeInfo(bool isAngle, uintmax_t startOffset, std::string_view includeStr):
+IncludeInfo::IncludeInfo(bool isAngle, size_t startOffset, std::string_view includeStr):
   isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
 Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts& opts):
   str{std::move(str_)} {
   if(str.back() != '\n') str += '\n';
-  auto getWord = [](uintmax_t start, std::string_view str) {
+  auto getWord = [](size_t start, std::string_view str) {
     while(str[start] == ' ') start++;
-    uintmax_t end{start};
+    size_t end{start};
     while(str[end] != ' ' && str[end] != '\n'
       && str[end] != '/') end++;
     return str.substr(start, end - start);
@@ -34,8 +34,8 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts&
   else if(directive == "undef") type = DirectiveType::Undef;
   else if(directive == "include") {
     type = DirectiveType::Include;
-    uintmax_t start{str.find('<', 1 + directive.length())};
-    uintmax_t end;
+    size_t start{str.find('<', 1 + directive.length())};
+    size_t end;
     bool isAngle{start != notFound};
     if(isAngle) {
       start++;
@@ -80,7 +80,7 @@ Directive::Directive(const Directive& other): type{other.type}, str{other.str},
   extraInfo(other.extraInfo) {
   if(std::holds_alternative<IncludeInfo>(extraInfo)) {
     IncludeInfo& includeInfo{std::get<IncludeInfo>(extraInfo)};
-    uintmax_t len{includeInfo.includeStr.length()};
+    size_t len{includeInfo.includeStr.length()};
     includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
   }
 }

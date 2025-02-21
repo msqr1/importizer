@@ -5,13 +5,19 @@
 #include <cstddef>
 #include <source_location>
 #include <filesystem>
-#include <string>
 
 // PCRE2 for non-matching capture groups, and
 // std::string(_view)::find* for not found return a -1 size_t (std::string::npos)
 constexpr size_t notFound{static_cast<size_t>(-1)};
 [[noreturn]] void exitOK();
 [[noreturn]] void unreachable();
+using fmt::print;
+using fmt::println;
+using fmt::format;
+template <typename OutputIt, typename... T> void formatTo(OutputIt&& out,
+  fmt::format_string<T...> fmt, T&&... args) {
+  fmt::format_to(std::forward<OutputIt>(out), fmt, std::forward<T>(args)...);
+}
 template <typename... T> struct exitWithErr {
 
   // Overload for direct callers, source location is implied
@@ -28,9 +34,9 @@ template <typename... T> struct exitWithErr {
   // Custom source location is here to give correct error location
   [[noreturn]] exitWithErr(const std::source_location& loc, fmt::format_string<T...> fmt
     , T&&... args) {
-    fmt::print(stderr, "Exception thrown at {}({}:{}): ",
+    print(stderr, "Exception thrown at {}({}:{}): ",
       std::filesystem::path(loc.file_name()).filename(), loc.line(), loc.column());
-    fmt::println(stderr, fmt, std::forward<T>(args)...);
+    println(stderr, fmt, std::forward<T>(args)...);
     throw 1;
   }
 };
@@ -38,14 +44,3 @@ template <typename... T> exitWithErr(fmt::format_string<T...> fmt, T&&...)
   -> exitWithErr<T...>;
 template <typename... T> exitWithErr(const std::source_location& loc,
   fmt::format_string<T...> fmt, T&&...) -> exitWithErr<T...>;
-template <typename... T> void log(fmt::format_string<T...> fmt, T&&... args) {
-  fmt::println(fmt, std::forward<T>(args)...);
-}
-template <typename OutputIt, typename... T> void formatTo(OutputIt&& out,
-  fmt::format_string<T...> fmt, T&&... args) {
-  fmt::format_to(std::forward<OutputIt>(out), fmt, std::forward<T>(args)...);
-}
-template <typename... T> std::string format( fmt::format_string<T...> fmt,
-  T&&... args) {
-  return fmt::format(fmt, std::forward<T>(args)...);
-}

@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <cstddef>
 #include <string_view>
 #include <optional>
 
@@ -7,20 +7,20 @@ struct pcre2_real_code_8;
 struct pcre2_real_match_data_8;
 class Capture {
 friend class Captures;
-  Capture(uintmax_t start, uintmax_t end);
+  Capture(size_t start, size_t end);
 public:
-  uintmax_t start;
-  uintmax_t end;
+  size_t start;
+  size_t end;
   Capture();
 };
 
 // Captures doesn't own anything, it's just a pointer to the ovector, so we can copy
 class Captures {
 friend class Regex;
-  uintmax_t* ovector;
+  size_t* ovector;
 public:
   Captures();
-  Captures(uintmax_t* ovector);
+  Captures(size_t* ovector);
   Capture operator[](int idx) const;
 };
 
@@ -36,6 +36,6 @@ public:
   Regex& reset(std::string_view pat, uint32_t opts = 0);
   Regex();
   ~Regex();
-  std::optional<Captures> match(std::string_view subject, uintmax_t startOffset = 0) const;
+  std::optional<Captures> match(std::string_view subject, size_t startOffset = 0) const;
 };
 

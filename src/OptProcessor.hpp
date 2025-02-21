@@ -29,4 +29,4 @@ struct Opts {
   std::vector<std::filesystem::path> umbrellaHdrs;
   std::optional<TransitionalOpts> transitionalOpts;
 };
-Opts getOptsOrExit(int argc, const char* const* argv);
+Opts getOptsOrExit(int argc, const char** argv);

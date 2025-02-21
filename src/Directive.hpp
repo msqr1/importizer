@@ -1,6 +1,6 @@
 #pragma once
 #include "FileOp.hpp"
-#include <cstdint>
+#include <cstddef>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -19,15 +19,15 @@ enum class IncludeGuardState : char {
 class IncludeGuardCtx {
 public:
   IncludeGuardState state;
-  uintmax_t counter;
+  size_t counter;
   IncludeGuardCtx(FileType type, const std::optional<Regex>& pat);
 };
 class IncludeInfo {
 public:
   bool isAngle;
-  uintmax_t startOffset;
+  size_t startOffset;
   std::string_view includeStr;
-  IncludeInfo(bool isAngle, uintmax_t startOffset, std::string_view includeStr);
+  IncludeInfo(bool isAngle, size_t startOffset, std::string_view includeStr);
 };
 
 // For ifndef and define that matches opts.includeGuard

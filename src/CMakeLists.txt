@@ -8,9 +8,10 @@ if(PCH)
   # and there is no way to add it just in the PCH, so I just do it here
   target_compile_definitions(importizer PRIVATE TOML_EXCEPTIONS=0)
   target_compile_definitions(importizer PRIVATE TOML_ENABLE_FORMATTERS=0)
+  target_compile_definitions(importizer PRIVATE ARGS_NOEXCEPT)
 
   # 3rd-party headers rarely changes
-  set(3rdPartyHeaders Argparse.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h
+  set(3rdPartyHeaders args.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h
   fmt/include/fmt/base.h fmt/include/fmt/std.h)
   list(TRANSFORM 3rdPartyHeaders PREPEND ../3rdParty/)
 

@@ -7,7 +7,7 @@
   - [Output example](#output-example)
   - [Testing](#testing)
 - [Behavior](#behavior)
-- [Settings](#settings)
+- [Options](#options)
 - [Modules' side effects](#modules-side-effects)
   - [Transitive includes](#transitive-includes)
   - [Non-local macros](#non-local-macros)
@@ -22,9 +22,9 @@ What can it do?
 - Takes you on the way to modularizing your codebase by reducing lots of trivial work.
 - **The only thing left to do is manually choosing what to export**.
 
-importizer supports two modularization scheme:
-- **Complete modularization**: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
-- **Transtitional modularization**: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing `[Transitional]` in the setting file or `transitional` on the command line.
+importizer supports two modularization mode:
+- **Complete**: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
+- **Transtitional**: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing `[Transitional]` in the setting file or `transitional` on the start of the command line.
 
 Requirements:
 - Code and options are valid UTF-8.
@@ -52,7 +52,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 
 ### Before running
 1. **Handle non-local macros as well as transitive includes** because they are incompatible with modules (see [Modules' side effects](#modules-side-effects)).
-2. **Acquire the correct settings for your project**, and add them into `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`).
+2. **Acquire the correct options for your project**, and add them into `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`).
 3. The TOML file is the recommended way, though you can specify command-line arguments to quickly test something out.
 
 ### Run the program
@@ -94,15 +94,14 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | Quoted        | 1. Relative to directory of the current file<br>2. Same as angle-bracket |
 | Angle bracket | 1. Relative to each of `includePaths`                                    |
 
-# Settings
+# Options
 - Customize your behavior
-- CLI settings will override config file settings.
-- Paths are relative to the current working directory for CLI settings, and relative to the config file for TOML settings.
-- General flags/settings:
+- CLI options will override config file options.
+- Paths are relative to the current working directory for CLI options, and relative to the config file for TOML options.
+- General flags/options:
 
 | CLI flag name               | TOML setting name  | Description                                                                                                                                                                 | Value type   | Default value |
 |-----------------------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|---------------|
-| -c, --config                | N/A                | Path to TOML configuration file (`.toml`), default to `importizer.toml`.                                                                                                    | String       | N/A           |
 | -h, --help                  | N/A                | Print help and exit.                                                                                                                                                        | N/A          | N/A           |
 | -v, --version               | N/A                | Print version and exit.                                                                                                                                                     | N/A          | N/A           |
 | -s, --std-include-to-import | stdIncludeToImport | Convert standard includes to `import std` or `import std.compat`.                                                                                                           | Boolean      | `false`       |
@@ -110,25 +109,26 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | -p, --pragma-once           | pragmaOnce         | Declare that you use `#pragma once` so importizer handles them.                                                                                                             | Boolean      | `false`       |
 | -S, --SOF-comments          | SOFComments        | Declare that your files may start with comments (usually to specify a license) so importizer handles them. Note that it scans for the largest continuous SOF comment chain. | Boolean      | `false`       |
 | --include-guard             | includeGuard       | Declare that you use include guards so the tool handles them. You will provide a regex to match match the entire guard, for example: `[^\s]+_HPP`.                          | String       | N/A           |
+| -c, --config                | N/A                | Path to TOML configuration file (`.toml`), default to `importizer.toml`.                                                                                                    | String       | N/A           |
 | -i, --in-dir                | inDir              | Input directory (required on the CLI or in the TOML file).                                                                                                                  | String       | N/A           |
 | -o, --out-dir               | outDir             | Output directory (required on the CLI or in the TOML file).                                                                                                                 | String       | N/A           |
 | --hdr-ext                   | hdrExt             | Header file extension.                                                                                                                                                      | String       | `.hpp`        |
 | --src-ext                   | srcExt             | Source (also module implementation unit) file extension.                                                                                                                    | String       | `.cpp`        |
-| --module-interface-ext      | moduleInterfaceExt | Module interface unit file extension.                                                                                                                                       | String       | `.ixx`       |
+| --module-interface-ext      | moduleInterfaceExt | Module interface unit file extension.                                                                                                                                       | String       | `.ixx`        |
 | --include-paths             | includePaths       | Include paths searched when converting include to import.                                                                                                                   | String array | `[]`          |
 | --ignored-hdrs              | ignoredHdrs        | Paths relative to `inDir` of header files to ignore. Their paired sources, if available, will be treated as if they have a `main()`.                                        | String array | `[]`          |
 | --umbrella-hdrs             | umbrellaHdrs       | Paths relative to `inDir` of modularized headers, but their `import` are turned into `export import`.                                                                       | String array | `[]`          |
 
-- Transitional flags/settings (must be specified after `transitional` on the CLI or under `[Transitional]` in the setting file):
+- Transitional flags/options (specify when `transitional` is specify as the first CLI argument, or under `[Transitional]` in the setting file):
 
-| CLI flag name           | TOML setting name   |Description                                                                                                                                                 | Value type | Default value  |
+| CLI flag name           | TOML setting name   | Description                                                                                                                                                | Value type | Default value  |
 |-------------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|----------------|
-| -b, --back-compat-hdrs  | backCompatHdrs      | Generate headers that include the module file to preserve #include for users. Note that in the codebase itself the module file is still included directly. | Boolean    | `false`        |
+| -b, --back-compat-hdrs  | backCompatHdrs      | Generate headers that include the module file to preserve #include for users. Note that in the project itself the module file is still included directly.  | Boolean    | `false`        |
 | --mi-control            | mi_control          | Header-module switching macro identifier.                                                                                                                  | String     | `CPP_MODULES`  |
 | --mi-export-keyword     | mi_exportKeyword    | Exported symbol macro identifier.                                                                                                                          | String     | `EXPORT`       |
 | --mi-export-block-begin | mi_exportBlockBegin | Export block begin macro identifier.                                                                                                                       | String     | `BEGIN_EXPORT` |
 | --mi-export-block-end   | mi_exportBlockEnd   | Export block end macro identifier.                                                                                                                         | String     | `END_EXPORT`   |
-| --export-macros-path    | exportMacrosPath    | Export macros file path relative to outDir.                                                                                                                | String     | `Export.hpp`   |
+| --export-macros-path    | exportMacrosPath    | File path relative to outDir to store the export macros above.                                                                                             | String     | `Export.hpp`   |
 
 # Modules' side effects
 
@@ -158,9 +158,9 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 ## Contribution rules
 - Max column width: 90, one or two past that is fine, but should not be abused.
 - Put comment to denote what type after case label for variant switch.
-- Keep settings' order in the README, the option struct, and their value-checking order the same.
-- To determine order for new settings, optimize for the option struct size and follow chronological order.
-- Off-by-default rule: All settings must have a special "false" default value (eg. empty for arrays or `false` for boolean), or else must be converted to an std::optional if they solve a problem that may not be needed by users. Current ones are:
+- Keep options' order in the README, the option struct, and their value-checking order the same.
+- To determine order for new options, optimize for the option struct size and follow chronological order.
+- Off-by-default rule: All options must have a special "false" default value (eg. empty for arrays or `false` for boolean), or else must be converted to an std::optional if they solve a problem that may not be needed by users. Current ones are:
   - pragmaOnce
   - SOFComments
   - includeGuard

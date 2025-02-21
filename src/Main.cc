@@ -9,7 +9,7 @@
 namespace fs = std::filesystem;
 namespace {
 
-void run(int argc, const char* const* argv) {
+void run(int argc, const char** argv) {
   const Opts opts{getOptsOrExit(argc, argv)};
   if(opts.transitionalOpts) {
     const TransitionalOpts& t{*opts.transitionalOpts};
@@ -28,7 +28,7 @@ void run(int argc, const char* const* argv) {
   }
   fs::path backCompatHdr;
   for(File& file : getProcessableFiles(opts)) {
-    if(opts.logCurrentFile) log("Current file: {}", file.relPath);
+    if(opts.logCurrentFile) println("Current file: {}", file.relPath);
     readFromPath(file.path, file.content);
     bool manualExport{addPreamble(file, preprocess(opts, file), opts)};
     if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
@@ -40,18 +40,18 @@ void run(int argc, const char* const* argv) {
       }
       else file.relPath.replace_extension(opts.moduleInterfaceExt);
     }
-    if(manualExport) log("{}", file.relPath);
+    if(manualExport) println("{}", file.relPath);
     writeToPath(opts.outDir / file.relPath, file.content);
   }
 }
 
 }
-int main(int argc, const char* const* argv) {
+int main(int argc, const char** argv) {
   try {
     run(argc, argv);
   }
   catch(const std::exception& exc) {
-    log("std::exception thrown: {}", exc.what());
+    println("std::exception thrown: {}", exc.what());
     return 1;
   }
   catch(int exitCode) {
