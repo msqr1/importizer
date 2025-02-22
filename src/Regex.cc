@@ -1,6 +1,7 @@
 #include "Regex.hpp"
 #include "Base.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <source_location>
 #include <string_view>
