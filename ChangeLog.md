@@ -1,9 +1,10 @@
 # 2.0.0 (in progress)
-- Breaking: Rename includeGuardPat to includeGuard.
+- Breaking:
+  - Rename includeGuardPat to includeGuard.
+  - Transitional mode in TOML now must be specified as `[transitional]` instead of `[Transitional]` to keep it consistent with the command line and project naming convention.
 - Breaking: Off-by-default rule added:
   - Include guards and #pragma once are no longer handled by default.
   - New pragmaOnce setting controls #pragma once handling.
-- Breaking: Transitional mode in TOML now must be specified as `[transitional]` instead of `[Transitional]` to keep it consistent with the command line and project naming convention
 - Maybe Breaking: moduleInterfaceExt default changed to ".ixx" (from ".cppm") for MSVC compatibility.
 - New:
   - SOFComments setting for handling start-of-file comments (e.g., licenses).

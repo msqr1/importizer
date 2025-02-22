@@ -70,14 +70,14 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
     
     // Comments
     case '/':
-      i++;
+      ++i;
       if(file.content[i] == '/') {
-        while(i < totalLen && file.content[i] != '\n') i++;
+        while(i < totalLen && file.content[i] != '\n') ++i;
         if(SOFComment) res.prefixNewlineCnt = 1;
       }
       else if(file.content[i] == '*') {
-        i++;
-        while(!(file.content[i - 1] == '*' && file.content[i] == '/')) i++;
+        ++i;
+        while(!(file.content[i - 1] == '*' && file.content[i] == '/')) ++i;
         if(SOFComment) res.prefixNewlineCnt = 2;
       }
       if(SOFComment) res.insertionPos = i + 1;
@@ -85,7 +85,7 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
 
     // Char/Int literal
     case '\'':
-      i++;
+      ++i;
 
       // Int literals
       if(isDigit(file.content[i]) && isDigit(file.content[i - 2]) &&
@@ -97,12 +97,12 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
 
     // String literals
     case '"':
-      i++;
+      ++i;
 
       // Raw
       if(file.content[i - 2] == 'R') {
-        const size_t start{i};
-        while(file.content[i] != '(') i++;
+        start = i;
+        while(file.content[i] != '(') ++i;
         const size_t delimSize{i - start};
         balance<'(',')'>(file.content, ++i);
         i += delimSize;
@@ -114,7 +114,7 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
     case '#':
       if(!whitespaceAfterNewline) break;
       start = i;
-      while(i < totalLen && (file.content[i] != '\n' || file.content[i - 1] == '\\')) i++;
+      while(i < totalLen && (file.content[i] != '\n' || file.content[i - 1] == '\\')) ++i;
       
       // Get the \n if available
       end = i + (i < totalLen);
@@ -184,7 +184,7 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
         }
       }
     }
-    i++;
+    ++i;
   }
 
   // In case the file only contains commments

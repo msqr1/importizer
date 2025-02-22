@@ -22,10 +22,10 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts&
   str{std::move(str_)} {
   if(str.back() != '\n') str += '\n';
   auto getWord = [](size_t start, std::string_view str) {
-    while(str[start] == ' ') start++;
+    while(str[start] == ' ') ++start;
     size_t end{start};
     while(str[end] != ' ' && str[end] != '\n'
-      && str[end] != '/') end++;
+      && str[end] != '/') ++end;
     return str.substr(start, end - start);
   };
   std::string_view directive{getWord(1, str)};

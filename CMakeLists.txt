@@ -31,10 +31,10 @@ endfunction()
 
 # No ASAN until I figure out how to bring the .dll/.so into the executables' directory
 if(MSVC)
-  add_compile_options(/W4)
+  add_compile_options(/W3)
   add_compile_options(/utf-8)
 #  ckAddFlag(ASAN debugCompileFlags /fsanitize=address)
-  ckAddFlag(RTCscu debugCompileFlags /RTCsu)
+  ckAddFlag(RTC1 debugCompileFlags /RTC1)
   ckAddFlag(noRTTI debugCompileFlags /GR-)
   ckAddFlag(noRTTI releaseCompileFlags /GR-)
   ckAddFlag(LTO releaseCompileFlags /GL)
