@@ -213,8 +213,8 @@ std::string getTransitionalPreamble(const Opts& opts,
       "module;\n"
       "#endif\n"
       "#include \"{}\"\n",
-      opts.transitionalOpts->mi_control,
-      ("." / opts.transitionalOpts->exportMacrosPath)
+      opts.transitional->mi_control,
+      ("." / opts.transitional->exportMacrosPath)
       .lexically_relative("." / file.relPath.parent_path()).generic_string());
   }
   addStdImport(moduleStr, lvl);
@@ -225,7 +225,7 @@ std::string getTransitionalPreamble(const Opts& opts,
     "#else\n"
     "{}"
     "#endif\n",
-    minimizeToStr(sharedCtx), opts.transitionalOpts->mi_control,
+    minimizeToStr(sharedCtx), opts.transitional->mi_control,
     moduleStr, localIncludes);
   return preamble;
 }
@@ -236,7 +236,7 @@ bool addPreamble(File& file, PreprocessRes&& res, const Opts& opts) {
   bool manualExport{};
   formatTo(std::inserter(file.content, file.content.begin() + res.insertionPos),
     "{:\n<{}}{}\n", 
-    "", res.prefixNewlineCnt, opts.transitionalOpts ?
+    "", res.prefixNewlineCnt, opts.transitional ?
     getTransitionalPreamble(opts, res.directives, file, manualExport) :
     getDefaultPreamble(opts, res.directives, file, manualExport));
   return manualExport;

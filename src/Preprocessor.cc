@@ -3,7 +3,7 @@
 #include "FileOp.hpp"
 #include "Directive.hpp"
 #include <algorithm>
-#include <cstdint>
+#include <cstddef>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -13,8 +13,8 @@
 namespace {
 
 // Return the position one-past the closing character
-template <char open, char close> void balance(std::string_view str, uintmax_t& pos) {
-  uintmax_t nest{1};
+template <char open, char close> void balance(std::string_view str, size_t& pos) {
+  size_t nest{1};
   do {
     switch(str[pos]) {
     case open:
@@ -47,11 +47,11 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
   bool SOFComment{opts.SOFComments};
   IncludeGuardCtx ctx{file.type, opts.includeGuard};
   bool whitespaceAfterNewline{true};
-  uintmax_t i{};
-  uintmax_t totalLen{file.content.length()};
-  uintmax_t start;
-  uintmax_t end;
-  uintmax_t len;
+  size_t i{};
+  size_t totalLen{file.content.length()};
+  size_t start;
+  size_t end;
+  size_t len;
   Directive directive;
   auto rmDirective = [&] {
     std::copy(file.content.begin() + end, file.content.end(),
@@ -101,9 +101,9 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
 
       // Raw
       if(file.content[i - 2] == 'R') {
-        const uintmax_t start{i};
+        const size_t start{i};
         while(file.content[i] != '(') i++;
-        const uintmax_t delimSize{i - start};
+        const size_t delimSize{i - start};
         balance<'(',')'>(file.content, ++i);
         i += delimSize;
       }
@@ -124,7 +124,7 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
       case DirectiveType::Define:
         if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
           ctx.state = IncludeGuardState::GotDefine;
-          if(opts.transitionalOpts) emplaceDirective();
+          if(opts.transitional) emplaceDirective();
           rmDirective();
         }
         else emplaceDirective();
@@ -134,7 +134,7 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
         else if(std::holds_alternative<IncludeGuard>(directive.extraInfo)) {
           ctx.state = IncludeGuardState::GotIfndef;
           ctx.counter = 1;
-          if(opts.transitionalOpts) emplaceDirective();
+          if(opts.transitional) emplaceDirective();
           rmDirective();
           break;
         }
@@ -145,7 +145,7 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
           ctx.counter--;
           if(ctx.counter == 0) {
             ctx.state = IncludeGuardState::GotEndIf;
-            if(!opts.transitionalOpts) rmDirective();
+            if(!opts.transitional) rmDirective();
             break;
           }
         }
@@ -156,7 +156,7 @@ PreprocessRes preprocess(const Opts& opts, File& file) {
         emplaceDirective();
         break;
       case DirectiveType::PragmaOnce:
-        if(opts.transitionalOpts) emplaceDirective();
+        if(opts.transitional) emplaceDirective();
         rmDirective();
         break;
       case DirectiveType::Include:

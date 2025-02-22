@@ -34,7 +34,7 @@ template <typename... T> struct exitWithErr {
   // Custom source location is here to give correct error location
   [[noreturn]] exitWithErr(const std::source_location& loc, fmt::format_string<T...> fmt
     , T&&... args) {
-    print(stderr, "Exception thrown at {}({}:{}): ",
+    print(stderr, "Error occurred at {}({}:{}): ",
       std::filesystem::path(loc.file_name()).filename(), loc.line(), loc.column());
     println(stderr, fmt, std::forward<T>(args)...);
     throw 1;

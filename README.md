@@ -24,7 +24,7 @@ What can it do?
 
 importizer supports two modularization mode:
 - **Complete**: You want to ditch header-based code altogether and embrace C++ modules. This is the default.
-- **Transtitional**: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing `[Transitional]` in the setting file or `transitional` on the start of the command line.
+- **Transtitional**: You want to have both a header-based interface and a module-based one for backward compatibility, facilitating a gradual switch. You can opt in by specifing `[transitional]` in the setting file or `transitional` on the start of the command line.
 
 Requirements:
 - Code and options are valid UTF-8.
@@ -119,7 +119,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | --ignored-hdrs              | ignoredHdrs        | Paths relative to `inDir` of header files to ignore. Their paired sources, if available, will be treated as if they have a `main()`.                                        | String array | `[]`          |
 | --umbrella-hdrs             | umbrellaHdrs       | Paths relative to `inDir` of modularized headers, but their `import` are turned into `export import`.                                                                       | String array | `[]`          |
 
-- Transitional flags/options (specify when `transitional` is specify as the first CLI argument, or under `[Transitional]` in the setting file):
+- Transitional flags/options (specify when `transitional` is specify as the first CLI argument, or under `[transitional]` in the setting file):
 
 | CLI flag name           | TOML setting name   | Description                                                                                                                                                | Value type | Default value  |
 |-------------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|----------------|
@@ -156,6 +156,8 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - Add `-DPCH=1` when configuring CMake.
 
 ## Contribution rules
+- Use camelCase
+- Try your best to match the style of the code around you.
 - Max column width: 90, one or two past that is fine, but should not be abused.
 - Put comment to denote what type after case label for variant switch.
 - Keep options' order in the README, the option struct, and their value-checking order the same.

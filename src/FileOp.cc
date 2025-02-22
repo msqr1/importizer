@@ -1,6 +1,7 @@
 #include "FileOp.hpp"
 #include "Base.hpp"
 #include "OptProcessor.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <fmt/std.h>
 #include <fstream>
@@ -15,10 +16,12 @@ namespace fs = std::filesystem;
 void readFromPath(const fs::path& path, std::string& str) {
   std::ifstream ifs{path, std::fstream::binary};
   if(!ifs) exitWithErr("Unable to open {} for reading", path);
-  uintmax_t fsize{fs::file_size(path)};
+  
+  // file_size return an uintmax_t which may not be size_t
+  size_t fsize{static_cast<size_t>(fs::file_size(path))};
 #ifdef __cpp_lib_string_resize_and_overwrite
   str.resize_and_overwrite(fsize, [fsize]
-    ([[maybe_unused]] char* _, [[maybe_unused]] uintmax_t _1) {
+    ([[maybe_unused]] char* _, [[maybe_unused]] size_t _1) {
     return fsize;
   });
 #else

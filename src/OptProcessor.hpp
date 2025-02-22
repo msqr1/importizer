@@ -27,6 +27,6 @@ struct Opts {
   std::vector<std::filesystem::path> includePaths;
   std::vector<std::filesystem::path> ignoredHdrs;
   std::vector<std::filesystem::path> umbrellaHdrs;
-  std::optional<TransitionalOpts> transitionalOpts;
+  std::optional<TransitionalOpts> transitional;
 };
 Opts getOptsOrExit(int argc, const char** argv);

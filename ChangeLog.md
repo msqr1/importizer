@@ -1,19 +1,21 @@
 # 2.0.0 (in progress)
-- Breaking: Change includeGuardPat to includeGuard.
-- Breaking: Add and implement the off-by-default rule:
-  - Include guards are no longer handled by default with a default regex.
-  - Pragma once is no longer handled by default (new `pragmaOnce` setting).
-- Maybe breaking: Default value of moduleInterfaceExt setting is now ".ixx" instead of ".cppm" to work by default on MSVC.
-- Maybe breaking: `transitional` now needed to be specified at the start of the CLI instead of anywhere
-- Add `SOFComments` setting to handle start-of-file comments (usually license).
-- Split IncludePrevention test into include guard and pragma once tests.
-- Remove condition generation for local include section in transitional mode. Modules build can't use macros from other file, so it's safe to assume regular build also don't.
-- Update descriptions of includeGuard settings
-- The minimizer is now able to remove empty `#el...` statements too. 
-- Change the test name `Other` to `ModeIndependent`
-- Make the minimizer and umbrella header tests ModeIndependent.
-- CMake precompiled headers are now optional, opt in with the PCH option (like the TEST option).
-- The argument parser is now Taywee/Args because it doesn't use std::any which can fail on Windows clang (#13)
+- Breaking: Rename includeGuardPat to includeGuard.
+- Breaking: Off-by-default rule added:
+  - Include guards and #pragma once are no longer handled by default.
+  - New pragmaOnce setting controls #pragma once handling.
+- Breaking: Transitional mode in TOML now must be specified as `[transitional]` instead of `[Transitional]` to keep it consistent with the command line and project naming convention
+- Maybe Breaking: moduleInterfaceExt default changed to ".ixx" (from ".cppm") for MSVC compatibility.
+- New:
+  - SOFComments setting for handling start-of-file comments (e.g., licenses).
+  - Minimizer now removes empty #el... statements.
+- Changes & Fixes:
+  - Split IncludePrevention test into include guard and #pragma once tests.
+  - Removed condition generation for local includes in transitional mode.
+  - Updated descriptions for includeGuard settings.
+  - Renamed test Other to ModeIndependent.
+  - Minimizer and umbrella header tests are now ModeIndependent.
+  - CMake precompiled headers are now optional (opt-in with PCH).
+  - Switched argument parser to Taywee/Args (avoids std::any issues on Windows Clang #13).
 
 # 1.1.0
 - Add a shared directive section in transitional mode to shorten the preamble.

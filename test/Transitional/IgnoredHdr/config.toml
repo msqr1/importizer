@@ -2,4 +2,4 @@ inDir = "Input"
 outDir = "CorrectOutput"
 srcExt = ".cc"
 ignoredHdrs = ["IgnoredHdr.hpp"]
-[Transitional]
+[transitional]

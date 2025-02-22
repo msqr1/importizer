@@ -11,8 +11,8 @@ namespace {
 
 void run(int argc, const char** argv) {
   const Opts opts{getOptsOrExit(argc, argv)};
-  if(opts.transitionalOpts) {
-    const TransitionalOpts& t{*opts.transitionalOpts};
+  if(opts.transitional) {
+    const TransitionalOpts& t{*opts.transitional};
     writeToPath(opts.outDir / t.exportMacrosPath, format(
       "#ifdef {0}\n"
       "#define {1} export\n"
@@ -32,7 +32,7 @@ void run(int argc, const char** argv) {
     readFromPath(file.path, file.content);
     bool manualExport{addPreamble(file, preprocess(opts, file), opts)};
     if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
-      if(opts.transitionalOpts && opts.transitionalOpts->backCompatHdrs) {
+      if(opts.transitional && opts.transitional->backCompatHdrs) {
         backCompatHdr = opts.outDir / file.relPath;
         writeToPath(backCompatHdr, format(
           "#include \"{}\"",
