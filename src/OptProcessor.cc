@@ -46,12 +46,6 @@ auto getMustHave(F& flg, const toml::table& tbl, std::string_view key) {
   else if(tbl.contains(key)) return getTypeCk<T>(tbl, key);
   exitWithErr("{} must be specified", key);
 }
-
-// So much repeating...
-#define GET_OR_DEFAULT(opts, opt, config, defaultVal) \
-  opts.opt = getOrDefault(opt, config, #opt, defaultVal)
-#define GET_MUST_HAVE(type, opts, opt) \
-  opts.opt = getMustHave<type>(opt, config, #opt)
 void getPathArr(args::ValueFlagList<std::string>& flg, const toml::table& tbl, 
   std::string_view key, std::vector<fs::path>& container,
   const std::optional<fs::path>& prefix = std::nullopt) {
@@ -65,6 +59,12 @@ void getPathArr(args::ValueFlagList<std::string>& flg, const toml::table& tbl,
     }
   }
 }
+
+// I am not repeating the same name thrice lol
+#define GET_OR_DEFAULT(opts, opt, config, defaultVal) \
+  opts.opt = getOrDefault(opt, config, #opt, defaultVal)
+#define GET_MUST_HAVE(type, opts, opt) \
+  opts.opt = getMustHave<type>(opt, config, #opt)
 
 } // namespace
 Opts getOptsOrExit(int argc, const char** argv) {
@@ -82,9 +82,6 @@ Opts getOptsOrExit(int argc, const char** argv) {
   args::Flag stdIncludeToImport{general, "",
    "Convert standard includes to 'import std' or 'import std.compat'.",
     {'s', "std-include-to-import"}};
-  args::Flag logCurrentFile{general, "",
-    "Print the current file being processed.",
-    {'l', "log-current-file"}};
   args::Flag pragmaOnce{general, "",
     "Declare that you use '#pragma once' so importizer handles them.",
     {'p', "pragma-once"}};
@@ -166,7 +163,6 @@ Opts getOptsOrExit(int argc, const char** argv) {
   }
   const toml::table config{std::move(parseRes.table())};
   GET_OR_DEFAULT(opts, stdIncludeToImport, config, false);
-  GET_OR_DEFAULT(opts, logCurrentFile, config, false);
   GET_OR_DEFAULT(opts, pragmaOnce, config, false);
   GET_OR_DEFAULT(opts, SOFComments, config, false);
   if(!(includeGuard || config.contains("includeGuard"))) opts.includeGuard = std::nullopt;

@@ -15,7 +15,6 @@ struct TransitionalOpts {
 };
 struct Opts {
   bool stdIncludeToImport;
-  bool logCurrentFile;
   bool pragmaOnce;
   bool SOFComments;
   std::optional<Regex> includeGuard;

@@ -17,6 +17,8 @@ struct File {
   std::filesystem::path path; // Full path
   std::filesystem::path relPath; // Relative to inDir/outDir
   std::string content;
+  File(FileType type, std::filesystem::path& path, std::filesystem::path& relPath) 
+    noexcept;
 };
 void readFromPath(const std::filesystem::path& path, std::string& str);
 void writeToPath(const std::filesystem::path& to, std::string_view content);

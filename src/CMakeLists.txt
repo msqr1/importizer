@@ -1,7 +1,7 @@
 add_executable(importizer Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
   Preprocessor.cc Preamble.cc Directive.cc Minimizer.cc)
 target_compile_features(importizer PRIVATE cxx_std_23)
-option(PCH "Use precompiled headers" OFF)
+option(PCH "Utilize precompiled headers" OFF)
 if(PCH)
 
   # CMake doesn't realize these are also required when going with PCH,
@@ -9,10 +9,11 @@ if(PCH)
   target_compile_definitions(importizer PRIVATE TOML_EXCEPTIONS=0)
   target_compile_definitions(importizer PRIVATE TOML_ENABLE_FORMATTERS=0)
   target_compile_definitions(importizer PRIVATE ARGS_NOEXCEPT)
+  target_compile_definitions(importizer PRIVATE PCRE2_CODE_UNIT_WIDTH=8)
 
   # 3rd-party headers rarely changes
   set(3rdPartyHeaders args.hpp toml++/include/toml++/toml.hpp fmt/include/fmt/format.h
-  fmt/include/fmt/base.h fmt/include/fmt/std.h)
+  fmt/include/fmt/base.h fmt/include/fmt/std.h pcre2/src/pcre2.h.generic)
   list(TRANSFORM 3rdPartyHeaders PREPEND ../3rdParty/)
 
   # Project headers that should not be changed frequently

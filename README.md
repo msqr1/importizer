@@ -48,18 +48,18 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - The generated binary is called `importizer` in the current working directory.
 
 ## Usage
-- [Follow along](Examples/FollowAlong.md) (incomplete).
+- To follow along, check the folders in examples folder. It has explanation and code after each step.
 
-### Before running
-1. **Handle non-local macros as well as transitive includes** because they are incompatible with modules (see [Modules' side effects](#modules-side-effects)).
+### 1. Before running
+1. **Handle non-local macros and transitive includes** because they are incompatible with modules (see [Modules' side effects](#modules-side-effects)).
 2. **Acquire the correct options for your project**, and add them into `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`).
 3. The TOML file is the recommended way, though you can specify command-line arguments to quickly test something out.
 
-### Run the program
+### 2. Run the program
 
-### After running
+### 3. After running
 1. The output will be a list of file path, relative to `outDir` that need to go through manual exporting. You can redirect into a text file for easy viewing.
-2. **Perform preamble sanity checks for all files**. Don't refactor or export yet, you may need to rerun the program. Common error is forgetting a setting. If the program fails to generate valid code whatsoever, please file an issue.
+2. **Perform preamble sanity checks for all files**. Don't modify, refactor or export yet, you may need to rerun the program. Common error is forgetting a setting. If the program fails to generate valid code whatsoever, please file an issue.
 3. Do depending on each mode:
     - Default:
       1. **Export**: Add `export` or `export {` and `}` around exported entities in the files outputted by the program.
@@ -105,12 +105,11 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | -h, --help                  | N/A                | Print help and exit.                                                                                                                                                        | N/A          | N/A           |
 | -v, --version               | N/A                | Print version and exit.                                                                                                                                                     | N/A          | N/A           |
 | -s, --std-include-to-import | stdIncludeToImport | Convert standard includes to `import std` or `import std.compat`.                                                                                                           | Boolean      | `false`       |
-| -l, --log-current-file      | logCurrentFile     | Print the current file being processed.                                                                                                                                     | Boolean      | `false`       |
 | -p, --pragma-once           | pragmaOnce         | Declare that you use `#pragma once` so importizer handles them.                                                                                                             | Boolean      | `false`       |
 | -S, --SOF-comments          | SOFComments        | Declare that your files may start with comments (usually to specify a license) so importizer handles them. Note that it scans for the largest continuous SOF comment chain. | Boolean      | `false`       |
 | --include-guard             | includeGuard       | Declare that you use include guards so the tool handles them. You will provide a regex to match match the entire guard, for example: `[^\s]+_HPP`.                          | String       | N/A           |
 | -c, --config                | N/A                | Path to TOML configuration file (`.toml`), default to `importizer.toml`.                                                                                                    | String       | N/A           |
-| -i, --in-dir                | inDir              | Input directory (required on the CLI or in the TOML file).                                                                                                                  | String       | N/A           |
+| -i, --in-dir                | inDir                | Input directory (required on the CLI or in the TOML file).                                                                                                                  | String       | N/A           |
 | -o, --out-dir               | outDir             | Output directory (required on the CLI or in the TOML file).                                                                                                                 | String       | N/A           |
 | --hdr-ext                   | hdrExt             | Header file extension.                                                                                                                                                      | String       | `.hpp`        |
 | --src-ext                   | srcExt             | Source (also module implementation unit) file extension.                                                                                                                    | String       | `.cpp`        |
@@ -156,8 +155,9 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - Add `-DPCH=1` when configuring CMake.
 
 ## Contribution rules
-- Use camelCase
-- Try your best to match the style of the code around you.
+- Use camelCase for variables and function names, class, type filenames are PascalCase
+- Match the style of the code around you.
+- Always use strict IWYU
 - Max column width: 90, one or two past that is fine, but should not be abused.
 - Put comment to denote what type after case label for variant switch.
 - Keep options' order in the README, the option struct, and their value-checking order the same.

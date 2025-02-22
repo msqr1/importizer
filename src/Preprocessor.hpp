@@ -2,6 +2,7 @@
 #include "OptProcessor.hpp"
 #include "Directive.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 struct File;

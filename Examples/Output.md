@@ -1,5 +1,5 @@
 # Output example
-All default, no setting
+No modularization settings except for transitional mode on
 
 ## Before
 - FileOp.hpp:

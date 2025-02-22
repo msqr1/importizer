@@ -26,22 +26,26 @@ void run(int argc, const char** argv) {
       t.mi_control, t.mi_exportKeyword, t.mi_exportBlockBegin,
       t.mi_exportBlockEnd));
   }
-  fs::path backCompatHdr;
   for(File& file : getProcessableFiles(opts)) {
-    if(opts.logCurrentFile) println("Current file: {}", file.relPath);
-    readFromPath(file.path, file.content);
-    bool manualExport{addPreamble(file, preprocess(opts, file), opts)};
-    if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
-      if(opts.transitional && opts.transitional->backCompatHdrs) {
-        backCompatHdr = opts.outDir / file.relPath;
-        writeToPath(backCompatHdr, format(
-          "#include \"{}\"",
-          file.relPath.replace_extension(opts.moduleInterfaceExt).filename()));
+    try {
+      readFromPath(file.path, file.content);
+      bool manualExport{addPreamble(file, preprocess(opts, file), opts)};
+      if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
+        if(opts.transitional && opts.transitional->backCompatHdrs) {
+          fs::path backCompatHdr{opts.outDir / file.relPath};
+          writeToPath(backCompatHdr, format(
+            "#include \"{}\"",
+            file.relPath.replace_extension(opts.moduleInterfaceExt).filename()));
+        }
+        else file.relPath.replace_extension(opts.moduleInterfaceExt);
       }
-      else file.relPath.replace_extension(opts.moduleInterfaceExt);
+      if(manualExport) println("{}", file.relPath);
+      writeToPath(opts.outDir / file.relPath, file.content);
     }
-    if(manualExport) println("{}", file.relPath);
-    writeToPath(opts.outDir / file.relPath, file.content);
+    catch(...) {
+      println("While processing {}", file.relPath);
+      throw;
+    }
   }
 }
 

@@ -50,11 +50,11 @@ public:
 
   // Only hold other information beside the type
   std::variant<std::monostate, IncludeInfo, IncludeGuard> extraInfo;
+  Directive() = default;
   Directive(std::string&& str, const IncludeGuardCtx& ctx, const Opts& opts);
   Directive(Directive&& other) noexcept;
   Directive& operator=(Directive&& other) noexcept;
   Directive(const Directive& other);
-  Directive();
 };
 enum class StdIncludeType : char {
   CppOrCwrap,

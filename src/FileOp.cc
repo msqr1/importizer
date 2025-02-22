@@ -2,7 +2,6 @@
 #include "Base.hpp"
 #include "OptProcessor.hpp"
 #include <cstddef>
-#include <cstdint>
 #include <fmt/std.h>
 #include <fstream>
 #include <filesystem>
@@ -42,17 +41,16 @@ void writeToPath(const fs::path& path, std::string_view data) {
   ofs.write(data.data(), data.length());
   if(!ofs) exitWithErr("Unable to write to {}", path);
 }
+File::File(FileType type, std::filesystem::path& path, std::filesystem::path& relPath)
+  noexcept: type{type}, path{std::move(path)}, relPath{std::move(relPath)} {}
 std::vector<File> getProcessableFiles(const Opts& opts) {
   std::vector<File> files;
-  fs::path path;
-  fs::path relPath;
-  fs::path ext;
   for(const auto& ent : fs::recursive_directory_iterator(opts.inDir)) {
     if(!ent.is_regular_file()) continue;
-    path = ent.path();
-    relPath = path.lexically_relative(opts.inDir);
-    ext = relPath.extension();
-    File file;
+    fs::path path{ent.path()};
+    fs::path relPath{path.lexically_relative(opts.inDir)};
+    fs::path ext{relPath.extension()};
+    FileType type;
     if(ext == opts.hdrExt) {
       for(const fs::path& p : opts.ignoredHdrs) {
         if(relPath == p) {
@@ -62,32 +60,30 @@ std::vector<File> getProcessableFiles(const Opts& opts) {
           goto skipThisFile;
         }
       }
-      file.type = FileType::Hdr;
+      type = FileType::Hdr;
       for(const fs::path& p : opts.umbrellaHdrs) {
         if(relPath == p) {
-          file.type = FileType::UmbrellaHdr;
+          type = FileType::UmbrellaHdr;
           break;
         }
       }
     }
     else if(ext == opts.srcExt) {
-      file.type = FileType::UnpairedSrc;
+      type = FileType::UnpairedSrc;
       path.replace_extension(opts.hdrExt);
-      if(fs::exists(path)) file.type = FileType::PairedSrc;
+      if(fs::exists(path)) type = FileType::PairedSrc;
       path.replace_extension(opts.srcExt);
       relPath.replace_extension(opts.hdrExt);
       for(const fs::path& p : opts.ignoredHdrs) {
         if(relPath == p) {
-          file.type = FileType::SrcWithMain;
+          type = FileType::SrcWithMain;
           break;
         }
       }
       relPath.replace_extension(opts.srcExt);
     }
     else continue;
-    file.path = std::move(path);
-    file.relPath = std::move(relPath);
-    files.emplace_back(std::move(file));
+    files.emplace_back(type, path, relPath);
     skipThisFile:;
   }
   return files;

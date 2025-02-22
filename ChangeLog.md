@@ -1,11 +1,13 @@
 # 2.0.0 (in progress)
 - Breaking:
   - Rename includeGuardPat to includeGuard.
-  - Transitional mode in TOML now must be specified as `[transitional]` instead of `[Transitional]` to keep it consistent with the command line and project naming convention.
+  - Transitional mode in TOML changed to `[transitional]` (from `[Transitional]`) to keep it consistent with the command line and project naming convention.
 - Breaking: Off-by-default rule added:
   - Include guards and #pragma once are no longer handled by default.
   - New pragmaOnce setting controls #pragma once handling.
-- Maybe Breaking: moduleInterfaceExt default changed to ".ixx" (from ".cppm") for MSVC compatibility.
+- Maybe Breaking: 
+  - moduleInterfaceExt default changed to ".ixx" (from ".cppm") for MSVC compatibility.
+  - Remove the `logCurrentFile` settings, importizer now automatically log the current file being processed every time there is an error.
 - New:
   - SOFComments setting for handling start-of-file comments (e.g., licenses).
   - Minimizer now removes empty #el... statements.

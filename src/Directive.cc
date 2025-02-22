@@ -84,9 +84,6 @@ Directive::Directive(const Directive& other): type{other.type}, str{other.str},
     includeInfo.includeStr = std::string_view(str.c_str() + includeInfo.startOffset, len);
   }
 }
-Directive::Directive() {
-
-}
 namespace {
 
 constexpr std::array<std::string_view, 114> cppOrCwrapHdrs {
