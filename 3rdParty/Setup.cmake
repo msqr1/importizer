@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.25)
 find_package(Git)
 if(NOT GIT_FOUND)
   message(FATAL_ERROR "Git not found")

@@ -48,27 +48,27 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - The generated binary is called `importizer` in the current working directory.
 
 ## Usage
-- To follow along, check the folders in examples folder. It has explanation and code after each step.
+- [Follow along](Examples/FollowAlong/README.md)
 
 ### 1. Before running
-1. **Handle non-local macros and transitive includes** because they are incompatible with modules (see [Modules' side effects](#modules-side-effects)).
-2. **Acquire the correct options for your project**, and add them into `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`).
-3. The TOML file is the recommended way, though you can specify command-line arguments to quickly test something out.
+1. **MOVE the source and headers in the modularized directory elsewhere**. This will still be your input directory. Your output directory is the original modularized directory. This will allow us to continuously rerun the program and perform tests because importizer will only write to header and sources, other files are kept intact.
+2. **Handle non-local macros and transitive includes** because they are incompatible with modules (see [Modules' side effects](#modules-side-effects)).
+3. **Acquire the correct options for your project**, and add them into `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`). The TOML file is the recommended way, though you can specify command-line arguments to quickly test something out.
 
 ### 2. Run the program
+The output on the command line will be a list of file path, relative to `outDir` that need to go through exporting. You can redirect into a text file for easy viewing.
 
 ### 3. After running
-1. The output will be a list of file path, relative to `outDir` that need to go through manual exporting. You can redirect into a text file for easy viewing.
-2. **Perform preamble sanity checks for all files**. Don't modify, refactor or export yet, you may need to rerun the program. Common error is forgetting a setting. If the program fails to generate valid code whatsoever, please file an issue.
-3. Do depending on each mode:
+1. **Perform preamble sanity checks for all files**. Don't modify, refactor or export yet, you may need to rerun the program. Common error is forgetting a setting. If the program fails to generate valid code whatsoever, please file an issue.
+2. Based on the mode:
     - Default:
-      1. **Export**: Add `export` or `export {` and `}` around exported entities in the files outputted by the program.
+      1. **Add export**: For each file outputted, add `export` or `export {` and `}` around exported entities.
       2. **Try compile the modularized project**.
     - Transitional (see a [mini demo](Examples/MiniTransitional.md)):
       1. **Try to compile using header**, you shouldn't have to change anything for this to work. If it doesn't, then importizer has an issue, please report it.
-      2. **Export**: Add values of `mi_exportKeyword` or `mi_exportBlockBegin` and `mi_exportBlockEnd` around exported entities in the files outputted by the program.
+      2. **Add export**: For each file outputted, add the values of `mi_exportKeyword`, `mi_exportBlockBegin` and `mi_exportBlockEnd` around exported entities.
       3. **Try compile using modules**, add `-D[value of mi_control]` when compiling every file to enable module mode.
-4. **Refactor** (list will shorten over time):
+3. **Refactor** (list will shorten over time):
     - **Refactor directives**: Importizer recreate the exact directive structure to ensure outside includes only happens in the original conditions. The minimizer try its best to shorten this structure, but it isn't context aware (eg. this define is not needed by this include).
     - **Refactor directives 2**: Since includes are moved up, they may leave unecessary directives at their original location.
 
@@ -79,13 +79,13 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - importizer's behavior is undefined for a header-source pair and the source has a main function. Very rare in real code.
 - Action by file type:
 
-| File type | Paired             | Has `main()`       | Conversion                 | Must do manual export |
-|-----------|--------------------|--------------------|----------------------------|-----------------------|
-| Header    |                    | N/A                | Module interface unit      | :heavy_check_mark:    |
-| Header    | :heavy_check_mark: | N/A                | Module interface unit      | :heavy_check_mark:    |
-| Source    |                    |                    | Module interface unit      | :heavy_check_mark:    |
-| Source    | :heavy_check_mark: |                    | Module implementation unit |                       |
-| Source    |                    | :heavy_check_mark: | Only include to import     |                       |
+| File type | Paired             | Has `main()`       | Conversion                 | Must do exporting  |
+|-----------|--------------------|--------------------|----------------------------|--------------------|
+| Header    |                    | N/A                | Module interface unit      | :heavy_check_mark: |
+| Header    | :heavy_check_mark: | N/A                | Module interface unit      | :heavy_check_mark: |
+| Source    |                    |                    | Module interface unit      | :heavy_check_mark: |
+| Source    | :heavy_check_mark: |                    | Module implementation unit |                    |
+| Source    |                    | :heavy_check_mark: | Only include to import     |                    |
 
 - Behavior of include path searching (similar concept to specifying `-I`):
 
@@ -109,7 +109,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | -S, --SOF-comments          | SOFComments        | Declare that your files may start with comments (usually to specify a license) so importizer handles them. Note that it scans for the largest continuous SOF comment chain. | Boolean      | `false`       |
 | --include-guard             | includeGuard       | Declare that you use include guards so the tool handles them. You will provide a regex to match match the entire guard, for example: `[^\s]+_HPP`.                          | String       | N/A           |
 | -c, --config                | N/A                | Path to TOML configuration file (`.toml`), default to `importizer.toml`.                                                                                                    | String       | N/A           |
-| -i, --in-dir                | inDir                | Input directory (required on the CLI or in the TOML file).                                                                                                                  | String       | N/A           |
+| -i, --in-dir                | inDir              | Input directory (required on the CLI or in the TOML file).                                                                                                                  | String       | N/A           |
 | -o, --out-dir               | outDir             | Output directory (required on the CLI or in the TOML file).                                                                                                                 | String       | N/A           |
 | --hdr-ext                   | hdrExt             | Header file extension.                                                                                                                                                      | String       | `.hpp`        |
 | --src-ext                   | srcExt             | Source (also module implementation unit) file extension.                                                                                                                    | String       | `.cpp`        |

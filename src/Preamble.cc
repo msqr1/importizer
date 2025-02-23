@@ -39,7 +39,7 @@ void addStdImport(std::string& str, StdImportLvl lvl) {
   if(lvl == StdImportLvl::StdCompat) str += "import std.compat;\n";
   else if(lvl == StdImportLvl::Std) str += "import std;\n";
 }
-void addModuleDecl(const File& file, bool& manualExport, std::string& moduleDecl) {
+void addModuleDecl(const File& file, bool& exported, std::string& moduleDecl) {
 
   // Convert header and unpaired source into module interface unit. Without
   // the "export " the file is a module implementation unit
@@ -47,7 +47,7 @@ void addModuleDecl(const File& file, bool& manualExport, std::string& moduleDecl
   case FileType::Hdr:
   case FileType::UmbrellaHdr:
   case FileType::UnpairedSrc:
-    manualExport = true;
+    exported = true;
     moduleDecl += "export ";
   default:;
   }
@@ -99,7 +99,7 @@ void handleInclude(const Opts& opts, Directive& include, const ResolveIncludeCtx
   else sharedCtx.emplace_back(std::move(include.str));
 }
 std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directives,
-  const File& file, bool& manualExport) {
+  const File& file, bool& exported) {
   const ResolveIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::string preamble;
   std::string imports;
@@ -148,14 +148,14 @@ std::string getDefaultPreamble(const Opts& opts, std::vector<Directive>& directi
       "module;\n"
       "{}",
       minimizeToStr(GMFCtx));
-    addModuleDecl(file, manualExport, preamble);
+    addModuleDecl(file, exported, preamble);
   }
   preamble += imports;
   addStdImport(preamble, lvl);
   return preamble;
 }
 std::string getTransitionalPreamble(const Opts& opts,
-  std::vector<Directive>& directives, const File& file, bool& manualExport) {
+  std::vector<Directive>& directives, const File& file, bool& exported) {
   const ResolveIncludeCtx ctx{opts.inDir, opts.includePaths};
   std::string preamble;
   MinimizeCtx sharedCtx;
@@ -182,7 +182,7 @@ std::string getTransitionalPreamble(const Opts& opts,
 
   // Convert to module interface/implementation
   else {
-    addModuleDecl(file, manualExport, moduleStr); 
+    addModuleDecl(file, exported, moduleStr); 
     for(Directive& directive : directives) switch(directive.type) {
     case DirectiveType::Include:
       handleInclude(opts, directive, ctx, file, lvl, moduleStr, sharedCtx, &localIncludes);
@@ -233,11 +233,11 @@ std::string getTransitionalPreamble(const Opts& opts,
 } // namespace
 
 bool addPreamble(File& file, PreprocessRes&& res, const Opts& opts) {
-  bool manualExport{};
+  bool exported{};
   formatTo(std::inserter(file.content, file.content.begin() + res.insertionPos),
     "{:\n<{}}{}\n", 
     "", res.prefixNewlineCnt, opts.transitional ?
-    getTransitionalPreamble(opts, res.directives, file, manualExport) :
-    getDefaultPreamble(opts, res.directives, file, manualExport));
-  return manualExport;
+    getTransitionalPreamble(opts, res.directives, file, exported) :
+    getDefaultPreamble(opts, res.directives, file, exported));
+  return exported;
 }

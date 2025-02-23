@@ -29,7 +29,7 @@ void run(int argc, const char** argv) {
   for(File& file : getProcessableFiles(opts)) {
     try {
       readFromPath(file.path, file.content);
-      bool manualExport{addPreamble(file, preprocess(opts, file), opts)};
+      bool exported{addPreamble(file, preprocess(opts, file), opts)};
       if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
         if(opts.transitional && opts.transitional->backCompatHdrs) {
           fs::path backCompatHdr{opts.outDir / file.relPath};
@@ -39,7 +39,7 @@ void run(int argc, const char** argv) {
         }
         else file.relPath.replace_extension(opts.moduleInterfaceExt);
       }
-      if(manualExport) println("{}", file.relPath);
+      if(exported) println("{}", file.relPath);
       writeToPath(opts.outDir / file.relPath, file.content);
     }
     catch(...) {
