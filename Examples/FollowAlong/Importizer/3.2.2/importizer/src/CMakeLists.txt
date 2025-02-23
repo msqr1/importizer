@@ -1,4 +1,3 @@
-
 add_executable(importizer Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
   Preprocessor.cc Preamble.cc Directive.cc CondMinimizer.cc)
 

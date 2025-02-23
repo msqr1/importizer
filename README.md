@@ -52,7 +52,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 
 ### 1. Before running
 1. **MOVE the source and headers in the modularized directory elsewhere**. This will still be your input directory. Your output directory is the original modularized directory. This will allow us to continuously rerun the program and perform tests because importizer will only write to header and sources, other files are kept intact.
-2. **Handle non-local macros and transitive includes** because they are incompatible with modules (see [Modules' side effects](#modules-side-effects)).
+2. **Handle non-local macros, transitive includes, and forward declaration** because they don't work well with modules (see [Modules' side effects](#modules-side-effects)).
 3. **Acquire the correct options for your project**, and add them into `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`). The TOML file is the recommended way, though you can specify command-line arguments to quickly test something out.
 
 ### 2. Run the program
@@ -140,6 +140,21 @@ The output on the command line will be a list of file path, relative to `outDir`
   - Add the macro definition on the command line when compiling for the files that needed the macro (using `-D...`).
   - Refactor the macro definition into a separate header, `#include` that where the macro is needed, and add the new header to `ignoredHdrs`.
   - Add the macro-containing headers to the `ignoredHdrs` (recommended when the header's sole purpose is to provide macros).
+ 
+## Forward declarations
+- If a header file is converted into a module, a forward declaration will become attached to that module. But since the real declaration is in another module, the compiler will error on an entity being attached to 1+ modules. Way(s) to remedy:
+  - If you are using forward declaration to break cyclic dependency, you are out of luck. The only way is to refactor the entity needed by both files into another file, and include it in both.
+  - Else, just #include the file that declared the forward-declared entity, and remove the forward declaration. Note that this can lengthen compile time for header build in transitional mode.
+  - If you absolutely need to minimize header build time in transtional mode, you can modify the modularized preamble as follow, not recommended because it is quite ugly:
+  ```cpp
+  #ifdef CPP_MODULES // Or the value of mi_control
+  // ...
+  // Import the module(s) that exported the forward-declared entity
+  #else
+  // ...
+  // Add forward declaration(s) here
+  #endif
+  ```
 
 # Developing
 
