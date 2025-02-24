@@ -1,18 +1,3 @@
-# Table of Contents
-- [Introduction](#introduction)
-- [Getting Started](#getting-started)
-  - [Prebuilt Executable](#prebuilt-executable)
-  - [Building from Source](#building-from-source)
-  - [Usage](#usage)
-  - [Output Example](#output-example)
-  - [Testing](#testing)
-- [Behavior](#behavior)
-- [Options](#options)
-- [Modules' Side Effects](#modules-side-effects)
-  - [Transitive Includes](#transitive-includes)
-  - [Non-Local Macros](#non-local-macros)
-- [Development Guidelines](#development-guidelines)
-
 # Introduction
 Are you looking to convert your header-based C++ codebase to C++20 modules? **importizer** is here to help.
 
@@ -30,6 +15,20 @@ Are you looking to convert your header-based C++ codebase to C++20 modules? **im
 - The code must adhere to valid C++ standards.
 
 This project follows [semantic versioning](https://semver.org).
+
+# Table of Contents
+- [Getting Started](#getting-started)
+  - [Prebuilt Executable](#prebuilt-executable)
+  - [Building from Source](#building-from-source)
+  - [Usage](#usage)
+  - [Output Example](#output-example)
+  - [Testing](#testing)
+- [Behavior](#behavior)
+- [Options](#options)
+- [Modules' Side Effects](#modules-side-effects)
+  - [Transitive Includes](#transitive-includes)
+  - [Non-Local Macros](#non-local-macros)
+- [Development Guidelines](#development-guidelines)
 
 # Getting Started
 
@@ -61,11 +60,11 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 ### Step 3: Post-Execution Actions
 1. **Perform preamble checks**. Review all generated preambles in files for correctness before making any modifications. If the program fails to generate valid code whatsoever, please file an issue.
 2. If you are in default mode:
-    1. **Add export**: For each outputted file, manually insert `export` or wrap exported entities with `export { ... }`
+    1. **Add export**: For each file outputted, insert `export` or wrap exported entities with `export { ... }`
     2. **Test-compile the modularized project**.
 3. If you are in transitional mode:
     1. **Test-compile using header**. You shouldn't have to change anything for this to work. If it doesn't, then importizer has an issue, please report it.
-    2. **Add export**: For each file outputted, add the values of `mi_exportKeyword`, `mi_exportBlockBegin` and `mi_exportBlockEnd` around exported entities.
+    2. **Add export**: For each file outputted, insert the value of `mi_exportKeyword`, or wrap exported entities with values of `mi_exportBlockBegin` and `mi_exportBlockEnd`.
     3. **Test-compile using modules**. Add `-D[value of mi_control]` when compiling all files to enable module mode.
 4. **Clean-up Procedures** (list will shorten over time):
     - **Clean up directives**: Importizer rebuilds the original directive structure to ensure that external includes only happens in their initial conditions. The minimizer attempts to shorten this structure, though it may leave some redundant directives without enough context.
@@ -73,7 +72,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 
 ## [Output example](Examples/Output.md)
 
-# File pairing and conversion rules
+# File Pairing and Conversion Rules
 A file pair consists of a header and a source file sharing the same basename within the same directory (for example, input/directory/file.cpp paired with input/directory/file.hpp). The source file must include and define everything declared in its paired header.
 Note: Importizer’s behavior is undefined if a paired source file contains a main() function.
 - Actions by file type:
@@ -88,15 +87,15 @@ Note: Importizer’s behavior is undefined if a paired source file contains a ma
 
 - Behavior of include path resolution (similar concept to specifying `-I`):
 
-| Type          | How it is resolved                                                                   |
-|---------------|--------------------------------------------------------------------------------------|
-| Quoted        | 1. Relative to the directory of the current file<br>2. If not, same as angle-bracket |
-| Angle bracket | 1. Searched relative to each directory specified in `includePaths`                   |
+| Type          | How it is resolved                                                            |
+|---------------|-------------------------------------------------------------------------------|
+| Quoted        | 1. Relative to the directory of the current file<br>2. Same as angle-bracket. |
+| Angle bracket | 1. Searched relative to each directory specified in `includePaths`            |
 
 # Options
 Customize importizer’s behavior via the command line or a TOML configuration file (CLI options override TOML settings). Note that CLI paths are relative to the current working directory, whereas TOML paths are relative to the configuration file.
 
-## General options:
+## General Options:
 
 | CLI flag name               | TOML setting name  | Description                                                                                                                                                                 | Value type   | Default value |
 |-----------------------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|---------------|
@@ -116,8 +115,8 @@ Customize importizer’s behavior via the command line or a TOML configuration f
 | --ignored-hdrs              | ignoredHdrs        | Paths relative to `inDir` of header files to ignore. Their paired sources, if available, will be treated as if they have a `main()`.                                        | String array | `[]`          |
 | --umbrella-hdrs             | umbrellaHdrs       | Paths relative to `inDir` of modularized headers, but their `import` are turned into `export import`.                                                                       | String array | `[]`          |
 
-## Transitional options
-Activate transitional mode by specifying transitional as the first CLI argument or under [transitional] in the settings file.
+## Transitional Options
+Activate transitional mode by specifying `transitional` on the CLI or under `[transitional]` in the settings file.
 
 | CLI flag name           | TOML setting name   | Description                                                                                                                                                | Value type | Default value  |
 |-------------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|----------------|
@@ -128,19 +127,19 @@ Activate transitional mode by specifying transitional as the first CLI argument 
 | --mi-export-block-end   | mi_exportBlockEnd   | Export block end macro identifier.                                                                                                                         | String     | `END_EXPORT`   |
 | --export-macros-path    | exportMacrosPath    | File path relative to outDir to store the export macros above.                                                                                             | String     | `Export.hpp`   |
 
-# Modules' side effects
+# Modules' Side Effects
 
-## Non-local macros
+## Non-local Macros
 - C++ modules are designed to encapsulate macros, meaning that a macro defined in a header will become local to its corresponding module. To ensure macros remain globally available:
   - Define the macro via compiler command-line (using `-D...`).
   - Refactor the macro into a separate header, include it where necessary, and add it to `ignoredHdrs`.
   - Add the macro-containing headers directly to `ignoredHdrs` (recommended when the header's sole purpose is to provide macros).
 
-## Transitive includes
+## Transitive Includes
 - Modules do not propagate transitive includes. To avoid missing dependencies:
   - Include what you use (IWYU) before modularization, so the tool would keep it automatically. Use tools like clangd with strict IWYU to help you.
  
-## Forward declarations
+## Forward Declarations
 - When converting a header to a module, any forward declarations become part of that module. This can lead to conflicts if the full declaration exists in another module.
   - If forward declarations are used to break cyclic dependencies, refactor the shared entity into its own file and include it in both modules.
   - (Only way for external forward declarations) Include the full declaration by #include-ing the corresponding file and removing the forward declaration. Note that this may lengthen header build in transitional mode.
@@ -161,12 +160,11 @@ Activate transitional mode by specifying transitional as the first CLI argument 
 - Run `ctest`.
 - If possible, file an issue for test(s) that failed.
 
-## Precompiled headers
+## Precompiled Headers
 To significantly reduce compile times for incremental build (up to ~70%) (some workarounds are required, so I prepared a setting.):
 - Add `-DPCH=1` when configuring CMake.
 
-
-## Contribution rules
+## Contribution Rules
 - Use camelCase for variables and functions; use PascalCase for classes, types, and filenames.
 - Follow the coding style of the surrounding code.
 - Always use strict IWYU.

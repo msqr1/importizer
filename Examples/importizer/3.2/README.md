@@ -2,7 +2,7 @@
 - Just add some export, there are forward declaration here and there, so I avoid that.
 - The gist of it is only export things that other modules (or users for API) need, and nothing else!
 
-# 2. Try compile the modularized project
+# 2. Test-compile the modularized project
 - With the context of the project using CMake, I modify the `CMakeLists.txt` to setup a module build.
 - CMake also have very good module support, featuring automatic dependency scanning, so I highly recommend it for now.
 - Since importizer uses CMake 3.25 minimum, and CMake officially support modules from 3.28. I will have to raise the minimum version (in the top-level `CMakeLists.txt`). 

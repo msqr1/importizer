@@ -1,2 +1,2 @@
-# Perform preamble sanity checks for all files
+# Perform preamble checks
 - All good!
