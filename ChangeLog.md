@@ -1,40 +1,46 @@
 # 2.0.0 (in progress)
-- Breaking:
-  - Rename includeGuardPat to includeGuard.
-  - Transitional mode in TOML changed to `[transitional]` (from `[Transitional]`) to keep it consistent with the command line and project naming convention.
-- Breaking: Off-by-default rule added:
-  - Include guards and #pragma once are no longer handled by default.
-  - New pragmaOnce setting controls #pragma once handling.
-- Maybe Breaking: 
-  - moduleInterfaceExt default changed to ".ixx" (from ".cppm") for MSVC compatibility.
-  - Remove the `logCurrentFile` settings, importizer now automatically log the current file being processed every time there is an error.
-- New:
-  - SOFComments setting for handling start-of-file comments (e.g., licenses).
-  - Minimizer now removes empty #el... statements.
-- Changes & Fixes:
-  - Split IncludePrevention test into include guard and #pragma once tests.
-  - Removed condition generation for local includes in transitional mode.
-  - Updated descriptions for includeGuard settings.
-  - Renamed test Other to ModeIndependent.
-  - Minimizer and umbrella header tests are now ModeIndependent.
-  - CMake precompiled headers are now optional (opt-in with PCH).
-  - Switched argument parser to Taywee/Args (avoids std::any issues on Windows Clang #13).
+### Breaking changes
+- Renamed `includeGuardPat` to `includeGuard`.
+- Changed TOML transitional mode to `[transitional]` (was `[Transitional]`) to match the command-line and project naming conventions.
+
+### Breaking changes: Off-by-default rule
+- Include guards and `#pragma once` are no longer processed by default.
+- Introduced a new `pragmaOnce` setting to control `#pragma once` handling.
+
+### Potentially breaking changes
+- Updated default for `moduleInterfaceExt` to `.ixx` (was `.cppm`) for MSVC compatibility.
+- Removed the `logCurrentFile` setting; importizer now automatically logs the current file being processed on errors.
+
+### New features
+- Added the `SOFComments` setting for handling start-of-file comments (e.g., license headers).
+- Enhanced the Minimizer to remove empty `#el...` statements.
+
+### Changes and fixes
+- Separated the IncludePrevention test into distinct tests for include guards and `#pragma once`.
+- Eliminated condition generation for local includes in transitional mode.
+- Updated documentation for the `includeGuard` setting.
+- Renamed the "Other" test to "ModeIndependent".
+- Classified Minimizer and umbrella header tests as ModeIndependent.
+- Made CMake precompiled headers optional (opt-in via `PCH`).
+- Switched the argument parser to Taywee/Args to avoid `std::any` issues on Windows Clang #13.
 
 # 1.1.0
-- Add a shared directive section in transitional mode to shorten the preamble.
-- CondMinimizer renamed to Minimizer that will also remove empty #define/#undef pair.
-- Remove all *Action return from function. Perform the action directly and shorten code with a lambda.
-- Add umbrella header support, converting includes to `export import` instead of `import`.
-- Bump PCRE2 to 10.45.
+### New features and improvements
+- Added a shared directive section in transitional mode to shorten the preamble.
+- Renamed `CondMinimizer` to `Minimizer`, which now also removes empty `#define`/`#undef` pairs.
+- Removed all `*Action` return values from functions; actions are now performed directly using lambda expressions.
+- Added support for umbrella headers by converting includes to `export import` instead of plain `import`.
+- Updated PCRE2 dependency to version 10.45.
 
 # 1.0.1
-- Fix includeGuardPat not matching the entire string to qualify as a guard.
-- Fix CondMinimizer always skipping `#if` instead of only when its skippable.
-- Fix raw string handling because the first `(` is not skipped over.
-- Fix integer literals not being handled properly (I didn't think about them at all LOL).
-- Fix CondMinimizer not handling nested `#if` (it looks for the earliest `#endif`) when skipping.
-- Make condition hierarchy shorter by removing conditions for all imports.
-- Bump libfmt to 11.1.3, PCRE2 to 10.45-RC1, Argparse to 3.2.
+### fixes
+- Fixed `includeGuardPat` to match the entire string required for a guard.
+- Corrected `CondMinimizer` to skip only skippable `#if` statements rather than all of them.
+- Resolved an issue with raw string handling where the first `(` was not properly skipped.
+- Fixed the handling of integer literals.
+- Improved `CondMinimizer` to correctly handle nested `#if` directives (it previously looked for the earliest `#endif`).
+- Simplified the condition hierarchy by removing conditions for all imports.
+- Updated dependencies: bumped libfmt to 11.1.3, PCRE2 to 10.45-RC1, and Argparse to 3.2.
 
 # 1.0.0
-- First release.
+### Initial release
