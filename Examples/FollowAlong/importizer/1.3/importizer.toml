@@ -1,5 +1,0 @@
-inDir = "src2"
-outDir = "src"
-
-pragmaOnce = true
-srcExt = ".cc"
