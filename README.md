@@ -51,26 +51,25 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - [Follow along](Examples/FollowAlong/README.md)
 
 ### 1. Before running
-1. **MOVE the source and headers in the modularized directory elsewhere**. This will still be your input directory. Your output directory is the original modularized directory. This will allow us to continuously rerun the program and perform tests because importizer will only write to header and sources, other files are kept intact.
-2. **Handle non-local macros, transitive includes, and forward declaration** because they don't work well with modules (see [Modules' side effects](#modules-side-effects)).
+1. **(Optional) Move the source and header files to a different folder**. This new folder will still be your input directory, while the original folder is your output directory. This setup will allow you to continuously rerun the program and test build. importizer will only update headers and sources, while other files (such as `CMakeLists.txt`) are kept intact.
+2. **Handle non-local macros, transitive includes, and forward declarations** because they don't work well with modules (see [Modules' side effects](#modules-side-effects)).
 3. **Acquire the correct options for your project**, and add them into `importizer.toml` in the directory of the executable (or somewhere else and specify `-c`). The TOML file is the recommended way, though you can specify command-line arguments to quickly test something out.
 
 ### 2. Run the program
-The output on the command line will be a list of file path, relative to `outDir` that need to go through exporting. You can redirect into a text file for easy viewing.
+- The output on the command line will be a list of file path, relative to `outDir` that need to go through exporting. You can redirect into a text file for easy viewing.
 
 ### 3. After running
-1. **Perform preamble sanity checks for all files**. Don't modify, refactor or export yet, you may need to rerun the program. Common error is forgetting a setting. If the program fails to generate valid code whatsoever, please file an issue.
-2. Based on the mode:
-    - Default:
-      1. **Add export**: For each file outputted, add `export` or `export {` and `}` around exported entities.
-      2. **Try compile the modularized project**.
-    - Transitional (see a [mini demo](Examples/MiniTransitional.md)):
-      1. **Try to compile using header**, you shouldn't have to change anything for this to work. If it doesn't, then importizer has an issue, please report it.
-      2. **Add export**: For each file outputted, add the values of `mi_exportKeyword`, `mi_exportBlockBegin` and `mi_exportBlockEnd` around exported entities.
-      3. **Try compile using modules**, add `-D[value of mi_control]` when compiling every file to enable module mode.
-3. **Refactor** (list will shorten over time):
-    - **Refactor directives**: Importizer recreate the exact directive structure to ensure outside includes only happens in the original conditions. The minimizer try its best to shorten this structure, but it isn't context aware (eg. this define is not needed by this include).
-    - **Refactor directives 2**: Since includes are moved up, they may leave unecessary directives at their original location.
+1. **Perform preamble sanity checks for all files**. Don't export or clean up yet, you may need to rerun the program. A common error is forgetting a setting. If the program fails to generate valid code whatsoever, please file an issue.
+2. If you are in default mode:
+    1. **Add export**: For each file outputted, add `export` or `export {` and `}` around exported entities.
+    2. **Try compile the modularized project**.
+3. If you are in transitional mode:
+    1. **Try to compile using header**, you shouldn't have to change anything for this to work. If it doesn't, then importizer has an issue, please report it.
+    2. **Add export**: For each file outputted, add the values of `mi_exportKeyword`, `mi_exportBlockBegin` and `mi_exportBlockEnd` around exported entities.
+    3. **Try compile using modules**, add `-D[value of mi_control]` when compiling every file to enable module mode.
+4. **Clean up** (list will shorten over time):
+    - **Clean up directives**: Importizer recreate the exact directive structure to ensure outside includes only happens in the original conditions. The minimizer try its best to shorten this structure, but it isn't context aware (eg. this define is not needed by this include).
+    - **Clean up directives 2**: Since includes are moved up, they may leave unecessary directives at their original location.
 
 ## [Output example](Examples/Output.md)
 
@@ -131,30 +130,30 @@ The output on the command line will be a list of file path, relative to `outDir`
 
 # Modules' side effects
 
-## Transitive includes
-- Modules are completely separate from each other. Transitive includes is not propogated across imported modules. Way(s) to remedy:
-  - Include everything you use before modularization, so the tool would keep it automatically. You could use clangd with strict missing and unused include to help you.
-
 ## Non-local macros
 - Modules, unlike headers, were explicitly designed to be encapsulated from macros and so they wouldn't leak them. Local macros only used in the file that defined them are OK. If a macro is defined in a header, and the header get modularized, it will only exist in that module. Way(s) to remedy:
   - Add the macro definition on the command line when compiling for the files that needed the macro (using `-D...`).
   - Refactor the macro definition into a separate header, `#include` that where the macro is needed, and add the new header to `ignoredHdrs`.
   - Add the macro-containing headers to the `ignoredHdrs` (recommended when the header's sole purpose is to provide macros).
+
+## Transitive includes
+- Modules are completely separate from each other. A transitive include is not propogated across imported modules. Way(s) to remedy:
+  - Include everything you use before modularization, so the tool would keep it automatically. You could use clangd with strict missing and unused include to help you.
  
 ## Forward declarations
-- If a header file is converted into a module, a forward declaration will become attached to that module. But since the real declaration is in another module, the compiler will error on an entity being attached to 1+ modules. Way(s) to remedy:
+- If a header file is converted into a module, a forward declaration will become attached to that module. But since the real declaration is in another module, the compiler will error on an entity being attached to more than one modules. Way(s) to remedy:
   - If you are using forward declaration to break cyclic dependency, you are out of luck. The only way is to refactor the entity needed by both files into another file, and include it in both.
-  - Else, just #include the file that declared the forward-declared entity, and remove the forward declaration. Note that this can lengthen compile time for header build in transitional mode.
+  - (This is the only way for external forward declaration) #include the file that declared the forward-declared entity and remove the forward declaration. Note that this may lengthen header build in transitional mode.
   - If you absolutely need to minimize header build time in transtional mode, you can modify the modularized preamble as follow, not recommended because it is quite ugly:
-  ```cpp
-  #ifdef CPP_MODULES // Or the value of mi_control
-  // ...
-  // Import the module(s) that exported the forward-declared entity
-  #else
-  // ...
-  // Add forward declaration(s) here
-  #endif
-  ```
+    ```cpp
+    #ifdef CPP_MODULES // Or the value of mi_control
+    // ...
+    // Import all module(s) that exported the forward-declared entity
+    #else
+    // ...
+    // Add all forward declaration(s) here
+    #endif
+    ```
 
 # Developing
 
