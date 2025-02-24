@@ -1,4 +1,4 @@
-# 2.0.0 (in progress)
+# 2.0.0
 ### Breaking Changes
 - Renamed `includeGuardPat` to `includeGuard`.
 - Changed TOML transitional mode to `[transitional]` (was `[Transitional]`) to match the command-line and project naming conventions.
