@@ -4,15 +4,15 @@
 importizer > out.txt
 ```
 - [CLI Output/out.txt](out.txt) (files that need to go through exporting)
-- [New src folder](src)
+- [src2 folder](src2)
 - Here is the new directory structure:
 ```
 ...
-├── src
-│   ├── CMakeLists.txt
+├── src2
 │   ├── Module interfaces...
 │   └── Module implementations...
-├── src2
+├── src
+│   ├── CMakeLists.txt
 │   ├── Headers...
 │   └── Sources...
 ├── out.txt

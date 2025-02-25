@@ -1,3 +1,15 @@
-# Handle non-local macros, transitive includes, and forward declaration
-- There is no non-local macros in sight, my project use strict IWYU, but there are some forward declarations that I need to handle. 
-- Luckily, I don't have any cyclic dependency, so I am OK.
+# Acquire the correct options
+- I agree with most of the default settings, but my project does use `#pragma once` and `.cc` as the source extension.
+- [Configuration file](importizer.toml)
+- I also placed the executable and the config file, so the structure look like this:
+```
+...
+├── src
+│   └── CMakeLists.txt
+├── src2
+│   ├── Headers...
+│   └── Sources...
+├── importizer (executable)
+├── importizer.toml
+...
+```

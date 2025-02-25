@@ -20,7 +20,7 @@ This project follows [semantic versioning](https://semver.org).
 - [Getting Started](#getting-started)
   - [Prebuilt Executable](#prebuilt-executable)
   - [Building from Source](#building-from-source)
-  - [Usage](#usage)
+  - [Usage Walkthrough](#usage-walkthrough)
   - [Output Example](#output-example)
   - [Testing](#testing)
 - [Behavior](#behavior)
@@ -50,9 +50,8 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 - [Follow along](Examples/README.md#follow-along-folders) 
 
 ### Step 1: Preparation
-1. **(Optional) Relocate sources and headers:**: Move your source and header files to a different folder. This new folder becomes your input directory, while the original folder remains your output directory. This setup allows you to re-run importizer repeatedly and test builds without affecting other files (like `CMakeLists.txt`).
-2. **Handle non-local macros, transitive includes, and forward declarations** because they don't work well with modules (see [Modules' side effects](#modules-side-effects)).
-3. **Acquire the correct options**: Populate the importizer.toml file (or use the -c flag) with the correct settings for your project. Using a TOML configuration file is recommended, although command-line arguments can be used for quick tests
+1. **Handle non-local macros, transitive includes, and forward declarations** because they don't work well with modules (see [Modules' side effects](#modules-side-effects)).
+2. **Acquire the correct options**: Populate the importizer.toml file (or use the -c flag) with the correct settings for your project. Using a TOML configuration file is recommended, although command-line arguments can be used for quick tests
 
 ### Step 2: Run the Program
 - When you run importizer, the command-line output will list file paths (relative to outDir) that need manual export modifications. You can redirect this output to a text file for easier review.
