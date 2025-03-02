@@ -1,18 +1,26 @@
 # Introduction
-Are you looking to convert your header-based C++ codebase to C++20 modules? **importizer** is here to help.
+Are you looking to convert your header-based C++ codebase to C++20 modules, but afraid that modularizing is too cumbersome? **importizer** is here to help.
 
-## What importizer Does:
-- Converts `#include` directives to `import` statements and generates the Global Module Fragment (GMF).
-- Automates the modularization process by handling much of the repetitive work.
-- **Note:** After running importizer, you still need to manually decide which entities to export.
+## Wait, Briefly, Why C++ Modules?
+- **Improved compilation time:** Modules don't need to be recompiled every time it is imported, unlike headers.
+- **Improved encapsulation:** Modules allow you to choose what is exposed to users (exported), no need to hide stuff with a `detail` namespace. Includes and macros from a module will only stay in that module.
 
-## Modularization Modes:
+## What importizer Does Automatically
+- Name modules according to its relativity to the modularized directory.
+- Converts `#include` directives to `import` statements.
+- Handle include guards and pragma once.
+- Handle start-of-file comments (usually licence).
+
+## What importizer Does NOT Do Automatically
+- Export entities for you, you will have to manually do this after running.
+
+## Modularization Modes
 - **Complete Mode:** Fully transition away from header-based code to C++ modules (default).
-- **Transitional Mode:** Maintain both a header-based interface and a module-based one for backward compatibility. Enable this mode by specifying `[transitional]` in the settings file or by using `transitional` as the first command-line argument.
+- **Transitional Mode:** Provide both header-based interface and a module-based one for backward compatibility without duplicating code. Enable this mode by specifying `[transitional]` in the settings file or by using `transitional` as the first command-line argument.
 
-## Requirements:
+## Requirements
 - All source code and configuration options must be valid UTF-8.
-- The code must adhere to valid C++ standards.
+- The code must be valid C++.
 
 This project follows [semantic versioning](https://semver.org).
 
@@ -92,9 +100,9 @@ Note: Importizer’s behavior is undefined if a paired source file contains a ma
 | Angle bracket | 1. Searched relative to each directory specified in `includePaths`            |
 
 # Options
-Customize importizer’s behavior via the command line or a TOML configuration file (CLI options override TOML settings). Note that CLI paths are relative to the current working directory, whereas TOML paths are relative to the configuration file.
+Customize importizer's behavior via the command line or a TOML configuration file (CLI options override TOML settings). Note that CLI paths are relative to the current working directory, whereas TOML paths are relative to the configuration file.
 
-## General Options:
+## General Options
 
 | CLI flag name               | TOML setting name  | Description                                                                                                                                                                 | Value type   | Default value |
 |-----------------------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|---------------|
@@ -115,7 +123,6 @@ Customize importizer’s behavior via the command line or a TOML configuration f
 | --umbrella-hdrs             | umbrellaHdrs       | Paths relative to `inDir` of modularized headers, but their `import` are turned into `export import`.                                                                       | String array | `[]`          |
 
 ## Transitional Options
-Activate transitional mode by specifying `transitional` on the CLI or under `[transitional]` in the settings file.
 
 | CLI flag name           | TOML setting name   | Description                                                                                                                                                | Value type | Default value  |
 |-------------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|----------------|
@@ -126,10 +133,10 @@ Activate transitional mode by specifying `transitional` on the CLI or under `[tr
 | --mi-export-block-end   | mi_exportBlockEnd   | Export block end macro identifier.                                                                                                                         | String     | `END_EXPORT`   |
 | --export-macros-path    | exportMacrosPath    | File path relative to outDir to store the export macros above.                                                                                             | String     | `Export.hpp`   |
 
-# Modules' Side Effects
+# Fixing Modules' Effects
 
 ## Non-local Macros
-- C++ modules are designed to encapsulate macros, meaning that a macro defined in a header will become local to its corresponding module. To ensure macros remain globally available:
+- C++ modules are designed to encapsulate macros, meaning that a macro defined in a header will become local to its corresponding module. To ensure they are present when needed:
   - Define the macro via compiler command-line (using `-D...`).
   - Refactor the macro into a separate header, include it where necessary, and add it to `ignoredHdrs`.
   - Add the macro-containing headers directly to `ignoredHdrs` (recommended when the header's sole purpose is to provide macros).
@@ -171,7 +178,7 @@ To significantly reduce compile times for incremental build (up to ~70%) (some w
 - Add comments to indicate types after each case label in variant switches.
 - Maintain consistent ordering of options in the README, option structures, and value-checking logic.
 - To determine order for new options, optimize for the option struct size and follow chronological order.
-- All options should have a default “false” or empty state unless absolutely required. Options with non-false defaults should be managed as std::optional if they solve non-critical issues. Current options include:
+- All options should have a default “false” or empty state unless absolutely required. Options with non-false defaults should be managed as `std::optional` if they solve non-critical issues. Current options include:
   - `pragmaOnce`
   - `SOFComments`
   - `includeGuard`

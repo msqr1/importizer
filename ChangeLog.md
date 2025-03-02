@@ -1,3 +1,5 @@
+# 2.1.0 (in progress)
+
 # 2.0.0
 ### Breaking Changes
 - Renamed `includeGuardPat` to `includeGuard`.
