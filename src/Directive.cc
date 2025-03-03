@@ -123,9 +123,8 @@ std::optional<StdIncludeType> getStdIncludeType(std::string_view include) {
 }
 std::optional<std::filesystem::path> resolveInclude(const ResolveIncludeCtx& ctx,
   const IncludeInfo& info, const std::filesystem::path& currentFilePath) {
-  fs::path p;
   if(!info.isAngle) {
-    p = currentFilePath;
+    fs::path p{currentFilePath};
     p.remove_filename();
     p /= info.includeStr;
     if(fs::exists(p)) {
@@ -134,7 +133,7 @@ std::optional<std::filesystem::path> resolveInclude(const ResolveIncludeCtx& ctx
     }
   }
   for(const fs::path& includePath : ctx.includePaths) {
-    p = includePath / info.includeStr;
+    fs::path p{includePath / info.includeStr};
     if(fs::exists(p)) {
       p = fs::relative(p, ctx.inDir);
       if(*p.begin() != "..") return p;

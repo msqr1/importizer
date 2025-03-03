@@ -80,7 +80,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 ## [Output example](Examples/Output.md)
 
 # File Pairing and Conversion Rules
-A file pair consists of a header and a source file sharing the same basename within the same directory (for example, input/directory/file.cpp paired with input/directory/file.hpp). The source file must include and define everything declared in its paired header.
+A file pair consists of a header and a source file sharing the same basename within the same directory (for example, `input/directory/file.hpp` pairs with `input/directory/file.cpp`). The source file must include and define everything declared in its paired header.
 Note: Importizer’s behavior is undefined if a paired source file contains a main() function.
 - Actions by file type:
 
@@ -90,7 +90,7 @@ Note: Importizer’s behavior is undefined if a paired source file contains a ma
 | Header    | :heavy_check_mark: | N/A                | Module interface unit      | :heavy_check_mark: |
 | Source    |                    |                    | Module interface unit      | :heavy_check_mark: |
 | Source    | :heavy_check_mark: |                    | Module implementation unit |                    |
-| Source    |                    | :heavy_check_mark: | Only include to import     |                    |
+| Source    |                    | :heavy_check_mark: | Module consumer            |                    |
 
 - Behavior of include path resolution (similar concept to specifying `-I`):
 
