@@ -1,5 +1,5 @@
 #include "FileOp.hpp"
-#include "Base.hpp"
+#include "Util.hpp"
 #include "OptProcessor.hpp"
 #include <cstddef>
 #include <fmt/std.h>
@@ -43,7 +43,7 @@ void writeToPath(const fs::path& path, std::string_view data) {
 }
 File::File(FileType type, std::filesystem::path& path, std::filesystem::path& relPath)
   noexcept: type{type}, path{std::move(path)}, relPath{std::move(relPath)} {}
-std::vector<File> getProcessableFiles(const Opts& opts) {
+std::vector<File> getHeadersAndSources(const Opts& opts) {
   std::vector<File> files;
   for(const auto& ent : fs::recursive_directory_iterator(opts.inDir)) {
     if(!ent.is_regular_file()) continue;

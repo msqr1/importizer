@@ -1,5 +1,5 @@
 #include "Directive.hpp"
-#include "Base.hpp"
+#include "Util.hpp"
 #include "FileOp.hpp"
 #include "OptProcessor.hpp"
 #include "Regex.hpp"
@@ -36,7 +36,7 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts&
     type = DirectiveType::Include;
     size_t start{str.find('<', 1 + directive.length())};
     size_t end;
-    bool isAngle{start != notFound};
+    bool isAngle{start != std::string::npos};
     if(isAngle) {
       start++;
       end = str.find('>', start);

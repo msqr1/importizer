@@ -1,5 +1,5 @@
 #include "Preamble.hpp"
-#include "Base.hpp"
+#include "Util.hpp"
 #include "OptProcessor.hpp"
 #include "Directive.hpp"
 #include "Minimizer.hpp"
@@ -232,7 +232,7 @@ std::string getTransitionalPreamble(const Opts& opts,
 
 } // namespace
 
-bool addPreamble(File& file, PreprocessRes&& res, const Opts& opts) {
+bool addPreamble(const Opts& opts, File& file, PreprocessRes&& res) {
   bool exported{};
   formatTo(std::inserter(file.content, file.content.begin() + res.insertionPos),
     "{:\n<{}}{}\n", 

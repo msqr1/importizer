@@ -6,9 +6,6 @@
 #include <source_location>
 #include <filesystem>
 
-// PCRE2 for non-matching capture groups, and
-// std::string(_view)::find* for not found return a -1 size_t (std::string::npos)
-constexpr size_t notFound{static_cast<size_t>(-1)};
 [[noreturn]] void exitOK();
 [[noreturn]] void unreachable();
 using fmt::print;

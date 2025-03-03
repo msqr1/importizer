@@ -1,6 +1,5 @@
-#include "Base.hpp"
+#include "Util.hpp"
 
-bool verbose;
 void exitOK() {
   throw 0;
 }

@@ -1,4 +1,4 @@
-add_executable(importizer Base.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
+add_executable(importizer Util.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
   Preprocessor.cc Preamble.cc Directive.cc Minimizer.cc)
 target_compile_features(importizer PRIVATE cxx_std_23)
 option(PCH "Utilize precompiled headers" OFF)
@@ -17,7 +17,7 @@ if(PCH)
   list(TRANSFORM 3rdPartyHeaders PREPEND ../3rdParty/)
 
   # Project headers that should not be changed frequently
-  set(stableHeaders Base.hpp Regex.hpp FileOp.hpp)
+  set(stableHeaders Util.hpp Regex.hpp FileOp.hpp)
   foreach(header IN LISTS 3rdPartyHeaders stableHeaders)
     target_precompile_headers(importizer PRIVATE ${header})
   endforeach()

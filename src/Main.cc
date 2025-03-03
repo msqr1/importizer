@@ -1,4 +1,4 @@
-#include "Base.hpp"
+#include "Util.hpp"
 #include "OptProcessor.hpp"
 #include "FileOp.hpp"
 #include "Preamble.hpp"
@@ -26,10 +26,10 @@ void run(int argc, const char** argv) {
       t.mi_control, t.mi_exportKeyword, t.mi_exportBlockBegin,
       t.mi_exportBlockEnd));
   }
-  for(File& file : getProcessableFiles(opts)) {
+  for(File& file : getHeadersAndSources(opts)) {
     try {
       readFromPath(file.path, file.content);
-      bool exported{addPreamble(file, preprocess(opts, file), opts)};
+      bool exported{addPreamble(opts, file, preprocess(opts, file))};
       if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
         if(opts.transitional && opts.transitional->backCompatHdrs) {
           fs::path backCompatHdr{opts.outDir / file.relPath};
