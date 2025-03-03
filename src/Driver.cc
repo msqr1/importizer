@@ -29,7 +29,10 @@ void run(int argc, const char** argv) {
   for(File& file : getHeadersAndSources(opts)) {
     try {
       readFromPath(file.path, file.content);
-      bool exported{addPreamble(opts, file, preprocess(opts, file))};
+      bool exportRequired{file.type == FileType::Hdr ||
+        file.type == FileType::UmbrellaHdr ||
+        file.type == FileType::UnpairedSrc};
+      addPreamble(opts, file, preprocess(opts, file), exportRequired);
       if(file.type == FileType::Hdr || file.type == FileType::UmbrellaHdr) {
         if(opts.transitional && opts.transitional->backCompatHdrs) {
           fs::path backCompatHdr{opts.outDir / file.relPath};
@@ -39,7 +42,7 @@ void run(int argc, const char** argv) {
         }
         else file.relPath.replace_extension(opts.moduleInterfaceExt);
       }
-      if(exported) println("{}", file.relPath);
+      if(exportRequired) println("{}", file.relPath);
       writeToPath(opts.outDir / file.relPath, file.content);
     }
     catch(...) {

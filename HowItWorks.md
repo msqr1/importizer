@@ -38,7 +38,7 @@ For a more detailed introduction to C++ modules, check out [this article](https:
 - **Conversion:**
   - Sources with `main()` because they run code without providing any functions to other files, and also because the `main` function cannot belong to any modules.
 
-# General Methodology
+# General
 
 ## Generating the Module Declaration
 To generate the module declaration, each module is assigned a name based on its relative location to the input directory. For example, if a file's path is `glaze/util/atoi.hpp` and the input directory is `glaze`, the module name is `util.atoi`. This naming convention ensures consistent resolution of module names across different files. For interface units, the declaration is `export module moduleName`. For implementation units, it's just `module moduleName;` with the same name as one in an interface unit for the compiler to figure out that they are pairs.
@@ -84,11 +84,28 @@ module;
 ```
 This method preserves the preprocessor conditions affecting external includes. Note that importizer does not know if a file actually need such definition, so it always replicate.
 
-## Handling Include Guards
-In default mode, they are just straight up removed from the file, because modules doesn't need them. In transitional mode, a `#pragma once` or `#ifndef` and `#define` is moved up to the top of the preamble. The `#endif` will stay still.
+# Default Mode
 
-## Generating Preamble in Transitional Mode
+## The Default Preamble
 ```cpp
+module; // Starts the GMF
+// External includes...
+export module moduleName; // Module declaration, ends the GMF
+// Imports...
+```
+
+## Handling Include Guards
+In default mode, they are removed, because modules doesn't need them.
+
+# Transitional Mode
+Transitional mode is all about maintaining backward compatibility.
+
+## Handling Include Guards
+In transitional mode, a `#pragma once` or `#ifndef` and `#define` is moved up to the top of the preamble. The `#endif` will stay still.
+
+## The Transitional Preamble
+```cpp
+// Include guards
 #ifdef [value of mi_control]
 module; // Starts the GMF
 #endif
@@ -101,9 +118,9 @@ export module moduleName; // Module declaration, ends the GMF
 // Internal includes...
 #endif
 ```
-If `[value of mi_control]` isn't defined, the preamble fallbacks to being a regular header, else, it will be a module. With this, you can simply add a `-D[value of mi_control]` when compiling the file to switch to module mode. This is especially useful for API that doesn't want to break backward compatibility while writing less code.
+I created this hybrid structure to support both header and modules. If `[value of mi_control]` isn't defined, the preamble fallbacks to being a regular header, else, it will be a module. With this, you can simply add a `-D[value of mi_control]` when compiling the file to switch to module mode. This is especially useful for API that doesn't want to break backward compatibility while writing less code.
 
-## Export.hpp in Transitional Mode
+## Export.hpp
 What is `Export.hpp` you might ask, it's a file that looks like this to allow optional export in transitional mode:
 ```cpp
 #ifdef [value of mi_control]
@@ -118,19 +135,35 @@ What is `Export.hpp` you might ask, it's a file that looks like this to allow op
 ```
 This file allows you to just place the appropriate macro identifier around exported entities, and just toggle with exporting code with `-D[value of mi_control]`.
 
+## Backward compatibility
+
 # Detailed methodology
-Importizer is split into different modules, the purpose of each is as follow:
-1. **Util:**
-  - Provide printing, error handling and program control-flow facilities.
-2. **FileOp:**
-  - Provide file reading and writing facilities
-  - Get headers and sources to process and classify file type.
-3. **Preprocessor:**
-  - Handle preprocessor directive depending on the type.
-  - Determine if a source has a main function.
-  - Determine the position of the preamble.
-  - Handle the removal of include guards.
-4. **Directive:**
-  - Classify preprocessor directives.
-  - Resolve includes
-  
+Importizer is split into different "modules", the purpose of each is as follow:
+1. **Directive:**
+    - Classify and extract extra information from preprocessor directives.
+    - Resolve includes
+    - Determine if an include is standard.
+2. **Driver:**
+    - Call functions from other modules to drive the program.
+    - Generate `Export.hpp` in transitional mode.
+    - Determine if a file will have to be chosen what to export
+    - Generate backward compatibility headers
+3. **FileOp:**
+    - Provide file reading and writing facilities
+    - Get headers and sources to process and classify file type.
+4. **Minimizer:**
+    - Reduce the size of the condition hierarchy.
+5. **OptProcessor:**
+    - Process options passed in by the user from the CLI or the TOML file.
+6. **Preamble:**
+    - Generate and add the preamble.
+7. **Preprocessor:**
+    - Handle preprocessor directive depending on the type.
+    - Determine if a source has a main function.
+    - Determine the position of the preamble.
+8. **Regex:**
+    - A RAII wrapper for the PCRE2 library, used in matching include guards.
+9. **Util:**
+    - Provide printing, error handling and program control-flow facilities.
+
+Further documentation are commented in the code from those file.

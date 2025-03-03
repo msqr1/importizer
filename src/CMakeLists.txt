@@ -1,4 +1,4 @@
-add_executable(importizer Util.cc Regex.cc OptProcessor.cc FileOp.cc Main.cc 
+add_executable(importizer Util.cc Regex.cc OptProcessor.cc FileOp.cc Driver.cc 
   Preprocessor.cc Preamble.cc Directive.cc Minimizer.cc)
 target_compile_features(importizer PRIVATE cxx_std_23)
 option(PCH "Utilize precompiled headers" OFF)
