@@ -1,28 +1,61 @@
+This document provides technical overview of the design and mechanism of importizer.
+# Table of Contents
+- [Prerequisite](#prerequisite)
+- [Background](#background)
+- [Concepts and Terminology](#concepts-and-terminology)
+   * [The Preamble](#the-preamble)
+   * [Header vs. Source](#header-vs-source)
+   * [Paired Files](#paired-files)
+   * [Source With `main()`](#source-with-main)
+- [General Method](#general-method)
+   * [Conversion Rules](#conversion-rules)
+     + [Module Interface Unit](#module-interface-unit)
+     + [Module Implementation Unit](#module-implementation-unit)
+     + [Module Consumer](#module-consumer)
+   * [Generating the Module Declaration](#generating-the-module-declaration)
+   * [Handling Includes](#handling-includes)
+- [Default Mode](#default-mode)
+   * [The Default Preamble](#the-default-preamble)
+   * [Handling Include Guards](#handling-include-guards)
+- [Transitional Mode](#transitional-mode)
+   * [Handling Include Guards](#handling-include-guards-1)
+   * [The Transitional Preamble](#the-transitional-preamble)
+   * [Export.hpp](#exporthpp)
+   * [Compromises](#compromises)
+- [Code Design](#code-design)
+
+# Prerequisite
+This document assumes that you are comfortable with C++, C++ modules (check out [this article](https://vector-of-bool.github.io/2019/03/10/modules-1.html) for a detailed introduction) and read through the [README.md](README.md). The document contains [mermaid](https://mermaid.js.org) diagrams that requires a supported renderer such as Github Markdown.
+
 # Background
-I want more people to use modules because they were brought in to address problems that comes with the `#include` directive (that I hate):
+I am a module advocate because they were brought in to address problems that comes with `#include`:
 - **Slow Compilation:** Each `#include` recursively expands into many lines of code. For instance, `<iostream>` may add over 30,000 lines, and if used in multiple files, it’s processed repeatedly. Modules are compiled once and then reused.
 - **Poor Encapsulation:** `#include` simply copies file content, exposing everything inside. Modules allow you to explicitly export only the necessary parts, keeping private details hidden.
 - **Messy Syntax:** Modules eliminate the need for include guards or `#pragma once` because they are imported only once.
 
-For a more detailed introduction to C++ modules, check out [this article](https://vector-of-bool.github.io/2019/03/10/modules-1.html).
-
 # Concepts and Terminology
 
-## Header vs. Source
-- You know what these are.
-- Importizer determine header and source based solely on the file extension that users can customize.
+## The Preamble
+For every file, importizer generate what I call the "preamble" that declares the dependencies of a file. It is placed at either the very start of the file, or after a SOF comment. The structure of this preamble depend on the modularization mode.
 
-### Paired Files
+## Header vs. Source
+- Of course you know what these are.
+- Importizer determine header and source based solely on the file extension.
+
+## Paired Files
 - A paired file consists of a header (e.g., `file.hpp`) and a corresponding source file (e.g., `file.cpp`). Usually, paired headers contains declarations, and paired source contains implementations.
 - Importizer determine if the current file is paired by changing the extension from source to header or vice versa and checking if the new file exists. 
 
-### Source With `main()`
+## Source With `main()`
 - An **unpaired** source file with a main function. A source with a the main function should not be paired.
 - Importizer determine this by scanning for a main function.
 
-## Conversion Rules
+# General Method
 
-## Module Interface Unit
+## Conversion Rules
+How do we know what file to convert to?
+
+### Module Interface Unit
 - A module unit similar to a header: it declares entities, but it only expose those entities for consumer if you choose to export.
 - **Conversion:**
   - All headers (paired or not) become interface units because of their similar purpose.
@@ -37,8 +70,6 @@ For a more detailed introduction to C++ modules, check out [this article](https:
 - A file that uses modules instead of providing module content.
 - **Conversion:**
   - Sources with `main()` because they run code without providing any functions to other files, and also because the `main` function cannot belong to any modules.
-
-# General
 
 ## Generating the Module Declaration
 To generate the module declaration, each module is assigned a name based on its relative location to the input directory. For example, if a file's path is `glaze/util/atoi.hpp` and the input directory is `glaze`, the module name is `util.atoi`. This naming convention ensures consistent resolution of module names across different files. For interface units, the declaration is `export module moduleName`. For implementation units, it's just `module moduleName;` with the same name as one in an interface unit for the compiler to figure out that they are pairs.
@@ -82,17 +113,18 @@ module;
 #endif
 // Rest of file
 ```
-This method preserves the preprocessor conditions affecting external includes. Note that importizer does not know if a file actually need such definition, so it always replicate.
+This method preserves the preprocessor conditions affecting external includes. Note that importizer does not know if a file actually need such definition, so it always replicate the hierarchy to not break.
 
 # Default Mode
 
 ## The Default Preamble
 ```cpp
-module; // Starts the GMF
+module;
 // External includes...
-export module moduleName; // Module declaration, ends the GMF
+export module moduleName;
 // Imports...
 ```
+Just a typical modules preamble.
 
 ## Handling Include Guards
 In default mode, they are removed, because modules doesn't need them.
@@ -107,12 +139,12 @@ In transitional mode, a `#pragma once` or `#ifndef` and `#define` is moved up to
 ```cpp
 // Include guards
 #ifdef [value of mi_control]
-module; // Starts the GMF
+module;
 #endif
 #include "[location of Export.hpp]"
 // External includes...
 #ifdef [value of mi_control]
-export module moduleName; // Module declaration, ends the GMF
+export module moduleName;
 // Imports...
 #else
 // Internal includes...
@@ -135,21 +167,22 @@ What is `Export.hpp` you might ask, it's a file that looks like this to allow op
 ```
 This file allows you to just place the appropriate macro identifier around exported entities, and just toggle with exporting code with `-D[value of mi_control]`.
 
-## Backward compatibility
+## A Small Compromise
 
-# Detailed methodology
+
+# Code Design
 Importizer is split into different "modules", the purpose of each is as follow:
 1. **Directive:**
     - Classify and extract extra information from preprocessor directives.
     - Resolve includes
-    - Determine if an include is standard.
+    - Determine if an include is a standard C++ include.
 2. **Driver:**
     - Call functions from other modules to drive the program.
     - Generate `Export.hpp` in transitional mode.
-    - Determine if a file will have to be chosen what to export
-    - Generate backward compatibility headers
+    - Determine if a file will have to be chosen what to export.
+    - Generate backward compatibility headers.
 3. **FileOp:**
-    - Provide file reading and writing facilities
+    - Provide file reading and writing facilities.
     - Get headers and sources to process and classify file type.
 4. **Minimizer:**
     - Reduce the size of the condition hierarchy.

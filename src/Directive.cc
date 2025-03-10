@@ -120,8 +120,8 @@ std::optional<StdIncludeType> getStdIncludeType(std::string_view include) {
   }
   return std::nullopt;
 }
-std::optional<std::filesystem::path> resolveInclude(const ResolveIncludeCtx& ctx,
-  const IncludeInfo& info, const std::filesystem::path& currentFilePath) {
+std::optional<fs::path> resolveInclude(const ResolveIncludeCtx& ctx,
+  const IncludeInfo& info, const fs::path& currentFilePath) {
   if(!info.isAngle) {
     fs::path p{currentFilePath};
     p.remove_filename();
