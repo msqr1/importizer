@@ -1,4 +1,4 @@
-This document provides technical overview of the design and mechanism of importizer.
+This document provides a technical overview of the design and mechanism of importizer.
 # Table of Contents
 - [Prerequisite](#prerequisite)
 - [Background](#background)
@@ -21,7 +21,7 @@ This document provides technical overview of the design and mechanism of importi
    * [Handling Include Guards](#handling-include-guards-1)
    * [The Transitional Preamble](#the-transitional-preamble)
    * [Export.hpp](#exporthpp)
-   * [Compromises](#compromises)
+   * [A Small Compromise](#a-small-compromise)
 - [Code Design](#code-design)
 
 # Prerequisite
@@ -32,6 +32,8 @@ I am a module advocate because they were brought in to address problems that com
 - **Slow Compilation:** Each `#include` recursively expands into many lines of code. For instance, `<iostream>` may add over 30,000 lines, and if used in multiple files, it’s processed repeatedly. Modules are compiled once and then reused.
 - **Poor Encapsulation:** `#include` simply copies file content, exposing everything inside. Modules allow you to explicitly export only the necessary parts, keeping private details hidden.
 - **Messy Syntax:** Modules eliminate the need for include guards or `#pragma once` because they are imported only once.
+
+Because of that, I want to make modularization as easy as possible to encourage people to modularize their projects.
 
 # Concepts and Terminology
 
@@ -59,7 +61,7 @@ How do we know what file to convert to?
 - A module unit similar to a header: it declares entities, but it only expose those entities for consumer if you choose to export.
 - **Conversion:**
   - All headers (paired or not) become interface units because of their similar purpose.
-  - Unpaired sources without `main()` are also converted to interface units because there is no other good convertion.
+  - Unpaired sources without `main()` are also converted to interface units because there is no other good conversion (note: I am consider converting these to module consumers instead).
 
 ### Module Implementation Unit
 - A module unit that implements the entities declared in a module interface unit.
@@ -72,7 +74,7 @@ How do we know what file to convert to?
   - Sources with `main()` because they run code without providing any functions to other files, and also because the `main` function cannot belong to any modules.
 
 ## Generating the Module Declaration
-To generate the module declaration, each module is assigned a name based on its relative location to the input directory. For example, if a file's path is `glaze/util/atoi.hpp` and the input directory is `glaze`, the module name is `util.atoi`. This naming convention ensures consistent resolution of module names across different files. For interface units, the declaration is `export module moduleName`. For implementation units, it's just `module moduleName;` with the same name as one in an interface unit for the compiler to figure out that they are pairs.
+To generate the module declaration, each module is assigned a name based on its relative location to the input directory. For example, if a file's path is `glaze/util/atoi.hpp` and the input directory is `glaze`, the module name is `util.atoi`. This naming convention ensures consistent resolution of module names across different files. For interface units, the declaration is `export module [name]`. For implementation units, it's just `module [name];` with the same name as one in an interface unit for the compiler to figure out that they are pairs.
 
 ## Handling Includes
 Module units should not contain #include directives outside the global module fragment (GMF), as this would bind the module to the included file's content. To manage includes, we categorize them as internal (within the input directory) and external (outside the input directory). The classification process is inspired by the `-I` flag used by compilers:
@@ -168,7 +170,45 @@ What is `Export.hpp` you might ask, it's a file that looks like this to allow op
 This file allows you to just place the appropriate macro identifier around exported entities, and just toggle with exporting code with `-D[value of mi_control]`.
 
 ## A Small Compromise
-
+Importizer currently does NOT recreate the macro hierarchy for internal includes to not duplicate the macro hierarchy. So if you have:
+```cpp
+#define A 1
+#include <external.hpp>
+#include <internal.hpp>
+#undef A
+```
+importizer will generate this preamble:
+```cpp
+#ifdef [value of mi_control]
+module;
+#endif
+#define A 1
+#include <external.hpp>
+#undef A
+#ifdef [value of mi_control]
+import internal;
+#else
+#include <internal.hpp> // Notice how the #define A 1 and the #undef A are not recreated here
+#endif
+```
+This is because if a file is a module, we assume it cannot be affected from outer macros, and since the content is the same in header and module mode, we can also assume the same for header mode. The exact marcro hierarchy is only necessary for external includes. With that, here is the "compromise" part, if you have some code like this:
+```cpp
+#ifdef IDK
+#include <internal.hpp>
+#endif
+```
+It will get turned into:
+```cpp
+#ifdef [value of mi_control]
+module;
+#endif
+#ifdef [value of mi_control]
+import internal;
+#else
+#include <internal.hpp> // Notice how #ifdef IDK is eliminated.
+#endif
+```
+Although this might lengthen compile time, I figured that this use case of conditional internal include is quite rare, and recreating the structure would lengthen code in the internal include section quite significantly for bigger projects.
 
 # Code Design
 Importizer is split into different "modules", the purpose of each is as follow:
