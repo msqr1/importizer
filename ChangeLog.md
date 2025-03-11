@@ -1,4 +1,5 @@
 # 2.1.0 (in progress)
+Add a HowItWorks.md
 
 # 2.0.0
 ### Breaking Changes

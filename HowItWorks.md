@@ -132,7 +132,7 @@ Just a typical modules preamble.
 In default mode, they are removed, because modules doesn't need them.
 
 # Transitional Mode
-Transitional mode is all about maintaining backward compatibility.
+Transitional mode is all about maintaining backward compatibility. We facilitate this by conditionally toggle our preamble and the file content with the definition of the mi_control macro. It defaults to being undefined (header mode) which make code behave exactly like a header-based codebase, and vice versa for it being defined. This is especially useful for API that doesn't want to break backward compatibility while writing less code. All you need to do is add a `-D[value of mi_control]` on the CLI when compiling modularized files.
 
 ## Handling Include Guards
 In transitional mode, a `#pragma once` or `#ifndef` and `#define` is moved up to the top of the preamble. The `#endif` will stay still.
@@ -152,10 +152,10 @@ export module moduleName;
 // Internal includes...
 #endif
 ```
-I created this hybrid structure to support both header and modules. If `[value of mi_control]` isn't defined, the preamble fallbacks to being a regular header, else, it will be a module. With this, you can simply add a `-D[value of mi_control]` when compiling the file to switch to module mode. This is especially useful for API that doesn't want to break backward compatibility while writing less code.
+I created this hybrid structure to support both header and modules. As mentioned, if `[value of mi_control]` isn't defined, the preamble fallbacks to being like that of a regular header, else, it will be a module preamble.
 
 ## Export.hpp
-What is `Export.hpp` you might ask, it's a file that looks like this to allow optional export in transitional mode:
+A file that looks like this to allow optional export in transitional mode:
 ```cpp
 #ifdef [value of mi_control]
 #define [value of mi_exportKeyword] export
@@ -167,7 +167,15 @@ What is `Export.hpp` you might ask, it's a file that looks like this to allow op
 #define [value of mi_exportBlockEnd]
 #endif
 ```
-This file allows you to just place the appropriate macro identifier around exported entities, and just toggle with exporting code with `-D[value of mi_control]`.
+This file allows you to just place the appropriate macro identifier around exported entities depending on the mode. Example usage:
+```cpp
+[value of mi_exportKeyword] void func();
+[value of mi_exportBlockBegin]
+void func2();
+void func3();
+[value of mi_exportBlockEnd]
+```
+The [value of ...] expands to nothing in header mode, so the file would just be a regular header with declarations, and turns into exports when module mode is on.
 
 ## A Small Compromise
 Importizer currently does NOT recreate the macro hierarchy for internal includes to not duplicate the macro hierarchy. So if you have:
