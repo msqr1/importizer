@@ -25,7 +25,11 @@ This document provides a technical overview of the design and mechanism of impor
 - [Code Design](#code-design)
 
 # Prerequisite
-This document assumes that you are comfortable with C++, C++ modules (check out [this article](https://vector-of-bool.github.io/2019/03/10/modules-1.html) for a detailed introduction) and read through the [README.md](README.md). The document contains [mermaid](https://mermaid.js.org) diagrams that requires a supported renderer such as Github Markdown.
+- This document contains [mermaid](https://mermaid.js.org) diagrams that requires a supported renderer such as Github Markdown.
+- This document assumes:
+  - You are comfortable with C++, C++ modules (check out [this excellent article](https://vector-of-bool.github.io/2019/03/10/modules-1.html) for a detailed introduction).
+  -  Read through the [README.md](README.md), especially the option section.
+- Throughout the document you will see `[]` with an option name inside, it means replace it with the value of the option. For example, `[hdrExt]`, with default option will be replaced by `.hpp`.
 
 # Background
 I am a module advocate because they were brought in to address problems that comes with `#include`:
@@ -58,10 +62,10 @@ For every file, importizer generate what I call the "preamble" that declares the
 How do we know what file to convert to?
 
 ### Module Interface Unit
-- A module unit similar to a header: it declares entities, but it only expose those entities for consumer if you choose to export.
+- A module unit similar to a header: it declares entities, but it only expose those entities for consumers if you choose to export.
 - **Conversion:**
   - All headers (paired or not) become interface units because of their similar purpose.
-  - Unpaired sources without `main()` are also converted to interface units because there is no other good conversion (note: I am consider converting these to module consumers instead).
+  - Unpaired sources without `main()` are also converted to interface units because there is no other good conversion (note: I am consider converting these to module consumers instead or let the user pick).
 
 ### Module Implementation Unit
 - A module unit that implements the entities declared in a module interface unit.
@@ -132,94 +136,94 @@ Just a typical modules preamble.
 In default mode, they are removed, because modules doesn't need them.
 
 # Transitional Mode
-Transitional mode is all about maintaining backward compatibility. We facilitate this by conditionally toggle our preamble and the file content with the definition of the mi_control macro. It defaults to being undefined (header mode) which make code behave exactly like a header-based codebase, and vice versa for it being defined. This is especially useful for API that doesn't want to break backward compatibility while writing less code. All you need to do is add a `-D[value of mi_control]` on the CLI when compiling modularized files.
-
-## Handling Include Guards
-In transitional mode, a `#pragma once` or `#ifndef` and `#define` is moved up to the top of the preamble. The `#endif` will stay still.
+Transitional mode is all about maintaining backward compatibility. We facilitate this by conditionally toggle our preamble and the file content with the definition of the mi_control macro. It defaults to being undefined (header mode) which make code behave exactly like a header-based codebase, and vice versa for it being defined. This is especially useful for API that doesn't want to break backward compatibility while writing less code. All you need to do is add a `-D[mi_control]` on the CLI when compiling modularized files.
 
 ## The Transitional Preamble
 ```cpp
 // Include guards
-#ifdef [value of mi_control]
+#ifdef [mi_control]
 module;
 #endif
-#include "[location of Export.hpp]"
+#include "[exportMacrosPath]"
 // External includes...
-#ifdef [value of mi_control]
+#ifdef [mi_control]
 export module moduleName;
 // Imports...
 #else
 // Internal includes...
 #endif
 ```
-I created this hybrid structure to support both header and modules. As mentioned, if `[value of mi_control]` isn't defined, the preamble fallbacks to being like that of a regular header, else, it will be a module preamble.
+I created this hybrid structure to support both header and modules. As mentioned, if `[mi_control]` isn't defined, the preamble fallbacks to being like that of a regular header, else, it will be a module preamble.
+
+## Handling Include Guards
+In transitional mode, a `#pragma once` or `#ifndef` and `#define` is moved up to the top of the preamble. The `#endif` will stay still.
 
 ## Export.hpp
 A file that looks like this to allow optional export in transitional mode:
 ```cpp
-#ifdef [value of mi_control]
-#define [value of mi_exportKeyword] export
-#define [value of mi_exportBlockBegin] export {
-#define [value of mi_exportBlockEnd] }
+#ifdef [mi_control]
+#define [mi_exportKeyword] export
+#define [mi_exportBlockBegin] export {
+#define [mi_exportBlockEnd] }
 #else
-#define [value of mi_exportKeyword]
-#define [value of mi_exportBlockBegin]
-#define [value of mi_exportBlockEnd]
+#define [mi_exportKeyword]
+#define [mi_exportBlockBegin]
+#define [mi_exportBlockEnd]
 #endif
 ```
 This file allows you to just place the appropriate macro identifier around exported entities depending on the mode. Example usage:
 ```cpp
-[value of mi_exportKeyword] void func();
-[value of mi_exportBlockBegin]
+[mi_exportKeyword] void func();
+[mi_exportBlockBegin]
 void func2();
 void func3();
-[value of mi_exportBlockEnd]
+[mi_exportBlockEnd]
 ```
-The [value of ...] expands to nothing in header mode, so the file would just be a regular header with declarations, and turns into exports when module mode is on.
+The macros above expands to nothing in header mode, so the file would just be a regular header with declarations, and turns into exports when module mode is on.
 
 ## A Small Compromise
-Importizer currently does NOT recreate the macro hierarchy for internal includes to not duplicate the macro hierarchy. So if you have:
+Importizer currently does not recreate the macro hierarchy for internal includes to not duplicate the macro hierarchy. So if you have:
 ```cpp
 #define A 1
-#include <external.hpp>
-#include <internal.hpp>
+#include <external.[hdrExt]>
+#include <internal.[hdrExt]>
 #undef A
 ```
 importizer will generate this preamble:
 ```cpp
-#ifdef [value of mi_control]
+#ifdef [mi_control]
 module;
 #endif
 #define A 1
-#include <external.hpp>
+#include <external.[hdrExt]>
 #undef A
-#ifdef [value of mi_control]
+#ifdef [mi_control]
 import internal;
 #else
-#include <internal.hpp> // Notice how the #define A 1 and the #undef A are not recreated here
+#include <internal.[moduleInterfaceExt]> // Notice how the #define A 1 and the #undef A are not recreated here
 #endif
 ```
-This is because if a file is a module, we assume it cannot be affected from outer macros, and since the content is the same in header and module mode, we can also assume the same for header mode. The exact marcro hierarchy is only necessary for external includes. With that, here is the "compromise" part, if you have some code like this:
+I did this because if a file is a module, we can assume it cannot be affected from outer macros, but since the content is the same in header and module mode, we can also assume the same for header mode. The exact marcro hierarchy is only necessary for external includes. With that, here is the "compromise" part, if you have some code like this:
 ```cpp
 #ifdef IDK
-#include <internal.hpp>
+#include <internal.[hdrExt]>
 #endif
 ```
 It will get turned into:
 ```cpp
-#ifdef [value of mi_control]
+#ifdef [mi_control]
 module;
 #endif
-#ifdef [value of mi_control]
+#ifdef [mi_control]
 import internal;
 #else
-#include <internal.hpp> // Notice how #ifdef IDK is eliminated.
+#include <internal.[moduleInterfaceExt]> // Notice how #ifdef IDK is eliminated.
 #endif
 ```
-Although this might lengthen compile time, I figured that this use case of conditional internal include is quite rare, and recreating the structure would lengthen code in the internal include section quite significantly for bigger projects.
+Although this might lengthen compile time, I figured that this use case of conditional internal include is quite rare, recreating the structure would duplicate the same hierarchy from the external include section right above and create massive preambles.
 
 # Code Design
-Importizer is split into different "modules", the purpose of each is as follow:
+Importizer is split into different "modules", that are not C++ module (will be soon). The purpose of each is as follow:
 1. **Directive:**
     - Classify and extract extra information from preprocessor directives.
     - Resolve includes
@@ -247,4 +251,4 @@ Importizer is split into different "modules", the purpose of each is as follow:
 9. **Util:**
     - Provide printing, error handling and program control-flow facilities.
 
-Further documentation are commented in the code from those file.
+Further documentation are commented in the code.

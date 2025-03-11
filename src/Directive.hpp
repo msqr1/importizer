@@ -65,7 +65,7 @@ enum class StdIncludeType : char {
 std::optional<StdIncludeType> getStdIncludeType(std::string_view include);
 
 // Just for the sake of making the lines not irritatingly long
-// Also these fixed from the start
+// Also these are fixed from the start of the program
 struct ResolveIncludeCtx {
   const std::filesystem::path& inDir;
   const std::vector<std::filesystem::path>& includePaths;
