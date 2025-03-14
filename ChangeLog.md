@@ -1,5 +1,6 @@
 # 2.1.0 (in progress)
-Add a HowItWorks.md
+- Add a HowItWorks.md
+- Bump libfmt to 11.1.4
 
 # 2.0.0
 ### Breaking Changes

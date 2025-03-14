@@ -147,7 +147,7 @@ Customize importizer's behavior via the command line or a TOML configuration fil
  
 ## Forward Declarations
 - When converting a header to a module, any forward declarations become part of that module. This can lead to conflicts if the full declaration exists in another module.
-  - If forward declarations are used to break cyclic dependencies, refactor the shared entity into its own file and include it in both modules.
+  - If forward declarations are used to break cyclic dependencies, refactor the shared entity into its own file and include it in both modules. If you have
   - (Only way for external forward declarations) Include the full declaration by #include-ing the corresponding file and removing the forward declaration. Note that this may lengthen header build in transitional mode.
   - In transitional mode, if you ABSOLUTELY need to save on header compile time, you might adjust the modularized preamble as follow:
     ```cpp

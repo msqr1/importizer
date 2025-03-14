@@ -49,7 +49,7 @@ For every file, importizer generate what I call the "preamble" that declares the
 - Importizer determine header and source based solely on the file extension.
 
 ## Paired Files
-- A paired file consists of a header (e.g., `file.hpp`) and a corresponding source file (e.g., `file.cpp`). Usually, paired headers contains declarations, and paired source contains implementations.
+- A paired file consists of a header (e.g., `file[hdrExt]`) and a corresponding source file (e.g., `file[srcExt]`). Usually, paired headers contains declarations, and paired source contains implementations.
 - Importizer determine if the current file is paired by changing the extension from source to header or vice versa and checking if the new file exists. 
 
 ## Source With `main()`
@@ -59,7 +59,7 @@ For every file, importizer generate what I call the "preamble" that declares the
 # General Method
 
 ## Conversion Rules
-How do we know what file to convert to?
+We need to know how to convert each file types.
 
 ### Module Interface Unit
 - A module unit similar to a header: it declares entities, but it only expose those entities for consumers if you choose to export.
@@ -78,7 +78,7 @@ How do we know what file to convert to?
   - Sources with `main()` because they run code without providing any functions to other files, and also because the `main` function cannot belong to any modules.
 
 ## Generating the Module Declaration
-To generate the module declaration, each module is assigned a name based on its relative location to the input directory. For example, if a file's path is `glaze/util/atoi.hpp` and the input directory is `glaze`, the module name is `util.atoi`. This naming convention ensures consistent resolution of module names across different files. For interface units, the declaration is `export module [name]`. For implementation units, it's just `module [name];` with the same name as one in an interface unit for the compiler to figure out that they are pairs.
+To generate the module declaration, each module is assigned a name based on its relative location to the input directory. For example, if a file's path is `glaze/util/atoi.hpp` and the input directory is `glaze`, the module name is `util.atoi`. This naming convention ensures consistent resolution of module names across different files. For interface units, the declaration is `export module {name}`. For implementation units, it's just `module {name};` with the same name as one in an interface unit for the compiler to figure out that they are pairs.
 
 ## Handling Includes
 Module units should not contain #include directives outside the global module fragment (GMF), as this would bind the module to the included file's content. To manage includes, we categorize them as internal (within the input directory) and external (outside the input directory). The classification process is inspired by the `-I` flag used by compilers:
@@ -185,8 +185,8 @@ The macros above expands to nothing in header mode, so the file would just be a 
 Importizer currently does not recreate the macro hierarchy for internal includes to not duplicate the macro hierarchy. So if you have:
 ```cpp
 #define A 1
-#include <external.[hdrExt]>
-#include <internal.[hdrExt]>
+#include <external[hdrExt]>
+#include <internal[hdrExt]>
 #undef A
 ```
 importizer will generate this preamble:
@@ -195,18 +195,18 @@ importizer will generate this preamble:
 module;
 #endif
 #define A 1
-#include <external.[hdrExt]>
+#include <external[hdrExt]>
 #undef A
 #ifdef [mi_control]
 import internal;
 #else
-#include <internal.[moduleInterfaceExt]> // Notice how the #define A 1 and the #undef A are not recreated here
+#include <internal[moduleInterfaceExt]> // Notice how the #define A 1 and the #undef A are not recreated here
 #endif
 ```
 I did this because if a file is a module, we can assume it cannot be affected from outer macros, but since the content is the same in header and module mode, we can also assume the same for header mode. The exact marcro hierarchy is only necessary for external includes. With that, here is the "compromise" part, if you have some code like this:
 ```cpp
 #ifdef IDK
-#include <internal.[hdrExt]>
+#include <internal[hdrExt]>
 #endif
 ```
 It will get turned into:
@@ -217,7 +217,7 @@ module;
 #ifdef [mi_control]
 import internal;
 #else
-#include <internal.[moduleInterfaceExt]> // Notice how #ifdef IDK is eliminated.
+#include <internal[moduleInterfaceExt]> // Notice how #ifdef IDK is eliminated.
 #endif
 ```
 Although this might lengthen compile time, I figured that this use case of conditional internal include is quite rare, recreating the structure would duplicate the same hierarchy from the external include section right above and create massive preambles.

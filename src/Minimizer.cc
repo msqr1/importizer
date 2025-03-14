@@ -31,7 +31,6 @@ std::optional<size_t> getIfElSkip(const MinimizeCtx& mCtx, size_t currentIdx,
 }
 std::string minimizeToStr(const MinimizeCtx& mCtx) {
   std::string rtn;
-  std::optional<size_t> ifSkip;
   for(size_t i{}; i < mCtx.size(); ++i) switch(mCtx[i].index()) {
   case 0: // std::string
     rtn += std::get<std::string>(mCtx[i]);
@@ -49,7 +48,7 @@ std::string minimizeToStr(const MinimizeCtx& mCtx) {
         break;
       case DirectiveType::IfCond:
       case DirectiveType::ElCond:
-        if((ifSkip = getIfElSkip(mCtx, i, current.type))) {
+        if(std::optional<size_t> ifSkip{getIfElSkip(mCtx, i, current.type)}) {
           i = *ifSkip;
           continue;
         }

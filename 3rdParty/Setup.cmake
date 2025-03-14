@@ -14,9 +14,9 @@ function(gitClone repo hash outDir)
    --recursive --depth 1)
 endfunction(gitClone repo hash outDir)
 
-# 11.1.3
+# 11.1.4
 if(NOT EXISTS fmt)
-  gitClone(fmtlib/fmt 9cf9f38eded63e5e0fb95cd536ba51be601d7fa2 fmt)
+  gitClone(fmtlib/fmt 123913715afeb8a437e6388b4473fcc4753e1c9a fmt)
 endif()
 
 # 3.4.0
