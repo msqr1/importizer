@@ -22,12 +22,18 @@ public:
   size_t counter;
   IncludeGuardCtx(FileType type, const std::optional<Regex>& pat);
 };
+enum IncludeMethod : char {
+  Angle,
+  Quote,
+  Computed
+};
 class IncludeInfo {
 public:
-  bool isAngle;
+  IncludeMethod method;
   size_t startOffset;
   std::string_view includeStr;
-  IncludeInfo(bool isAngle, size_t startOffset, std::string_view includeStr);
+  IncludeInfo(IncludeMethod method);
+  IncludeInfo(IncludeMethod method, size_t startOffset, std::string_view includeStr);
 };
 
 // For ifndef and define that matches opts.includeGuard
@@ -71,7 +77,7 @@ struct ResolveIncludeCtx {
   const std::vector<std::filesystem::path>& includePaths;
 };
 
-// Resolve an include, the path of the include relative to inDir,
+// Resolve a quote or angle include, the path of the include relative to inDir,
 // return std::nullopt when the include doesn't exist, or not under inDir
 std::optional<std::filesystem::path> resolveInclude(const ResolveIncludeCtx& ctx,
   const IncludeInfo& info, const std::filesystem::path& currentFilePath);

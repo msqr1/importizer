@@ -15,8 +15,10 @@ namespace fs = std::filesystem;
 IncludeGuardCtx::IncludeGuardCtx(FileType type, const std::optional<Regex>& pat): 
   state{type == FileType::Hdr && pat ?
   IncludeGuardState::Looking : IncludeGuardState::NotLooking} {}
-IncludeInfo::IncludeInfo(bool isAngle, size_t startOffset, std::string_view includeStr):
-  isAngle{isAngle}, startOffset{startOffset}, includeStr{includeStr} {}
+IncludeInfo::IncludeInfo(IncludeMethod method): method{method} {}
+IncludeInfo::IncludeInfo(IncludeMethod method, size_t startOffset,
+  std::string_view includeStr): method{method}, startOffset{startOffset},
+  includeStr{includeStr} {}
 Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts& opts):
   str{std::move(str_)} {
   if(str.back() != '\n') str += '\n';
@@ -33,19 +35,21 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts&
   else if(directive == "undef") type = DirectiveType::Undef;
   else if(directive == "include") {
     type = DirectiveType::Include;
-    size_t start{str.find('<', 1 + directive.length())};
+    size_t start;
     size_t end;
-    bool isAngle{start != std::string::npos};
-    if(isAngle) {
+    if((start = str.find('<', 1 + directive.length()) != std::string::npos)) {
       start++;
       end = str.find('>', start);
+      extraInfo.emplace<IncludeInfo>(IncludeMethod::Angle, start,
+        std::string_view(str.c_str() + start, end - start));
     }
-    else {
-      start = str.find('"') + 1;
+    else if((start = str.find('"', 1 + directive.length()) != std::string::npos)) {
+      start++;
       end = str.find('"', start);
+      extraInfo.emplace<IncludeInfo>(IncludeMethod::Quote, start,
+        std::string_view(str.c_str() + start, end - start));
     }
-    extraInfo.emplace<IncludeInfo>(isAngle, start,
-      std::string_view(str.c_str() + start, end - start));
+    else extraInfo.emplace<IncludeInfo>(IncludeMethod::Computed);
   }
   else if(directive == "endif") type = DirectiveType::EndIf; 
   else if(first2Chars == "if") type = DirectiveType::IfCond;
@@ -120,9 +124,10 @@ std::optional<StdIncludeType> getStdIncludeType(std::string_view include) {
   }
   return std::nullopt;
 }
+
 std::optional<fs::path> resolveInclude(const ResolveIncludeCtx& ctx,
   const IncludeInfo& info, const fs::path& currentFilePath) {
-  if(!info.isAngle) {
+  if(info.method == IncludeMethod::Quote) {
     fs::path p{currentFilePath};
     p.remove_filename();
     p /= info.includeStr;

@@ -2,10 +2,9 @@
 module;
 #endif
 #include "../Export.hpp"
+#include <Header.hpp>
 #ifdef CPP_MODULES
 export module Folder.IncludeOuterHdr;
-import Header;
 #else
-#include <Header.ixx>
 #endif
 

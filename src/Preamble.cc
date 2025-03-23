@@ -59,7 +59,12 @@ void handleInclude(const Opts& opts, Directive& include, const ResolveIncludeCtx
       fs::path(info.includeStr).replace_extension(opts.moduleInterfaceExt).string());
     *internalIncludes += include.str;
   };
-  if(std::optional<fs::path> resolvedInclude{resolveInclude(ctx, info, file.path)}) {
+  
+  // Treat computed include as external
+  if(info.method == IncludeMethod::Computed) {
+    externalCtx.emplace_back(std::move(include.str));
+  }
+  else if(std::optional<fs::path> resolvedInclude{resolveInclude(ctx, info, file.path)}) {
     fs::path includePath{std::move(*resolvedInclude)};
     
     // Ignored headers
