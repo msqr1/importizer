@@ -1,6 +1,8 @@
 # 2.1.0 (in progress)
 - Add a HowItWorks.md
 - Bump libfmt to 11.1.4
+- Fix #23 (not handling computed includes), we treat them as external now
+- Fix result of IncludePath test (it didn't work this whole time, the test result was wrong)
 
 # 2.0.0
 ### Breaking Changes

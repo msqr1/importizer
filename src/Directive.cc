@@ -35,21 +35,22 @@ Directive::Directive(std::string&& str_, const IncludeGuardCtx& ctx, const Opts&
   else if(directive == "undef") type = DirectiveType::Undef;
   else if(directive == "include") {
     type = DirectiveType::Include;
-    size_t start;
+    size_t start{str.find_first_not_of(" \t\v\f", 1 + directive.length())};
     size_t end;
-    if((start = str.find('<', 1 + directive.length()) != std::string::npos)) {
-      start++;
+    switch(str[start++]) {
+    case '<':
       end = str.find('>', start);
       extraInfo.emplace<IncludeInfo>(IncludeMethod::Angle, start,
-        std::string_view(str.c_str() + start, end - start));
-    }
-    else if((start = str.find('"', 1 + directive.length()) != std::string::npos)) {
-      start++;
+        std::string_view{str.c_str() + start, end - start});
+      break;
+    case '"':
       end = str.find('"', start);
       extraInfo.emplace<IncludeInfo>(IncludeMethod::Quote, start,
-        std::string_view(str.c_str() + start, end - start));
+        std::string_view{str.c_str() + start, end - start});
+      break;
+    default:
+      extraInfo.emplace<IncludeInfo>(IncludeMethod::Computed);
     }
-    else extraInfo.emplace<IncludeInfo>(IncludeMethod::Computed);
   }
   else if(directive == "endif") type = DirectiveType::EndIf; 
   else if(first2Chars == "if") type = DirectiveType::IfCond;

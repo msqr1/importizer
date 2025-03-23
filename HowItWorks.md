@@ -81,10 +81,11 @@ We need to know how to convert each file types.
 To generate the module declaration, each module is assigned a name based on its relative location to the input directory. For example, if a file's path is `glaze/util/atoi.hpp` and the input directory is `glaze`, the module name is `util.atoi`. This naming convention ensures consistent resolution of module names across different files. For interface units, the declaration is `export module {name}`. For implementation units, it's just `module {name};` with the same name as one in an interface unit for the compiler to figure out that they are pairs.
 
 ## Handling Includes
-Module units should not contain #include directives outside the global module fragment (GMF), as this would bind the module to the included file's content. To manage includes, we categorize them as internal (within the input directory) and external (outside the input directory). The classification process is inspired by the `-I` flag used by compilers:
+Module units should not contain #include directives outside the global module fragment (GMF), as this would bind the module to the included file's content. To manage includes, we categorize them as internal (within the input directory) and external (outside the input directory). We will be searching for them according to below. The include will be internal if found, and external if not:
 ```mermaid
 flowchart TD
 A{Inclusion method}
+A --> |Computed| D[Do nothing, treat as external]
 A --> |Quoted| B[Search relative to the directory of the current file]
 A --> |Angled| C[Search relative to each directory in the user-provided include paths]
 B --> C
