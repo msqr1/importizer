@@ -33,7 +33,7 @@ This project follows [semantic versioning](https://semver.org).
   - [Testing](#testing)
 - [Behavior](#behavior)
 - [Options](#options)
-- [Modules' Side Effects](#modules-side-effects)
+- [Fixing Modules' Effects](#fixing-modules-effects)
   - [Transitive Includes](#transitive-includes)
   - [Non-Local Macros](#non-local-macros)
 - [Development Guidelines](#development-guidelines)
