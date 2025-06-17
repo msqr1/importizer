@@ -46,10 +46,12 @@ This project follows [semantic versioning](https://semver.org).
 - For production use, download the **release** versions (with optimizations) from the other release tags.
 
 ## Building from Source
-Clone the repository and build with the following commands:
 ```bash
-git clone --depth 1 https://github.com/msqr1/importizer && cd importizer &&
-mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release &&
+git clone --depth 1 https://github.com/msqr1/importizer &&
+cd importizer &&
+mkdir build &&
+cd build &&
+cmake .. -DCMAKE_BUILD_TYPE=Release &&
 cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 ```
 - The resulting binary, named `importizer`, will be located in your current working directory.
