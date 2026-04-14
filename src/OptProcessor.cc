@@ -30,9 +30,8 @@ auto getTypeCk(const toml::table& tbl, std::string_view key) {
   exitWithErr("Incorrect TOML type for {}", key);
 #pragma GCC diagnostic pop
 }
-template<typename T> concept ArgsFlag = requires(T flg) {
-  std::derived_from<T, args::FlagBase>;
-};
+template<typename T> concept ArgsFlag = std::derived_from<T, args::FlagBase>;
+
 template<typename T, ArgsFlag F>
 auto getOrDefault(F& flg, const toml::table& tbl, std::string_view key, T&& defaultVal) {
   if(flg) return flg.Get();
