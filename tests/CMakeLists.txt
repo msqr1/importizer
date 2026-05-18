@@ -1,6 +1,6 @@
 add_executable(cmpDir CmpDir.cc)
 target_compile_features(cmpDir PRIVATE cxx_std_23)
-target_link_libraries(cmpDir fmt::fmt)
+target_link_libraries(cmpDir PRIVATE fmt::fmt)
 enable_testing()
 set(testResDir "${CMAKE_CURRENT_BINARY_DIR}/results")
 function(addTestsFromDir dir)

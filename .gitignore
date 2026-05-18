@@ -1,6 +1,5 @@
 .vscode
 .cache
-.clangd
 .vs
 3rdParty/*
 !3rdParty/cpm.cmake

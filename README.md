@@ -30,21 +30,6 @@ Are you looking to convert your header-based C++ codebase to C++20 modules, but 
 
 This project follows [semantic versioning](https://semver.org).
 
-# Table of Contents
-
-- [Getting Started](#getting-started)
-  - [Prebuilt Executable](#prebuilt-executable)
-  - [Building from Source](#building-from-source)
-  - [Usage Walkthrough](#usage-walkthrough)
-  - [Output Example](#output-example)
-  - [Testing](#testing)
-- [Behavior](#behavior)
-- [Options](#options)
-- [Fixing Modules' Effects](#fixing-modules-effects)
-  - [Transitive Includes](#transitive-includes)
-  - [Non-Local Macros](#non-local-macros)
-- [Development Guidelines](#development-guidelines)
-
 # Getting Started
 
 ## Prebuilt Executable

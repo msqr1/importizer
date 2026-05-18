@@ -1,6 +1,5 @@
-name: Run test and tag continuous
+name: Tag release
 on:
-  - push
   - workflow_dispatch
 permissions:
   contents: write

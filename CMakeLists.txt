@@ -7,11 +7,13 @@ if(CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CPM_SOURCE_CACHE "3rdParty")
 include("3rdParty/cpm.cmake")
 CPMAddPackage("gh:fmtlib/fmt#12.1.0")
-CPMAddPackage("gh:marzer/tomlplusplus#v3.4.0")
-find_package(LLVM REQUIRED)
+CPMAddPackage("gh:cktan/tomlc17#R260517")
+
+find_package(Clang REQUIRED)
 
 set(debugCompileFlags)
 set(releaseCompileFlags)
