@@ -16,6 +16,7 @@ jobs:
               wget https://apt.llvm.org/llvm.sh &&
               chmod +x llvm.sh &&
               sudo ./llvm.sh 20
+              sudo apt install -y llvm-20-dev libclang-20-dev libclang-cpp20-dev
           - os: windows-latest
             name: windows
             # MacOS does have LLVM 20, but it need a bit of tweak
@@ -40,7 +41,7 @@ jobs:
         id: test
         if: steps.build.outcome == 'success'
         run: >
-          cd ${{ github.workspace }}/build/test &&
+          cd ${{ github.workspace }}/build/tests &&
           ctest -C Debug --output-on-failure --progress --schedule-random
           -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
       - name: Upload executable as artifact
