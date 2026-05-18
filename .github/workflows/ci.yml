@@ -5,33 +5,33 @@ on:
 permissions:
   contents: write
 jobs:
-  build-upload-test:
+  build-test-upload:
     strategy:
       matrix:
         os:
           - ubuntu-22.04
-          - ubuntu-22.04-arm
-          - ubuntu-24.04
-          - ubuntu-24.04-arm
-          - windows-2019
-          - windows-2022
-          - windows-2025
-          - macos-13
-          - macos-14
-          - macos-15
+          - windows-latest
+          - macos-26
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v6
       - name: Build
         id: build
         run: >
           mkdir build && cd build && cmake .. -DTESTS=1 -DCMAKE_BUILD_TYPE=Debug &&
           cmake --build . --config Debug -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
+      - name: Test
+        id: test
+        if: steps.build.outcome == 'success'
+        run: >
+          cd ${{ github.workspace }}/build/test &&
+          ctest -C Debug --output-on-failure --progress --schedule-random
+          -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
       - name: Upload built executable as artifact
         id: upload
-        if: steps.build.outcome == 'success'
-        uses: actions/upload-artifact@v4.6.0
+        if: steps.test.outcome == 'success'
+        uses: actions/upload-artifact@v7
         with:
           name: importizer-${{ matrix.os }}
           path: |
@@ -39,19 +39,13 @@ jobs:
             ${{ github.workspace }}/build/importizer.exe
           retention-days: 1
           compression-level: 0
-      - name: Test
-        if: steps.upload.outcome == 'success'
-        id: test
-        run: >
-          cd ${{ github.workspace }}/build/test &&
-          ctest -C Debug --output-on-failure --progress --schedule-random
-          -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
+
   download-and-release-continuous:
-    needs: build-upload-test
-    runs-on: ubuntu-24.04
+    needs: build-test-upload
+    runs-on: ubuntu-slim
     steps:
       - name: Download built executables
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v8
       - name: Rename executables
         run: |
           for exe in */importizer*; do
@@ -60,7 +54,7 @@ jobs:
             mv $exe "$platform/$platform$([[ $filename = *.* ]] && echo .${filename##*.} || echo '')"
           done
       - name: Tag continuous release
-        uses: softprops/action-gh-release@v2.2.1
+        uses: softprops/action-gh-release@v3
         with:
           prerelease: true
           tag_name: continuous

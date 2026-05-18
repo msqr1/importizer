@@ -3,11 +3,9 @@
 .clangd
 .vs
 3rdParty/*
-!3rdParty/Setup.cmake
+!3rdParty/CPM.cmake
 test*
-!test
+!tests
 build
-out
 act
 CMakePresets.json
-Kaldi
