@@ -1,8 +1,28 @@
 add_executable(importizer
-  Llvm.cc
+  Driver.cc
+  Opts.cc
+  Util.cc
   ${tomlc17_SOURCE_DIR}/src/tomlc17.c
 )
 target_compile_features(importizer PRIVATE cxx_std_23)
+
+target_compile_options(importizer PRIVATE
+  -Wall
+  -fno-rtti
+  $<$<CONFIG:Debug>:-fno-omit-frame-pointer -fsanitize=undefined>
+  $<$<CONFIG:Release>:-flto>
+)
+target_link_options(importizer PRIVATE
+  $<$<CONFIG:Debug>:-fsanitize=undefined>
+  $<$<CONFIG:Release>:-flto>
+)
+if(WIN32)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+else()
+  target_link_options(importizer PRIVATE
+    $<$<CONFIG:Release>:-static-libstdc++ -static-libgcc>
+  )
+endif()
 
 target_include_directories(importizer PRIVATE ${tomlc17_SOURCE_DIR}/src)
 target_include_directories(importizer PRIVATE
@@ -23,7 +43,6 @@ target_link_libraries(importizer PRIVATE
 if(CUSTOM_EXE_SUFFIX)
   set_target_properties(importizer PROPERTIES OUTPUT_NAME "importizer-${CUSTOM_EXE_SUFFIX}")
 endif()
-
 
 # For actions/upload-artifact
 add_custom_command(POST_BUILD TARGET importizer

@@ -9,7 +9,7 @@
 #include <version>
 
 namespace fs = std::filesystem;
-void readFromPath(const fs::path &path, std::string &str) {
+void readFrom(const fs::path &path, std::string &str) {
   std::ifstream ifs{path, std::fstream::binary};
   if (!ifs)
     exitWithErr("Unable to open {} for reading", path);
@@ -33,7 +33,7 @@ void readFromPath(const fs::path &path, std::string &str) {
   std::erase(str, '\r');
 #endif
 }
-void writeToPath(const fs::path &path, std::string_view data) {
+void writeTo(const fs::path &path, std::string_view data) {
   fs::create_directories(path.parent_path());
   std::ofstream ofs{path};
   if (!ofs)

@@ -1,6 +1,7 @@
 #include "Util.hpp"
+#include <cstdlib>
 
-void exitOK() { throw 0; }
+void exitOK() { throw EXIT_SUCCESS; }
 void unreachable() {
 #if defined(_MSC_VER) && !defined(__clang__) // MSVC
   __assume(false);

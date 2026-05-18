@@ -31,7 +31,18 @@
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-20",
-        "CMAKE_CXX_COMPILER": "clang++-20"
+        "CMAKE_CXX_COMPILER": "clang++-20",
+        "TESTS": "ON"
+      }
+    },
+    {
+      "name": "me",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-20",
+        "CMAKE_CXX_COMPILER": "clang++-20",
+        "CMAKE_LINKER_TYPE": "MOLD",
+        "TESTS": "ON"
       }
     }
   ]

@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <filesystem>
 #include <fmt/base.h>
 #include <fmt/std.h>
@@ -5,14 +6,13 @@
 #include <string>
 #include <version>
 
-namespace fs = std::filesystem;
 namespace {
-
-void read(const fs::path &path, std::ifstream &ifs, std::string &str) {
+namespace fs = std::filesystem;
+bool read(const fs::path &path, std::ifstream &ifs, std::string &str) {
   ifs.open(path, std::fstream::binary);
   if (!ifs) {
-    fmt::println("CmpDir: Unable open {} for reading", path);
-    throw 5;
+    fmt::println("Unable open {} for reading", path);
+    return false;
   }
   uintmax_t fsize{fs::file_size(path)};
 #ifdef __cpp_lib_string_resize_and_overwrite
@@ -25,13 +25,14 @@ void read(const fs::path &path, std::ifstream &ifs, std::string &str) {
 #endif
   ifs.read(str.data(), fsize);
   if (!ifs) {
-    fmt::println("CmpDir: Unable to read from {}", path);
-    throw 5;
+    fmt::println("Unable to read from {}", path);
+    return false;
   }
 #ifdef WIN32
   std::erase(str, '\r');
 #endif
   ifs.close();
+  return true;
 }
 
 } // namespace
@@ -56,23 +57,20 @@ int main([[maybe_unused]] int argc, const char *const *argv) {
     relPath = refPath.lexically_relative(reference);
     cmpPath = compared / relPath;
     if (!fs::exists(cmpPath)) {
-      fmt::println("CmpDir: File or directory doesn't exist: {}", relPath);
+      fmt::println("Not found: {}", relPath);
       res = 1;
       continue;
     }
-    try {
-      read(cmpPath, ifs, cmpContent);
-    } catch (...) {
-      return 2;
+    if (!fs::exists(reference / relPath)) {
+      fmt::println("Unexpected output file: {}", relPath);
+      res = 1;
+      continue;
     }
-    try {
-      read(refPath, ifs, refContent);
-    } catch (...) {
+    if (!(read(cmpPath, ifs, cmpContent) && read(refPath, ifs, refContent))) {
       return 2;
     }
     if (cmpContent != refContent) {
-      fmt::println("CmpDir: Mismatched content for: {}. Got:\n{}", relPath,
-                   cmpContent);
+      fmt::println("Mismatched content for: {}", relPath);
       res = 1;
     }
   }
