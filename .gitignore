@@ -3,9 +3,8 @@
 .clangd
 .vs
 3rdParty/*
-!3rdParty/CPM.cmake
+!3rdParty/cpm.cmake
 test*
 !tests
 build
 act
-CMakePresets.json

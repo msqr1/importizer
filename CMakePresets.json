@@ -1,0 +1,38 @@
+{
+  "version": 10,
+  "configurePresets": [
+    {
+      "name": "gh-windows",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl"
+      }
+    },
+    {
+      "name": "gh-linux",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-20",
+        "CMAKE_CXX_COMPILER": "clang++-20"
+      }
+    },
+    {
+      "name": "gh-macos",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm@20/bin/clang",
+        "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm@20/bin/clang++",
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/llvm@20"
+      }
+    },
+    {
+      "name": "dev",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-20",
+        "CMAKE_CXX_COMPILER": "clang++-20"
+      }
+    }
+  ]
+}

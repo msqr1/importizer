@@ -1,6 +1,9 @@
 #add_executable(importizer Util.cc Regex.cc OptProcessor.cc FileOp.cc Driver.cc
 #  Preprocessor.cc Preamble.cc Directive.cc Minimizer.cc)
 add_executable(importizer llvm.cc)
+if(CUSTOM_EXE_SUFFIX)
+  set_target_properties(importizer PROPERTIES OUTPUT_NAME "importizer-${CUSTOM_EXE_SUFFIX}")
+endif()
 target_compile_features(importizer PRIVATE cxx_std_23)
 
 # For actions/upload-artifact

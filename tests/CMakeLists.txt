@@ -6,11 +6,13 @@ set(testResDir "${CMAKE_CURRENT_BINARY_DIR}/results")
 function(addTestsFromDir dir)
   file(GLOB testDirs "${dir}/*")
   foreach(testDir ${testDirs})
-    get_filename_component(testName ${testDir} NAME)
-    add_test(NAME "${dir}.${testName}"
-      COMMAND ${CMAKE_COMMAND} -P Driver.cmake "$<TARGET_FILE:importizer>"
-      "${testDir}/config.toml" "${testResDir}/${dir}/${testName}" "$<TARGET_FILE:cmpDir>"
-      "${testDir}/CorrectOutput" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    if(IS_DIRECTORY ${testDir})
+      get_filename_component(testName ${testDir} NAME)
+      add_test(NAME "${testName}"
+        COMMAND ${CMAKE_COMMAND} -P Driver.cmake "$<TARGET_FILE:importizer>"
+        "${testDir}/config.toml" "${testResDir}/${testName}" "$<TARGET_FILE:cmpDir>"
+        "${testDir}/CorrectOutput" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    endif()
   endforeach()
 endfunction(addTestsFromDir)
 addTestsFromDir(.)

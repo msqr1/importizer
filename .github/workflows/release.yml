@@ -1,16 +1,20 @@
-name: Run test and upload to the latest release
+name: Run test and tag continuous
 on:
+  - push
   - workflow_dispatch
 permissions:
   contents: write
 jobs:
-  build-test-upload:
+  build-upload:
     strategy:
       matrix:
-        os:
-          - ubuntu-22.04
-          - windows-latest
-          - macos-26
+        include:
+          - os: ubuntu-22.04
+            name: linux
+          - os: windows-latest
+            name: windows
+          - os: macos-26
+            name: macos
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -18,42 +22,33 @@ jobs:
       - name: Build
         id: build
         run: >
-          mkdir build && cd build && cmake .. -DTESTS=1 -DCMAKE_BUILD_TYPE=Debug &&
-          cmake --build . --config Debug -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
-      - name: Test
-        id: test
-        if: steps.build.outcome == 'success'
-        run: >
-          cd ${{ github.workspace }}/build/test &&
-          ctest -C Debug --output-on-failure --progress --schedule-random
-          -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
-      - name: Upload built executable as artifact
+          mkdir build && cd build &&
+          cmake .. --preset gh-${{ matrix.name }} -DCMAKE_BUILD_TYPE=Release -DCUSTOM_EXE_SUFFIX=${{ matrix.name }} &&
+          cmake --build . --config Ninja -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
+      - name: Upload executable as artifact
         id: upload
-        if: steps.test.outcome == 'success'
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
-          name: importizer-${{ matrix.os }}
+          name: ${{ matrix.name }}
           path: |
-            ${{ github.workspace }}/build/importizer
-            ${{ github.workspace }}/build/importizer.exe
+            ${{ github.workspace }}/build/importizer-${{ matrix.name }}
+            ${{ github.workspace }}/build/importizer-${{ matrix.name }}.exe
           retention-days: 1
           compression-level: 0
-  download-and-release:
-    needs: build-test-upload
+
+  download-tag-release:
+    needs: build-upload
     runs-on: ubuntu-slim
     steps:
-      - name: Download executables
+      - name: Download built executables
         uses: actions/download-artifact@v8
-      - name: Rename to add platforms
-        run: |
-          for exe in */importizer*; do
-            platform=$(dirname $exe)
-            filename=$(basename $exe)
-            mv $exe "$platform/$platform$([[ $filename = *.* ]] && echo .${filename##*.} || echo '')"
-          done
+        with:
+          merge-multiple: true
+          path: executables
       - name: Upload to tag
         uses: softprops/action-gh-release@v3
         with:
           tag_name: 2.0.0
           body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.md#200)"
-          files: ${{ github.workspace }}/importizer*/importizer*
+          files: executables/*

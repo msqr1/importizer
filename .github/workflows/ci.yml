@@ -8,10 +8,13 @@ jobs:
   build-test-upload:
     strategy:
       matrix:
-        os:
-          - ubuntu-22.04
-          - windows-latest
-          - macos-26
+        include:
+          - os: ubuntu-22.04
+            name: linux
+          - os: windows-latest
+            name: windows
+          - os: macos-26
+            name: macos
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -19,7 +22,8 @@ jobs:
       - name: Build
         id: build
         run: >
-          mkdir build && cd build && cmake .. -DTESTS=1 -DCMAKE_BUILD_TYPE=Debug &&
+          mkdir build && cd build &&
+          cmake .. --preset gh-${{ matrix.name }} -DTESTS=1 -DCMAKE_BUILD_TYPE=Debug -DCUSTOM_EXE_SUFFIX=${{ matrix.name }} &&
           cmake --build . --config Debug -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
       - name: Test
         id: test
@@ -28,36 +32,32 @@ jobs:
           cd ${{ github.workspace }}/build/test &&
           ctest -C Debug --output-on-failure --progress --schedule-random
           -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
-      - name: Upload built executable as artifact
+      - name: Upload executable as artifact
         id: upload
         if: steps.test.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
-          name: importizer-${{ matrix.os }}
+          name: ${{ matrix.name }}
           path: |
-            ${{ github.workspace }}/build/importizer
-            ${{ github.workspace }}/build/importizer.exe
+            ${{ github.workspace }}/build/importizer-${{ matrix.name }}
+            ${{ github.workspace }}/build/importizer-${{ matrix.name }}.exe
           retention-days: 1
           compression-level: 0
 
-  download-and-release-continuous:
+  download-tag-continuous:
     needs: build-test-upload
     runs-on: ubuntu-slim
     steps:
-      - name: Download built executables
+      - name: Download executables
         uses: actions/download-artifact@v8
-      - name: Rename executables
-        run: |
-          for exe in */importizer*; do
-            platform=$(dirname $exe)
-            filename=$(basename $exe)
-            mv $exe "$platform/$platform$([[ $filename = *.* ]] && echo .${filename##*.} || echo '')"
-          done
+        with:
+          merge-multiple: true
+          path: executables
       - name: Tag continuous release
         uses: softprops/action-gh-release@v3
         with:
           prerelease: true
           tag_name: continuous
-          body: Latest test-passing unstable release. Select your OS, download and try it
+          body: Latest test-passing debug release. Select your OS, download and try it
             out!
-          files: ${{ github.workspace }}/importizer*/importizer*
+          files: executables/*
