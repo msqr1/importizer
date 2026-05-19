@@ -15,7 +15,7 @@ jobs:
           - os: windows-latest
             name: windows
             script-ext: "ps1"
-          - os: macos-26
+          - os: macos-14
             name: macos
             script-ext: "sh"
     runs-on: ${{ matrix.os }}

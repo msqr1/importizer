@@ -14,17 +14,17 @@
       "name": "gh-linux",
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-20",
-        "CMAKE_CXX_COMPILER": "clang++-20"
+        "CMAKE_C_COMPILER": "clang-22",
+        "CMAKE_CXX_COMPILER": "clang++-22"
       }
     },
     {
       "name": "gh-macos",
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm@20/bin/clang",
-        "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm@20/bin/clang++",
-        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/llvm@20"
+        "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm@22/bin/clang",
+        "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm@22/bin/clang++",
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/llvm@22"
       }
     },
     {

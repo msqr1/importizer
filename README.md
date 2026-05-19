@@ -62,6 +62,7 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 | --------------- | --------------------- | ------------------------ | ------------------- |
 | LibTooling      | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Static              |
 | LLVM            | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Static              |
+| LLVM version    | 22.1.6                | 22.1.4                   | 22.1.4              |
 | LibC            | Dynamic<sup>4</sup>   | Dynamic<sup>2</sup>      | Dynamic<sup>3</sup> |
 | LibC++          | Static                | Dynamic<sup>2</sup>      | Static              |
 | Other 3rd-party | Static                | Static                   | Static              |

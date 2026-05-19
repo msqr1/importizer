@@ -5,9 +5,6 @@ target_compile_options(cmp-dir PRIVATE
   -Wall
   -fno-rtti
 )
-target_link_options(cmp-dir PRIVATE
-  -static
-)
 enable_testing()
 set(testResDir "${CMAKE_CURRENT_BINARY_DIR}/TestResults")
 function(addTestsFromDir dir)
