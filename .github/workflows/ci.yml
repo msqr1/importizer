@@ -30,7 +30,7 @@ jobs:
         id: build
         run: >
           mkdir build && cd build &&
-          cmake .. --preset gh-${{ matrix.name }} -DTESTS=1 -DCMAKE_BUILD_TYPE=Debug -DCUSTOM_EXE_SUFFIX=${{ matrix.name }} &&
+          cmake .. --preset gh-${{ matrix.name }} -DBUILD_TESTING=1 -DCMAKE_BUILD_TYPE=Debug -DCUSTOM_EXE_SUFFIX=${{ matrix.name }} &&
           cmake --build . --config Debug -j $(cmake -P ${{ github.workspace }}/scripts/Nproc.cmake)
       - name: Test
         id: test
@@ -65,7 +65,6 @@ jobs:
         with:
           prerelease: true
           tag_name: continuous
-          body:
-            Latest test-passing debug release. Select your OS, download and try it
+          body: Latest test-passing debug release. Select your OS, download and try it
             out!
           files: executables/*

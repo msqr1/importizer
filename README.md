@@ -34,9 +34,12 @@ This project follows [semantic versioning](https://semver.org).
 
 ## Prebuilt Executable
 
-- Select your operating system.
-- Download the **debug** versions (with sanitizers and no optimizations) from the continuous tag.
-- For production use, download the **release** versions (with optimizations) from the other release tags.
+- Select your operating system:
+  - Windows (10+ only)
+  - MacOS (14+ only)
+  - Linux (glibc 2.35+ only)
+- Download the **debug** versions (with sanitizers and no optimizations) from the [continuous tag](https://github.com/msqr1/importizer/releases/tag/continuous).
+- For production use, download the **release** versions (with optimizations) from the other releases.
 
 ## Building from Source
 
@@ -51,26 +54,27 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 
 - The executable `importizer` will be located in `build`
 
-# CI details
-
-## Linux
-- Libtooling: 20.1.8, installing with `llvm.sh`
-- Version is perfectly guaranteed because the `llvm.sh` allows us to choose
-
-## MacOS
-- Libtooling: 20.1.8, already available
-- Version is partially guaranteed as long as it's the same runner
-
-## Windows
-- Libtooling: 22.1.4, resorting to MSYS2 (Clang64 environment) and installing with `pacman`
-- Version is not guaranteed and forced to be the one on https://packages.msys2.org/base/mingw-w64-llvm
-
 # Developing
 
+## Executable-dependencies information
+
+|                 | Linux                 | MacOS                    | Windows             |
+| --------------- | --------------------- | ------------------------ | ------------------- |
+| LibTooling      | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Static              |
+| LLVM            | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Static              |
+| LibC            | Dynamic<sup>4</sup>   | Dynamic<sup>2</sup>      | Dynamic<sup>3</sup> |
+| LibC++          | Static                | Dynamic<sup>2</sup>      | Static              |
+| Other 3rd-party | Static                | Static                   | Static              |
+| Distributed as  | tar(Executable + .so) | tar(Executable + .dylib) | Executable          |
+
+1. Package manager doesn't offer static version, pending self-built LLVM
+2. Dynamic with stable ABI guaranteed by macOS (libSystem), we can treat as if static
+3. Dynamic with stable ABI guaranteed by Windows (UCRT), we can treat as if static
+4. Dynamic glibc, pending self-built static LLVM-libc
 
 ## Testing
 
-- Add `-DTESTS=1` when configuring CMake.
+- Add `-DBUILD_TESTING=1` when configuring CMake.
 - Build, then `cd [build root]/test`.
 - Run `ctest`.
 - If possible, file an issue for test(s) that failed.

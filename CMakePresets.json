@@ -24,8 +24,7 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm@20/bin/clang",
         "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm@20/bin/clang++",
-        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/llvm@20",
-        "CMAKE_OSX_DEPLOYMENT_TARGET": "14.0"
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/llvm@20"
       }
     },
     {
@@ -35,7 +34,7 @@
         "CMAKE_C_COMPILER": "clang-20",
         "CMAKE_CXX_COMPILER": "clang++-20",
         "CMAKE_LINKER_TYPE": "MOLD",
-        "TESTS": "ON"
+        "BUILD_TESTING": "ON"
       }
     },
     {
@@ -45,7 +44,7 @@
         "CMAKE_C_COMPILER": "C:/msys64/clang64/bin/clang.exe",
         "CMAKE_CXX_COMPILER": "C:/msys64/clang64/bin/clang++.exe",
         "CMAKE_PREFIX_PATH": "C:/msys64/clang64",
-        "TESTS": "ON"
+        "BUILD_TESTING": "ON"
       }
     }
   ]

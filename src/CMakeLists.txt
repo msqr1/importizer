@@ -17,10 +17,17 @@ target_link_options(importizer PRIVATE
   $<$<CONFIG:Release>:-flto>
 )
 
-# On MacOS CMAKE_OSX_DEPLOYMENT_TARGET will replace -static
-if(WIN32 OR LINUX)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  # MSYS2 Clang64 allows fully static
   target_link_options(importizer PRIVATE -static)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  # Static except for glibc, LLVM
+  target_link_options(importizer PRIVATE
+    -static-libgcc
+    -static-libstdc++ # This can makes libc++ static, too.
+  )
 endif()
+# MacOS is handled by CMAKE_OSX_DEPLOYMENT_TARGET
 
 target_include_directories(importizer PRIVATE ${tomlc17_SOURCE_DIR}/src)
 target_include_directories(importizer PRIVATE
@@ -46,7 +53,7 @@ if(CUSTOM_EXE_SUFFIX)
   set_target_properties(importizer PROPERTIES OUTPUT_NAME "importizer-${CUSTOM_EXE_SUFFIX}")
 endif()
 
-# For actions/upload-artifact
+# For the developer to be able to stay in the build directory
 add_custom_command(POST_BUILD TARGET importizer
   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:importizer>"
   "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:importizer>")
