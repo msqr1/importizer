@@ -13,10 +13,14 @@ target_compile_options(importizer PRIVATE
   $<$<CONFIG:Release>:-flto>
 )
 target_link_options(importizer PRIVATE
-  -static
   $<$<CONFIG:Debug>:-fsanitize=undefined>
   $<$<CONFIG:Release>:-flto>
 )
+
+# On MacOS CMAKE_OSX_DEPLOYMENT_TARGET will replace -static
+if(WIN32 OR LINUX)
+  target_link_options(importizer PRIVATE -static)
+endif()
 
 target_include_directories(importizer PRIVATE ${tomlc17_SOURCE_DIR}/src)
 target_include_directories(importizer PRIVATE

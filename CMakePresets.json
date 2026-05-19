@@ -24,7 +24,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm@20/bin/clang",
         "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm@20/bin/clang++",
-        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/llvm@20"
+        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/llvm@20",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "14.0"
       }
     },
     {
