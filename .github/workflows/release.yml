@@ -10,23 +10,19 @@ jobs:
         include:
           - os: ubuntu-22.04
             name: linux
-            # Ubuntu 22.04 doesn't have LLVM 20
-            cmd: >
-              wget https://apt.llvm.org/llvm.sh
-              chmod +x llvm.sh
-              sudo ./llvm.sh 20
+            script-ext: "sh"
           - os: windows-latest
             name: windows
-            # MacOS does have LLVM 20, but it need a bit of tweak
+            script-ext: "ps1"
           - os: macos-26
             name: macos
-            cmd: ln -s $(brew --prefix)/etc/clang ~/.config/clang
+            script-ext: "sh"
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Setup command
-        run: ${{ matrix.cmd }}
       - name: Checkout code
         uses: actions/checkout@v6
+      - name: Setup
+        run: scripts/SetupCI-${{ matrix.name }}.${{ matrix.script-ext }}
       - name: Build
         id: build
         run: >

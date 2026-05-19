@@ -1,6 +1,13 @@
-add_executable(cmpDir CmpDir.cc)
-target_compile_features(cmpDir PRIVATE cxx_std_23)
-target_link_libraries(cmpDir PRIVATE fmt::fmt)
+add_executable(cmp-dir CmpDir.cc)
+target_compile_features(cmp-dir PRIVATE cxx_std_23)
+target_link_libraries(cmp-dir PRIVATE fmt::fmt)
+target_compile_options(cmp-dir PRIVATE
+  -Wall
+  -fno-rtti
+)
+target_link_options(cmp-dir PRIVATE
+  -static
+)
 enable_testing()
 set(testResDir "${CMAKE_CURRENT_BINARY_DIR}/TestResults")
 function(addTestsFromDir dir)
@@ -9,9 +16,14 @@ function(addTestsFromDir dir)
     if(IS_DIRECTORY ${testDir})
       get_filename_component(testName ${testDir} NAME)
       add_test(NAME "${testName}"
-        COMMAND ${CMAKE_COMMAND} -P Driver.cmake "$<TARGET_FILE:importizer>"
-        "${testDir}/config.toml" "${testResDir}/${testName}" "$<TARGET_FILE:cmpDir>"
-        "${testDir}/CorrectOutput" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        COMMAND ${CMAKE_COMMAND} -P Driver.cmake
+        -DIMPORTIZER="$<TARGET_FILE:importizer>"
+        -DCONFIG="${testDir}/config.toml"
+        -DOUT_DIR="${testResDir}/${testName}"
+        -DCMP_DIR="$<TARGET_FILE:cmp-dir>"
+        -DCORRECT_OUTPUT="${testDir}/CorrectOutput"
+        )
     endif()
   endforeach()
 endfunction(addTestsFromDir)

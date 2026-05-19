@@ -1,4 +1,3 @@
-# Lowest CMake on Github Actions that supports C++ modules
 cmake_minimum_required(VERSION 3.31.5)
 project(importizer VERSION 2.0.0)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release")

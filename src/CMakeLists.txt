@@ -13,16 +13,10 @@ target_compile_options(importizer PRIVATE
   $<$<CONFIG:Release>:-flto>
 )
 target_link_options(importizer PRIVATE
+  -static
   $<$<CONFIG:Debug>:-fsanitize=undefined>
   $<$<CONFIG:Release>:-flto>
 )
-if(WIN32)
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-else()
-  target_link_options(importizer PRIVATE
-    $<$<CONFIG:Release>:-static-libstdc++ -static-libgcc>
-  )
-endif()
 
 target_include_directories(importizer PRIVATE ${tomlc17_SOURCE_DIR}/src)
 target_include_directories(importizer PRIVATE
@@ -33,11 +27,15 @@ target_include_directories(importizer PRIVATE
 target_link_libraries(importizer PRIVATE
   fmt::fmt
   clangAST
-  clangASTMatchers
   clangBasic
+#  clangDriver
   clangFrontend
+#  clangOptions
+  clangRewriteFrontend
   clangSerialization
-  clangTooling
+#  clangStaticAnalyzerFrontend
+#  clangTooling
+#  clangToolingSyntax
 )
 
 if(CUSTOM_EXE_SUFFIX)

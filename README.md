@@ -49,9 +49,24 @@ cmake .. -DCMAKE_BUILD_TYPE=Release &&
 cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 ```
 
-- The resulting binary, named `importizer`, will be located in your current working directory.
+- The executable `importizer` will be located in `build`
+
+# CI details
+
+## Linux
+- Libtooling: 20.1.8, installing with `llvm.sh`
+- Version is perfectly guaranteed because the `llvm.sh` allows us to choose
+
+## MacOS
+- Libtooling: 20.1.8, already available
+- Version is partially guaranteed as long as it's the same runner
+
+## Windows
+- Libtooling: 22.1.4, resorting to MSYS2 (Clang64 environment) and installing with `pacman`
+- Version is not guaranteed and forced to be the one on https://packages.msys2.org/base/mingw-w64-llvm
 
 # Developing
+
 
 ## Testing
 
@@ -62,17 +77,11 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 
 ## Contribution Rules
 
-- Use camelCase for variables and functions; use PascalCase for classes, types, and filenames.
-- Follow the coding style of the surrounding code.
+- Use camelCase for C++ variables and functions
+- Use PascalCase for C++ classes, types, and all filenames (except for executables use kebab-case).
+- Use ALL_CAPS_SNAKE_CASE for CMake external variables
+- Follow LLVM coding style
 - Always use strict IWYU.
-- Keep the maximum line width around 90 columns (a slight exceedance of 1 or 2 is acceptable but should be minimized).
+- Keep the maximum line width around 90 columns.
 - Add comments to indicate types after each case label in variant switches.
-- Maintain consistent ordering of options in the README, option structures, and value-checking logic.
-- To determine order for new options, optimize for the option struct size and follow chronological order.
-- All options should have a default “false” or empty state unless absolutely required. Options with non-false defaults should be managed as `std::optional` if they solve non-critical issues. Current options include:
-  - `pragmaOnce`
-  - `SOFComments`
-  - `includeGuard`
-  - `includePaths`
-  - `ignoredHdrs`
-  - `umbrellaHdrs`
+- Maintain consistent ordering of options in the README, `struct Opts`, and value-checking logic.

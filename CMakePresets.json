@@ -5,9 +5,9 @@
       "name": "gh-windows",
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl",
-        "CMAKE_PREFIX_PATH": "C:/Program Files/LLVM"
+        "CMAKE_C_COMPILER": "C:/msys64/clang64/bin/clang.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/clang64/bin/clang++.exe",
+        "CMAKE_PREFIX_PATH": "C:/msys64/clang64"
       }
     },
     {
@@ -28,21 +28,22 @@
       }
     },
     {
-      "name": "dev",
-      "generator": "Ninja Multi-Config",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-20",
-        "CMAKE_CXX_COMPILER": "clang++-20",
-        "TESTS": "ON"
-      }
-    },
-    {
-      "name": "me",
+      "name": "my-linux",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-20",
         "CMAKE_CXX_COMPILER": "clang++-20",
         "CMAKE_LINKER_TYPE": "MOLD",
+        "TESTS": "ON"
+      }
+    },
+    {
+      "name": "my-windows",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "C:/msys64/clang64/bin/clang.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/clang64/bin/clang++.exe",
+        "CMAKE_PREFIX_PATH": "C:/msys64/clang64",
         "TESTS": "ON"
       }
     }
