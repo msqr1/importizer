@@ -20,14 +20,18 @@ target_link_options(importizer PRIVATE
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   # MSYS2 Clang64 allows fully static
   target_link_options(importizer PRIVATE -static)
+  set(CPACK_GENERATOR "ZIP")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   # Static except for glibc, LLVM
   target_link_options(importizer PRIVATE
     -static-libgcc
     -static-libstdc++ # This can makes libc++ static, too.
   )
+  set(CPACK_GENERATOR "TGZ")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  # MacOS linking is handled by CMAKE_OSX_DEPLOYMENT_TARGET
+  set(CPACK_GENERATOR "TGZ")
 endif()
-# MacOS is handled by CMAKE_OSX_DEPLOYMENT_TARGET
 
 target_include_directories(importizer PRIVATE ${tomlc17_SOURCE_DIR}/src)
 target_include_directories(importizer PRIVATE
@@ -49,11 +53,38 @@ target_link_libraries(importizer PRIVATE
 #  clangToolingSyntax
 )
 
-if(CUSTOM_EXE_SUFFIX)
-  set_target_properties(importizer PROPERTIES OUTPUT_NAME "importizer-${CUSTOM_EXE_SUFFIX}")
-endif()
-
-# For the developer to be able to stay in the build directory
+# For the developer to be able to keep staying in the build directory
 add_custom_command(POST_BUILD TARGET importizer
-  COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:importizer>"
+  COMMAND "${CMAKE_COMMAND}" -E create_symlink "$<TARGET_FILE:importizer>"
   "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:importizer>")
+
+install(
+  TARGETS importizer
+  DESTINATION .
+  RUNTIME_DEPENDENCY_SET IMPORTIZER_DEPS
+)
+install(
+  RUNTIME_DEPENDENCY_SET IMPORTIZER_DEPS
+  DESTINATION .
+  PRE_EXCLUDE_REGEXES
+    # Linux system libraries
+    "libm\\.so"
+    "libc\\.so"
+    "libdl\\.so"
+    "libpthread\\.so"
+    "librt\\.so"
+    "libresolv\\.so"
+    "libutil\\.so"
+    "ld-linux.*\\.so"
+    "libgcc_s\\.so"
+    "libstdc\\+\\+\\.so"
+    # macOS system libraries
+    "libSystem\\.B\\.dylib"
+    "libc\\+\\+\\.1\\.dylib"
+    "libobjc\\.dylib"
+    "/usr/lib/swift"
+)
+
+set(CPACK_INSTALL_STRIP TRUE)
+set(CPACK_PACKAGE_FILE_NAME ${PROJECT_NAME})
+include(CPack)

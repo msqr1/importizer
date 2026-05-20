@@ -4,7 +4,7 @@ on:
 permissions:
   contents: write
 jobs:
-  build-upload:
+  build-pack-upload:
     strategy:
       matrix:
         include:
@@ -27,22 +27,27 @@ jobs:
         id: build
         run: >
           mkdir build && cd build &&
-          cmake .. --preset gh-${{ matrix.name }} -DCMAKE_BUILD_TYPE=Release -DCUSTOM_EXE_SUFFIX=${{ matrix.name }} &&
+          cmake .. --preset gh-${{ matrix.name }} -DCMAKE_BUILD_TYPE=Release &&
           cmake --build . --config Ninja -j $(cmake -P ${{ github.workspace }}/nproc.cmake)
-      - name: Upload executable as artifact
-        id: upload
-        if: steps.build.outcome == 'success'
+      - name: Pack
+        if: steps.test.outcome == 'success'
+        id: pack
+        run: >
+          cd ${{ github.workspace }}/build &&
+          cpack -C Debug -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
+      - name: Upload
+        if: steps.pack.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
           path: |
-            ${{ github.workspace }}/build/importizer-${{ matrix.name }}
-            ${{ github.workspace }}/build/importizer-${{ matrix.name }}.exe
+            ${{ github.workspace }}/build/importizer-${{ matrix.name }}.tar.gz
+            ${{ github.workspace }}/build/importizer-${{ matrix.name }}.zip
           retention-days: 1
           compression-level: 0
 
   download-tag-release:
-    needs: build-upload
+    needs: build-pack-upload
     runs-on: ubuntu-slim
     steps:
       - name: Download built executables
