@@ -27,11 +27,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-      - name: Setup
-        run: scripts/SetupCI-${{ matrix.name }}.sh
-      - name: Build
-        id: build
+      - name: Setup, build (debug), test, pack
+        id: all
         run: |
+          # Setup
+          ./scripts/SetupCI-${{ matrix.name }}.sh
+
+          # Build
           cmake -B build \
             --preset ci-${{ matrix.name }} \
             -DBUILD_TESTING=1 \
@@ -39,20 +41,18 @@ jobs:
             -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
           cmake --build build \
             --config Debug \
-            -j $(cmake -P ${{ github.workspace }}/scripts/Nproc.cmake)
-      - name: Test
-        id: test
-        run: |
-          cd ${{ github.workspace }}/build/tests
+            -j $(cmake -P '${{ github.workspace }}/scripts/Nproc.cmake')
+
+          # Test
+          cd build/tests
           ctest -C Debug \
             --output-on-failure \
             --progress \
             --schedule-random \
-            -j $(cmake -P ${{ github.workspace }}/scripts/Nproc.cmake)
-      - name: Pack
-        id: pack
-        run: |
-          cd ${{ github.workspace }}/build
+            -j $(cmake -P '${{ github.workspace }}/scripts/Nproc.cmake')
+
+          # Pack
+          cd ..
           cpack -C Debug
       - name: Upload
         uses: actions/upload-artifact@v7
