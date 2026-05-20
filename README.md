@@ -60,13 +60,12 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 
 |                 | Linux                 | MacOS                    | Windows             |
 | --------------- | --------------------- | ------------------------ | ------------------- |
-| LibTooling      | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Static              |
-| LLVM            | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Static              |
-| LLVM version    | 22.1.6                | 22.1.4                   | 22.1.4              |
+| LibTooling      | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Dynamic<sup>1</sup> |
+| LLVM            | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Dynamic<sup>1</sup> |
 | LibC            | Dynamic<sup>4</sup>   | Dynamic<sup>2</sup>      | Dynamic<sup>3</sup> |
 | LibC++          | Static                | Dynamic<sup>2</sup>      | Static              |
 | Other 3rd-party | Static                | Static                   | Static              |
-| Distributed as  | tar(Executable + .so) | tar(Executable + .dylib) | Executable          |
+| Distributed as  | tgz(Executable + .so) | tgz(Executable + .dylib) | zip(Executable + .dll|
 
 1. Package manager doesn't offer static version, pending self-built LLVM
 2. Dynamic with stable ABI guaranteed by macOS (libSystem), we can treat as if static

@@ -7,7 +7,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "C:/msys64/clang64/bin/clang.exe",
         "CMAKE_CXX_COMPILER": "C:/msys64/clang64/bin/clang++.exe",
-        "CMAKE_PREFIX_PATH": "C:/msys64/clang64"
+        "CMAKE_PREFIX_PATH": "C:/msys64/clang64",
+        "DLL_DIR": "C:/msys64/clang64/bin"
       }
     },
     {
@@ -44,6 +45,7 @@
         "CMAKE_C_COMPILER": "C:/msys64/clang64/bin/clang.exe",
         "CMAKE_CXX_COMPILER": "C:/msys64/clang64/bin/clang++.exe",
         "CMAKE_PREFIX_PATH": "C:/msys64/clang64",
+        "DLL_DIR": "C:/msys64/clang64/bin",
         "BUILD_TESTING": "ON"
       }
     }
