@@ -3,6 +3,9 @@ on:
   - workflow_dispatch
 permissions:
   contents: write
+defaults:
+  run:
+    shell: bash
 jobs:
   build-pack-upload:
     strategy:
@@ -10,19 +13,19 @@ jobs:
         include:
           - os: ubuntu-22.04
             name: linux
-            script-ext: "sh"
+            archive-ext: "tar.gz"
           - os: windows-latest
             name: windows
-            script-ext: "ps1"
+            archive-ext: "zip"
           - os: macos-14
             name: macos
-            script-ext: "sh"
+            archive-ext: "tar.gz"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Setup
-        run: scripts/SetupCI-${{ matrix.name }}.${{ matrix.script-ext }}
+        run: scripts/SetupCI-${{ matrix.name }}.sh
       - name: Build
         id: build
         run: |
@@ -43,24 +46,33 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
-          path: |
-            ${{ github.workspace }}/build/importizer-${{ matrix.name }}.tar.gz
-            ${{ github.workspace }}/build/importizer-${{ matrix.name }}.zip
+          path: ${{ github.workspace }}/build/importizer-${{ matrix.name }}.${{ matrix.archive-ext }}
           retention-days: 1
           compression-level: 0
-
+          if-no-files-found: error
   download-tag-release:
     needs: build-pack-upload
     runs-on: ubuntu-slim
     steps:
-      - name: Download built executables
+      - name: Count distributions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          n_dist=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            -q ".total_count")
+          if [ "$n_dist" -lt 3 ]; then
+            exit 1
+          fi
+      - name: Download distributions
         uses: actions/download-artifact@v8
         with:
           merge-multiple: true
-          path: executables
+          path: dists
       - name: Upload to tag
         uses: softprops/action-gh-release@v3
         with:
           tag_name: 2.0.0
           body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.md#200)"
-          files: executables/*
+          files: dists/*
