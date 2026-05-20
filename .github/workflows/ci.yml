@@ -28,25 +28,30 @@ jobs:
         run: scripts/SetupCI-${{ matrix.name }}.${{ matrix.script-ext }}
       - name: Build
         id: build
-        run: >
-          mkdir build && cd build &&
-          cmake .. --preset gh-${{ matrix.name }} -DBUILD_TESTING=1 -DCMAKE_BUILD_TYPE=Debug &&
-          cmake --build . --config Debug -j $(cmake -P ${{ github.workspace }}/scripts/Nproc.cmake)
+        run: |
+          cmake -B build \
+            --preset ci-${{ matrix.name }} \
+            -DBUILD_TESTING=1 \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
+          cmake --build build \
+            --config Debug \
+            -j $(cmake -P ${{ github.workspace }}/scripts/Nproc.cmake)
       - name: Test
         id: test
-        if: steps.build.outcome == 'success'
-        run: >
-          cd ${{ github.workspace }}/build/tests &&
-          ctest -C Debug --output-on-failure --progress --schedule-random
-          -j $(cmake -P ${{ github.workspace }}/scripts/Nproc.cmake)
+        run: |
+          cd ${{ github.workspace }}/build/tests
+          ctest -C Debug \
+            --output-on-failure \
+            --progress \
+            --schedule-random \
+            -j $(cmake -P ${{ github.workspace }}/scripts/Nproc.cmake)
       - name: Pack
-        if: steps.test.outcome == 'success'
         id: pack
-        run: >
-          cd ${{ github.workspace }}/build &&
-          cpack -C Debug -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
+        run: |
+          cd ${{ github.workspace }}/build
+          cpack -C Debug
       - name: Upload
-        if: steps.pack.outcome == 'success'
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}

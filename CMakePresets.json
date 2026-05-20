@@ -2,7 +2,7 @@
   "version": 10,
   "configurePresets": [
     {
-      "name": "gh-windows",
+      "name": "ci-windows",
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "C:/msys64/clang64/bin/clang.exe",
@@ -12,7 +12,7 @@
       }
     },
     {
-      "name": "gh-linux",
+      "name": "ci-linux",
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-22",
@@ -20,7 +20,7 @@
       }
     },
     {
-      "name": "gh-macos",
+      "name": "ci-macos",
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm@22/bin/clang",

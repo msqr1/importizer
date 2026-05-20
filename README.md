@@ -58,19 +58,19 @@ cmake --build . --config Release -j $(cmake -P ../nproc.cmake)
 
 ## Executable-dependencies information
 
-|                 | Linux                 | MacOS                    | Windows             |
-| --------------- | --------------------- | ------------------------ | ------------------- |
-| LibTooling      | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Dynamic<sup>1</sup> |
-| LLVM            | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Dynamic<sup>1</sup> |
-| LibC            | Dynamic<sup>4</sup>   | Dynamic<sup>2</sup>      | Dynamic<sup>3</sup> |
-| LibC++          | Static                | Dynamic<sup>2</sup>      | Static              |
-| Other 3rd-party | Static                | Static                   | Static              |
-| Distributed as  | tgz(Executable + .so) | tgz(Executable + .dylib) | zip(Executable + .dll|
+|                 | Linux                 | MacOS                    | Windows                |
+| --------------- | --------------------- | ------------------------ | ---------------------- |
+| LibTooling      | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Dynamic<sup>1</sup>    |
+| LLVM            | Dynamic<sup>1</sup>   | Dynamic<sup>1</sup>      | Dynamic<sup>1</sup>    |
+| LibC            | Dynamic<sup>4</sup>   | Dynamic<sup>2</sup>      | Dynamic<sup>3</sup>    |
+| LibC++          | Static                | Dynamic<sup>2</sup>      | Static                 |
+| Other 3rd-party | Static                | Static                   | Static                 |
+| Distributed as  | tgz(Executable + .so) | tgz(Executable + .dylib) | zip(Executable + .dll) |
 
 1. Package manager doesn't offer static version, pending self-built LLVM
 2. Dynamic with stable ABI guaranteed by macOS (libSystem), we can treat as if static
 3. Dynamic with stable ABI guaranteed by Windows (UCRT), we can treat as if static
-4. Dynamic glibc, pending self-built static LLVM-libc
+4. Dynamic glibc, pending self-built static musl
 
 ## Testing
 
