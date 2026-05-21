@@ -18,11 +18,11 @@ Opts getOpts(const int argc, const char **argv) {
     arg = argv[i];
     if (arg.starts_with('-')) {
       if (arg == "-h" || arg == "--help") {
-        fmt::print("Help");
+        fmt::println("Help");
         exitOk();
       }
       if (arg == "-v" || arg == "--version") {
-        fmt::print("3.0.0");
+        fmt::println("3.0.0");
         exitOk();
       } else if (arg == "-o" || arg == "--output") {
         if (++i >= argc) {

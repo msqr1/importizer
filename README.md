@@ -68,6 +68,7 @@ cmake --build build --config Release -j $(cmake -P ../scripts/Nproc.cmake)
 - Add comments to indicate types after each case label in variant switches.
 - Maintain consistent ordering of options in the README, `struct Opts`, and value-checking logic.
 - Files to update version for new release:
+  - .github/workflows/ci.yml
   - .github/workflows/release.yml
   - src/Opts.cc
   - CMakeLists.txt
