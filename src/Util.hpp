@@ -6,7 +6,7 @@
 #include <fmt/format.h>
 #include <fmt/std.h>
 
-[[noreturn]] void exitOK();
+[[noreturn]] void exitOk();
 [[noreturn]] void unreachable();
 
 template <typename... T>

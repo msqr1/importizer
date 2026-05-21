@@ -7,4 +7,5 @@ test*
 !tests
 build
 act
+.zed
 __cmake_systeminformation

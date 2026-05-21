@@ -8,11 +8,11 @@ target_compile_features(importizer PRIVATE cxx_std_23)
 target_compile_options(importizer PRIVATE
   -Wall
   -fno-rtti
-  $<$<CONFIG:Debug>:-fno-omit-frame-pointer -fsanitize=undefined>
+  $<$<CONFIG:Debug>:-O0 -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=address>
   $<$<CONFIG:Release>:-flto>
 )
 target_link_options(importizer PRIVATE
-  $<$<CONFIG:Debug>:-fsanitize=undefined>
+  $<$<CONFIG:Debug>:-O0 -fsanitize=undefined -fsanitize=address>
   $<$<CONFIG:Release>:-flto>
 )
 target_include_directories(importizer PRIVATE ${tomlc17_SOURCE_DIR}/src)
@@ -25,14 +25,10 @@ target_link_libraries(importizer PRIVATE
   fmt::fmt
   clangAST
   clangBasic
-#  clangDriver
+  clangTooling
   clangFrontend
-#  clangOptions
   clangRewriteFrontend
   clangSerialization
-#  clangStaticAnalyzerFrontend
-  clangTooling
-#  clangToolingSyntax
 )
 install(
   TARGETS importizer
@@ -42,6 +38,8 @@ install(
 if(NOT CPACK_PACKAGE_FILE_NAME)
   set(CPACK_PACKAGE_FILE_NAME ${PROJECT_NAME})
 endif()
+
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
 
 # Platform-dependent tweaks
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")

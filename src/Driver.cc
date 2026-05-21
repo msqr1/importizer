@@ -3,7 +3,6 @@
 #include "clang/Tooling/Tooling.h"
 #include <cassert>
 #include <cstdlib>
-#include <fmt/base.h>
 #include <memory>
 
 using namespace clang;

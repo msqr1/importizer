@@ -19,9 +19,11 @@ Opts getOpts(const int argc, const char **argv) {
     if (arg.starts_with('-')) {
       if (arg == "-h" || arg == "--help") {
         fmt::print("Help");
+        exitOk();
       }
       if (arg == "-v" || arg == "--version") {
-        fmt::print("2.0.0");
+        fmt::print("3.0.0");
+        exitOk();
       } else if (arg == "-o" || arg == "--output") {
         if (++i >= argc) {
           exitWithErr("{} requires a path", arg);

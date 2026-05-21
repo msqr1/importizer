@@ -41,7 +41,7 @@ jobs:
             -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
           cmake --build build \
             --config Debug \
-            -j $(cmake -P '${{ github.workspace }}/scripts/Nproc.cmake')
+            -j $(cmake -P scripts/Nproc.cmake)
 
           # Test
           cd build/tests
@@ -49,11 +49,12 @@ jobs:
             --output-on-failure \
             --progress \
             --schedule-random \
-            -j $(cmake -P '${{ github.workspace }}/scripts/Nproc.cmake')
+            -j $(cmake -P ../../scripts/Nproc.cmake)
 
           # Pack
           cd ..
-          cpack -C Debug
+          cpack -C Debug \
+            -DCPACK_THREADS=$(cmake -P ../scripts/Nproc.cmake)
       - name: Upload
         uses: actions/upload-artifact@v7
         with:

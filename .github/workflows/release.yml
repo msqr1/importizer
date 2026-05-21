@@ -38,11 +38,12 @@ jobs:
             -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
           cmake --build build \
             --config Release \
-            -j $(cmake -P '${{ github.workspace }}/scripts/Nproc.cmake')
+            -j $(cmake -P scripts/Nproc.cmake)
 
           # Pack
           cd build
           cpack -C Release
+            -DCPACK_THREADS=$(cmake -P ../scripts/Nproc.cmake)
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
@@ -74,6 +75,6 @@ jobs:
       - name: Upload to tag
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: 2.0.0
-          body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.md#200)"
+          tag_name: 3.0.0
+          body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.md#300)"
           files: dists/*
