@@ -1,13 +1,14 @@
-#include "Opts.hpp"
+#include "Opts.hh"
+#include "fmt/base.h"
 #include <cassert>
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
-#include <fmt/base.h>
 
 int main(const int argc, const char **argv) {
   try {
-    Opts opts{getOpts(argc, argv)};
+    Opts opts;
+    getOpts(argc, argv, opts);
     for (const fs::directory_entry &entry :
          fs::recursive_directory_iterator{opts.inDir}) {
       if (!entry.is_regular_file()) {

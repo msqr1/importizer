@@ -24,7 +24,7 @@ function(addFunctionalTests dir)
           -DCONFIG="${testDir}/config.toml"
           -DOUT_DIR="${testResDir}/${testName}"
           -DCMP_DIR="$<TARGET_FILE:cmp-dir>"
-          -DCORRECT_OUTPUT="${testDir}/CorrectOutput"
+          -DCORRECT="${testDir}/Correct"
         )
       set_tests_properties("${testName}" PROPERTIES DEPENDS "Version")
     endif()
