@@ -1,7 +1,6 @@
 name: Run test and tag continuous
 on:
   - push
-  - workflow_dispatch
 permissions:
   contents: write
 defaults:

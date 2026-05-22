@@ -1,10 +1,11 @@
 .vscode
 .cache
 .vs
-3rdParty/*
-!3rdParty/cpm.cmake
+3rd-party/*
+!3rd-party/Cpm.cmake
 test*
 !tests
+test
 build
 act
 .zed

@@ -1,18 +1,24 @@
 #include "Opts.hpp"
-#include "clang/Frontend/FrontendActions.h"
-#include "clang/Tooling/Tooling.h"
 #include <cassert>
 #include <cstdlib>
-#include <memory>
+#include <exception>
+#include <filesystem>
+#include <fmt/base.h>
 
-using namespace clang;
 int main(const int argc, const char **argv) {
   try {
-    assert(tooling::runToolOnCode(std::make_unique<SyntaxOnlyAction>(),
-                                  "class X {};"));
     Opts opts{getOpts(argc, argv)};
+    for (const fs::directory_entry &entry :
+         fs::recursive_directory_iterator{opts.inDir}) {
+      if (!entry.is_regular_file()) {
+        continue;
+      }
+    }
   } catch (int code) {
     return code;
+  } catch (const std::exception &e) {
+    fmt::println("{}", e.what());
+    return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
