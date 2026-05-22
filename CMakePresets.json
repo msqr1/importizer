@@ -34,7 +34,6 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-22",
         "CMAKE_CXX_COMPILER": "clang++-22",
-        "CMAKE_LINKER_TYPE": "MOLD",
         "BUILD_TESTING": "ON"
       }
     },
