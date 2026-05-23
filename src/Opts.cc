@@ -30,12 +30,12 @@ File portableFOpen(const fs::path &path) {
   errno_t err{_wfopen_s(&fp, path.c_str(), L"r")};
   if (err != 0) {
     strerror_s(msg, 128, err);
-    exitWithErr("Unable to open {}: {}", path, msg);
+    exitWithErr("Unable to open {}: {}\n", path, msg);
   }
 #else
   fp = std::fopen(path.c_str(), "r");
   if (fp == nullptr) {
-    exitWithErr("Unable to open {}: {}", path, std::strerror(errno));
+    exitWithErr("Unable to open {}: {}\n", path, std::strerror(errno));
   }
 #endif
   return File(fp);
@@ -49,13 +49,13 @@ void tomlGetPaths(const tl::Result &res, const char *multipartKey,
     return;
   }
   if (datum->type != TOML_ARRAY) {
-    exitWithErr("'{}' must be a String Array", multipartKey);
+    exitWithErr("'{}' must be a String Array\n", multipartKey);
   }
   std::vector<tl::Datum> v{*datum->as_vector()};
   paths.clear();
   for (int i{}; i < v.size(); ++i) {
     if (v[i].type != TOML_STRING) {
-      exitWithErr("Element #{} of '{}' is not a String", i + 1, multipartKey);
+      exitWithErr("Element #{} of '{}' is not a String\n", i + 1, multipartKey);
     }
     paths.emplace_back(*v[i].as_str());
   }
@@ -75,23 +75,23 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
         exitOk();
       } else if (arg == "-o" || arg == "--outDir") {
         if (++i >= argc) {
-          exitWithErr("{} requires a path", arg);
+          exitWithErr("{} requires a path\n", arg);
         }
         opts.outDir = argv[i];
         continue;
       } else {
-        exitWithErr("Unknown option '{}'", arg);
+        exitWithErr("Unknown option '{}'\n", arg);
       }
     } else {
       if (++n_pos_args > 1) {
-        exitWithErr("Too many positional arguments");
+        exitWithErr("Too many positional arguments\n");
       }
       config = arg;
     }
   }
   const tl::Result res{tl::parse_file(portableFOpen(config).get())};
   if (!res.ok()) {
-    exitWithErr("(TOML) {}", res.errmsg());
+    exitWithErr("(TOML) {}\n", res.errmsg());
   }
 
   // inDir
@@ -99,7 +99,7 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
   if (datum && datum->type == TOML_STRING) {
     opts.inDir = *datum->as_str();
   } else {
-    exitWithErr("'inDir' must be specified and as TOML string");
+    exitWithErr("'inDir' must be specified and as TOML string\n");
   }
 
   // Make relative to config file instead of CWD
@@ -108,13 +108,13 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
     opts.inDir = configDir / opts.inDir;
   }
   if (!fs::is_directory(opts.inDir)) {
-    exitWithErr("inDir must be an existing directory");
+    exitWithErr("inDir must be an existing directory\n");
   }
 
   // outDir
   datum = res.seek("outDir");
   if (datum && !opts.outDir.empty()) {
-    warn("outDir from CLI will override config file");
+    warn("outDir from CLI will override config file\n");
   } else if (datum && datum->type == TOML_STRING) {
     opts.outDir = *datum->as_str();
 
@@ -124,7 +124,7 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
     }
   } else if (opts.outDir.empty()) {
     exitWithErr(
-        "'outDir' must be specified on CLI or in config file as a String");
+        "'outDir' must be specified on CLI or in config file as a String\n");
   }
 
   if (fs::is_directory(opts.outDir) && !fs::is_empty(opts.outDir)) {
@@ -135,17 +135,17 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
   datum = res.seek("compilationDb");
   const std::optional<tl::Datum> bootstrap{res.seek("bootstrap")};
   if (datum && bootstrap) {
-    warn("'compilationDb' will take precedence over 'bootstrap'");
+    warn("'compilationDb' will take precedence over 'bootstrap'\n");
   } else if (datum) {
     if (datum->type != TOML_STRING) {
-      exitWithErr("'compilationDb' must be a String");
+      exitWithErr("'compilationDb' must be a String\n");
     }
     std::string msg;
     std::unique_ptr<JSONCompilationDatabase> db{
         JSONCompilationDatabase::loadFromFile(
             *datum->as_str(), msg, JSONCommandLineSyntax::AutoDetect)};
     if (!db) {
-      exitWithErr("Unable to parse compilation database: {}", msg);
+      exitWithErr("Unable to parse compilation database: {}\n", msg);
     }
     opts.fileHelper.emplace<std::unique_ptr<JSONCompilationDatabase>>(
         std::move(db));
@@ -154,7 +154,7 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
                 {"cc", "cpp", "cxx", "c++", "C"}};
     if (bootstrap) {
       if (bootstrap->type != TOML_TABLE) {
-        exitWithErr("'bootstrap' must be a Table");
+        exitWithErr("'bootstrap' must be a Table\n");
       }
       tomlGetPaths(res, "bootstrap.hdrExts", b.hdrExts);
       tomlGetPaths(res, "bootstrap.srcExts", b.srcExts);

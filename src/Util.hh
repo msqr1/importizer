@@ -2,23 +2,25 @@
 
 #include "fmt/base.h"
 #include "fmt/color.h"
-#include "fmt/format.h"
 #include "fmt/std.h" // IWYU pragma: keep for formatting fs::path
 #include <cstdlib>
 
-[[noreturn]] void exitOk();
-
+// No newlines added
+template <typename... T> void err(fmt::format_string<T...> fmt, T &&...args) {
+  fmt::print(
+      stderr, "importizer: {}",
+      fmt::styled("error:", fg(fmt::rgb(0xFF727E)) | fmt::emphasis::bold));
+  fmt::print(stderr, fmt::emphasis::bold, fmt, std::forward<T>(args)...);
+}
+template <typename... T> void warn(fmt::format_string<T...> fmt, T &&...args) {
+  fmt::print(
+      stderr, "importizer: {}",
+      fmt::styled("warning:", fg(fmt::rgb(0xFFAA00)) | fmt::emphasis::bold));
+  fmt::print(stderr, fmt::emphasis::bold, fmt, std::forward<T>(args)...);
+}
 template <typename... T>
-[[noreturn]] void exitWithErr(fmt::format_string<T...> f, T &&...args) {
-  fmt::println(
-      stderr, "importizer: {} {}",
-      fmt::styled("error:", fg(fmt::rgb(0xFF727E)) | fmt::emphasis::bold),
-      fmt::format(fmt::emphasis::bold, f, std::forward<T>(args)...));
+[[noreturn]] void exitWithErr(fmt::format_string<T...> fmt, T &&...args) {
+  err(fmt, std::forward<T>(args)...);
   throw EXIT_FAILURE;
 }
-template <typename... T> void warn(fmt::format_string<T...> f, T &&...args) {
-  fmt::println(
-      stderr, "importizer: {} {}",
-      fmt::styled("warning:", fg(fmt::rgb(0xFFAA00)) | fmt::emphasis::bold),
-      fmt::format(fmt::emphasis::bold, f, std::forward<T>(args)...));
-}
+[[noreturn]] void exitOk();

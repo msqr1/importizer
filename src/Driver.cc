@@ -1,5 +1,5 @@
 #include "Opts.hh"
-#include "fmt/base.h"
+#include "Util.hh"
 #include <cassert>
 #include <cstdlib>
 #include <exception>
@@ -18,8 +18,7 @@ int main(const int argc, const char **argv) {
   } catch (int code) {
     return code;
   } catch (const std::exception &e) {
-    fmt::println("{}", e.what());
+    err("{}\n", e.what());
     return EXIT_FAILURE;
   }
-  return EXIT_SUCCESS;
 }
