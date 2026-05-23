@@ -1,3 +1,6 @@
+CPMAddPackage("gh:cktan/tomlc17#R260517")
+find_package(Clang REQUIRED)
+
 add_executable(importizer
   Driver.cc
   Opts.cc

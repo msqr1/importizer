@@ -5,7 +5,6 @@
 #include "tomlcpp.hpp"
 #include "clang/Tooling/JSONCompilationDatabase.h"
 #include <cerrno>
-#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
@@ -14,6 +13,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 namespace fs = std::filesystem;
 namespace tl = toml;
@@ -30,19 +30,39 @@ File portableFOpen(const fs::path &path) {
   errno_t err{_wfopen_s(&fp, path.c_str(), L"r")};
   if (err != 0) {
     strerror_s(msg, 128, err);
-    exitWithErr("Unable to open {}, {}", path, msg);
+    exitWithErr("Unable to open {}: {}", path, msg);
   }
 #else
   fp = std::fopen(path.c_str(), "r");
   if (fp == nullptr) {
-    exitWithErr("Unable to open {}, {}", path, std::strerror(errno));
+    exitWithErr("Unable to open {}: {}", path, std::strerror(errno));
   }
 #endif
   return File(fp);
 }
+
+// Get fs::path's from TOML.
+void tomlGetPaths(const tl::Result &res, const char *multipartKey,
+                  std::vector<fs::path> &paths) {
+  const std::optional<tl::Datum> datum{res.seek(multipartKey)};
+  if (!datum) {
+    return;
+  }
+  if (datum->type != TOML_ARRAY) {
+    exitWithErr("'{}' must be a String Array", multipartKey);
+  }
+  std::vector<tl::Datum> v{*datum->as_vector()};
+  paths.clear();
+  for (int i{}; i < v.size(); ++i) {
+    if (v[i].type != TOML_STRING) {
+      exitWithErr("Element #{} of '{}' is not a String", i + 1, multipartKey);
+    }
+    paths.emplace_back(*v[i].as_str());
+  }
+}
 void getOpts(const int argc, const char **argv, Opts &opts) {
-  fs::path configPath{"importizer.toml"};
-  uint8_t n_pos_args{};
+  fs::path config{"importizer.toml"};
+  int n_pos_args{};
   std::string_view arg{};
   for (int i{1}; i < argc; i++) {
     arg = argv[i];
@@ -66,25 +86,26 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
       if (++n_pos_args > 1) {
         exitWithErr("Too many positional arguments");
       }
-      configPath = arg;
+      config = arg;
     }
   }
-  tl::Result res{tl::parse_file(portableFOpen(configPath).get())};
+  const tl::Result res{tl::parse_file(portableFOpen(config).get())};
   if (!res.ok()) {
     exitWithErr("(TOML) {}", res.errmsg());
   }
 
   // inDir
   std::optional<tl::Datum> datum{res.seek("inDir")};
-  if (datum.has_value() && datum->type == TOML_STRING) {
-    opts.inDir = datum->as_str().value();
+  if (datum && datum->type == TOML_STRING) {
+    opts.inDir = *datum->as_str();
   } else {
     exitWithErr("'inDir' must be specified and as TOML string");
   }
 
   // Make relative to config file instead of CWD
+  fs::path configDir{config.parent_path()};
   if (opts.inDir.is_relative()) {
-    opts.inDir = configPath.parent_path() / opts.inDir;
+    opts.inDir = configDir / opts.inDir;
   }
   if (!fs::is_directory(opts.inDir)) {
     exitWithErr("inDir must be an existing directory");
@@ -92,14 +113,14 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
 
   // outDir
   datum = res.seek("outDir");
-  if (datum.has_value() && !opts.outDir.empty()) {
+  if (datum && !opts.outDir.empty()) {
     warn("outDir from CLI will override config file");
-  } else if (datum.has_value() && datum->type == TOML_STRING) {
-    opts.outDir = datum->as_str().value();
+  } else if (datum && datum->type == TOML_STRING) {
+    opts.outDir = *datum->as_str();
 
     // Make relative to config file instead of CWD
     if (opts.outDir.is_relative()) {
-      opts.outDir = configPath.parent_path() / opts.outDir;
+      opts.outDir = configDir / opts.outDir;
     }
   } else if (opts.outDir.empty()) {
     exitWithErr(
@@ -112,29 +133,39 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
 
   // compilationDb & bootstrap (fileHelper)
   datum = res.seek("compilationDb");
-  std::optional<tl::Datum> bootstrap{res.seek("bootstrap")};
-  if (datum.has_value() && bootstrap.has_value()) {
+  const std::optional<tl::Datum> bootstrap{res.seek("bootstrap")};
+  if (datum && bootstrap) {
     warn("'compilationDb' will take precedence over 'bootstrap'");
-  } else if (datum.has_value()) {
+  } else if (datum) {
     if (datum->type != TOML_STRING) {
-      exitWithErr("'compilationDb' should be a String");
+      exitWithErr("'compilationDb' must be a String");
     }
     std::string msg;
     std::unique_ptr<JSONCompilationDatabase> db{
         JSONCompilationDatabase::loadFromFile(
-            datum->as_str().value(), msg, JSONCommandLineSyntax::AutoDetect)};
-    if (db == nullptr) {
+            *datum->as_str(), msg, JSONCommandLineSyntax::AutoDetect)};
+    if (!db) {
       exitWithErr("Unable to parse compilation database: {}", msg);
     }
     opts.fileHelper.emplace<std::unique_ptr<JSONCompilationDatabase>>(
         std::move(db));
   } else {
-    Bootstrap b;
-    if (bootstrap.has_value()) {
+    Bootstrap b{{"h", "hh", "hpp", "hxx", ""},
+                {"cc", "cpp", "cxx", "c++", "C"}};
+    if (bootstrap) {
+      if (bootstrap->type != TOML_TABLE) {
+        exitWithErr("'bootstrap' must be a Table");
+      }
+      tomlGetPaths(res, "bootstrap.hdrExts", b.hdrExts);
+      tomlGetPaths(res, "bootstrap.srcExts", b.srcExts);
+      tomlGetPaths(res, "bootstrap.includePaths", b.includePaths);
 
-    } else {
-      b.hdrExts = {"h", "hh", "hpp", "hxx", ""};
-      b.srcExts = {"cc", "cpp", "cxx", "c++", "C"};
+      // Make relative to config file instead of CWD
+      for (fs::path &path : b.includePaths) {
+        if (path.is_relative()) {
+          path = configDir / path;
+        }
+      }
     }
     opts.fileHelper.emplace<Bootstrap>(std::move(b));
   }
