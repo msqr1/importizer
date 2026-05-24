@@ -1,5 +1,5 @@
 #include "utils/FileOp.hh"
-#include "fmt/base.h"
+#include "utils/Log.hh"
 #include <array> // IWYU pragma: keep for Windows
 #include <cerrno>
 #include <cstdio>
@@ -9,17 +9,14 @@
 
 namespace fs = std::filesystem;
 
-// Require error logger to be defined
-template <typename... T> void err(fmt::format_string<T...> fmt, T &&...args);
-
 File portableFOpen(const fs::path &path) {
   std::FILE *f;
 #ifdef WIN32
   errno_t errCode{_wfopen_s(&f, path.c_str(), L"r")};
-  if (err != 0) {
+  if (errCode != 0) {
     std::array<char, 128> msg;
     strerror_s(msg, msg.size(), errCode);
-    err("Unable to open {}: {}\n", path, msg);
+    err("Unable to open {}: {}\n", path, msg.data());
     return nullptr;
   }
 #else

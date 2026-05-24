@@ -17,10 +17,10 @@ foreach(testDir ${testDirs})
   get_filename_component(testName ${testDir} NAME)
   add_test(
     NAME "${testName}"
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/tests"
     COMMAND "$<TARGET_FILE:test>"
       "$<TARGET_FILE:importizer>"
       "${testName}"
-      "${CMAKE_BINARY_DIR}/test-outs/${testName}"
+      "${CMAKE_CURRENT_BINARY_DIR}/test-outs/${testName}"
   )
 endforeach()

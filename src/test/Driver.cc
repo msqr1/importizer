@@ -1,8 +1,7 @@
 #include "fmt/base.h"
-#include "fmt/color.h"
-#include "fmt/std.h" // IWYU pragma: keep for formatting fs::path
 #include "subprocess.h"
 #include "utils/FileOp.hh"
+#include "utils/Log.hh"
 #include <array>
 #include <cstdlib>
 #include <filesystem>
@@ -10,13 +9,7 @@
 
 namespace fs = std::filesystem;
 
-// No newlines added
-template <typename... T> void err(fmt::format_string<T...> fmt, T &&...args) {
-  fmt::print(
-      stderr, "test: {}",
-      fmt::styled("error:", fg(fmt::rgb(0xFF727E)) | fmt::emphasis::bold));
-  fmt::print(stderr, fmt::emphasis::bold, fmt, std::forward<T>(args)...);
-}
+void progPrefix() { fmt::print(stderr, "test: "); }
 
 // test [importizer path] [testDir] [outDir]
 int main(const int argc, const char **argv) {
