@@ -1,12 +1,11 @@
-#include "Opts.hh"
-#include "Util.hh"
+#include "importizer/Opts.hh"
 #include "fmt/base.h"
+#include "importizer/Util.hh"
 #include "tomlc17.h"
 #include "tomlcpp.hpp"
+#include "utils/FileOp.hh"
 #include "clang/Tooling/JSONCompilationDatabase.h"
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
+
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -18,33 +17,10 @@
 namespace fs = std::filesystem;
 namespace tl = toml;
 
-// For handling wchar_t paths on Windows
-struct FileCloser {
-  void operator()(FILE *fp) const { std::fclose(fp); }
-};
-using File = std::unique_ptr<FILE, FileCloser>;
-File portableFOpen(const fs::path &path) {
-  std::FILE *fp;
-#ifdef WIN32
-  char msg[128];
-  errno_t err{_wfopen_s(&fp, path.c_str(), L"r")};
-  if (err != 0) {
-    strerror_s(msg, 128, err);
-    exitWithErr("Unable to open {}: {}\n", path, msg);
-  }
-#else
-  fp = std::fopen(path.c_str(), "r");
-  if (fp == nullptr) {
-    exitWithErr("Unable to open {}: {}\n", path, std::strerror(errno));
-  }
-#endif
-  return File(fp);
-}
-
 // Get fs::path's from TOML.
-void tomlGetPaths(const tl::Result &res, const char *multipartKey,
+void tomlGetPaths(const tl::Result &res, std::string_view multipartKey,
                   std::vector<fs::path> &paths) {
-  const std::optional<tl::Datum> datum{res.seek(multipartKey)};
+  const std::optional<tl::Datum> datum{res.seek(multipartKey.data())};
   if (!datum) {
     return;
   }

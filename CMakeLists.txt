@@ -19,9 +19,29 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(BUILD_SHARED_LIBS OFF)
 set(CPM_SOURCE_CACHE "${CMAKE_SOURCE_DIR}/3rd-party")
 include("3rd-party/Cpm.cmake")
+
+# Required by all targets
 CPMAddPackage("gh:fmtlib/fmt#12.1.0")
-add_subdirectory(src)
+
+# Common project configuration
+add_library(common-config INTERFACE)
+target_compile_features(common-config INTERFACE cxx_std_23)
+target_compile_options(common-config INTERFACE
+  -Wall
+  -Werror
+  -fno-rtti
+  $<$<CONFIG:Debug>:-O0 -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=address>
+  $<$<CONFIG:Release>:-flto>
+)
+target_link_options(common-config INTERFACE
+  $<$<CONFIG:Debug>:-O0 -fsanitize=undefined -fsanitize=address>
+  $<$<CONFIG:Release>:-flto>
+)
+target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
+
+add_subdirectory(src/importizer)
+add_subdirectory(src/utils)
 option(BUILD_TESTING "Setup and run tests" ON)
 if(BUILD_TESTING)
-  add_subdirectory(tests)
+  add_subdirectory(src/test)
 endif()

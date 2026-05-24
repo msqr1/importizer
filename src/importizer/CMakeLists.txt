@@ -1,30 +1,21 @@
 CPMAddPackage("gh:cktan/tomlc17#R260517")
 find_package(Clang REQUIRED)
-
 add_executable(importizer
   Driver.cc
   Opts.cc
   Util.cc
+
+  # Wish this has CMake so I can use target_link_libraries like a normal person
   ${tomlc17_SOURCE_DIR}/src/tomlc17.c
-)
-target_compile_features(importizer PRIVATE cxx_std_23)
-target_compile_options(importizer PRIVATE
-  -Wall
-  -fno-rtti
-  $<$<CONFIG:Debug>:-O0 -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=address>
-  $<$<CONFIG:Release>:-flto>
-)
-target_link_options(importizer PRIVATE
-  $<$<CONFIG:Debug>:-O0 -fsanitize=undefined -fsanitize=address>
-  $<$<CONFIG:Release>:-flto>
 )
 target_include_directories(importizer PRIVATE ${tomlc17_SOURCE_DIR}/src)
 target_include_directories(importizer PRIVATE
   ${LLVM_INCLUDE_DIRS}
   ${CLANG_INCLUDE_DIRS}
 )
-
 target_link_libraries(importizer PRIVATE
+  common-config
+  utils
   fmt::fmt
   clangAST
   clangBasic

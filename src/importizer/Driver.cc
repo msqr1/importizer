@@ -1,5 +1,5 @@
-#include "Opts.hh"
-#include "Util.hh"
+#include "importizer/Opts.hh"
+#include "importizer/Util.hh"
 #include <cassert>
 #include <cstdlib>
 #include <exception>
@@ -15,7 +15,7 @@ int main(const int argc, const char **argv) {
         continue;
       }
     }
-  } catch (int code) {
+  } catch (const int code) {
     return code;
   } catch (const std::exception &e) {
     err("{}\n", e.what());
