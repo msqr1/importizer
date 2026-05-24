@@ -84,9 +84,6 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
   if (opts.inDir.is_relative()) {
     opts.inDir = configDir / opts.inDir;
   }
-  if (!fs::is_directory(opts.inDir)) {
-    exitWithErr("inDir must be an existing directory\n");
-  }
 
   // outDir
   datum = res.seek("outDir");
@@ -102,10 +99,6 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
   } else if (opts.outDir.empty()) {
     exitWithErr(
         "'outDir' must be specified on CLI or in config file as a String\n");
-  }
-
-  if (fs::is_directory(opts.outDir) && !fs::is_empty(opts.outDir)) {
-    exitWithErr("outDir must be empty or not exist");
   }
 
   // compilationDb & bootstrap (fileHelper)

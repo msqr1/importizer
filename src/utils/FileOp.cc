@@ -32,7 +32,7 @@ void readToStr(std::FILE *f, std::string &s, const fs::path &path) {
   std::fseek(f, 0, SEEK_END);
   const long len{std::ftell(f)};
   if (len == -1) {
-    err("Unable to get size of {}\n", path);
+    exitWithErr("Unable to get size of {}\n", path);
   }
 #ifdef __cpp_lib_string_resize_and_overwrite
   s.resize_and_overwrite(len,

@@ -1,0 +1,16 @@
+enable_testing()
+file(GLOB testDirs "./*")
+foreach(testDir ${testDirs})
+  if(NOT IS_DIRECTORY ${testDir})
+    continue()
+  endif()
+  get_filename_component(testName ${testDir} NAME)
+  add_test(
+    NAME "${testName}"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/tests"
+    COMMAND "$<TARGET_FILE:test>"
+      "$<TARGET_FILE:importizer>"
+      "${testName}"
+      "${CMAKE_CURRENT_BINARY_DIR}/test-outs/${testName}"
+  )
+endforeach()

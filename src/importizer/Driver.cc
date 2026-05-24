@@ -5,14 +5,19 @@
 #include <exception>
 #include <filesystem>
 #include <string_view>
+#include <system_error>
 
 std::string_view prog() { return "importizer"; }
 
 void run(const int argc, const char **argv) {
   Opts opts;
   getOpts(argc, argv, opts);
-  for (const fs::directory_entry &entry :
-       fs::recursive_directory_iterator{opts.inDir}) {
+  std::error_code errCode;
+  fs::recursive_directory_iterator it{opts.inDir, errCode};
+  if (errCode) {
+    exitWithErr("Unable to iterate {}: {}\n", opts.inDir, errCode.message());
+  }
+  for (const fs::directory_entry &entry : it) {
     if (!entry.is_regular_file()) {
       continue;
     }
