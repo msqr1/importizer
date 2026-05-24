@@ -1,5 +1,5 @@
 #include "utils/FileOp.hh"
-#include "utils/Log.hh"
+#include "utils/Control.hh"
 #include <array> // IWYU pragma: keep for Windows
 #include <cerrno>
 #include <cstdio>
@@ -16,24 +16,23 @@ File portableFOpen(const fs::path &path) {
   if (errCode != 0) {
     std::array<char, 128> msg;
     strerror_s(msg, msg.size(), errCode);
-    err("Unable to open {}: {}\n", path, msg.data());
+    exitWithErr("Unable to open {}: {}\n", path, msg.data());
     return nullptr;
   }
 #else
   f = std::fopen(path.c_str(), "r");
   if (f == nullptr) {
-    err("Unable to open {}: {}\n", path, std::strerror(errno));
+    exitWithErr("Unable to open {}: {}\n", path, std::strerror(errno));
   }
 #endif
   return File(f);
 }
 
-bool readToStr(std::FILE *f, std::string &s, const fs::path &path) {
+void readToStr(std::FILE *f, std::string &s, const fs::path &path) {
   std::fseek(f, 0, SEEK_END);
   const long len{std::ftell(f)};
   if (len == -1) {
     err("Unable to get size of {}\n", path);
-    return false;
   }
 #ifdef __cpp_lib_string_resize_and_overwrite
   s.resize_and_overwrite(len,
@@ -44,13 +43,11 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) {
 #endif
   std::fread(s.data(), 1, len, f);
   if (std::ferror(f)) {
-    err("Error occured while reading {}\n", path);
-    return false;
+    exitWithErr("Error occured while reading {}\n", path);
   }
-  return true;
 }
 
-bool readToStr(const fs::path &path, std::string &s) {
+void readToStr(const fs::path &path, std::string &s) {
   File f{portableFOpen(path)};
-  return f ? readToStr(f.get(), s, path) : false;
+  readToStr(f.get(), s, path);
 }

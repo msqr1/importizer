@@ -1,18 +1,19 @@
-#include "fmt/base.h"
 #include "subprocess.h"
+#include "utils/Control.hh"
 #include "utils/FileOp.hh"
-#include "utils/Log.hh"
 #include <array>
 #include <cstdlib>
+#include <exception>
 #include <filesystem>
 #include <string>
+#include <string_view>
 
 namespace fs = std::filesystem;
 
-void progPrefix() { fmt::print(stderr, "test: "); }
+std::string_view prog() { return "test"; }
 
 // test [importizer path] [testDir] [outDir]
-int main(const int argc, const char **argv) {
+void run(const int argc, const char **argv) {
   fs::path testDir{argv[2]};
   fs::path outDir{argv[3]};
   const std::string config{(testDir / "Config.toml").string()};
@@ -23,21 +24,26 @@ int main(const int argc, const char **argv) {
                                 subprocess_option_combined_stdout_stderr,
                             &proc)};
   if (res != 0) {
-    err("importizer failed to start\n");
-    return EXIT_FAILURE;
+    exitWithErr("importizer failed to start\n");
   }
   int exitCode;
   res = subprocess_join(&proc, &exitCode);
   if (res != 0) {
-    err("Unable to wait for importizer\n");
-    return EXIT_FAILURE;
+    exitWithErr("Unable to wait for importizer\n");
   }
   std::string out;
-  if (!readToStr(subprocess_stdout(&proc), out, "importizer stdout")) {
-    return EXIT_FAILURE;
-  };
+  readToStr(subprocess_stdout(&proc), out, "importizer stdout");
   std::string ref;
-  if (!readToStr(testDir / "RefCli.txt", ref)) {
+  readToStr(testDir / "RefCli.txt", ref);
+}
+
+int main(const int argc, const char **argv) {
+  try {
+    run(argc, argv);
+  } catch (const int code) {
+    return code;
+  } catch (const std::exception &e) {
+    err("{}\n", e.what());
     return EXIT_FAILURE;
   }
 }

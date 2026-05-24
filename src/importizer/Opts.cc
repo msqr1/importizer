@@ -1,8 +1,8 @@
 #include "importizer/Opts.hh"
 #include "fmt/base.h"
-#include "importizer/Util.hh"
 #include "tomlc17.h"
 #include "tomlcpp.hpp"
+#include "utils/Control.hh"
 #include "utils/FileOp.hh"
 #include "clang/Tooling/JSONCompilationDatabase.h"
 
@@ -65,6 +65,7 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
       config = arg;
     }
   }
+
   const tl::Result res{tl::parse_file(portableFOpen(config).get())};
   if (!res.ok()) {
     exitWithErr("(TOML) {}\n", res.errmsg());
