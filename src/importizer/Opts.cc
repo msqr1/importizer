@@ -1,11 +1,10 @@
 #include "importizer/Opts.hh"
 #include "fmt/base.h"
+#include "importizer/Toml.hh"
 #include "tomlc17.h"
-#include "tomlcpp.hpp"
-#include "utils/Control.hh"
 #include "utils/FileOp.hh"
+#include "utils/Log.hh"
 #include "clang/Tooling/JSONCompilationDatabase.h"
-
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -15,68 +14,56 @@
 #include <vector>
 
 namespace fs = std::filesystem;
-namespace tl = toml;
-
-// Get fs::path's from TOML.
-void tomlGetPaths(const tl::Result &res, std::string_view multipartKey,
-                  std::vector<fs::path> &paths) {
-  const std::optional<tl::Datum> datum{res.seek(multipartKey.data())};
-  if (!datum) {
-    return;
-  }
-  if (datum->type != TOML_ARRAY) {
-    exitWithErr("'{}' must be a String Array\n", multipartKey);
-  }
-  std::vector<tl::Datum> v{*datum->as_vector()};
-  paths.clear();
-  for (int i{}; i < v.size(); ++i) {
-    if (v[i].type != TOML_STRING) {
-      exitWithErr("Element #{} of '{}' is not a String\n", i + 1, multipartKey);
-    }
-    paths.emplace_back(*v[i].as_str());
-  }
-}
-void getOpts(const int argc, const char **argv, Opts &opts) {
+std::optional<bool> getOpts(const int argc, const char **argv,
+                            Opts &opts) noexcept {
   fs::path config{"importizer.toml"};
   int n_pos_args{};
-  std::string_view arg{};
+  std::string_view arg;
   for (int i{1}; i < argc; i++) {
     arg = argv[i];
     if (arg.starts_with('-')) {
       if (arg == "-h" || arg == "--help") {
         fmt::println("importizer - native C++20 modularization tool");
-        exitOk();
+        return std::nullopt;
       } else if (arg == "-v" || arg == "--version") {
         fmt::println("3.0.0");
-        exitOk();
+        return std::nullopt;
       } else if (arg == "-o" || arg == "--outDir") {
         if (++i >= argc) {
-          exitWithErr("{} requires a path\n", arg);
+          err("{} requires a path\n", arg);
+          return false;
         }
         opts.outDir = argv[i];
         continue;
       } else {
-        exitWithErr("Unknown option '{}'\n", arg);
+        err("Unknown option '{}'\n", arg);
+        return false;
       }
     } else {
       if (++n_pos_args > 1) {
-        exitWithErr("Too many positional arguments\n");
+        err("Too many positional arguments\n");
+        return false;
       }
       config = arg;
     }
   }
-
-  const tl::Result res{tl::parse_file(portableFOpen(config).get())};
-  if (!res.ok()) {
-    exitWithErr("(TOML) {}\n", res.errmsg());
+  File f{portableFOpen(config)};
+  if (!f) {
+    return false;
+  }
+  const TomlResult res{toml_parse_file(f.get())};
+  if (!res.ok) {
+    err("(TOML) {}\n", res.errmsg);
+    return false;
   }
 
   // inDir
-  std::optional<tl::Datum> datum{res.seek("inDir")};
-  if (datum && datum->type == TOML_STRING) {
-    opts.inDir = *datum->as_str();
+  toml_datum_t datum{res.seek("inDir")};
+  if (datum.type == TOML_STRING) {
+    opts.inDir = datum.u.s;
   } else {
-    exitWithErr("'inDir' must be specified and as TOML string\n");
+    err("'inDir' must be specified and as String\n");
+    return false;
   }
 
   // Make relative to config file instead of CWD
@@ -87,48 +74,55 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
 
   // outDir
   datum = res.seek("outDir");
-  if (datum && !opts.outDir.empty()) {
+  if (datum.type && !opts.outDir.empty()) {
     warn("outDir from CLI will override config file\n");
-  } else if (datum && datum->type == TOML_STRING) {
-    opts.outDir = *datum->as_str();
+  } else if (datum.type == TOML_STRING) {
+    opts.outDir = datum.u.s;
 
     // Make relative to config file instead of CWD
     if (opts.outDir.is_relative()) {
       opts.outDir = configDir / opts.outDir;
     }
   } else if (opts.outDir.empty()) {
-    exitWithErr(
-        "'outDir' must be specified on CLI or in config file as a String\n");
+    err("'outDir' must be specified on CLI or in config file as a String\n");
+    return false;
   }
 
   // compilationDb & bootstrap (fileHelper)
   datum = res.seek("compilationDb");
-  const std::optional<tl::Datum> bootstrap{res.seek("bootstrap")};
-  if (datum && bootstrap) {
+  const toml_datum_t bootstrap{res.seek("bootstrap")};
+  if (datum.type && bootstrap.type) {
     warn("'compilationDb' will take precedence over 'bootstrap'\n");
-  } else if (datum) {
-    if (datum->type != TOML_STRING) {
-      exitWithErr("'compilationDb' must be a String\n");
+  } else if (datum.type) {
+    if (datum.type != TOML_STRING) {
+      err("'compilationDb' must be a String\n");
+      return false;
     }
     std::string msg;
     std::unique_ptr<JSONCompilationDatabase> db{
         JSONCompilationDatabase::loadFromFile(
-            *datum->as_str(), msg, JSONCommandLineSyntax::AutoDetect)};
+            datum.u.s, msg, JSONCommandLineSyntax::AutoDetect)};
     if (!db) {
-      exitWithErr("Unable to parse compilation database: {}\n", msg);
+      err("Unable to parse compilation database: {}\n", msg);
+      return false;
     }
     opts.fileHelper.emplace<std::unique_ptr<JSONCompilationDatabase>>(
         std::move(db));
   } else {
-    Bootstrap b{{"h", "hh", "hpp", "hxx", ""},
-                {"cc", "cpp", "cxx", "c++", "C"}};
-    if (bootstrap) {
-      if (bootstrap->type != TOML_TABLE) {
-        exitWithErr("'bootstrap' must be a Table\n");
+    opts.fileHelper.emplace<Bootstrap>(
+        std::vector<fs::path>{"h", "hh", "hpp", "hxx", ""},
+        std::vector<fs::path>{"cc", "cpp", "cxx", "c++", "C"});
+    Bootstrap &b{std::get<Bootstrap>(opts.fileHelper)};
+    if (bootstrap.type) {
+      if (bootstrap.type != TOML_TABLE) {
+        err("'bootstrap' must be a Table\n");
+        return false;
       }
-      tomlGetPaths(res, "bootstrap.hdrExts", b.hdrExts);
-      tomlGetPaths(res, "bootstrap.srcExts", b.srcExts);
-      tomlGetPaths(res, "bootstrap.includePaths", b.includePaths);
+      if (!(res.seekStrs("bootstrap.hdrExts", b.hdrExts) &&
+            res.seekStrs("bootstrap.srcExts", b.srcExts) &&
+            res.seekStrs("bootstrap.includePaths", b.includePaths))) {
+        return false;
+      }
 
       // Make relative to config file instead of CWD
       for (fs::path &path : b.includePaths) {
@@ -137,6 +131,6 @@ void getOpts(const int argc, const char **argv, Opts &opts) {
         }
       }
     }
-    opts.fileHelper.emplace<Bootstrap>(std::move(b));
   }
+  return true;
 }

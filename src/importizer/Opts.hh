@@ -3,6 +3,7 @@
 #include "clang/Tooling/JSONCompilationDatabase.h"
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <variant>
 #include <vector>
 
@@ -18,4 +19,5 @@ struct Opts {
   fs::path outDir;
   std::variant<std::unique_ptr<JSONCompilationDatabase>, Bootstrap> fileHelper;
 };
-void getOpts(const int argc, const char **argv, Opts &opts);
+[[nodiscard]] std::optional<bool> getOpts(const int argc, const char **argv,
+                                          Opts &opts) noexcept;

@@ -3,6 +3,7 @@ find_package(Clang REQUIRED)
 add_executable(importizer
   Driver.cc
   Opts.cc
+  Toml.cc
 
   # Wish this has CMake so I can use target_link_libraries like a normal person
   ${tomlc17_SOURCE_DIR}/src/tomlc17.c

@@ -29,13 +29,16 @@ target_compile_features(common-config INTERFACE cxx_std_23)
 target_compile_options(common-config INTERFACE
   -Wall
   -Werror
-  -fno-rtti
-  $<$<CONFIG:Debug>:-O0 -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=address>
+  $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti -fno-exceptions>
+  $<$<CONFIG:Debug>:-O0 -g -fsanitize=undefined -fsanitize=address>
   $<$<CONFIG:Release>:-flto>
 )
 target_link_options(common-config INTERFACE
   $<$<CONFIG:Debug>:-O0 -fsanitize=undefined -fsanitize=address>
   $<$<CONFIG:Release>:-flto>
+)
+target_compile_definitions(common-config INTERFACE
+  FMT_USE_EXCEPTIONS=0
 )
 target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
 
