@@ -36,7 +36,7 @@ template <size_t n_arg> struct Proc : subprocess_s {
     size_t n_read;
     while (true) {
       n_read = std::fread(chunk.data(), sizeof(char), chunk.size(), stream);
-      if (std::ferror(stream)) {
+      if (std::ferror(stream)) [[unlikely]] {
         err("Unable to read {} of {}\n", stdOut ? "stdout" : "stderr", cmd);
         return false;
       }
@@ -51,7 +51,7 @@ template <size_t n_arg> struct Proc : subprocess_s {
 
   [[nodiscard]] std::optional<int> join() noexcept {
     int rtnCode;
-    if (subprocess_join(this, &rtnCode) != 0) {
+    if (subprocess_join(this, &rtnCode) != 0) [[unlikely]] {
       err("Unable to wait {}\n", cmd);
       return std::nullopt;
     }
@@ -70,7 +70,7 @@ startProc(const std::array<const char *, n_arg> &cmd,
   std::array<const char *, n_arg + 1> cmdWithNull;
   std::ranges::copy(cmd, cmdWithNull.begin());
   int res{subprocess_create(cmdWithNull.data(), opts, &proc)};
-  if (res != 0) {
+  if (res != 0) [[unlikely]] {
 #ifdef WIN32
     DWORD errCode{GetLastError()};
 #else

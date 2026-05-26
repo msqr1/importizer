@@ -7,9 +7,12 @@
 #include <string_view>
 #include <system_error>
 
-std::string_view prog{"importizer"};
+const std::string_view prog{"importizer"};
 
 int main(const int argc, const char **argv) {
+  if (!getRaw(argc, argv)) {
+    return EXIT_FAILURE;
+  };
   Opts opts;
   std::optional<bool> status{getOpts(argc, argv, opts)};
   if (!status) {

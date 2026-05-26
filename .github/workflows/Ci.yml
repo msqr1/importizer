@@ -45,7 +45,7 @@ jobs:
           # Test
           cd build/tests
           ctest -C Debug \
-            --verbose \
+            --output-on-failure \
             --progress \
             --schedule-random \
             -j $(cmake -P ../../scripts/Nproc.cmake)

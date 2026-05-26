@@ -35,6 +35,11 @@ std::optional<bool> getOpts(const int argc, const char **argv,
         }
         opts.outDir = argv[i];
         continue;
+
+        // Already handled
+      } else if (arg == "-r" || arg == "--raw") {
+        ++i;
+        continue;
       } else {
         err("Unknown option '{}'\n", arg);
         return false;
@@ -53,7 +58,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
   }
   const TomlResult res{toml_parse_file(f.get())};
   if (!res.ok) {
-    err("(TOML) {}\n", res.errmsg);
+    err("Unable to parse config file {}: {}\n", config, res.errmsg);
     return false;
   }
 

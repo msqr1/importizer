@@ -17,24 +17,28 @@ namespace fs = std::filesystem;
 const std::string_view prog{"test"};
 
 // test [importizer path] [testDir] [outDir]
-// Expecting absolute paths
+// Expecting absolute paths & no input validation
 int main(const int argc, const char **argv) {
+  [[assume(argc == 4)]];
+  if (!getRaw(argc, argv)) {
+    return EXIT_FAILURE;
+  };
   const fs::path testDir{argv[2]};
   const fs::path outDir{argv[3]};
   const std::string config{(testDir / "Config.toml").string()};
   std::array<const char *, 4> cmd{argv[1], config.c_str(), "-o", argv[3]};
   auto proc{startProc(cmd)};
-  if (!proc) {
+  if (!proc) [[unlikely]] {
     return EXIT_FAILURE;
   }
   std::optional<int> rtn{proc->join()};
-  if (!rtn) {
+  if (!rtn) [[unlikely]] {
     return EXIT_FAILURE;
   }
   std::string out;
   std::string ref;
-  if (!(readToStr(testDir / "RefCli.txt", ref) &&
-        proc->getOutput(out, false))) {
+  if (!(readToStr(testDir / "RefCli.txt", ref) && proc->getOutput(out, false)))
+      [[unlikely]] {
     return EXIT_FAILURE;
   }
 

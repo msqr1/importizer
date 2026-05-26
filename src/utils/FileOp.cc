@@ -17,14 +17,14 @@ File portableFOpen(const fs::path &path) noexcept {
   std::FILE *f{};
 #ifdef WIN32
   errno_t errCode{_wfopen_s(&f, path.c_str(), L"r")};
-  if (errCode != 0) {
+  if (errCode != 0) [[unlikely]] {
     std::array<char, 94> msg;
     strerror_s(msg.data(), msg.size(), errCode);
     err("Unable to open {}: {}\n", path, msg.data());
   }
 #else
   f = std::fopen(path.c_str(), "r");
-  if (f == nullptr) {
+  if (f == nullptr) [[unlikely]] {
     err("Unable to open {}: {}\n", path, std::strerror(errno));
   }
 #endif
@@ -32,16 +32,16 @@ File portableFOpen(const fs::path &path) noexcept {
 }
 
 bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
-  if (std::fseek(f, 0, SEEK_END)) {
+  if (std::fseek(f, 0, SEEK_END)) [[unlikely]] {
     err("Unseekable to end: {}\n", path);
     return false;
   }
   const size_t size{static_cast<size_t>(std::ftell(f))};
-  if (size == -1) {
+  if (size == -1) [[unlikely]] {
     err("Unable to get size of {}\n", path);
     return false;
   }
-  if (std::fseek(f, 0, 0)) {
+  if (std::fseek(f, 0, 0)) [[unlikely]] {
     err("Unseekable to start: {}\n", path);
     return false;
   }
@@ -53,7 +53,7 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
   s.resize(size);
 #endif
   std::fread(s.data(), sizeof(char), size, f);
-  if (std::ferror(f)) {
+  if (std::ferror(f)) [[unlikely]] {
     err("Error occured while reading {}\n", path);
     return false;
   }
