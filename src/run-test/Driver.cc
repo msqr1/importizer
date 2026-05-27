@@ -1,10 +1,9 @@
-#include "test/CmpDir.hh"
-#include "test/Subprocess.hh"
+#include "run-test/CmpDir.hh"
+#include "run-test/Subprocess.hh"
 #include "utils/FileOp.hh"
 #include "utils/Log.hh"
 #include <array>
 #include <cassert>
-#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fmt/base.h>

@@ -1,0 +1,22 @@
+name: Job matrix
+on:
+  workflow_call:
+    outputs:
+      m:
+        description: "Job matrix"
+        value: ${{ jobs.get.outputs.m }}
+jobs:
+  get:
+    runs-on: ubuntu-slim
+    outputs:
+      m: ${{ steps.get.outputs.m }}
+    steps:
+      - id: get
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # No Windows for now
+          echo "m=$(gh api repos/${{ github.repository }}/contents/CiMatrix.json \
+            -H "Accept: application/vnd.github.raw+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            | jq -c 'del(.[] | select(.name == "windows"))')" >> $GITHUB_OUTPUT

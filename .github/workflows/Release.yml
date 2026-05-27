@@ -1,83 +1,61 @@
 name: Tag release
 on:
   - workflow_dispatch
+
 permissions:
   contents: write
-defaults:
-  run:
-    shell: bash
+
 jobs:
-  get-matrix:
-    runs-on: ubuntu-slim
-    outputs:
-      m: ${{ steps.get.outputs.m }}
-    steps:
-      - id: get
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo m=$(gh api repos/${{ github.repository }}/contents/CiMatrix.json \
-            -H "Accept: application/vnd.github.raw+json" \
-            -H "X-GitHub-Api-Version: 2026-03-10" \
-            | jq -c '.[] | select(.name != "windows")') >> $GITHUB_OUTPUT
-  build-pack-upload:
-    needs: get-matrix
+  job-matrix:
+    uses: ./.github/workflows/JobMatrix.yml
+  make-dist:
+    needs: job-matrix
     strategy:
       matrix:
-        include: ${{ fromJSON(needs.get-matrix.outputs.m) }}
+        include: ${{ fromJSON(needs.job-matrix.outputs.m) }}
     runs-on: ${{ matrix.runner }}
+    name: Build ${{ matrix.name }}
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v6
-      - name: Setup, build (release), pack
+      - name: Setup, build (release), test, pack
         id: all
         run: |
           # Setup
           . ./scripts/setup/${{ matrix.setup }}
 
+          # Configure
+          cmake -B build -DCMAKE_BUILD_TYPE=Release --preset ci-${{ matrix.name }} \
+            -DBUILD_TESTING=1 -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
+
           # Build
-          cmake -B build \
-            --preset ci-${{ matrix.name }} \
-            -DBUILD_TESTING=1 \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
-          cmake --build build \
-            --config Release \
-            -j $(cmake -P scripts/Nproc.cmake)
+          cmake --build build --config Release -j $(cmake -P scripts/Nproc.cmake)
+
+          # Test
+          ctest --test-dir build/tests -C Release --output-on-failure --progress \
+            --schedule-random -j $(cmake -P scripts/Nproc.cmake)
 
           # Pack
-          cd build
-          cpack -C Release
-            -DCPACK_THREADS=$(cmake -P ../scripts/Nproc.cmake)
+          cpack --config build/CPackConfig.cmake -C Release \
+            -DCPACK_THREADS=$(cmake -P scripts/Nproc.cmake)
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
-          path: ${{ github.workspace }}/build/importizer-${{ matrix.name }}.${{ matrix.archive-ext }}
+          path: ${{ github.workspace }}/importizer-${{ matrix.name }}.${{ matrix.archive-ext }}
           retention-days: 1
           compression-level: 0
           if-no-files-found: error
-  download-tag-release:
-    needs: build-pack-upload
+  tag-release:
+    needs: make-dist
     runs-on: ubuntu-slim
     steps:
-      - name: Count distributions
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          n_dist=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2026-03-10" \
-            -q ".total_count")
-          if [ "$n_dist" -lt 3 ]; then
-            exit 1
-          fi
       - name: Download distributions
         uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: dists
-      - name: Upload to tag
+      - name: Upload to release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: 3.0.0
