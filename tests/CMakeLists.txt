@@ -7,7 +7,7 @@ foreach(testDir ${testDirs})
   get_filename_component(testName ${testDir} NAME)
   add_test(
     NAME "${testName}"
-    COMMAND "$<TARGET_FILE:test>"
+    COMMAND "$<TARGET_FILE:run-test>"
       "$<TARGET_FILE:importizer>"
       "${CMAKE_CURRENT_SOURCE_DIR}/${testName}"
       "${CMAKE_CURRENT_BINARY_DIR}/${testName}"

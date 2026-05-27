@@ -10,6 +10,14 @@
       }
     },
     {
+      "name": "my-windows",
+      "inherits": "ci-windows",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    },
+    {
       "name": "ci-linux",
       "generator": "Ninja",
       "cacheVariables": {
@@ -18,30 +26,19 @@
       }
     },
     {
+      "name": "my-linux",
+      "inherits": "ci-linux",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    },
+    {
       "name": "ci-macos",
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm@22/bin/clang",
-        "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm@22/bin/clang++",
-        "CMAKE_PREFIX_PATH": "/opt/homebrew/opt/llvm@22"
-      }
-    },
-    {
-      "name": "my-linux",
-      "generator": "Ninja Multi-Config",
-      "cacheVariables": {
-        "BUILD_TESTING": "ON",
-        "CMAKE_C_COMPILER": "clang-22",
-        "CMAKE_CXX_COMPILER": "clang++-22"
-      }
-    },
-    {
-      "name": "my-windows",
-      "generator": "Ninja Multi-Config",
-      "cacheVariables": {
-        "BUILD_TESTING": "ON",
-        "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl"
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
       }
     }
   ]

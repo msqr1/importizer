@@ -7,20 +7,25 @@ defaults:
   run:
     shell: bash
 jobs:
+  get-matrix:
+    runs-on: ubuntu-slim
+    outputs:
+      m: ${{ steps.get.outputs.m }}
+    steps:
+      - id: get
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo m=$(gh api repos/${{ github.repository }}/contents/CiMatrix.json \
+            -H "Accept: application/vnd.github.raw+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            | jq -c '.[] | select(.name != "windows")') >> $GITHUB_OUTPUT
   build-pack-upload:
+    needs: get-matrix
     strategy:
       matrix:
-        include:
-          - os: ubuntu-22.04
-            name: linux
-            archive-ext: "tar.gz"
-          - os: windows-latest
-            name: windows
-            archive-ext: "zip"
-          - os: macos-14
-            name: macos
-            archive-ext: "tar.gz"
-    runs-on: ${{ matrix.os }}
+        include: ${{ fromJSON(needs.get-matrix.outputs.m) }}
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -28,7 +33,7 @@ jobs:
         id: all
         run: |
           # Setup
-          ./scripts/SetupCI-${{ matrix.name }}.sh
+          . ./scripts/setup/${{ matrix.setup }}
 
           # Build
           cmake -B build \

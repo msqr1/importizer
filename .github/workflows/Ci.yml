@@ -7,23 +7,25 @@ defaults:
   run:
     shell: bash
 jobs:
+  get-matrix:
+    runs-on: ubuntu-slim
+    outputs:
+      m: ${{ steps.get.outputs.m }}
+    steps:
+      - id: get
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo m=$(gh api repos/${{ github.repository }}/contents/CiMatrix.json \
+            -H "Accept: application/vnd.github.raw+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            | jq '.[] | select(.name != "windows")' -c) >> $GITHUB_OUTPUT
   build-test-pack-upload:
+    needs: get-matrix
     strategy:
       matrix:
-        include:
-          - os: ubuntu-22.04
-            name: linux
-            setup: "SetupLinux.sh"
-            archive-ext: "tar.gz"
-          #- os: windows-latest
-          #  name: windows
-          #  setup: "SetupWindows.ps1"
-          #  archive-ext: "zip"
-          - os: macos-14
-            name: macos
-            setup: "SetupMacos.sh"
-            archive-ext: "tar.gz"
-    runs-on: ${{ matrix.os }}
+        include: ${{ fromJSON(needs.get-matrix.outputs.m) }}
+    runs-on: ${{ matrix.runner }}
     name: ${{ matrix.name }}
     continue-on-error: true
     steps:
@@ -33,7 +35,7 @@ jobs:
         id: all
         run: |
           # Setup
-          ./scripts/${{ matrix.setup }}
+          . ./scripts/setup/${{ matrix.setup }}
 
           # Build
           cmake -B build \
@@ -90,7 +92,6 @@ jobs:
         with:
           prerelease: true
           tag_name: continuous
-          body:
-            Latest test-passing debug release. Select your OS, download and try it
+          body: Latest test-passing debug release. Select your OS, download and try it
             out!
           files: dists/*
