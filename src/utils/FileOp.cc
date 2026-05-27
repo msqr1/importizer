@@ -1,12 +1,14 @@
 #include "utils/FileOp.hh"
 #include "utils/Log.hh"
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
 #include <string>
 #ifdef WIN32
 #include <array>
-#include <string_view>
+#include <stdio.h>
+#include <string.h>
 #else
 #include <cerrno>
 #endif
@@ -16,7 +18,7 @@ namespace fs = std::filesystem;
 File portableFOpen(const fs::path &path) noexcept {
   std::FILE *f{};
 #ifdef WIN32
-  errno_t errCode{_wfopen_s(&f, path.c_str(), L"r")};
+  int errCode{_wfopen_s(&f, path.c_str(), L"r")};
   if (errCode != 0) [[unlikely]] {
     std::array<char, 94> msg;
     strerror_s(msg.data(), msg.size(), errCode);
@@ -37,7 +39,7 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
     return false;
   }
   const size_t size{static_cast<size_t>(std::ftell(f))};
-  if (size == -1) [[unlikely]] {
+  if (size == SIZE_MAX) [[unlikely]] {
     err("Unable to get size of {}\n", path);
     return false;
   }

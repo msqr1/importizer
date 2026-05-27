@@ -5,10 +5,8 @@
       "name": "ci-windows",
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "C:/msys64/clang64/bin/clang.exe",
-        "CMAKE_CXX_COMPILER": "C:/msys64/clang64/bin/clang++.exe",
-        "CMAKE_PREFIX_PATH": "C:/msys64/clang64",
-        "DLL_DIR": "C:/msys64/clang64/bin"
+        "CMAKE_C_COMPILER=": "clang-cl",
+        "CMAKE_CXX_COMPILER=": "clang-cl"
       }
     },
     {
@@ -32,20 +30,18 @@
       "name": "my-linux",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
+        "BUILD_TESTING": "ON",
         "CMAKE_C_COMPILER": "clang-22",
-        "CMAKE_CXX_COMPILER": "clang++-22",
-        "BUILD_TESTING": "ON"
+        "CMAKE_CXX_COMPILER": "clang++-22"
       }
     },
     {
       "name": "my-windows",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "C:/msys64/clang64/bin/clang.exe",
-        "CMAKE_CXX_COMPILER": "C:/msys64/clang64/bin/clang++.exe",
-        "CMAKE_PREFIX_PATH": "C:/msys64/clang64",
-        "DLL_DIR": "C:/msys64/clang64/bin",
-        "BUILD_TESTING": "ON"
+        "BUILD_TESTING": "ON",
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl"
       }
     }
   ]

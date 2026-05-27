@@ -1,6 +1,5 @@
 #pragma once
 
-#include "subprocess.h"
 #include "utils/Log.hh"
 #include <algorithm>
 #include <array>
@@ -9,10 +8,11 @@
 #include <fmt/format.h>
 #include <optional>
 #include <string>
+#include <subprocess.h>
 #include <system_error>
 #include <utility>
 #ifdef WIN32
-#include <windows.h>
+#include <win32/windows_base.h>
 #else
 #include <cerrno>
 #endif

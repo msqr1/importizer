@@ -1,11 +1,11 @@
 #pragma once
 
-#include "fmt/base.h"
-#include "fmt/color.h"
-#include "fmt/format.h"
-#include "fmt/ranges.h" // IWYU pragma: keep for formatting ranges
-#include "fmt/std.h"    // IWYU pragma: keep for formatting std types
 #include <cstdio>
+#include <fmt/base.h>
+#include <fmt/color.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h> // IWYU pragma: keep for formatting ranges
+#include <fmt/std.h>    // IWYU pragma: keep for formatting std types
 #include <iterator>
 #include <string_view>
 

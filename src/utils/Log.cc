@@ -1,29 +1,49 @@
 #include "utils/Log.hh"
-#include "fmt/base.h"
-#include <cstdlib>
-#include <stdio.h>
 #include <string_view>
 #ifdef WIN32
-#include <io.h>
+#include <system_error>
+#include <win32/io.h>
+#include <win32/misc.h>
+#include <win32/windows_base.h>
 #else
+#include <cstdlib>
+#include <stdio.h>
 #include <unistd.h>
 #endif
 
 bool raw;
 bool getRaw(int argc, const char **argv) noexcept {
-
   // Auto: TTY check
 #ifdef WIN32
-  raw = !_isatty(_fileno(stderr));
+  HANDLE h{GetStdHandle(STD_ERROR_HANDLE)};
+  DWORD mode;
+  raw = !GetConsoleMode(h, &mode);
 #else
   raw = !isatty(fileno(stderr));
 #endif
 
-  // RAW env var, const char* here instead bc it can be nullptr
-  const char *envRaw = std::getenv("RAW");
+  // RAW env var
+#ifdef WIN32
+  GetEnvironmentVariableA("RAW", nullptr, 1);
+  DWORD errCode{GetLastError()};
+  if (errCode != 0) {
+    // ERROR_ENVVAR_NOT_FOUND
+    if (errCode == 203) {
+      raw = false;
+    } else [[unlikely]] {
+      err("Unable to check environment variable 'RAW': {}\n",
+          std::system_category().message(errCode));
+    }
+  } else {
+    raw = true;
+  }
+#else
+  // const char* here instead bc it can be nullptr
+  const char *envRaw{std::getenv("RAW")};
   if (envRaw != nullptr && envRaw[0] != '\0') {
     raw = true;
   }
+#endif
 
   // CLI option
   std::string_view arg;

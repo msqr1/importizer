@@ -5,6 +5,7 @@ InlayHints:
   Enabled: Yes
   ParameterNames: Yes
   DeducedTypes: Yes
+  Designators: Yes
 
 Hover:
   ShowAKA: Yes

@@ -4,6 +4,7 @@
 #include "utils/Log.hh"
 #include <array>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fmt/base.h>
@@ -19,7 +20,9 @@ const std::string_view prog{"test"};
 // test [importizer path] [testDir] [outDir]
 // Expecting absolute paths & no input validation
 int main(const int argc, const char **argv) {
-  [[assume(argc == 4)]];
+  // May have -r
+  [[assume(argc > 3 && argc < 7)]];
+
   if (!getRaw(argc, argv)) {
     return EXIT_FAILURE;
   };
@@ -41,11 +44,9 @@ int main(const int argc, const char **argv) {
       [[unlikely]] {
     return EXIT_FAILURE;
   }
-
   bool errored{};
   const int refRtn = ref.contains("error: ") ? EXIT_FAILURE : EXIT_SUCCESS;
   if (refRtn != *rtn) {
-
     err("Mismatched return code: expected {}, got {}\n", refRtn, *rtn);
     errored = true;
   }
@@ -54,6 +55,7 @@ int main(const int argc, const char **argv) {
 
     // Don't format importizer's output
     fmt::print(stderr, "{}", out);
+
     errored = true;
   }
   fs::path refDir{testDir / "ref"};

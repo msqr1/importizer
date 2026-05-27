@@ -1,6 +1,6 @@
 #pragma once
 
-#include "clang/Tooling/JSONCompilationDatabase.h"
+#include <clang/Tooling/JSONCompilationDatabase.h>
 #include <filesystem>
 #include <memory>
 #include <optional>
