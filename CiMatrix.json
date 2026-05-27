@@ -4,20 +4,20 @@
     "name": "linux",
     "setup": "Linux.sh",
     "libtooling": "NotWindows.sh",
-    "outExt": ".tar.gz"
+    "outExt": "tar.gz"
   },
   {
     "runner": "windows-latest",
     "name": "windows",
     "setup": "Windows.ps1",
     "libtooling": "Windows.ps1",
-    "outExt": ".zip"
+    "outExt": "zip"
   },
   {
     "runner": "macos-14",
     "name": "macos",
     "setup": "Macos.sh",
     "libtooling": "NotWindows.sh",
-    "outExt": ".tar.gz"
+    "outExt": "tar.gz"
   }
 ]

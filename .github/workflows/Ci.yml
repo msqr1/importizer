@@ -25,7 +25,7 @@ jobs:
 
           # Configure
           cmake -B build -DCMAKE_BUILD_TYPE=Debug --preset ci-${{ matrix.name }} \
-            -DBUILD_TESTING=1 -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
+            -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
 
           # Build
           cmake --build build --config Debug -j $(cmake -P scripts/Nproc.cmake)
@@ -43,4 +43,4 @@ jobs:
           prerelease: true
           tag_name: continuous
           target_commitish: ${{ github.sha }}
-          files: importizer-${{ matrix.name }}${{ matrix.outExt }}
+          files: importizer-${{ matrix.name }}.${{ matrix.outExt }}

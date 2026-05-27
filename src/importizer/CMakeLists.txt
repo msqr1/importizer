@@ -58,6 +58,7 @@ if(NOT CPACK_PACKAGE_FILE_NAME)
   set(CPACK_PACKAGE_FILE_NAME ${PROJECT_NAME})
 endif()
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 include(CPack)
 
 # For the developer to be able to keep staying in the build directory

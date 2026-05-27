@@ -6,14 +6,7 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER=": "clang-cl",
-        "CMAKE_CXX_COMPILER=": "clang-cl"
-      }
-    },
-    {
-      "name": "my-windows",
-      "inherits": "ci-windows",
-      "generator": "Ninja Multi-Config",
-      "cacheVariables": {
+        "CMAKE_CXX_COMPILER=": "clang-cl",
         "BUILD_TESTING": "ON"
       }
     },
@@ -22,14 +15,7 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-22",
-        "CMAKE_CXX_COMPILER": "clang++-22"
-      }
-    },
-    {
-      "name": "my-linux",
-      "inherits": "ci-linux",
-      "generator": "Ninja Multi-Config",
-      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++-22",
         "BUILD_TESTING": "ON"
       }
     },
@@ -38,7 +24,8 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "BUILD_TESTING": "ON"
       }
     }
   ]

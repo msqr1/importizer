@@ -26,7 +26,7 @@ jobs:
 
           # Configure
           cmake -B build -DCMAKE_BUILD_TYPE=Release --preset ci-${{ matrix.name }} \
-            -DBUILD_TESTING=1 -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
+            -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
 
           # Build
           cmake --build build --config Release -j $(cmake -P scripts/Nproc.cmake)
@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
-          path: ${{ github.workspace }}/importizer-${{ matrix.name }}${{ matrix.outExt }}
+          path: ${{ github.workspace }}/importizer-${{ matrix.name }}.${{ matrix.outExt }}
           retention-days: 1
           compression-level: 0
           if-no-files-found: error
