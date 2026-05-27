@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.name }}
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v6
       - name: Setup, build (debug), test, pack
         id: all
@@ -42,5 +42,5 @@ jobs:
         with:
           prerelease: true
           tag_name: continuous
-          body: Latest test-passing debug release. Select your OS, download and try it out!
-          files: importizer-${{ matrix.name }}.${{ matrix.archive-ext }}
+          target_commitish: ${{ github.sha }}
+          files: importizer-${{ matrix.name }}${{ matrix.outExt }}

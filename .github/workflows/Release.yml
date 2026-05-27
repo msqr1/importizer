@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
-          path: ${{ github.workspace }}/importizer-${{ matrix.name }}.${{ matrix.archive-ext }}
+          path: ${{ github.workspace }}/importizer-${{ matrix.name }}${{ matrix.outExt }}
           retention-days: 1
           compression-level: 0
           if-no-files-found: error
@@ -59,5 +59,5 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: 3.0.0
-          body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.md#300)"
+          body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.asc#300)"
           files: dists/*

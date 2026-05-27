@@ -1,10 +1,9 @@
-.vscode
-.cache
-.vs
-/3rd-party/*
-!/3rd-party/Cpm.cmake
+/.vscode
+/.cache
+/.vs
+/3rd-party
 /test
 /build
 /act
-.zed
+/.zed
 __cmake_systeminformation

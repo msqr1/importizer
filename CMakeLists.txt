@@ -23,21 +23,27 @@ add_library(common-config INTERFACE)
 
 set(3rdPartyDir "${CMAKE_SOURCE_DIR}/3rd-party")
 set(CPM_SOURCE_CACHE "${3rdPartyDir}")
+if(NOT EXISTS "${3rdPartyDir}/Cpm.cmake")
+  file(DOWNLOAD
+    https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
+    "${3rdPartyDir}/Cpm.cmake"
+  )
+endif()
 include("${3rdPartyDir}/Cpm.cmake")
 function(require target)
   foreach(pkg IN LISTS ARGN)
-    if(${pkg} STREQUAL "WindowsHModular" AND WIN32)
+    if(${pkg} STREQUAL WindowsHModular AND WIN32)
       CPMAddPackage("gh:Leandros/WindowsHModular#master")
 
       # SYSTEM to supress warnings
-      target_include_directories("${target}" SYSTEM PRIVATE
+      target_include_directories(${target} SYSTEM PRIVATE
         "${WindowsHModular_SOURCE_DIR}/include")
     elseif(${pkg} STREQUAL tomlc17)
       CPMAddPackage("gh:cktan/tomlc17#R260517")
-      target_sources("${target}" PRIVATE "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
+      target_sources(${target} PRIVATE "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
 
       # SYSTEM to supress warnings
-      target_include_directories("${target}" SYSTEM PRIVATE "${tomlc17_SOURCE_DIR}/src")
+      target_include_directories(${target} SYSTEM PRIVATE "${tomlc17_SOURCE_DIR}/src")
 
       if(WIN32)
         # Supress secure CRT warnings for tomlc17
@@ -52,7 +58,7 @@ function(require target)
       endif()
     elseif(${pkg} STREQUAL subprocess.h)
       CPMAddPackage("gh:sheredom/subprocess.h#main")
-      target_include_directories("${target}" PRIVATE "${subprocess.h_SOURCE_DIR}")
+      target_include_directories(${target} PRIVATE "${subprocess.h_SOURCE_DIR}")
     elseif(${pkg} STREQUAL Clang)
       if(WIN32)
         # Expecting static LLVM build in 3rd-party/llvm
@@ -61,12 +67,12 @@ function(require target)
       find_package(Clang REQUIRED)
 
       # SYSTEM to supress warnings
-      target_include_directories("${target}" SYSTEM PRIVATE
+      target_include_directories(${target} SYSTEM PRIVATE
         ${LLVM_INCLUDE_DIRS}
         ${CLANG_INCLUDE_DIRS}
       )
 
-      target_link_libraries("${target}" PRIVATE
+      target_link_libraries(${target} PRIVATE
         clangAST
         clangBasic
         clangTooling
@@ -76,7 +82,7 @@ function(require target)
       )
     elseif(${pkg} STREQUAL fmt)
       CPMAddPackage("gh:fmtlib/fmt#12.1.0")
-      target_link_libraries("${target}" PRIVATE fmt::fmt)
+      target_link_libraries(${target} PRIVATE fmt::fmt)
     endif()
   endforeach()
 endfunction()
