@@ -1,5 +1,5 @@
 add_executable(run-test Driver.cc CmpDir.cc)
-require(run-test fmt WindowsHModular subprocess.h)
+require(run-test fmt reproc)
 target_link_libraries(run-test PRIVATE
   common-config
   utils

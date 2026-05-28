@@ -1,18 +1,20 @@
 #include "run-test/CmpDir.hh"
-#include "run-test/Subprocess.hh"
 #include "utils/FileOp.hh"
 #include "utils/Log.hh"
 #include <array>
-#include <cassert>
 #include <cstdlib>
 #include <filesystem>
 #include <fmt/base.h>
 #include <fmt/format.h>
-#include <optional>
+#include <reproc++/drain.hpp>
+#include <reproc++/reproc.hpp>
 #include <string>
 #include <string_view>
+#include <system_error>
+#include <tuple>
 
 namespace fs = std::filesystem;
+namespace rp = reproc;
 
 const std::string_view prog{"test"};
 
@@ -28,25 +30,38 @@ int main(const int argc, const char **argv) {
   const fs::path testDir{argv[2]};
   const fs::path outDir{argv[3]};
   const std::string config{(testDir / "Config.toml").string()};
-  std::array<const char *, 4> cmd{argv[1], config.c_str(), "-o", argv[3]};
-  auto proc{startProc(cmd)};
-  if (!proc) [[unlikely]] {
+  const std::array<std::string_view, 4> cmd{argv[1], config, "-o", argv[3]};
+  rp::process proc;
+  rp::options opts;
+
+  // Set this to drain(), somehow you don't need this for stdout
+  opts.redirect.err.type = rp::redirect::type::pipe;
+
+  std::error_code errCode{proc.start(cmd, opts)};
+  if (errCode) [[unlikely]] {
+    err("Unable to start {}: {}", cmd, errCode.message());
     return EXIT_FAILURE;
   }
-  std::optional<int> rtn{proc->join()};
-  if (!rtn) [[unlikely]] {
+  int rtn;
+  std::tie(rtn, errCode) = proc.wait(rp::infinite);
+  if (errCode) [[unlikely]] {
+    err("Unable to wait for {}: {}", cmd, errCode.message());
     return EXIT_FAILURE;
   }
   std::string out;
+  errCode = rp::drain(proc, rp::sink::null, rp::sink::string{out});
+  if (errCode) [[unlikely]] {
+    err("Unable to read output of {}: {}", cmd, errCode.message());
+    return EXIT_FAILURE;
+  }
   std::string ref;
-  if (!(readToStr(testDir / "RefCli.txt", ref) && proc->getOutput(out, false)))
-      [[unlikely]] {
+  if (!(readToStr(testDir / "RefCli.txt", ref))) [[unlikely]] {
     return EXIT_FAILURE;
   }
   bool errored{};
-  const int refRtn = ref.contains("error: ") ? EXIT_FAILURE : EXIT_SUCCESS;
-  if (refRtn != *rtn) {
-    err("Mismatched return code: expected {}, got {}\n", refRtn, *rtn);
+  const int refRtn{ref.contains("error: ") ? EXIT_FAILURE : EXIT_SUCCESS};
+  if (refRtn != rtn) {
+    err("Mismatched return code: expected {}, got {}\n", refRtn, rtn);
     errored = true;
   }
   if (out != ref) {
