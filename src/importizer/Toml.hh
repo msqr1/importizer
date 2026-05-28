@@ -24,8 +24,8 @@ struct TomlResult : toml_result_t {
 
   // Get string-type's from TOML.
   template <ConstructibleFromCharPtr T>
-  bool seekStrs(std::string_view multipartKey,
-                std::vector<T> &strs) const noexcept {
+  [[nodiscard]] bool seekStrs(std::string_view multipartKey,
+                              std::vector<T> &strs) const noexcept {
     const toml_datum_t datum{this->seek(multipartKey)};
     if (!datum.type) {
       return true;

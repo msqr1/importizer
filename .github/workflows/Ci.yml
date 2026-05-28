@@ -13,7 +13,7 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.job-matrix.outputs.m) }}
     runs-on: ${{ matrix.runner }}
-    name: ${{ matrix.name }}
+    name: ${{ matrix.os }}-${{ matrix.arch }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -24,8 +24,8 @@ jobs:
           . ./scripts/setup/${{ matrix.setup }}
 
           # Configure
-          cmake -B build -DCMAKE_BUILD_TYPE=Debug --preset ci-${{ matrix.name }} \
-            -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.name }}
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug --preset ci-${{ matrix.os }} \
+            -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.os }}-${{ matrix.arch }}
 
           # Build
           cmake --build build --config Debug -j $(cmake -P scripts/Nproc.cmake)
@@ -43,4 +43,4 @@ jobs:
           prerelease: true
           tag_name: continuous
           target_commitish: ${{ github.sha }}
-          files: importizer-${{ matrix.name }}.${{ matrix.outExt }}
+          files: importizer-${{ matrix.os }}-${{ matrix.arch }}.${{ matrix.outExt }}

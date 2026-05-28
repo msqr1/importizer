@@ -1,4 +1,4 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-bool cmpDir(const fs::path &dir, const fs::path &ref) noexcept;
+[[nodiscard]] bool cmpDir(const fs::path &dir, const fs::path &ref) noexcept;

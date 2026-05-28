@@ -1,21 +1,48 @@
 [
   {
     "runner": "ubuntu-22.04",
-    "name": "linux",
+    "os": "linux",
+    "arch": "x64",
     "setup": "Linux.sh",
     "libtooling": "NotWindows.sh",
     "outExt": "tar.gz"
   },
   {
-    "runner": "windows-latest",
-    "name": "windows",
+    "runner": "ubuntu-22.04-arm",
+    "os": "linux",
+    "arch": "arm64",
+    "setup": "Linux.sh",
+    "libtooling": "NotWindows.sh",
+    "outExt": "tar.gz"
+  },
+  {
+    "runner": "windows-2025-vs2026",
+    "os": "windows",
+    "arch": "x64",
     "setup": "Windows.ps1",
     "libtooling": "Windows.ps1",
     "outExt": "zip"
   },
   {
-    "runner": "macos-14",
-    "name": "macos",
+    "runner": "windows-11-arm",
+    "os": "windows",
+    "arch": "arm64",
+    "setup": "Windows.ps1",
+    "libtooling": "Windows.ps1",
+    "outExt": "zip"
+  },
+  {
+    "runner": "macos-15-intel",
+    "os": "macos",
+    "arch": "x64",
+    "setup": "Macos.sh",
+    "libtooling": "NotWindows.sh",
+    "outExt": "tar.gz"
+  },
+  {
+    "runner": "macos-15",
+    "os": "macos",
+    "arch": "arm64",
     "setup": "Macos.sh",
     "libtooling": "NotWindows.sh",
     "outExt": "tar.gz"

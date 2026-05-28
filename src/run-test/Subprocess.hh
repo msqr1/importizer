@@ -63,7 +63,8 @@ template <size_t n_arg> struct Proc : subprocess_s {
 template <size_t n_arg>
 [[nodiscard]] std::optional<Proc<n_arg>>
 startProc(const std::array<const char *, n_arg> &cmd,
-          int opts = subprocess_option_no_window) {
+          int opts = subprocess_option_no_window |
+                     subprocess_option_inherit_environment) {
   subprocess_s proc;
 
   // Subproccess.h requires a terminating nullptr element

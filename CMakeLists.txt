@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31.5)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0")
+set(CMAKE_OSX_DEPLOYMENT_TARGET 15)
 project(importizer VERSION 3.0.0)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -94,6 +94,9 @@ if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
     $<$<COMPILE_LANGUAGE:CXX>:
       -fno-rtti
       -fno-exceptions
+    >
+    $<$<CONFIG:Debug>:
+      -fno-omit-frame-pointer
     >
   )
   set(asan "-fsanitize=address")
