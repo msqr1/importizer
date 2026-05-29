@@ -1,10 +1,8 @@
 name: Tag release
 on:
   - workflow_dispatch
-
 permissions:
   contents: write
-
 jobs:
   job-matrix:
     uses: ./.github/workflows/JobMatrix.yml
@@ -16,10 +14,17 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+      - name: Setup
+        shell: matrix.os == 'windows' && pwsh
+        run: . ./scripts/setup-ci/${{ matrix.setup }} ${{ matrix.arch }}
+      - name: Ensure LibTooling
+        uses: ./.github/actions/EnsureLibtooling.yml
+        with:
+          os: ${{ matrix.os }}
+          arch: ${{ matrix.arch }}
+          wd: ${{ github.workspace }}/scripts/libtooling
       - name: Setup, build (release), test, pack
-        id: all
         run: |
           # Setup
           . ./scripts/setup/${{ matrix.setup }}
@@ -39,10 +44,10 @@ jobs:
           cpack --config build/CPackConfig.cmake -C Release \
             -DCPACK_THREADS=$(cmake -P scripts/Nproc.cmake)
       - name: Upload
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: ${{ matrix.name }}
-          path: ${{ github.workspace }}/importizer-${{ matrix.os }}-${{ matrix.arch }}.${{ matrix.outExt }}
+          path: importizer-${{ matrix.os }}-${{ matrix.arch }}.${{ matrix.outExt }}
           retention-days: 1
           compression-level: 0
           if-no-files-found: error
@@ -51,12 +56,12 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - name: Download distributions
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
         with:
           merge-multiple: true
           path: dists
       - name: Upload to release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # 3.0.0
         with:
           tag_name: 3.0.0
           body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.asc#300)"

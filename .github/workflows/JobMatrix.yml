@@ -15,8 +15,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # No Windows for now
           echo "m=$(gh api repos/${{ github.repository }}/contents/CiMatrix.json \
             -H "Accept: application/vnd.github.raw+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
-            | jq -c 'del(.[] | select(.os == "windows"))')" >> $GITHUB_OUTPUT
+            | jq -c 'del(.[] | select(.os == "linux"))')" >> $GITHUB_OUTPUT

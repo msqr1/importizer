@@ -4,7 +4,6 @@
     "os": "linux",
     "arch": "x64",
     "setup": "Linux.sh",
-    "libtooling": "NotWindows.sh",
     "outExt": "tar.gz"
   },
   {
@@ -12,7 +11,6 @@
     "os": "linux",
     "arch": "arm64",
     "setup": "Linux.sh",
-    "libtooling": "NotWindows.sh",
     "outExt": "tar.gz"
   },
   {
@@ -20,7 +18,6 @@
     "os": "windows",
     "arch": "x64",
     "setup": "Windows.ps1",
-    "libtooling": "Windows.ps1",
     "outExt": "zip"
   },
   {
@@ -28,7 +25,6 @@
     "os": "windows",
     "arch": "arm64",
     "setup": "Windows.ps1",
-    "libtooling": "Windows.ps1",
     "outExt": "zip"
   },
   {
@@ -36,7 +32,6 @@
     "os": "macos",
     "arch": "x64",
     "setup": "Macos.sh",
-    "libtooling": "NotWindows.sh",
     "outExt": "tar.gz"
   },
   {
@@ -44,7 +39,6 @@
     "os": "macos",
     "arch": "arm64",
     "setup": "Macos.sh",
-    "libtooling": "NotWindows.sh",
     "outExt": "tar.gz"
   }
 ]

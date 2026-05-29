@@ -27,6 +27,7 @@ if(NOT EXISTS "${3rdPartyDir}/Cpm.cmake")
   file(DOWNLOAD
     https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
     "${3rdPartyDir}/Cpm.cmake"
+    EXPECTED_HASH sha256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844
   )
 endif()
 include("${3rdPartyDir}/Cpm.cmake")
@@ -34,23 +35,23 @@ function(require target)
   foreach(pkg IN LISTS ARGN)
     if(${pkg} STREQUAL WindowsHModular)
       if(WIN32)
-        CPMAddPackage("gh:Leandros/WindowsHModular#master")
+        CPMAddPackage("gh:Leandros/WindowsHModular#3adbb67f6f77025b5a9ef9f140c10e3393ca9093")
 
         # SYSTEM to supress warnings
         target_include_directories(${target} SYSTEM PRIVATE
           "${WindowsHModular_SOURCE_DIR}/include")
       endif()
     elseif(${pkg} STREQUAL tomlc17)
-      CPMAddPackage("gh:cktan/tomlc17#R260517")
+      # R260517
+      CPMAddPackage("gh:cktan/tomlc17#cb9bba39f2e63a9e67fa61d6c7521a184eb5fc38")
       target_sources(${target} PRIVATE "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
 
       # SYSTEM to supress warnings
       target_include_directories(${target} SYSTEM PRIVATE "${tomlc17_SOURCE_DIR}/src")
 
       if(WIN32)
-        # Supress secure CRT warnings for tomlc17
         set_source_files_properties("${tomlc17_SOURCE_DIR}/src/tomlc17.c" PROPERTIES
-          COMPILE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS")
+          COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS)
 
         # Native MSVC
         if(MSVC AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -60,21 +61,28 @@ function(require target)
       endif()
     elseif(${pkg} STREQUAL reproc)
       set(REPROC++ ON)
-      CPMAddPackage("gh:daandemeyer/reproc#v14.2.7")
+
+      # 14.2.7
+      CPMAddPackage("gh:daandemeyer/reproc#06034a7fca1ec46eddb4997f7764db89380c5216")
+
       target_link_libraries(${target} PRIVATE reproc++)
+      target_compile_definitions(reproc PRIVATE _CRT_SECURE_NO_WARNINGS)
+    elseif(${pkg} STREQUAL fmt)
+      # 12.1.0
+      CPMAddPackage("gh:fmtlib/fmt#407c905e45ad75fc29bf0f9bb7c5c2fd3475976f")
+      target_link_libraries(${target} PRIVATE fmt::fmt)
     elseif(${pkg} STREQUAL Clang)
       if(WIN32)
-        # Expecting static LLVM build in 3rd-party/llvm
-        set(Clang_DIR "${3rdPartyDir}/llvm/lib/cmake/clang")
+        # Expecting static LLVM & Clang in 3rd-party
+        set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
+        set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
+
       endif()
       find_package(Clang REQUIRED)
-
-      # SYSTEM to supress warnings
       target_include_directories(${target} SYSTEM PRIVATE
         ${LLVM_INCLUDE_DIRS}
         ${CLANG_INCLUDE_DIRS}
       )
-
       target_link_libraries(${target} PRIVATE
         clangAST
         clangBasic
@@ -83,9 +91,6 @@ function(require target)
         clangRewriteFrontend
         clangSerialization
       )
-    elseif(${pkg} STREQUAL fmt)
-      CPMAddPackage("gh:fmtlib/fmt#12.1.0")
-      target_link_libraries(${target} PRIVATE fmt::fmt)
     else()
       message(FATAL_ERROR "Invalid 3rd-party library '${pkg}'")
     endif()
@@ -96,6 +101,8 @@ if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
   target_compile_options(common-config INTERFACE
     -Wall
     -Werror
+  )
+  add_compile_options(
     $<$<COMPILE_LANGUAGE:CXX>:
       -fno-rtti
       -fno-exceptions
@@ -109,12 +116,24 @@ elseif(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL MSVC)
   target_compile_options(common-config INTERFACE
     /W4
     /WX
+  )
+  add_compile_options(
     /utf-8
     $<$<COMPILE_LANGUAGE:CXX>:
       /GR-
-      /EHsc
+      /EHs-c-
     >
   )
+
+  # Since Clang was built with these settings, we must match them even in Debug mode
+  add_compile_definitions(common-config INTERFACE
+    $<$<COMPILE_LANGUAGE:CXX>:
+      _HAS_EXCEPTIONS=0
+      _ITERATOR_DEBUG_LEVEL=0
+    >
+  )
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+
   set(asan "/fsanitize=address")
 endif()
 target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
@@ -147,16 +166,75 @@ if(hasUbsan)
   add_link_options($<$<CONFIG:Debug>:${ubsan}>)
 endif()
 
-# Still needed bc of dynamic linking to UCRT and libSystem
+# Still needed for dynamic linking to Windows CRT or MacOS libSystem
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Since Clang was built with these settings, we must match them even in Debug mode
-add_compile_definitions(_ITERATOR_DEBUG_LEVEL=0)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+function(require target)
+  foreach(pkg IN LISTS ARGN)
+    if(${pkg} STREQUAL WindowsHModular)
+      if(WIN32)
+        CPMAddPackage("gh:Leandros/WindowsHModular#3adbb67f6f77025b5a9ef9f140c10e3393ca9093")
 
+        # SYSTEM to supress warnings
+        target_include_directories(${target} SYSTEM PRIVATE
+          "${WindowsHModular_SOURCE_DIR}/include")
+      endif()
+    elseif(${pkg} STREQUAL tomlc17)
+      # R260517
+      CPMAddPackage("gh:cktan/tomlc17#cb9bba39f2e63a9e67fa61d6c7521a184eb5fc38")
+      target_sources(${target} PRIVATE "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
+
+      # SYSTEM to supress warnings
+      target_include_directories(${target} SYSTEM PRIVATE "${tomlc17_SOURCE_DIR}/src")
+
+      if(WIN32)
+        set_source_files_properties("${tomlc17_SOURCE_DIR}/src/tomlc17.c" PROPERTIES
+          COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS)
+
+        # Native MSVC
+        if(MSVC AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+          set_source_files_properties("${tomlc17_SOURCE_DIR}/src/tomlc17.c" PROPERTIES
+            COMPILE_OPTIONS "/W0")
+        endif()
+      endif()
+    elseif(${pkg} STREQUAL reproc)
+      set(REPROC++ ON)
+
+      # 14.2.7
+      CPMAddPackage("gh:daandemeyer/reproc#06034a7fca1ec46eddb4997f7764db89380c5216")
+
+      target_link_libraries(${target} PRIVATE reproc++)
+      target_compile_definitions(reproc PRIVATE _CRT_SECURE_NO_WARNINGS)
+    elseif(${pkg} STREQUAL fmt)
+      # 12.1.0
+      CPMAddPackage("gh:fmtlib/fmt#407c905e45ad75fc29bf0f9bb7c5c2fd3475976f")
+      target_link_libraries(${target} PRIVATE fmt::fmt)
+    elseif(${pkg} STREQUAL Clang)
+      # Expecting static LLVM & Clang in 3rd-party
+      set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
+      set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
+
+      find_package(Clang REQUIRED)
+      target_include_directories(${target} SYSTEM PRIVATE
+        ${LLVM_INCLUDE_DIRS}
+        ${CLANG_INCLUDE_DIRS}
+      )
+      target_link_libraries(${target} PRIVATE
+        clangAST
+        clangBasic
+        clangTooling
+        clangFrontend
+        clangRewriteFrontend
+        clangSerialization
+      )
+    else()
+      message(FATAL_ERROR "Invalid 3rd-party library '${pkg}'")
+    endif()
+  endforeach()
+endfunction()
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
-option(BUILD_TESTING "Setup and run tests" ON)
+option(BUILD_TESTING "Build test driver and run tests" ON)
 if(BUILD_TESTING)
   add_subdirectory(src/run-test)
   add_subdirectory(tests)

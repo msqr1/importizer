@@ -1,0 +1,33 @@
+name: Ensure LibTooling
+inputs:
+  os:
+    required: true
+  arch:
+    required: true
+  wd:
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # 5.0.5
+      with:
+        path: |
+          3rd-party/llvm
+          3rd-party/clang
+        key: Libtooling-22.1.6-${{ inputs.os }}-${{ inputs.arch }}
+    - name: Build
+      if: steps.check-cache.outputs.cache-hit != 'true'
+      working_directory: ${{ inputs.wd }}
+      run: |
+        cmake -P GetLlvm.cmake
+        ./Build.sh
+    - name: Save to cache
+      if: steps.check-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # 5.0.5
+      with:
+        path: |
+          3rd-party/llvm
+          3rd-party/clang
+        key: ${{ steps.check-cache.outputs.cache-primary-key }}

@@ -2,29 +2,8 @@
   "version": 10,
   "configurePresets": [
     {
-      "name": "ci-windows",
-      "generator": "Ninja",
+      "name": "ci",
       "cacheVariables": {
-        "CMAKE_C_COMPILER=": "clang-cl",
-        "CMAKE_CXX_COMPILER=": "clang-cl",
-        "BUILD_TESTING": "ON"
-      }
-    },
-    {
-      "name": "ci-linux",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-22",
-        "CMAKE_CXX_COMPILER": "clang++-22",
-        "BUILD_TESTING": "ON"
-      }
-    },
-    {
-      "name": "ci-macos",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
         "BUILD_TESTING": "ON"
       }
     }
