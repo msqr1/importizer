@@ -3,9 +3,6 @@ on:
   - push
 permissions:
   contents: write
-defaults:
-  run:
-    shell: bash
 jobs:
   job-matrix:
     uses: ./.github/workflows/JobMatrix.yml
@@ -20,30 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
       - name: Setup
-        shell: ${{ matrix.os == 'windows' && 'pwsh' || 'bash' }}
         run: . ./scripts/setup-ci/${{ matrix.setup }} ${{ matrix.arch }}
       - name: Ensure LibTooling
-        run: ./.github/actions/EnsureLibtooling.yml
+        uses: ./.github/actions/EnsureLibtooling.yml
         with:
           os: ${{ matrix.os }}
           arch: ${{ matrix.arch }}
-          wd: ${{ github.workspace }}/scripts/libtooling
       - name: Build (debug), test, pack
-        run: |
-          # Configure
-          cmake -B build -DCMAKE_BUILD_TYPE=Debug --preset ci \
-            -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.os }}-${{ matrix.arch }}
-
-          # Build
-          cmake --build build --config Debug -j $(cmake -P scripts/Nproc.cmake)
-
-          # Test
-          ctest --test-dir build/tests -C Debug --output-on-failure --progress \
-            --schedule-random -j $(cmake -P scripts/Nproc.cmake)
-
-          # Pack
-          cpack --config build/CPackConfig.cmake -C Debug \
-            -DCPACK_THREADS=$(cmake -P scripts/Nproc.cmake)
+        uses: ./.github/actions/BuildTestPack.yml
+        with:
+          mode: Debug
       - name: Upload
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # 3.0.0
         with:

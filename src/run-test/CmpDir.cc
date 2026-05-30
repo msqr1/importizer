@@ -13,7 +13,7 @@ bool cmpDir(const fs::path &dir, const fs::path &refDir) noexcept {
   bool res{true};
   fs::recursive_directory_iterator it{refDir, errCode};
   if (errCode) {
-    err("Unable to iterate {}: {}\n", refDir, errCode.message());
+    err("Unable to iterate {}: {}", refDir, errCode.message());
     return false;
   }
   fs::path path;
@@ -38,20 +38,20 @@ bool cmpDir(const fs::path &dir, const fs::path &refDir) noexcept {
       return false;
     }
     if (out != ref) {
-      err("Mismatched content for {}\n", relPath);
+      err("Mismatched content for {}", relPath);
       res = false;
     }
     refRelPaths.emplace_back(std::move(relPath));
   }
   it = {dir, errCode};
   if (errCode) {
-    err("Unable to iterate {}: {}\n", dir, errCode.message());
+    err("Unable to iterate {}: {}", dir, errCode.message());
     return false;
   }
   for (const fs::directory_entry &ent : it) {
     relPath = ent.path().lexically_relative(dir);
     if (std::ranges::find(refRelPaths, relPath) != refRelPaths.end()) {
-      err("Unexpected file: {}\n", relPath);
+      err("Unexpected file: {}", relPath);
       res = false;
     }
   }

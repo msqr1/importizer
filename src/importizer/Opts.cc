@@ -30,7 +30,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
         return std::nullopt;
       } else if (arg == "-o" || arg == "--outDir") {
         if (++i >= argc) {
-          err("{} requires a path\n", arg);
+          err("{} requires a path", arg);
           return false;
         }
         opts.outDir = argv[i];
@@ -41,12 +41,12 @@ std::optional<bool> getOpts(const int argc, const char **argv,
         ++i;
         continue;
       } else {
-        err("Unknown option '{}'\n", arg);
+        err("Unknown option '{}'", arg);
         return false;
       }
     } else {
       if (++n_pos_args > 1) {
-        err("Too many positional arguments\n");
+        err("Too many positional arguments");
         return false;
       }
       config = arg;
@@ -58,7 +58,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
   }
   const TomlResult res{toml_parse_file(f.get())};
   if (!res.ok) {
-    err("Unable to parse config file {}: {}\n", config, res.errmsg);
+    err("Unable to parse config file {}: {}", config, res.errmsg);
     return false;
   }
 
@@ -67,7 +67,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
   if (datum.type == TOML_STRING) {
     opts.inDir = datum.u.s;
   } else {
-    err("'inDir' must be specified and as String\n");
+    err("'inDir' must be specified and as String");
     return false;
   }
 
@@ -80,7 +80,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
   // outDir
   datum = res.seek("outDir");
   if (datum.type && !opts.outDir.empty()) {
-    warn("outDir from CLI will override config file\n");
+    warn("outDir from CLI will override config file");
   } else if (datum.type == TOML_STRING) {
     opts.outDir = datum.u.s;
 
@@ -89,7 +89,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
       opts.outDir = configDir / opts.outDir;
     }
   } else if (opts.outDir.empty()) {
-    err("'outDir' must be specified on CLI or in config file as a String\n");
+    err("'outDir' must be specified on CLI or in config file as a String");
     return false;
   }
 
@@ -97,10 +97,10 @@ std::optional<bool> getOpts(const int argc, const char **argv,
   datum = res.seek("compilationDb");
   const toml_datum_t bootstrap{res.seek("bootstrap")};
   if (datum.type && bootstrap.type) {
-    warn("'compilationDb' will take precedence over 'bootstrap'\n");
+    warn("'compilationDb' will take precedence over 'bootstrap'");
   } else if (datum.type) {
     if (datum.type != TOML_STRING) {
-      err("'compilationDb' must be a String\n");
+      err("'compilationDb' must be a String");
       return false;
     }
     std::string msg;
@@ -108,7 +108,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
         JSONCompilationDatabase::loadFromFile(
             datum.u.s, msg, JSONCommandLineSyntax::AutoDetect)};
     if (!db) {
-      err("Unable to parse compilation database: {}\n", msg);
+      err("Unable to parse compilation database: {}", msg);
       return false;
     }
     opts.fileHelper.emplace<std::unique_ptr<JSONCompilationDatabase>>(
@@ -120,7 +120,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
     Bootstrap &b{std::get<Bootstrap>(opts.fileHelper)};
     if (bootstrap.type) {
       if (bootstrap.type != TOML_TABLE) {
-        err("'bootstrap' must be a Table\n");
+        err("'bootstrap' must be a Table");
         return false;
       }
       if (!(res.seekStrs("bootstrap.hdrExts", b.hdrExts) &&

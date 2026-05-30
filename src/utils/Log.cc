@@ -28,10 +28,8 @@ bool getRaw(int argc, const char **argv) noexcept {
   DWORD errCode{GetLastError()};
   if (errCode != 0) {
     // ERROR_ENVVAR_NOT_FOUND
-    if (errCode == 203) {
-      raw = false;
-    } else [[unlikely]] {
-      err("Unable to check environment variable 'RAW': {}\n",
+    if (errCode != 203) {
+      err("Unable to check environment variable 'RAW': {}",
           std::system_category().message(errCode));
     }
   } else {
@@ -60,7 +58,7 @@ bool getRaw(int argc, const char **argv) noexcept {
       } else if (val == "never") {
         raw = false;
       } else {
-        err("Unknown value {} for '{}'\n", val, arg);
+        err("Unknown value {} for '{}'", val, arg);
         return false;
       }
       break;
@@ -68,7 +66,6 @@ bool getRaw(int argc, const char **argv) noexcept {
   }
   return true;
 }
-
 extern "C" const char *__asan_default_options() {
   return "detect_leaks=1:log_path=stdout";
 }

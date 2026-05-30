@@ -112,27 +112,26 @@ if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
     >
   )
   set(asan "-fsanitize=address")
-elseif(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL MSVC)
+elseif(MSVC)
   target_compile_options(common-config INTERFACE
     /W4
     /WX
   )
-  add_compile_options(
-    /utf-8
-    $<$<COMPILE_LANGUAGE:CXX>:
-      /GR-
-      /EHs-c-
-    >
-  )
 
   # Since Clang was built with these settings, we must match them even in Debug mode
-  add_compile_definitions(common-config INTERFACE
-    $<$<COMPILE_LANGUAGE:CXX>:
-      _HAS_EXCEPTIONS=0
-      _ITERATOR_DEBUG_LEVEL=0
-    >
-  )
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+
+  # Somehow only 1 flag at a time in generator expression for add_*_* but not
+  # target_*_*.
+  add_compile_options(
+    /utf-8
+    $<$<COMPILE_LANGUAGE:CXX>:/GR->
+    $<$<COMPILE_LANGUAGE:CXX>:/EHs-c->
+  )
+  add_compile_definitions(
+    $<$<COMPILE_LANGUAGE:CXX>:_ITERATOR_DEBUG_LEVEL=0>
+    $<$<COMPILE_LANGUAGE:CXX>:_HAS_EXCEPTIONS=0>
+  )
 
   set(asan "/fsanitize=address")
 endif()
@@ -150,13 +149,7 @@ set(CMAKE_REQUIRED_LINK_OPTIONS ${asan})
 check_cxx_compiler_flag(${asan} hasAsan)
 if(hasAsan)
   add_compile_options($<$<CONFIG:Debug>:${asan}>)
-
-  # Native MSVC
-  if(MSVC AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    add_link_options($<$<CONFIG:Debug>:/INCREMENTAL:NO>)
-  else()
-    add_link_options($<$<CONFIG:Debug>:${asan}>)
-  endif()
+  add_link_options($<$<CONFIG:Debug>:${asan}>)
 endif()
 set(ubsan "-fsanitize=undefined")
 set(CMAKE_REQUIRED_LINK_OPTIONS ${ubsan})
@@ -190,12 +183,6 @@ function(require target)
       if(WIN32)
         set_source_files_properties("${tomlc17_SOURCE_DIR}/src/tomlc17.c" PROPERTIES
           COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS)
-
-        # Native MSVC
-        if(MSVC AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-          set_source_files_properties("${tomlc17_SOURCE_DIR}/src/tomlc17.c" PROPERTIES
-            COMPILE_OPTIONS "/W0")
-        endif()
       endif()
     elseif(${pkg} STREQUAL reproc)
       set(REPROC++ ON)
@@ -228,7 +215,7 @@ function(require target)
         clangSerialization
       )
     else()
-      message(FATAL_ERROR "Invalid 3rd-party library '${pkg}'")
+      message(FATAL_ERROR "Unknown 3rd-party library '${pkg}'")
     endif()
   endforeach()
 endfunction()

@@ -4,8 +4,6 @@ inputs:
     required: true
   arch:
     required: true
-  wd:
-    required: true
 runs:
   using: "composite"
   steps:
@@ -19,7 +17,8 @@ runs:
         key: Libtooling-22.1.6-${{ inputs.os }}-${{ inputs.arch }}
     - name: Build
       if: steps.check-cache.outputs.cache-hit != 'true'
-      working_directory: ${{ inputs.wd }}
+      working_directory: scripts/libtooling
+      shell: bash
       run: |
         cmake -P GetLlvm.cmake
         ./Build.sh

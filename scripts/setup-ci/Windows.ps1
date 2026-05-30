@@ -8,5 +8,5 @@ Enter-VsDevShell -VsInstallPath "$vsPrefix" -Arch "$arch" -HostArch "$arch"
 
 $env:CC = "clang-cl"
 $env:CXX = "clang-cl"
-$env:LDFLAGS = "/fuse-ld=lld"
+$env:LDFLAGS = "-fuse-ld=lld-link"
 $env:CMAKE_GENERATOR = "Ninja"

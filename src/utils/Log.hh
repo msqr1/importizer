@@ -17,36 +17,38 @@ extern bool raw;
 // Must be called before anything
 [[nodiscard]] bool getRaw(const int argc, const char **argv) noexcept;
 
-// No newlines added
 template <typename... T>
 void err(fmt::format_string<T...> fmt, T &&...args) noexcept {
   fmt::memory_buffer buf;
-
+  const auto it{std::back_inserter(buf)};
   if (raw) {
-    fmt::format_to(std::back_inserter(buf), "{}: error: ", prog);
-    fmt::format_to(std::back_inserter(buf), fmt, std::forward<T>(args)...);
+    fmt::format_to(it, "{}: error: ", prog);
+    fmt::format_to(it, fmt, std::forward<T>(args)...);
   } else {
-    fmt::format_to(std::back_inserter(buf), "{}: ", prog);
-    fmt::format_to(std::back_inserter(buf),
+    fmt::format_to(it, "{}: ", prog);
+    fmt::format_to(it,
                    fg(fmt::rgb(0xFF727E)) | fmt::emphasis::bold, "error: ");
-    fmt::format_to(std::back_inserter(buf), fmt::emphasis::bold, fmt,
+    fmt::format_to(it, fmt::emphasis::bold, fmt,
                    std::forward<T>(args)...);
   }
+  buf.push_back('\n');
   std::fwrite(buf.data(), sizeof(char), buf.size(), stderr);
 }
 template <typename... T>
 void warn(fmt::format_string<T...> fmt, T &&...args) noexcept {
   fmt::memory_buffer buf;
+  const auto it{std::back_inserter(buf)};
   if (raw) {
-    fmt::format_to(std::back_inserter(buf), "{}: warning: ", prog);
-    fmt::format_to(std::back_inserter(buf), fmt, std::forward<T>(args)...);
+    fmt::format_to(it, "{}: warning: ", prog);
+    fmt::format_to(it, fmt, std::forward<T>(args)...);
 
   } else {
-    fmt::format_to(std::back_inserter(buf), "{}: ", prog);
-    fmt::format_to(std::back_inserter(buf),
+    fmt::format_to(it, "{}: ", prog);
+    fmt::format_to(it,
                    fg(fmt::rgb(0xFFAA00)) | fmt::emphasis::bold, "warning: ");
-    fmt::format_to(std::back_inserter(buf), fmt::emphasis::bold, fmt,
+    fmt::format_to(it, fmt::emphasis::bold, fmt,
                    std::forward<T>(args)...);
   }
+  buf.push_back('\n');
   std::fwrite(buf.data(), sizeof(char), buf.size(), stderr);
 }
