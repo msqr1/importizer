@@ -20,12 +20,15 @@ if ($vsInfo.Length -lt 1) {
   throw "No suitable Visual Studio installation found"
 }
 $vsPrefix = $vsInfo[0].installationPath
+
+# Can't use Launch-VsDevShell on ARM because of this
+# https://developercommunity.visualstudio.com/t/Launch-VsDevShellps1-does-not-allow-arm/10740584
 $vsDevCmd = "$vsPrefix/Common7/Tools/VsDevCmd.bat"
 $envLines = & cmd.exe /c "`"$vsDevCmd`" -arch=$arch -host_arch=$arch >NUL 2>&1 && set"
 foreach ($line in $envLines) {
   if ($line -match "^([^=]+)=(.*)$") {
     $name = $matches[1]
-    $value = $matches[2]
-    [System.Environment]::SetEnvironmentVariable($name, $value)
+    $val = $matches[2]
+    [System.Environment]::SetEnvironmentVariable($name, $val)
   }
 }

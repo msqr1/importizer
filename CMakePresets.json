@@ -1,37 +1,106 @@
 {
   "version": 10,
+  "$comment": "This file is intended for CI/CD, developers",
   "configurePresets": [
     {
-      "name": "ci",
+      "name": "linux",
+      "hidden": true,
       "generator": "Ninja",
-      "cacheVariables": {
-        "BUILD_TESTING": "ON"
-      }
-    },
-    {
-      "name": "ci-linux",
-      "inherits": "ci",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-18",
         "CMAKE_CXX_COMPILER": "clang++-18"
       }
     },
     {
-      "name": "ci-macos",
-      "inherits": "ci",
+      "name": "macos",
+      "hidden": true,
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++"
       }
     },
     {
-      "name": "ci-windows",
-      "inherits": "ci",
+      "name": "windows",
+      "hidden": true,
+      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-cl",
         "CMAKE_CXX_COMPILER": "clang-cl",
         "CMAKE_LINKER_TYPE": "LLD"
       }
+    },
+    {
+      "name": "libtooling",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "LLVM_APPEND_VC_REV": false,
+        "LLVM_ENABLE_PROJECTS": "clang",
+        "LLVM_ENABLE_LTO": "Thin",
+        "LLVM_ENABLE_UNWIND_TABLES": false,
+        "LLVM_ENABLE_ZLIB": false,
+        "LLVM_ENABLE_ZSTD": false,
+        "LLVM_ENABLE_DIA_SDK": false,
+        "LLVM_ENABLE_LIBEDIT": false,
+        "LLVM_ENABLE_LIBPFM": false,
+        "LLVM_ENABLE_LIBXML2": false,
+        "LLVM_ENABLE_BINDINGS": false,
+        "LLVM_ENABLE_BACKTRACES": false,
+        "LLVM_ENABLE_TELEMETRY": false,
+        "LLVM_ENABLE_OCAMLDOC": false,
+        "LLVM_INCLUDE_BENCHMARKS": false,
+        "LLVM_INCLUDE_EXAMPLES": false,
+        "LLVM_INCLUDE_RUNTIMES": false,
+        "LLVM_INCLUDE_TESTS": false,
+        "LLVM_INCLUDE_TOOLS": false,
+        "LLVM_INCLUDE_UTILS": false,
+        "LLVM_INCLUDE_DOCS": false,
+        "LLVM_BUILD_LLVM_C_DYLIB": false,
+        "LLVM_TARGETS_TO_BUILD": "host",
+        "LLVM_OPTIMIZED_TABLEGEN": true,
+        "LLVM_STATIC_LINK_CXX_STDLIB": true,
+        "CLANG_ENABLE_STATIC_ANALYZER": false,
+        "CLANG_BUILD_TOOLS": false,
+        "CLANG_PLUGIN_SUPPORT": false
+      }
+    },
+    {
+      "name": "importizer",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_TESTING": true
+      }
+    },
+    {
+      "name": "libtooling-linux",
+      "inherits": ["libtooling", "linux"],
+      "cacheVariables": {
+        "LLVM_ENABLE_RPMALLOC": true
+      }
+    },
+    {
+      "name": "libtooling-macos",
+      "inherits": ["libtooling", "macos"]
+    },
+    {
+      "name": "libtooling-windows",
+      "inherits": ["libtooling", "windows"],
+      "cacheVariables": {
+        "LLVM_ENABLE_RPMALLOC": true
+      }
+    },
+    {
+      "name": "importizer-linux",
+      "inherits": ["importizer", "linux"]
+    },
+    {
+      "name": "importizer-macos",
+      "inherits": ["importizer", "macos"]
+    },
+    {
+      "name": "importizer-windows",
+      "inherits": ["importizer", "windows"]
     }
   ]
 }

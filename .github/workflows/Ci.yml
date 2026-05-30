@@ -24,10 +24,10 @@ jobs:
           os: ${{ matrix.os }}
           arch: ${{ matrix.arch }}
           script: ${{ matrix.script }}
+          shell: ${{ matrix.shell }}
       - name: Build (debug), test, pack
-        uses: ./.github/actions/build-test-pack
-        with:
-          mode: Debug
+        shell: bash
+        run: ./scripts/BuildTestPack.sh Debug ${{ matrix.os }} ${{ matrix.arch }}
       - name: Upload
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # 3.0.0
         with:

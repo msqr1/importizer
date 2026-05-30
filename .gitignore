@@ -8,4 +8,4 @@
 /.zed
 /CMakeUserPresets.json
 __cmake_systeminformation
-/scripts/libtooling/llvm-src
+/scripts/libtooling/llvm*/

@@ -6,20 +6,15 @@ mkdir -p "$thirdPartyDir"
 thirdPartyDir=$(realpath "$thirdPartyDir")
 cmake -S "$llvmSrc/llvm" \
   -B "$llvmSrc/build" \
-  -G Ninja \
-  -C "$scriptDir/Cache.cmake" \
-  -DLLVM_ENABLE_RPMALLOC=on \
-  -DCMAKE_C_COMPILER=clang-18 \
-  -DCMAKE_CXX_COMPILER=clang++-18
+  --preset libtooling-linux \
+  --no-warn-unused-cli
 cmake --build "$llvmSrc/build"
 cmake --install "$llvmSrc/build" --prefix "$thirdPartyDir/llvm"
 cmake -S "$llvmSrc/clang" \
   -B "$llvmSrc/build2" \
-  -G Ninja \
-  -C "$scriptDir/Cache.cmake" \
   -DLLVM_DIR="$thirdPartyDir/llvm/lib/cmake/llvm" \
-  -DCMAKE_C_COMPILER=clang-18 \
-  -DCMAKE_CXX_COMPILER=clang++-18
+  --preset libtooling-linux \
+  --no-warn-unused-cli
 cmake --build "$llvmSrc/build2"
 cmake --install "$llvmSrc/build2" --prefix "$thirdPartyDir/clang"
 rm -rf "$llvmSrc"
