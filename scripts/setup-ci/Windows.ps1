@@ -1,9 +1,31 @@
+# Helper script to locate, check requirements, and bring Visual Studio tools into PATH
 param (
-  [Parameter(Position = 0, Mandatory = $true)][string]$arch
+  [Parameter(Position = 0, Mandatory = $true)]
+  [ValidateSet("x64", "arm64")]
+  [string]$arch
 )
 $ErrorActionPreference = "Stop"
-. "$PSScriptRoot/../FindVs.ps1" $arch
-$env:CC = "clang-cl"
-$env:CXX = "clang-cl"
-$env:LDFLAGS = "-fuse-ld=lld-link"
-$env:CMAKE_GENERATOR = "Ninja"
+$vswhere = "${Env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+$x = If ("$arch" -eq "x64") {"x86.x64"} Else {"ARM64"}
+$components = @(
+  "Microsoft.VisualStudio.Component.VC.Llvm.Clang"
+  "Microsoft.VisualStudio.Component.Windows11SDK.26100"
+  "Microsoft.VisualStudio.Component.VC.Tools.$x"
+)
+
+# Min version that support ARM64 builds
+$vsInfo = & "$vswhere" -format json -utf8 -version "[17.4,)" -latest -requires $components `
+  | ConvertFrom-Json
+if ($vsInfo.Length -lt 1) {
+  throw "No suitable Visual Studio installation found"
+}
+$vsPrefix = $vsInfo[0].installationPath
+$vsDevCmd = "$vsPrefix/Common7/Tools/VsDevCmd.bat"
+$envLines = & cmd.exe /c "`"$vsDevCmd`" -arch=$arch -host_arch=$arch >NUL 2>&1 && set"
+foreach ($line in $envLines) {
+  if ($line -match "^([^=]+)=(.*)$") {
+    $name = $matches[1]
+    $value = $matches[2]
+    [System.Environment]::SetEnvironmentVariable($name, $value)
+  }
+}

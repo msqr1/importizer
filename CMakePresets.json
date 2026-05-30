@@ -3,8 +3,34 @@
   "configurePresets": [
     {
       "name": "ci",
+      "generator": "Ninja",
       "cacheVariables": {
         "BUILD_TESTING": "ON"
+      }
+    },
+    {
+      "name": "ci-linux",
+      "inherits": "ci",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-18",
+        "CMAKE_CXX_COMPILER": "clang++-18"
+      }
+    },
+    {
+      "name": "ci-macos",
+      "inherits": "ci",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "ci-windows",
+      "inherits": "ci",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_LINKER_TYPE": "LLD"
       }
     }
   ]

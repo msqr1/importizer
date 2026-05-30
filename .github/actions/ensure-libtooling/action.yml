@@ -7,6 +7,9 @@ inputs:
   arch:
     description: Architecture
     required: true
+  script:
+    description: "Script file name"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -18,13 +21,20 @@ runs:
           3rd-party/llvm
           3rd-party/clang
         key: Libtooling-22.1.6-${{ inputs.os }}-${{ inputs.arch }}
-    - name: Build
-      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Build (Windows)
+      if: steps.check-cache.outputs.cache-hit != 'true' && inputs.os == 'windows'
+      shell: pwsh
       working-directory: scripts/libtooling
-      shell: bash
       run: |
         cmake -P GetLlvm.cmake
-        ./Build.sh
+        ./${{ matrix.script }}
+    - name: Build (not Windows)
+      if: steps.check-cache.outputs.cache-hit != 'true' && inputs.os != 'windows'
+      shell: bash
+      working-directory: scripts/libtooling
+      run: |
+        cmake -P GetLlvm.cmake
+        ./${{ matrix.script }}
     - name: Cache build
       if: steps.check-cache.outputs.cache-hit != 'true'
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # 5.0.5
