@@ -24,7 +24,7 @@ runs:
           3rd-party/llvm
           3rd-party/clang
         key: Libtooling-22.1.6-${{ inputs.os }}-${{ inputs.arch }}
-    - name: Build (Windows)
+    - name: Build
       if: steps.check-cache.outputs.cache-hit != 'true'
       shell: ${{ inputs.shell }}
       working-directory: scripts/libtooling

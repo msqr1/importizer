@@ -34,6 +34,7 @@
       "name": "libtooling",
       "hidden": true,
       "cacheVariables": {
+        "INSTALL_PARALLEL": true,
         "CMAKE_BUILD_TYPE": "Release",
         "LLVM_APPEND_VC_REV": false,
         "LLVM_ENABLE_PROJECTS": "clang",

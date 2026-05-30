@@ -35,3 +35,4 @@ jobs:
           tag_name: continuous
           target_commitish: ${{ github.sha }}
           files: importizer-${{ matrix.os }}-${{ matrix.arch }}.${{ matrix.outExt }}
+          fail_on_unmatched_files: true
