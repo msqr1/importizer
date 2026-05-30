@@ -1,0 +1,25 @@
+name: Build, test, pack
+description: Build, test, and pack
+inputs:
+  mode:
+    description: Build type/configuration
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        # Configure
+        cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.mode }} --preset ci \
+          -DCPACK_PACKAGE_FILE_NAME=importizer-${{ matrix.os }}-${{ matrix.arch }}
+
+        # Build
+        cmake --build build --config ${{ inputs.mode }} -j $(cmake -P scripts/Nproc.cmake)
+
+        # Test
+        ctest --test-dir build/tests -C ${{ inputs.mode }} --output-on-failure --progress \
+          --schedule-random -j $(cmake -P scripts/Nproc.cmake)
+
+        # Pack
+        cpack --config build/CPackConfig.cmake -C ${{ inputs.mode }} \
+          -DCPACK_THREADS=$(cmake -P scripts/Nproc.cmake)

@@ -1,8 +1,11 @@
 name: Ensure LibTooling
+description: Make sure LibTooling is present before building
 inputs:
   os:
+    description: Operating system
     required: true
   arch:
+    description: Architecture
     required: true
 runs:
   using: "composite"
@@ -17,12 +20,12 @@ runs:
         key: Libtooling-22.1.6-${{ inputs.os }}-${{ inputs.arch }}
     - name: Build
       if: steps.check-cache.outputs.cache-hit != 'true'
-      working_directory: scripts/libtooling
+      working-directory: scripts/libtooling
       shell: bash
       run: |
         cmake -P GetLlvm.cmake
         ./Build.sh
-    - name: Save to cache
+    - name: Cache build
       if: steps.check-cache.outputs.cache-hit != 'true'
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # 5.0.5
       with:

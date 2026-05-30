@@ -1,7 +1,9 @@
 set -e
 scriptDir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 llvmSrc="$scriptDir/llvm-src"
-3rdPartyDir=$(realpath "$scriptDir/../../3rd-party")
+3rdPartyDir="$scriptDir/../../3rd-party"
+mkdir -p "$3rdPartyDir"
+3rdPartyDir=$(realpath "$3rdPartyDir")
 cmake -S "$llvmSrc/llvm" \
   -B "$llvmSrc/build" \
   -G Ninja \

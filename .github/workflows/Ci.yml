@@ -19,12 +19,12 @@ jobs:
       - name: Setup
         run: . ./scripts/setup-ci/${{ matrix.setup }} ${{ matrix.arch }}
       - name: Ensure LibTooling
-        uses: ./.github/actions/EnsureLibtooling.yml
+        uses: ./.github/actions/ensure-libtooling
         with:
           os: ${{ matrix.os }}
           arch: ${{ matrix.arch }}
       - name: Build (debug), test, pack
-        uses: ./.github/actions/BuildTestPack.yml
+        uses: ./.github/actions/build-test-pack
         with:
           mode: Debug
       - name: Upload

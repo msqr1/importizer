@@ -27,7 +27,7 @@ if(NOT EXISTS "${3rdPartyDir}/Cpm.cmake")
   file(DOWNLOAD
     https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
     "${3rdPartyDir}/Cpm.cmake"
-    EXPECTED_HASH sha256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844
+    EXPECTED_HASH SHA256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844
   )
 endif()
 include("${3rdPartyDir}/Cpm.cmake")
