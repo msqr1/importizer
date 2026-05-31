@@ -36,7 +36,7 @@ bool getRaw(int argc, const char **argv) noexcept {
     raw = true;
   }
 #else
-  // const char* here instead bc it can be nullptr
+  // const char* here instead bc can be nullptr
   const char *envRaw{std::getenv("RAW")};
   if (envRaw != nullptr && envRaw[0] != '\0') {
     raw = true;
@@ -66,6 +66,8 @@ bool getRaw(int argc, const char **argv) noexcept {
   }
   return true;
 }
+#if defined(__has_feature) && __has_feature(address_sanitizer)
 extern "C" const char *__asan_default_options() {
-  return "detect_leaks=1:log_path=stdout";
+  return "log_path=stdout";
 }
+#endif

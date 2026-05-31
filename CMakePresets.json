@@ -1,6 +1,6 @@
 {
   "version": 10,
-  "$comment": "This file is intended for CI/CD, developers",
+  "$comment": "This file is intended for CI/CD, not developers",
   "configurePresets": [
     {
       "name": "linux",
