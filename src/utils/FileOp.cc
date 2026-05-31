@@ -29,7 +29,7 @@ File portableFOpen(const fs::path &path, std::string_view mode) noexcept {
     err("Unable to open {}: {}", path, msg.data());
   }
 #else
-  f = std::fopen(path.c_str(), mode.data);
+  f = std::fopen(path.c_str(), mode.data());
   if (f == nullptr) [[unlikely]] {
     err("Unable to open {}: {}", path, std::strerror(errno));
   }

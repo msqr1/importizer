@@ -1,5 +1,6 @@
 set(v 22.1.6)
 cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptDir)
+file(REAL_PATH "${scriptDir}/../.." root)
 set(arFile "${scriptDir}/LlvmSrc.tar.xz")
 set(llvmSrc "${scriptDir}/llvm-src")
 file(DOWNLOAD
@@ -15,8 +16,8 @@ if(NOT errCode EQUAL 0)
 endif()
 file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${scriptDir}")
 file(RENAME "${scriptDir}/llvm-project-${v}.src" "${llvmSrc}")
-file(CREATE_LINK "${scriptDir}/../../CMakePresets.json"
+file(CREATE_LINK "${root}/CMakePresets.json"
   "${llvmSrc}/llvm/CMakeUserPresets.json" COPY_ON_ERROR)
-file(CREATE_LINK "${scriptDir}/../../CMakePresets.json"
+file(CREATE_LINK "${root}/CMakePresets.json"
   "${llvmSrc}/clang/CMakeUserPresets.json" COPY_ON_ERROR)
 file(REMOVE "${arFile}")

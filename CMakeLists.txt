@@ -102,15 +102,14 @@ if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
     -Wall
     -Werror
   )
+
+  # Somehow only 1 flag at a time in generator expression for add_*_* but not
+  # target_*_*.
   add_compile_options(
-    $<$<COMPILE_LANGUAGE:CXX>:
-      -fno-rtti
-      -fno-exceptions
-    >
-    $<$<CONFIG:Debug>:
-      -fno-omit-frame-pointer
-    >
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
   )
+
   set(asan "-fsanitize=address")
 elseif(MSVC)
   target_compile_options(common-config INTERFACE
@@ -120,9 +119,6 @@ elseif(MSVC)
 
   # Since Clang was built with these settings, we must match them even in Debug mode
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-
-  # Somehow only 1 flag at a time in generator expression for add_*_* but not
-  # target_*_*.
   add_compile_options(
     /utf-8
     $<$<COMPILE_LANGUAGE:CXX>:/GR->
