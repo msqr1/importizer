@@ -3,15 +3,19 @@ param (
   [ValidateSet("x64", "arm64")]
   [string]$arch
 )
-if (!$PSBoundParameters.ContainKey("arch")) {
-  $arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture) {
-    "X64"  { "x64" }
-    "Arm64" { "arm64" }
-    Default { "other" }
+if (!$PSBoundParameters.ContainsKey("arch")) {
+  if ($env:PROCESSOR_ARCHITEW6432) {
+    $osArch = $env:PROCESSOR_ARCHITEW6432
+  } else {
+    $osArch = $env:PROCESSOR_ARCHITECTURE
   }
-  if ("$arch" -eq "other") {
-    Write-Error "Unsupported architecture, only x64 or arm64 is supported"
-    Exit 1
+  switch -regex ($osArch) {
+    "(i?)arm64" { $arch = "arm64" }
+    "(i?)amd64" { $arch = "x64" }
+    default {
+      Write-Error "Unsupported architecture '$osArch', only x64 or arm64 is supported"
+      exit 1
+    }
   }
 }
 $vswhere = "${Env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"

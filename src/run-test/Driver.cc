@@ -13,6 +13,7 @@
 #include <string_view>
 #include <system_error>
 #include <tuple>
+#include <cassert>
 
 namespace fs = std::filesystem;
 namespace rp = reproc;
@@ -23,7 +24,7 @@ const std::string_view prog{"test"};
 // Expecting absolute paths & no input validation
 int main(const int argc, const char **argv) {
   // May have -r
-  [[assume(argc > 3 && argc < 7)]];
+  assert(argc > 3 && argc < 7);
 
   if (!getRaw(argc, argv)) {
     return EXIT_FAILURE;
