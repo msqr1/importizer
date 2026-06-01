@@ -1,5 +1,4 @@
 #pragma once
-
 #include "utils/Log.hh"
 #include <concepts>
 #include <string_view>
@@ -12,7 +11,6 @@ concept ConstructibleFromCharPtr = std::constructible_from<T, const char *>;
 // Exceptionless, RAII & more convenient toml_result_t
 struct TomlResult : toml_result_t {
   TomlResult(const toml_result_t &result) noexcept;
-  ~TomlResult() noexcept;
 
   // Disallow copying
   TomlResult(const TomlResult &) = delete;
@@ -20,6 +18,7 @@ struct TomlResult : toml_result_t {
   // Allow moving
   TomlResult(TomlResult &&other) noexcept;
   TomlResult &operator=(TomlResult &&other) noexcept;
+
   toml_datum_t seek(std::string_view multipartKey) const noexcept;
 
   // Get string-type's from TOML.
@@ -46,4 +45,6 @@ struct TomlResult : toml_result_t {
     }
     return true;
   }
+
+  ~TomlResult() noexcept;
 };

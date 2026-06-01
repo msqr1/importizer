@@ -16,6 +16,9 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+      - name: Ensure permissions
+        shell: bash
+        run: chmod -R +x scripts/
       - name: Setup
         run: . ./scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
       - name: Ensure LibTooling
@@ -33,6 +36,9 @@ jobs:
         with:
           prerelease: true
           tag_name: continuous
-          target_commitish: ${{ github.sha }}
           files: importizer-${{ matrix.os }}-${{ matrix.arch }}.${{ matrix.outExt }}
           fail_on_unmatched_files: true
+      - name: Update continuous tag to current commit
+        run: |
+          git tag -f continuous
+          git push -f origin continuous

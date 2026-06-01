@@ -1,5 +1,4 @@
 #pragma once
-
 #include <cstdio>
 #include <fmt/base.h>
 #include <fmt/color.h>
@@ -26,14 +25,13 @@ void err(fmt::format_string<T...> fmt, T &&...args) noexcept {
     fmt::format_to(it, fmt, std::forward<T>(args)...);
   } else {
     fmt::format_to(it, "{}: ", prog);
-    fmt::format_to(it,
-                   fg(fmt::rgb(0xFF727E)) | fmt::emphasis::bold, "error: ");
-    fmt::format_to(it, fmt::emphasis::bold, fmt,
-                   std::forward<T>(args)...);
+    fmt::format_to(it, fg(fmt::rgb(0xFF727E)) | fmt::emphasis::bold, "error: ");
+    fmt::format_to(it, fmt::emphasis::bold, fmt, std::forward<T>(args)...);
   }
   buf.push_back('\n');
   std::fwrite(buf.data(), sizeof(char), buf.size(), stderr);
 }
+
 template <typename... T>
 void warn(fmt::format_string<T...> fmt, T &&...args) noexcept {
   fmt::memory_buffer buf;
@@ -44,10 +42,9 @@ void warn(fmt::format_string<T...> fmt, T &&...args) noexcept {
 
   } else {
     fmt::format_to(it, "{}: ", prog);
-    fmt::format_to(it,
-                   fg(fmt::rgb(0xFFAA00)) | fmt::emphasis::bold, "warning: ");
-    fmt::format_to(it, fmt::emphasis::bold, fmt,
-                   std::forward<T>(args)...);
+    fmt::format_to(it, fg(fmt::rgb(0xFFAA00)) | fmt::emphasis::bold,
+                   "warning: ");
+    fmt::format_to(it, fmt::emphasis::bold, fmt, std::forward<T>(args)...);
   }
   buf.push_back('\n');
   std::fwrite(buf.data(), sizeof(char), buf.size(), stderr);

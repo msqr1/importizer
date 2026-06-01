@@ -5,12 +5,12 @@
 #include <cstring>
 #include <filesystem>
 #include <string>
-#ifdef WIN32
-#include <win32/misc.h>
+#ifdef _WIN32
 #include <array>
-#include <string_view>
 #include <stdio.h>
 #include <string.h>
+#include <string_view>
+#include <win32/misc.h>
 #else
 #include <cerrno>
 #endif
@@ -19,9 +19,10 @@ namespace fs = std::filesystem;
 
 File portableFOpen(const fs::path &path, std::string_view mode) noexcept {
   std::FILE *f{};
-#ifdef WIN32
+#ifdef _WIN32
   std::array<wchar_t, 3> wMode;
-  MultiByteToWideChar(CP_UTF8, 0, mode.data(), mode.size(), wMode.data(), wMode.size());
+  MultiByteToWideChar(CP_UTF8, 0, mode.data(), mode.size(), wMode.data(),
+                      wMode.size());
   int errCode{_wfopen_s(&f, path.c_str(), wMode.data())};
   if (errCode != 0) [[unlikely]] {
     std::array<char, 94> msg;
@@ -42,8 +43,9 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
     err("Unseekable to end: {}", path);
     return false;
   }
-  const size_t size{static_cast<size_t>(std::ftell(f))};
-  if (size == SIZE_MAX) [[unlikely]] {
+
+  const size_t maxSize{static_cast<size_t>(std::ftell(f))};
+  if (maxSize == SIZE_MAX) [[unlikely]] {
     err("Unable to get size of {}", path);
     return false;
   }
@@ -51,12 +53,17 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
     err("Unseekable to start: {}", path);
     return false;
   }
-  s.resize_and_overwrite(size, [size](char *, size_t) { return size - 1; });
-  std::fread(s.data(), sizeof(char), size, f);
+
+  s.resize_and_overwrite(maxSize, [f](char *p, size_t maxSize) {
+    // On Windows due to text mode newline translation of \r\n -> \n it can
+    // need less than maxSize and we size our string accordingly
+    return std::fread(p, sizeof(char), maxSize, f);
+  });
   if (std::ferror(f)) [[unlikely]] {
     err("Error occured while reading {}", path);
     return false;
   }
+
   return true;
 }
 

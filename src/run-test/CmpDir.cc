@@ -34,6 +34,7 @@ bool cmpDir(const fs::path &dir, const fs::path &refDir) noexcept {
       res = false;
       continue;
     }
+
     if (!(readToStr(path, out) && readToStr(refPath, ref))) {
       return false;
     }
@@ -41,6 +42,7 @@ bool cmpDir(const fs::path &dir, const fs::path &refDir) noexcept {
       err("Mismatched content for {}", relPath);
       res = false;
     }
+
     refRelPaths.emplace_back(std::move(relPath));
   }
   it = {dir, errCode};

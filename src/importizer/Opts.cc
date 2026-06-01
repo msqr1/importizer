@@ -52,6 +52,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
       config = arg;
     }
   }
+
   File f{portableFOpen(config)};
   if (!f) {
     return false;

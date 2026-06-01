@@ -13,6 +13,7 @@ int main(const int argc, const char **argv) {
   if (!getRaw(argc, argv)) {
     return EXIT_FAILURE;
   };
+
   Opts opts;
   std::optional<bool> status{getOpts(argc, argv, opts)};
   if (!status) {
@@ -20,6 +21,7 @@ int main(const int argc, const char **argv) {
   } else if (!*status) {
     return EXIT_FAILURE;
   }
+
   std::error_code errCode;
   fs::recursive_directory_iterator it{opts.inDir, errCode};
   if (errCode) {
