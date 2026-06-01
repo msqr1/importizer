@@ -6,10 +6,10 @@ mkdir -p "$_3rdPartyDir"
 procCnt=$(cmake -P "$root/scripts/Nproc.cmake")
 cmake -S "$llvmSrc/llvm" -B "$llvmSrc/build" --preset libtooling-macos \
   --no-warn-unused-cli
-cmake --build "$llvmSrc/build" -j $procCnt
+cmake --build "$llvmSrc/build"
 cmake --install "$llvmSrc/build" --prefix "$_3rdPartyDir/llvm" -j $procCnt
 cmake -S "$llvmSrc/clang" -B "$llvmSrc/build2" --preset libtooling-macos \
   -DLLVM_DIR="$_3rdPartyDir/llvm/lib/cmake/llvm" --no-warn-unused-cli
-cmake --build "$llvmSrc/build2" -j $procCnt
+cmake --build "$llvmSrc/build2"
 cmake --install "$llvmSrc/build2" --prefix "$_3rdPartyDir/clang" -j $procCnt
 rm -rf "$llvmSrc"

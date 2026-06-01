@@ -16,14 +16,14 @@ checkErr
 cmake -S "$llvmSrc/llvm" -B "$llvmSrc/build" --preset libtooling-windows `
   --no-warn-unused-cli
 checkErr
-cmake --build "$llvmSrc/build" -j $procCnt
+cmake --build "$llvmSrc/build"
 checkErr
 cmake --install "$llvmSrc/build" --prefix "$3rdPartyDir/llvm" -j $procCnt
 checkErr
 cmake -S "$llvmSrc/clang" -B "$llvmSrc/build2" --preset libtooling-windows `
   -DLLVM_DIR="$3rdPartyDir/llvm/lib/cmake/llvm" --no-warn-unused-cli
 checkErr
-cmake --build "$llvmSrc/build2" -j $procCnt
+cmake --build "$llvmSrc/build2"
 checkErr
 cmake --install "$llvmSrc/build2" --prefix "$3rdPartyDir/clang" -j $procCnt
 checkErr
