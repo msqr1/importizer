@@ -11,11 +11,14 @@ case $arch in
     return 1 2>/dev/null || exit 1
 esac
 
-ASAN_OPTIONS=$([ "$arch" = "x64" ] && echo "detect_leaks=1")
+asanOpts=""
+if [ "$arch" = "x64" ]; then
+  asanOpts="detect_leaks=1"
+fi
 
-export ASAN_OPTIONS="$ASAN_OPTIONS"
+export ASAN_OPTIONS="$asanOpts"
 
 # We are in Github CI
 if [ -n "$GITHUB_ENV" ]; then
-  echo "ASAN_OPTIONS=$ASAN_OPTIONS" >> "$GITHUB_ENV"
+  echo "ASAN_OPTIONS=$asanOpts" >> "$GITHUB_ENV"
 fi

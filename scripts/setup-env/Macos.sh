@@ -17,13 +17,16 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 v=18
-llvmPrefix="$(brew --prefix llvm@$v)"
+llvmPrefix="$(brew --prefix llvm@$v || true)"
 if [ ! -d "$llvmPrefix" ]; then
   echo "Homebrew LLVM $v not found." >&2
   return 1 2>/dev/null || exit 1
 fi
 
-asanOpts=$([ "$arch" = "x64" ] && echo "detect_leaks=1")
+asanOpts=""
+if [ "$arch" = "x64" ]; then
+  asanOpts="detect_leaks=1"
+fi
 
 export PATH="${llvmPrefix}/bin:$PATH"
 export CMAKE_PREFIX_PATH="$llvmPrefix"

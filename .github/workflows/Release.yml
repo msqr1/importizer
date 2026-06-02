@@ -1,12 +1,14 @@
-name: Tag release
+name: Tag Release
 on:
   - workflow_dispatch
-permissions:
-  contents: write
 jobs:
   job-matrix:
     uses: ./.github/workflows/JobMatrix.yml
+    with:
+      check-prev: true
   make-dist:
+    permissions:
+      contents: write
     needs: job-matrix
     strategy:
       matrix:
@@ -27,7 +29,7 @@ jobs:
       - name: Build (release), test, pack
         shell: bash
         run: ./scripts/BuildTestPack.sh Release ${{ matrix.os }} ${{ matrix.arch }}
-      - name: Upload
+      - name: Upload binary as artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: ${{ matrix.name }}
@@ -36,6 +38,9 @@ jobs:
           compression-level: 0
           if-no-files-found: error
   tag-release:
+    permissions:
+      contents: write
+      repository-projects: write
     needs: make-dist
     runs-on: ubuntu-slim
     steps:
@@ -44,9 +49,25 @@ jobs:
         with:
           merge-multiple: true
           path: dists
-      - name: Upload to release
+      - name: Enable release immutability
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api /repos/${{ github.repository }}/immutable-releases \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10"
+      - name: Create & upload to release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # 3.0.0
         with:
           tag_name: 3.0.0
           body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.asc#300)"
           files: dists/*
+      - name: Disable release immutability
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api /repos/${{ github.repository }}/immutable-releases \
+            --method DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10"

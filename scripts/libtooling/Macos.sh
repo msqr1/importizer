@@ -3,7 +3,7 @@ set -e
 root=$(realpath "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)/../..")
 llvmSrc="$root/scripts/libtooling/llvm-src"
 _3rdPartyDir="$root/3rd-party"
-procCnt=$(nproc)
+procCnt=$(sysctl -n hw.logicalcpu)
 
 mkdir -p "$_3rdPartyDir"
 

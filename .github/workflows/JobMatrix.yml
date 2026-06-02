@@ -1,16 +1,27 @@
-name: Job matrix
+name: Job Matrix
 on:
   workflow_call:
+    inputs:
+      check-prev:
+        description: Check build status of latest commit
+        type: boolean
+        default: false
     outputs:
       m:
         description: "Job matrix"
-        value: ${{ jobs.get.outputs.m }}
+        value: ${{ jobs.all.outputs.m }}
 jobs:
-  get:
+  all:
+    permissions:
+      contents: read
     runs-on: ubuntu-slim
     outputs:
       m: ${{ steps.get.outputs.m }}
     steps:
+      - if: inputs.check-prev == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
       - id: get
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

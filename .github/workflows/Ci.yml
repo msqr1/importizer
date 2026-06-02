@@ -1,12 +1,12 @@
-name: Tag continuous
+name: Tag Continuous
 on:
   - push
-permissions:
-  contents: write
 jobs:
   job-matrix:
     uses: ./.github/workflows/JobMatrix.yml
   make-dist:
+    permissions:
+      contents: write
     needs: job-matrix
     strategy:
       fail-fast: false

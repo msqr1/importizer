@@ -77,7 +77,7 @@ foreach ($line in $envLines) {
     if ($ghCI) {
       if ($name.Equals("Path", [System.StringComparison]::OrdinalIgnoreCase)) {
         $splitVals = $val.Split(';', [System.StringSplitOptions]::RemoveEmptyEntries)
-        [string[]]$newPaths = @()
+        $newPaths = [System.Collections.Generic.List[System.String]]::new()
         foreach ($p in $splitVals) {
           $trimmed = $p.Trim()
           if ($trimmed.Length -eq 0) { continue }
