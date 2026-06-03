@@ -1,6 +1,7 @@
 name: Tag Continuous
 on:
   - push
+  - workflow_dispatch
 jobs:
   job-matrix:
     uses: ./.github/workflows/JobMatrix.yml
@@ -16,29 +17,15 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
-      - name: Ensure permissions
-        shell: bash
-        run: chmod -R +x scripts/
-      - name: Setup
-        run: . ./scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
-      - name: Ensure LibTooling
-        uses: ./.github/actions/ensure-libtooling
-        with:
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.arch }}
-          script: ${{ matrix.script }}
-          shell: ${{ matrix.shell }}
-      - name: Build (debug), test, pack
-        shell: bash
-        run: ./scripts/BuildTestPack.sh Debug ${{ matrix.os }} ${{ matrix.arch }}
-      - name: Upload
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # 3.0.0
-        with:
-          prerelease: true
-          tag_name: continuous
-          files: importizer-${{ matrix.os }}-${{ matrix.arch }}.${{ matrix.outExt }}
-          fail_on_unmatched_files: true
-      - name: Update continuous tag to current commit
+      - name: All
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git tag -f continuous
-          git push -f origin continuous
+          # Setup
+          . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
+
+          # Ensure LibTooling
+          cmake -P scripts/EnsureLibtooling.cmake ${{ matrix.os }} ${{ matrix.arch }} Debug
+
+          # Build (debug), test, pack, upload
+          cmake -P scripts/Ci.cmake ${{ matrix.os }} ${{ matrix.arch }} Debug

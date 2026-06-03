@@ -70,18 +70,15 @@ int main(const int argc, const char **argv) {
 
   const int refRtn{ref.contains("importizer: error: ") ? EXIT_FAILURE
                                                        : EXIT_SUCCESS};
-  if (refRtn != rtn) {
+  if ((errored |= refRtn != rtn)) {
     err("Mismatched return code: expected {}, got {}", refRtn, rtn);
-    errored = true;
   }
 
-  if (out != ref) {
+  if ((errored |= out != ref)) {
     err("Mismatched CLI output, got");
 
     // Don't format importizer's output
     fmt::print(stderr, "{}", out);
-
-    errored = true;
   }
 
   fs::path refDir{testDir / "ref"};

@@ -3,48 +3,36 @@
     "runner": "ubuntu-22.04",
     "os": "linux",
     "arch": "x64",
-    "script": "Linux.sh",
-    "outExt": "tar.gz",
-    "shell": "bash"
+    "script": "Linux.sh"
   },
   {
     "runner": "ubuntu-22.04-arm",
     "os": "linux",
     "arch": "arm64",
-    "script": "Linux.sh",
-    "outExt": "tar.gz",
-    "shell": "bash"
+    "script": "Linux.sh"
   },
   {
     "runner": "windows-2025-vs2026",
     "os": "windows",
     "arch": "x64",
-    "script": "Windows.ps1",
-    "outExt": "zip",
-    "shell": "pwsh"
+    "script": "Windows.ps1"
   },
   {
     "runner": "windows-11-arm",
     "os": "windows",
     "arch": "arm64",
-    "script": "Windows.ps1",
-    "outExt": "zip",
-    "shell": "pwsh"
+    "script": "Windows.ps1"
   },
   {
     "runner": "macos-15-intel",
     "os": "macos",
     "arch": "x64",
-    "script": "Macos.sh",
-    "outExt": "tar.gz",
-    "shell": "bash"
+    "script": "Macos.sh"
   },
   {
     "runner": "macos-15",
     "os": "macos",
     "arch": "arm64",
-    "script": "Macos.sh",
-    "outExt": "tar.gz",
-    "shell": "bash"
+    "script": "Macos.sh"
   }
 ]

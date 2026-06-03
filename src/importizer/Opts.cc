@@ -21,36 +21,39 @@ std::optional<bool> getOpts(const int argc, const char **argv,
   std::string_view arg;
   for (int i{1}; i < argc; i++) {
     arg = argv[i];
-    if (arg.starts_with('-')) {
-      if (arg == "-h" || arg == "--help") {
-        fmt::println("importizer - native C++20 modularization tool");
-        return std::nullopt;
-      } else if (arg == "-v" || arg == "--version") {
-        fmt::println("3.0.0");
-        return std::nullopt;
-      } else if (arg == "-o" || arg == "--outDir") {
-        if (++i >= argc) {
-          err("{} requires a path", arg);
-          return false;
-        }
-        opts.outDir = argv[i];
-        continue;
 
-        // Already handled
-      } else if (arg == "-r" || arg == "--raw") {
-        ++i;
-        continue;
-      } else {
-        err("Unknown option '{}'", arg);
-        return false;
-      }
-    } else {
+    // Already handled
+    if (arg == "-r" || arg == "--raw") {
+      ++i;
+      continue;
+    }
+
+    if (!arg.starts_with('-')) {
       if (++n_pos_args > 1) {
         err("Too many positional arguments");
         return false;
       }
       config = arg;
+      continue;
     }
+    if (arg == "-h" || arg == "--help") {
+      fmt::println("importizer - native C++20 modularization tool");
+      return std::nullopt;
+    }
+    if (arg == "-v" || arg == "--version") {
+      fmt::println("3.0.0");
+      return std::nullopt;
+    }
+    if (arg == "-o" || arg == "--outDir") {
+      if (++i >= argc) {
+        err("{} requires a path", arg);
+        return false;
+      }
+      opts.outDir = argv[i];
+      continue;
+    }
+    err("Unknown option '{}'", arg);
+    return false;
   }
 
   File f{portableFOpen(config)};
@@ -114,29 +117,31 @@ std::optional<bool> getOpts(const int argc, const char **argv,
     }
     opts.fileHelper.emplace<std::unique_ptr<JSONCompilationDatabase>>(
         std::move(db));
-  } else {
-    opts.fileHelper.emplace<Bootstrap>(
-        std::vector<fs::path>{"h", "hh", "hpp", "hxx", ""},
-        std::vector<fs::path>{"cc", "cpp", "cxx", "c++", "C"});
-    Bootstrap &b{std::get<Bootstrap>(opts.fileHelper)};
-    if (bootstrap.type) {
-      if (bootstrap.type != TOML_TABLE) {
-        err("'bootstrap' must be a Table");
-        return false;
-      }
-      if (!(res.seekStrs("bootstrap.hdrExts", b.hdrExts) &&
-            res.seekStrs("bootstrap.srcExts", b.srcExts) &&
-            res.seekStrs("bootstrap.includePaths", b.includePaths))) {
-        return false;
-      }
+    return true;
+  }
+  opts.fileHelper.emplace<Bootstrap>(
+      std::vector<fs::path>{"h", "hh", "hpp", "hxx", ""},
+      std::vector<fs::path>{"cc", "cpp", "cxx", "c++", "C"});
+  Bootstrap &b{std::get<Bootstrap>(opts.fileHelper)};
+  if (!bootstrap.type) {
+    return true;
+  }
+  if (bootstrap.type != TOML_TABLE) {
+    err("'bootstrap' must be a Table");
+    return false;
+  }
+  if (!(res.seekStrs("bootstrap.hdrExts", b.hdrExts) &&
+        res.seekStrs("bootstrap.srcExts", b.srcExts) &&
+        res.seekStrs("bootstrap.includePaths", b.includePaths))) {
+    return false;
+  }
 
-      // Make relative to config file instead of CWD
-      for (fs::path &path : b.includePaths) {
-        if (path.is_relative()) {
-          path = configDir / path;
-        }
-      }
+  // Make relative to config file instead of CWD
+  for (fs::path &path : b.includePaths) {
+    if (!path.is_relative()) {
+      continue;
     }
+    path = configDir / path;
   }
   return true;
 }

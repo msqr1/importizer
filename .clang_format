@@ -1,4 +1,4 @@
 BasedOnStyle: LLVM
-ColumnLimit: 90
+ColumnLimit: 95
 SortIncludes: true
 LineEnding: LF

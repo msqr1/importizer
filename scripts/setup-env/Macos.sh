@@ -18,7 +18,7 @@ fi
 
 v=18
 llvmPrefix="$(brew --prefix llvm@$v || true)"
-if [ ! -d "$llvmPrefix" ]; then
+if [ ! -d "$(brew --prefix llvm@$v || true)" ]; then
   echo "Homebrew LLVM $v not found." >&2
   return 1 2>/dev/null || exit 1
 fi
@@ -28,13 +28,11 @@ if [ "$arch" = "x64" ]; then
   asanOpts="detect_leaks=1"
 fi
 
-export PATH="${llvmPrefix}/bin:$PATH"
-export CMAKE_PREFIX_PATH="$llvmPrefix"
+v=18
+
 export ASAN_OPTIONS="$asanOpts"
 
-# We are in Github CI
-if [ -n "$GITHUB_ENV" ]; then
-  echo "CMAKE_PREFIX_PATH=$llvmPrefix" >> "$GITHUB_ENV"
+# We are in CI
+if [ -n "$CI" ]; then
   echo "ASAN_OPTIONS=$asanOpts" >> "$GITHUB_ENV"
-  echo "${llvmPrefix}/bin" >> "$GITHUB_PATH"
 fi

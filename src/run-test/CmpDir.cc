@@ -52,10 +52,11 @@ bool cmpDir(const fs::path &dir, const fs::path &refDir) noexcept {
   }
   for (const fs::directory_entry &ent : it) {
     relPath = ent.path().lexically_relative(dir);
-    if (std::ranges::find(refRelPaths, relPath) != refRelPaths.end()) {
-      err("Unexpected file: {}", relPath);
-      res = false;
+    if (std::ranges::find(refRelPaths, relPath) == refRelPaths.end()) {
+      continue;
     }
+    err("Unexpected file: {}", relPath);
+    res = false;
   }
   return res;
 }

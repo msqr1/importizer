@@ -18,7 +18,7 @@ fi
 
 export ASAN_OPTIONS="$asanOpts"
 
-# We are in Github CI
-if [ -n "$GITHUB_ENV" ]; then
+# We are in CI
+if [ -n "$CI" ]; then
   echo "ASAN_OPTIONS=$asanOpts" >> "$GITHUB_ENV"
 fi

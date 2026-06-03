@@ -1,4 +1,5 @@
 #!/bin/bash
 
-# Find all .sh files in scripts/ and tell git to track them as executable
-find scripts/ .githooks/ -type f -name "*.sh" -exec git update-index --add --chmod=+x {} +
+# Track .sh files in scripts/ and .githooks/ as executable
+git ls-files -co --exclude-standard scripts .githooks \
+  | xargs -n1 git update-index --add --chmod=+x

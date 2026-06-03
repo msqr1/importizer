@@ -18,22 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
       - name: Setup
-        run: . ./scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
+        run: . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
       - name: Ensure LibTooling
-        uses: ./.github/actions/ensure-libtooling
-        with:
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.arch }}
-          script: ${{ matrix.script }}
-          shell: ${{ matrix.shell }}
-      - name: Build (release), test, pack
-        shell: bash
-        run: ./scripts/BuildTestPack.sh Release ${{ matrix.os }} ${{ matrix.arch }}
+        run: cmake -P scripts/EnsureLibtooling.cmake ${{ matrix.os }} ${{ matrix.arch }} Release
+      - name: Build (debug), test, pack
+        run: cmake -P scripts/BuildTestPack.cmake ${{ matrix.os }} ${{ matrix.arch }} Release
       - name: Upload binary as artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
-          name: ${{ matrix.name }}
-          path: importizer-${{ matrix.os }}-${{ matrix.arch }}.${{ matrix.outExt }}
+          name: ${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ matrix.os }}-${{ matrix.arch }}.zst
           retention-days: 1
           compression-level: 0
           if-no-files-found: error
