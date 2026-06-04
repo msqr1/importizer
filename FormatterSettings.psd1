@@ -1,19 +1,19 @@
 @{
   IncludeRules = @(
-    'PSUseConsistentWhitespace'
-    'PSUseConsistentIndentation'
-    'PSPlaceCloseBrace'
-    'PSPlaceOpenBrace'
-    'PSAlignAssignmentStatement'
+    "PSUseConsistentWhitespace"
+    "PSUseConsistentIndentation"
+    "PSPlaceCloseBrace"
+    "PSPlaceOpenBrace"
+    "PSAlignAssignmentStatement"
   )
-
   Rules        = @{
     PSUseConsistentIndentation = @{
       Enable              = $true
-      Kind                = 'space'
+      Kind                = "space"
       IndentationSize     = 2
-      PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+      PipelineIndentation = "IncreaseIndentationForFirstPipeline"
     }
+
     PSUseConsistentWhitespace  = @{
       Enable          = $true
       CheckInnerBrace = $true
