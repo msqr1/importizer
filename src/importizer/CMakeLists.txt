@@ -4,9 +4,7 @@ add_executable(importizer
   Toml.cc
 )
 require(importizer fmt Clang tomlc17)
-if(WIN32)
-
-elseif(LINUX)
+if(LINUX)
   # Static except for glibc, LLVM and its deps
   target_link_options(importizer PRIVATE
     -static-libgcc

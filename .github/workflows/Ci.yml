@@ -3,29 +3,28 @@ on:
   - push
   - workflow_dispatch
 jobs:
-  job-matrix:
+  jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
-  make-dist:
+  all:
     permissions:
       contents: write
-    needs: job-matrix
+    needs: jobMatrix
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.job-matrix.outputs.m) }}
+        include: ${{ fromJSON(needs.jobMatrix.outputs.m) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
-      - name: All
-        env:
+      - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Setup
           . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
 
           # Ensure LibTooling
-          cmake -P scripts/EnsureLibtooling.cmake ${{ matrix.os }} ${{ matrix.arch }} Debug
+          cmake -P scripts/EnsureLibtooling.cmake
 
-          # Build (debug), test, pack, upload
-          cmake -P scripts/Ci.cmake ${{ matrix.os }} ${{ matrix.arch }} Debug
+          # Make distribution
+          cmake -P scripts/MkDist.cmake Debug

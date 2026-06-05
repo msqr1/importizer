@@ -2,11 +2,11 @@
 /.cache/
 /.vs/
 /3rd-party/
-/test
+/test*
 /build/
 /act
 /.zed/
 /CMakeUserPresets.json
 __cmake_systeminformation/
-/scripts/libtooling-src/
+/scripts/llvm-proj-src/
 /scripts/Libtooling.tzst

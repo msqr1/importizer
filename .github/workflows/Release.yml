@@ -2,27 +2,32 @@ name: Tag Release
 on:
   - workflow_dispatch
 jobs:
-  job-matrix:
+  jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
     with:
       check-prev: true
-  make-dist:
+  all:
     permissions:
       contents: write
-    needs: job-matrix
+    needs: jobMatrix
     strategy:
       matrix:
-        include: ${{ fromJSON(needs.job-matrix.outputs.m) }}
+        include: ${{ fromJSON(needs.jobMatrix.outputs.m) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
-      - name: Setup
-        run: . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
-      - name: Ensure LibTooling
-        run: cmake -P scripts/EnsureLibtooling.cmake ${{ matrix.os }} ${{ matrix.arch }} Release
-      - name: Build (debug), test, pack
-        run: cmake -P scripts/BuildTestPack.cmake ${{ matrix.os }} ${{ matrix.arch }} Release
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Setup
+          . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
+
+          # Ensure LibTooling
+          cmake -P scripts/EnsureLibtooling.cmake
+
+          # Make distribution
+          cmake -P scripts/MkDist.cmake Release
       - name: Upload binary as artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
@@ -47,7 +52,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api /repos/${{ github.repository }}/immutable-releases \
+          gh api repos/${{ github.repository }}/immutable-releases \
             --method PUT \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2026-03-10"
@@ -61,7 +66,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api /repos/${{ github.repository }}/immutable-releases \
+          gh api repos/${{ github.repository }}/immutable-releases \
             --method DELETE \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2026-03-10"

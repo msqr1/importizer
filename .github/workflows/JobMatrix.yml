@@ -2,8 +2,8 @@ name: Job Matrix
 on:
   workflow_call:
     inputs:
-      check-prev:
-        description: Check build status of latest commit
+      checkLastCi:
+        description: Check CI status of last commit
         type: boolean
         default: false
     outputs:
@@ -18,10 +18,11 @@ jobs:
     outputs:
       m: ${{ steps.get.outputs.m }}
     steps:
-      - if: inputs.check-prev == 'true'
+      - if: inputs.checkLastCi == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # TODO
       - id: get
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -29,4 +30,4 @@ jobs:
           echo "m=$(gh api repos/${{ github.repository }}/contents/CiMatrix.json \
             -H "Accept: application/vnd.github.raw+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
-            | jq -c 'del(.[] | select(.os == "linux"))')" >> $GITHUB_OUTPUT
+            -q 'del(.[] | select(.os == "linux"))')" >> $GITHUB_OUTPUT
