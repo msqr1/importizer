@@ -5,7 +5,7 @@ target_link_libraries(run-test PRIVATE
   utils
 )
 
-# For the developer to be able to keep staying in the build directory
+# More predictable output location
 add_custom_command(POST_BUILD TARGET run-test
-  COMMAND "${CMAKE_COMMAND}" -E create_symlink "$<TARGET_FILE:run-test>"
+  COMMAND "${CMAKE_COMMAND}" -E create_hardlink "$<TARGET_FILE:run-test>"
   "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:run-test>")

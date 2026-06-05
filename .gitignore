@@ -3,7 +3,8 @@
 /.vs/
 /3rd-party/
 /test*
-/build/
+/build*/
+/importizer*
 /act
 /.zed/
 /CMakeUserPresets.json

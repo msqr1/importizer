@@ -27,7 +27,6 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-cl",
         "CMAKE_CXX_COMPILER": "clang-cl",
-        "CMAKE_ASM_COMPILER": "llvm-ml",
         "CMAKE_LINKER_TYPE": "LLD"
       }
     },
@@ -71,7 +70,6 @@
       "name": "importizer",
       "hidden": true,
       "cacheVariables": {
-        "INSTALL_PARALLEL": true,
         "BUILD_TESTING": true
       }
     },
@@ -90,6 +88,7 @@
       "name": "libtooling-windows",
       "inherits": ["libtooling", "windows"],
       "cacheVariables": {
+        "CMAKE_ASM_COMPILER": "llvm-ml",
         "LLVM_ENABLE_RPMALLOC": true
       }
     },

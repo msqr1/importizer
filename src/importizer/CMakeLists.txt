@@ -4,17 +4,26 @@ add_executable(importizer
   Toml.cc
 )
 require(importizer fmt Clang tomlc17)
-if(LINUX)
+if(WIN32)
+  install(
+    RUNTIME_DEPENDENCY_SET deps
+    DESTINATION .
+    PRE_EXCLUDE_REGEXES
+      [[^api-ms-.*]]
+      [[^ext-ms-.*]]
+    POST_EXCLUDE_REGEXES
+      [[^.*[\\/]system32[\\/].*]]
+  )
+elseif(LINUX)
   # Static except for glibc, LLVM and its deps
   target_link_options(importizer PRIVATE
     -static-libgcc
     -static-libstdc++ # This can makes libc++ static, too.
   )
-  set(CPACK_GENERATOR "TGZ")
 
   # Exclude Linux system libraries
   install(
-    RUNTIME_DEPENDENCY_SET IMPORTIZER_DEPS
+    RUNTIME_DEPENDENCY_SET deps
     DESTINATION .
     PRE_EXCLUDE_REGEXES
       [[libm\.so]]
@@ -29,19 +38,16 @@ if(LINUX)
       [[libstdc\+\+\.so]]
     )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  # MacOS linking is handled by CMAKE_OSX_DEPLOYMENT_TARGET
-  set(CPACK_GENERATOR "TGZ")
-
   # Exclude MacOS system libraries
   install(
-    RUNTIME_DEPENDENCY_SET IMPORTIZER_DEPS
+    RUNTIME_DEPENDENCY_SET deps
     DESTINATION .
     PRE_EXCLUDE_REGEXES
-      [[libSystem\.B\.dylib]]
-      [[libc\+\+\.1\.dylib]]
-      [[libobjc\.dylib]]
-      [[/usr/lib/swift]]
-    )
+      [[^libSystem\.B\.dylib]]
+      [[^libc\+\+\.1\.dylib]]
+      [[^libobjc\.dylib]]
+      [[^/usr/lib/swift]]
+  )
 endif()
 target_link_libraries(importizer PRIVATE
   common-config
@@ -50,10 +56,10 @@ target_link_libraries(importizer PRIVATE
 install(
   TARGETS importizer
   DESTINATION .
-  RUNTIME_DEPENDENCY_SET IMPORTIZER_DEPS
+  RUNTIME_DEPENDENCY_SET deps
 )
 
-# For the developer to be able to keep staying in the build directory
+# More predictable output location
 add_custom_command(POST_BUILD TARGET importizer
-  COMMAND "${CMAKE_COMMAND}" -E create_symlink "$<TARGET_FILE:importizer>"
+  COMMAND "${CMAKE_COMMAND}" -E create_hardlink "$<TARGET_FILE:importizer>"
   "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:importizer>")

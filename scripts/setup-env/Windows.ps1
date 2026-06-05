@@ -136,5 +136,3 @@ if ($ci) {
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
 
-# gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" repos/msqr1/importizer/commits/5db18badcde276427bea53162d379f7c4c1a99f2/check-runs > test.txt
-

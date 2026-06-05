@@ -1,8 +1,12 @@
 # Make a distribution
 
+set(mode ${CMAKE_ARGV3})
+set(knownModes "Debug;Release")
+if(NOT mode IN_LIST knownModes)
+  message(FATAL_ERROR "Unknown mode '${mode}', only Debug/Release is allowed")
+endif()
 set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
-set(mode ${CMAKE_ARGV0})
 cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptDir)
 file(REAL_PATH "${scriptDir}/.." root)
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
@@ -60,13 +64,22 @@ elseif(${mode} STREQUAL Release)
   )
 endif()
 
+set(repo "msqr1/importizer")
 if(DEFINED ENV{CI} AND ${mode} STREQUAL Debug)
   # Upload & move tag
   execute_process(COMMAND gh release upload continuous "${root}/${os}-${arch}.tzst"
     --clobber
-    -R "msqr1/importizer"
+    -R ${repo}
     COMMAND_ERROR_IS_FATAL ANY)
   execute_process(COMMAND git tag -f continuous COMMAND_ERROR_IS_FATAL ANY)
+
+  # Authenticate & push
+  execute_process(COMMAND git remote set-url
+    --push
+    origin
+    https://msqr1:$ENV{GH_TOKEN}@github.com/${repo}.git
+    COMMAND_ERROR_IS_FATAL ANY
+  )
   execute_process(COMMAND git push -f origin continuous COMMAND_ERROR_IS_FATAL ANY)
 endif()
 # Leave for actions/upload-artifact to upload for CI Release mode

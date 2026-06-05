@@ -2,8 +2,8 @@ name: Job Matrix
 on:
   workflow_call:
     inputs:
-      checkLastCi:
-        description: Check CI status of last commit
+      checkCi:
+        description: Check CI status of HEAD
         type: boolean
         default: false
     outputs:
@@ -16,18 +16,23 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     outputs:
-      m: ${{ steps.get.outputs.m }}
+      m: ${{ steps.all.outputs.m }}
     steps:
-      - if: inputs.checkLastCi == 'true'
+      - id: all
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # TODO
-      - id: get
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "m=$(gh api repos/${{ github.repository }}/contents/CiMatrix.json \
+          repo=repos/${{ github.repository }}
+          sha=${{ github.sha }}
+
+          ${{ inputs.checkCi }} &&
+          "$(gh api $repo/actions/workflows/Ci.yml/runs?head_sha=$sha \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            -q '(.total_count > 0 and .workflow_runs[0].conclusion != "success")')" &&
+          exit 1
+
+          echo "m=$(gh api $repo/contents/CiMatrix.json \
             -H "Accept: application/vnd.github.raw+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
-            -q 'del(.[] | select(.os == "linux"))')" >> $GITHUB_OUTPUT
+            -q 'del(.[] | select(.os == "linux"))')" >> "$GITHUB_OUTPUT"

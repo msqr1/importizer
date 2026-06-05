@@ -16,9 +16,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
-      - env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: taiki-e/checkout-action@v1.4.2
+      - name: All
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Setup
           . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
