@@ -1,3 +1,4 @@
+# OS detection if not provided
 arch=${1:-$(uname -m)}
 case $arch in
 x64 | x86_64)
@@ -22,7 +23,6 @@ export ASAN_OPTIONS="$asanOpts"
 # We are in CI
 if [ -n "$CI" ]; then
   {
-    echo "ASAN_OPTIONS=$asanOpts"
     echo IMPORTIZER_OS=linux
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"

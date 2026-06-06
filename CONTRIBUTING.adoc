@@ -1,0 +1,224 @@
+= Contributing
+:toc:
+
+== Environment
+
+*Before doing anything else*, setup the environment (check architecture, required tools, backend &
+set environment variables) by running:
+[source,bash]
+----
+. scripts/setup-env/{OS}
+----
+
+Note: For Windows, there's an optional argument `llvmPrefix` to change the directory (default is
+`C:/Program Files/LLVM`) to look for LLVM. It can take the special value of `:bundled` that tells
+the script to look for the LLVM bundled within Visual Studio or Build Tools.
+
+== Dependency linkage
+
+[%autowidth]
+|===
+| |Linux |MacOS |Windows
+
+|LibTooling
+|Dynamic^1^
+2+^.^|Static
+
+|Other 3rd-party
+3+^.^|Static
+
+|C++ Standard Library (CxxStdlib)
+|Static
+.2+^.^|Dynamic^2^
+|Static
+
+|C Standard Library (CStdlib)
+|Dynamic^3^
+|Dynamic^4^
+|===
+
+. Package manager doesn’t offer static build, pending self-built LLVM.
+. CStdlib is libSystem, CxxStdlib is a modded libc{plus}{plus}, both are dynamic but with stable ABI
+guaranteed by MacOS so we can treat as if they're static.
+. CStdlib is Windows UCRT, it's dynamic but also with stable ABI guaranteed by Windows so we can use
+as if it's static.
+. CStdlib is glibc on most systems, but 1, it's only "most systems", and 2, there's no ABI stability
+guaranteed, so we `zig`.
+
+
+== Building
+
+=== Skip building LibTooling
+
+Importizer needs Clang LibTooling. To save developers from compiling it and speed up CI,
+there's prebuilt ones. Since C++ ABIs and LLVM bitcode formats can change between versions, if you
+match the toolchain in the table below (which is used to build LibTooling for CI), the prebuilt
+LibTooling will integrate seamlessly. You can start coding right away.
+[source,bash]
+----
+cmake -P scripts/EnsureLibtooling.cmake
+----
+[%autowidth]
+|===
+| |Linux |MacOS |Windows
+
+|Build system
+3+^.^|CMake 3.31.5{plus}
+
+|Generator
+3+^.^|Ninja
+
+|Compiler
+|Clang 18.1.8
+|Clang 18.1.8 (Homebrew)
+|Clang 20.1.x^1^
+
+|Backend
+|`build-essential`
+|Xcode SDK (`SDKROOT`)
+|Visual Studio or Build Tools^2^
+|===
+
+. `20.1.8` on x64, `20.1.6` on ARM64.
+. Used strictly to provide the Windows SDK.
+
+=== Building from source entirely
+You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you will
+have to rebuild LibTooling with that toolchain. Good luck! Note that everything in this repo
+will assume that you won't be doing this.
+
+=== Build process
+Ok, enough talking, here's how to build the release mode from scratch while skipping building
+LibTooling. Note that cross compilation is not currently supported.
+
+[source,bash]
+----
+git clone --depth 1 https://github.com/msqr1/importizer
+cd importizer
+
+# Setup the environment
+. scripts/setup-env/{OS}
+
+# Ensure LibTooling
+cmake -P scripts/Ensurelibtooling.cmake
+
+# Configure
+cmake -B build
+----
+
+== Testing
+
+=== Running tests
+
+Tests are not enabled by default, but can be toggled via the `BUILD_TESTING` CMake option.
+
+[source,bash]
+----
+# Ensure tests are configured (Debug mode recommended for testing) cmake -B build
+-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON cmake --build build --config Debug -j $(cmake -P
+scripts/Nproc.cmake)
+
+# Run the test suite using all available cores ctest --test-dir build/tests --output-on-failure
+--progress --schedule-random -j \ $(cmake -P scripts/Nproc.cmake)
+----
+
+=== Adding new tests
+
+Importizer uses a custom directory-based test harness (located in `src/run-test`). To add a new test
+case:
+
+. Create a new directory under `tests/` with a descriptive name (e.g., `tests/my-new-feature/`).
+. Add a `Config.toml` file inside this directory to configure the importizer run.
+. Add a `RefCli.txt` file containing the expected CLI output.
+. *(Optional)* Create a `in/` subdirectory containing the input files (C{plus}{plus} header-based
+code).
+. *(Optional)* Create a `ref/` subdirectory containing the expected output files. The test driver
+will automatically compare the actual output directory against this reference directory. Don’t add
+this when expecting an error.
+
+The CMake script dynamically globs the `tests/` folder, so your new test will be automatically
+picked up on the next `cmake` `-B` `build` run.
+
+== Coding conventions
+
+* 100-column per line limit for files & CLI outputs
+
+=== Naming
+
+* *All code variables & functions:* `camelCase`
+* *C{plus}{plus} classes, types, & files:* `PascalCase` (e.g., `MyClass.cc`)
+* *Executables & directories:* `kebab-case` (e.g., `run-test/`)
+* *Environment variables:* `ALL_CAPS_SNAKE_CASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
+
+=== C{plus}{plus} style
+
+* Follow the LLVM coding style.
+* Use `std::string_view` over `const char*`, and `std::array`/`std::vector` over C-style arrays.
+* Use angled brackets (`#include <header.h>`) for external/third-party headers.
+* The C{plus}{plus} file containing `main()` for any executable must be named `Driver.cc`.
+* Maintain the exact same ordering of options in the Options section and parsing logic in `getOpts`.
+
+===  C{plus}{plus} error handling
+
+* *Do not* use C{plus}{plus} Exceptions
+* *Return Values:* Mark fallible functions with `[nodiscard]` and return `bool` (or a type
+implicitly convertible to `bool`).
+* *Logging:* Functions must handle logging their own errors and should be marked `noexcept`.
+* *System Errors:* Mark branches handling system-level errors (e.g., `fseek` or `ftell` failures)
+with `[unlikely]`. Do not use this for input validation.
+* *Early Exits:* For an errorless early exit (e.g., the user requested `--help` or `--version`),
+return `std::optional<bool>` with `std::nullopt` to signal to the caller that execution should halt
+successfully without an error code.
+
+=== CMake
+
+* Always place `common-config` as the *first* item in your `target_link_libraries` list.
+* Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
+* Check before adding a compiler/linker flag if it's not guaranteed to be available on supported
+compiler (e.g., `-fsanitize=address`).
+* `3rd-party` directory must only contain 3rd-party libraries used by the project
+* Use `target\_*_*` to add flags for this project, and `add\_*_*` to add for this and all deps.
+
+=== Scripts
+* Use CMake to write scripts, if not possible, then make a folder and add scripts for all
+supported OS'es (like `setup-env`).
+* Environment setup scripts define these environment variables so you can use in other places:
+** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, or `macos`)
+** `IMPORTIZER_ARCH`: The architecture (`x64` or `arm64`)
+
+== Checklists
+
+=== New release
+
+. Update importizer's version string in:
+** `.github/workflows/Release.yml`
+** `ChangeLog.asc`
+(delete "in progress")
+** `src/importizer/Opts.cc`
+** `CMakeLists.txt`
+
+. Run the Tag Release workflow, it will:
+** Check if the last commit built and tested successfully (in Debug mode).
+** Check if LibTooling binaries are
+** Build and test on its own (in Release mode).
+** Tag the new release.
+
+=== Bumping LibTooling version
+
+. Tag a new release with (replace `{v}` with the new version):
+** Title: `libtooling-{v}`
+** Tag: `libtooling-{v}`
+** Description: `LibTooling {v} for developers and CI.`
+** Pre-release
+. Update the version string & LLVM Project hash in `scripts/EnsureLibtooling.cmake`
+. Commit with message `Bump LibTooling to {v}`, push, and let the CI run
+. Once CI finish, update the LibTooling hashes in `scripts/EnsureLibtooling.cmake`
+
+=== Permissions
+
+When pushing, ensure permission of files in `scripts/` is set to executable. You can use the
+provided git hook to do this for you:
+[source,bash]
+----
+git config core.hooksPath .githooks
+----

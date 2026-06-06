@@ -1,4 +1,4 @@
-# Make a distribution
+# [CI only] Make a distribution
 
 set(mode ${CMAKE_ARGV3})
 set(knownModes "Debug;Release")
@@ -64,8 +64,9 @@ elseif(${mode} STREQUAL Release)
   )
 endif()
 
-set(repo "msqr1/importizer")
 if(DEFINED ENV{CI} AND ${mode} STREQUAL Debug)
+  set(repo "msqr1/importizer")
+
   # Upload & move tag
   execute_process(COMMAND gh release upload continuous "${root}/${os}-${arch}.tzst"
     --clobber
@@ -82,4 +83,3 @@ if(DEFINED ENV{CI} AND ${mode} STREQUAL Debug)
   )
   execute_process(COMMAND git push -f origin continuous COMMAND_ERROR_IS_FATAL ANY)
 endif()
-# Leave for actions/upload-artifact to upload for CI Release mode

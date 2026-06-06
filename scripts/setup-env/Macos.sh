@@ -1,3 +1,4 @@
+# OS detection if not provided
 arch=${1:-$(uname -m)}
 case $arch in
 x64 | x86_64)

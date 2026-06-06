@@ -5,6 +5,7 @@ param (
   [ValidateNotNullOrEmpty()][string]$llvmPrefix = "C:/Program Files/LLVM"
 )
 
+# OS detection if not provided
 if (!$PSBoundParameters.ContainsKey("arch")) {
   $osArch = [Environment]::GetEnvironmentVariable("PROCESSOR_ARCHITEW6432")
   if ([string]::IsNullOrEmpty($osArch)) {
@@ -135,4 +136,3 @@ if ($ci) {
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
-

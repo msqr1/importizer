@@ -5,6 +5,8 @@ add_executable(importizer
 )
 require(importizer fmt Clang tomlc17)
 if(WIN32)
+
+  # Exclude Windows UCRT
   install(
     RUNTIME_DEPENDENCY_SET deps
     DESTINATION .
@@ -15,38 +17,17 @@ if(WIN32)
       [[^.*[\\/]system32[\\/].*]]
   )
 elseif(LINUX)
-  # Static except for glibc, LLVM and its deps
-  target_link_options(importizer PRIVATE
-    -static-libgcc
-    -static-libstdc++ # This can makes libc++ static, too.
-  )
 
-  # Exclude Linux system libraries
-  install(
-    RUNTIME_DEPENDENCY_SET deps
-    DESTINATION .
-    PRE_EXCLUDE_REGEXES
-      [[libm\.so]]
-      [[libc\.so]]
-      [[libdl\.so]]
-      [[libpthread\.so]]
-      [[librt\.so]]
-      [[libresolv\.so]]
-      [[libutil\.so]]
-      [[ld-linux.*\.so]]
-      [[libgcc_s\.so]]
-      [[libstdc\+\+\.so]]
-    )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  # Exclude MacOS system libraries
+  set_target_properties(importizer PROPERTIES INSTALL_RPATH "@executable_path")
+
+  # Exclude MacOS CStdlib and CxxStdlib
   install(
     RUNTIME_DEPENDENCY_SET deps
     DESTINATION .
     PRE_EXCLUDE_REGEXES
       [[^libSystem\.B\.dylib]]
       [[^libc\+\+\.1\.dylib]]
-      [[^libobjc\.dylib]]
-      [[^/usr/lib/swift]]
   )
 endif()
 target_link_libraries(importizer PRIVATE

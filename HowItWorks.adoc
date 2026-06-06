@@ -7,7 +7,7 @@ A technical overview of the design and mechanism of importizer.
 == Prerequisite
 
 * This document assumes:
-** You are comfortable with C{plus}{plus}, C{plus}{plus} modules (check out
+** You are comfortable with C{plus}{plus} and modules (check out
 https://vector-of-bool.github.io/2019/03/10/modules-1.html[this excellent article] for a detailed
 introduction).
 ** You read through the README, especially the 'Options' section.

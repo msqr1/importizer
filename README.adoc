@@ -1,0 +1,143 @@
+= importizer
+:toc:
+
+Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
+afraid that modularizing is too cumbersome? *importizer* is here to help.
+
+And by modularization I don’t mean exposing a module interface and wrapping. headers. I mean native
+modules a.k.a using modules internally.
+
+*Note:* This project is currently going through a complete rewrite using Clang LibTooling to replace
+Regex (pre-2.0.0). Much pre-2.0.0 code are gone, but releases and git history are preserved.
+
+This project uses https://semver.org[semantic versioning].
+
+== Why native C{plus}{plus} modules?
+
+* *Improved compilation time:* Modules don’t need to be recompiled every time it is imported, unlike
+headers.
+* *Improved encapsulation:* Modules allow you to choose what is exposed to users (exported), no need
+to hide stuff with a `detail` namespace. Includes and macros from a module will only stay in that
+module.
+* https://arewemodulesyet.org
+
+== Prebuilt binaries
+
+Importizer provides pre-compiled binaries for major operating systems. Necessary shared libraries
+are bundled directly in the distribution archive.
+
+[%autowidth]
+|===
+| |Linux |macOS |Windows
+
+|Architecture
+3+^.^|x64, arm64
+
+|Minimum OS
+|None
+|macOS 15{plus}
+|Windows 10{plus}
+
+|Format (release)
+3+^.^|zst(bin)
+
+|Format (debug)
+|tzst(bin {plus} .so)
+|tzst(bin {plus} .dylib)
+|tzst(bin {plus} .dll)
+|===
+
+* *Stable release:* Download optimized release builds from the
+https://github.com/msqr1/importizer/releases[releases page].
+* *Bleeding edge (debug):* Download unoptimized builds from the
+https://github.com/msqr1/importizer/releases/tag/continuous[continuous tag]. Useful for testing
+latest features or reporting bugs.
+
+== Configuration & usage
+
+Importizer primarily uses a TOML configuration file, complemented by a few command-line options.
+
+=== Command-line interface (CLI)
+
+By default, running `importizer` looks for an `importizer.toml` file in the current working
+directory. You can override this by passing the path as a positional argument: `importizer`
+`path/to/config.toml`.
+
+[%autowidth]
+|===
+|Option |Description
+
+|-h, --help
+|Print help information and exit.
+
+|-v, --version
+|Print version information and exit.
+
+|-o, --outDir
+|Override the output directory specified in the config file.
+
+|-r, --raw
+|Disable ANSI styling in logs (`always` or `never`). Defaults to `always` if no value is provided.
+Can also be toggled via the `RAW` environment variable.
+|===
+
+=== Configuration file (TOML)
+
+All relative paths in the configuration file are resolved relative to the configuration file’s
+location, *not* the current working directory.
+
+[%autowidth]
+|===
+|Option |Type |Description
+
+|`inDir`
+|String
+|*Required.* The directory containing the source code to process.
+
+|`outDir`
+|String
+|*Required* (unless provided via CLI). The directory for the modularized output.
+
+|`compilationDb`
+|String
+|*Highly Recommended.* Path to a `compile_commands.json` compilation database to provide context.
+|===
+
+==== Bootstrap mode
+
+For projects without a JSON compilation database, Importizer can attempt to imitate one using the
+`[bootstrap]` table. Note: If `compilationDb` is specified, the `bootstrap` table is ignored.
+
+[%autowidth]
+|===
+|Option |Type |Default |Description
+
+|`hdrExts`
+|String Array
+|`["h","hh","hpp","hxx",""]`
+|Header file extensions used in the project.
+
+|`srcExts`
+|String Array
+|`["cc","cpp","cxx","c{plus}{plus}","C"]`
+|Source file extensions used in the project.
+
+|`includePaths`
+|String Array
+|`[]`
+|Include paths to search during resolution.
+|===
+
+=== Example config file
+
+[source,toml]
+----
+inDir = "src"
+outDir = "modular_src"
+# compilationDb = "build/compile_commands.json"
+
+[bootstrap]
+includePaths = ["include", "third_party/libs"]
+----
+
+== link:CONTRIBUTING.adoc[Contributing]

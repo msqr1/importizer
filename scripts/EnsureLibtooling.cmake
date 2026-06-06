@@ -125,4 +125,5 @@ file(ARCHIVE_CREATE
 execute_process(COMMAND gh release upload libtooling-${v} "${scriptDir}/${os}-${arch}.tzst"
   --clobber
   -R ${repo}
-  COMMAND_ERROR_IS_FATAL ANY)
+  COMMAND_ERROR_IS_FATAL ANY
+)
