@@ -102,7 +102,7 @@ if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
     -Werror
   )
 
-  # Needs quoting and ';' for add_*_* but not target_*_*
+  # Needs quoting & ';' for add_*_* but not target_*_*
   add_compile_options(
     "$<$<COMPILE_LANGUAGE:CXX>:
       -fno-rtti;
@@ -162,7 +162,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
 
-option(BUILD_TESTING "Build test driver and run tests" ON)
+option(BUILD_TESTING "Build test driver & run tests" ON)
 if(BUILD_TESTING)
   add_subdirectory(src/run-test)
   add_subdirectory(tests)

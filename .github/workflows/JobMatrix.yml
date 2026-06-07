@@ -35,4 +35,4 @@ jobs:
           echo "m=$(gh api $repo/contents/CiMatrix.json \
             -H "Accept: application/vnd.github.raw+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
-            -q 'del(.[] | select(.os == "linux"))')" >> "$GITHUB_OUTPUT"
+            -q 'del(.[] | select(.os != "macos"))')" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,7 @@
+= Internals
+:toc:
+
+== Prerequisite
+You are comfortable with C{plus}{plus} & modules. Check out
+https://vector-of-bool.github.io/2019/03/10/modules-1.html[this excellent article] for a detailed
+introduction to modules.

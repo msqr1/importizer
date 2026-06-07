@@ -1,0 +1,38 @@
+= Roadmap
+:toc:
+
+== 3.0.0
+* [ ] Incrementally build the link:Internals.adoc[internals' documentation]
+
+=== Distribution
+* [x] Determine platform (with version) & architecture set to support
+* [x] Figure out dependency linkages
+* [x] Figure out the required build toolchain
+* [x] Setup base CMake project with LibTooling integration
+* [x] Working build, test, upload CI & CD for
+** [x] Windows
+** [x] MacOS
+** [ ] Linux (via zig cc + musl static linking)
+* [ ] Sign CI & CD distributions with minisign
+* [ ] GitHub Artifact Attestations for CD distributions
+
+=== Features
+* [ ] Dependency graph
+** [ ] Bootstrap mode (file extensions + user-given include paths)
+** [ ] From JSON compilation database
+* [ ] Include classification (internal vs external)
+* [ ] Include-to-import conversion
+* [ ] Pragma once / include guard removal
+
+=== Validation
+* [ ] Importizer 3.0.0 successfully modularizes itself
+* [ ] Modularized importizer compiles cleanly
+* [ ] Modularized importizer passes all tests
+
+
+
+== Post-3.0.0
+=== Validation
+* [ ] stephenberry/glaze
+* [ ] kaldi
+* [ ] LLVM (long term stretch goal)

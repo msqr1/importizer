@@ -1,4 +1,4 @@
-# [CI only] Make a distribution
+# [CI ONLY] Make a distribution
 
 set(mode ${CMAKE_ARGV3})
 set(knownModes "Debug;Release")

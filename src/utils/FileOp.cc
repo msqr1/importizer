@@ -56,7 +56,7 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
 
   s.resize_and_overwrite(maxSize, [f](char *p, size_t maxSize) {
     // On Windows due to text mode newline translation of \r\n -> \n it can
-    // need less than maxSize and we size our string accordingly
+    // need less than maxSize & we size our string accordingly
     return std::fread(p, sizeof(char), maxSize, f);
   });
   if (std::ferror(f)) [[unlikely]] {

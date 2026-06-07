@@ -16,12 +16,10 @@ if(WIN32)
     POST_EXCLUDE_REGEXES
       [[^.*[\\/]system32[\\/].*]]
   )
-elseif(LINUX)
-
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   set_target_properties(importizer PROPERTIES INSTALL_RPATH "@executable_path")
 
-  # Exclude MacOS CStdlib and CxxStdlib
+  # Exclude MacOS CStdlib & CxxStdlib
   install(
     RUNTIME_DEPENDENCY_SET deps
     DESTINATION .

@@ -1,5 +1,5 @@
 #!/bin/bash
 
-# Track .sh files in scripts/ and .githooks/ as executable
+# Track .sh files in scripts/ & .githooks/ as executable
 git ls-files -co --exclude-standard scripts .githooks |
   xargs -n1 git update-index --add --chmod=+x

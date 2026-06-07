@@ -91,7 +91,7 @@ if (!$path.Contains($llvmBin)) {
   }
 }
 
-# Set SDK environment variables by stealing them from VsDevCmd and filter to not pollute
+# Set SDK environment variables by stealing them from VsDevCmd & filter to not pollute
 $sdkEnvVars = @(
   "INCLUDE",
   "LIB"

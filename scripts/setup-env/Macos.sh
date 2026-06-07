@@ -25,14 +25,8 @@ if [ ! -d "$(brew --prefix llvm@$v || true)" ]; then
   return 1 2>/dev/null || exit 1
 fi
 
-asanOpts=""
-if [ "$arch" = "x64" ]; then
-  asanOpts="detect_leaks=1"
-fi
-
 v=18
 
-export ASAN_OPTIONS="$asanOpts"
 export CMAKE_PREFIX_PATH="$llvmPrefix"
 export IMPORTIZER_OS=macos
 export IMPORTIZER_ARCH=$arch
@@ -40,7 +34,6 @@ export IMPORTIZER_ARCH=$arch
 # We are in CI
 if [ -n "$CI" ]; then
   {
-    echo "ASAN_OPTIONS=$asanOpts"
     echo "CMAKE_PREFIX_PATH=$llvmPrefix"
     echo IMPORTIZER_OS=macos
     echo "IMPORTIZER_ARCH=$arch"

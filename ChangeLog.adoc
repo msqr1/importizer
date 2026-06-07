@@ -4,19 +4,19 @@
 
 * *Complete* rewrite with Clang Libtooling instead of Regex
 * Build & cache static LibTooling to distribute standalone binaries
-* Support Windows ARM64, Linux ARM64, and MacOS x64
-* Major internal changes about organization and build system
+* Support Windows ARM64, Linux ARM64, & MacOS x64
+* Major internal changes about organization & build system
 
 == 2.0.0
 
 ==== Breaking Changes
 
 * Renamed `includeGuardPat` to `includeGuard`.
-* Changed TOML transitional mode to `[transitional]` (was `[Transitional]`) to match the command-line and project naming conventions.
+* Changed TOML transitional mode to `[transitional]` (was `[Transitional]`) to match the command-line & project naming conventions.
 
 ==== Breaking Changes: Off-by-default rule
 
-* Include guards and `#pragma once` are no longer processed by default.
+* Include guards & `#pragma once` are no longer processed by default.
 * Introduced a new `pragmaOnce` setting to control `#pragma once` handling.
 
 ==== Potentially Breaking Changes
@@ -29,19 +29,19 @@
 * Added the `SOFComments` setting for handling start-of-file comments (e.g., license headers).
 * Enhanced the Minimizer to remove empty `#el...` statements.
 
-==== Changes and Fixes
+==== Changes & Fixes
 
-* Separated the IncludePrevention test into distinct tests for include guards and `#pragma once`. *
+* Separated the IncludePrevention test into distinct tests for include guards & `#pragma once`. *
 Eliminated condition generation for local includes in transitional mode.
 * Updated documentation for the `includeGuard` setting.
 * Renamed the "`Other`" test to "`ModeIndependent`".
-* Classified Minimizer and umbrella header tests as ModeIndependent.
+* Classified Minimizer & umbrella header tests as ModeIndependent.
 * Made CMake precompiled headers optional (opt-in via `PCH`).
 * Switched the argument parser to Taywee/Args to avoid `std::any` issues on Windows Clang #13.
 
 == 1.1.0
 
-==== New Features and Improvements
+==== New Features & Improvements
 
 * Added a shared directive section in transitional mode to shorten the preamble.
 * Renamed `CondMinimizer` to `Minimizer`, which now also removes empty `#define`/`#undef` pairs.

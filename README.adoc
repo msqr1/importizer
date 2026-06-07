@@ -4,25 +4,23 @@
 Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
 afraid that modularizing is too cumbersome? *importizer* is here to help.
 
-And by modularization I don’t mean exposing a module interface and wrapping. headers. I mean native
+And by modularization I don’t mean exposing a module interface & wrapping. headers. I mean native
 modules a.k.a using modules internally.
 
 *Note:* This project is currently going through a complete rewrite using Clang LibTooling to replace
-Regex (pre-2.0.0). Much pre-2.0.0 code are gone, but releases and git history are preserved.
+Regex (pre-2.0.0). Much pre-2.0.0 code are gone, but releases & git history are preserved.
 
 This project uses https://semver.org[semantic versioning].
 
 == Why native C{plus}{plus} modules?
-
 * *Improved compilation time:* Modules don’t need to be recompiled every time it is imported, unlike
 headers.
 * *Improved encapsulation:* Modules allow you to choose what is exposed to users (exported), no need
-to hide stuff with a `detail` namespace. Includes and macros from a module will only stay in that
+to hide stuff with a `detail` namespace. Includes & macros from a module will only stay in that
 module.
 * https://arewemodulesyet.org
 
 == Prebuilt binaries
-
 Importizer provides pre-compiled binaries for major operating systems. Necessary shared libraries
 are bundled directly in the distribution archive.
 
@@ -54,11 +52,9 @@ https://github.com/msqr1/importizer/releases/tag/continuous[continuous tag]. Use
 latest features or reporting bugs.
 
 == Configuration & usage
-
 Importizer primarily uses a TOML configuration file, complemented by a few command-line options.
 
 === Command-line interface (CLI)
-
 By default, running `importizer` looks for an `importizer.toml` file in the current working
 directory. You can override this by passing the path as a positional argument: `importizer`
 `path/to/config.toml`.
@@ -68,10 +64,10 @@ directory. You can override this by passing the path as a positional argument: `
 |Option |Description
 
 |-h, --help
-|Print help information and exit.
+|Print help information & exit.
 
 |-v, --version
-|Print version information and exit.
+|Print version information & exit.
 
 |-o, --outDir
 |Override the output directory specified in the config file.
@@ -82,7 +78,6 @@ Can also be toggled via the `RAW` environment variable.
 |===
 
 === Configuration file (TOML)
-
 All relative paths in the configuration file are resolved relative to the configuration file’s
 location, *not* the current working directory.
 
@@ -104,7 +99,6 @@ location, *not* the current working directory.
 |===
 
 ==== Bootstrap mode
-
 For projects without a JSON compilation database, Importizer can attempt to imitate one using the
 `[bootstrap]` table. Note: If `compilationDb` is specified, the `bootstrap` table is ignored.
 
@@ -129,8 +123,7 @@ For projects without a JSON compilation database, Importizer can attempt to imit
 |===
 
 === Example config file
-
-[source,toml]
+[,toml]
 ----
 inDir = "src"
 outDir = "modular_src"

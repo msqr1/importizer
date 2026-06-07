@@ -55,7 +55,8 @@ endif()
 
 set(llvmProjSrc "${scriptDir}/llvm-proj-src")
 
-# Get LLVM Project source (which includes LLVM and Clang)
+# Get LLVM Project source (which includes LLVM & Clang). There used to be standalone LLVM & Clang
+# sources, but that seems to have ended in 21.x.x
 set(arFile "${scriptDir}/LlvmProj.tar.xz")
 file(DOWNLOAD
   https://github.com/llvm/llvm-project/releases/download/llvmorg-${v}/llvm-project-${v}.src.tar.xz

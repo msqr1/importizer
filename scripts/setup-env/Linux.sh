@@ -13,12 +13,8 @@ arm64 | aarch64)
   ;;
 esac
 
-asanOpts=""
-if [ "$arch" = "x64" ]; then
-  asanOpts="detect_leaks=1"
-fi
-
-export ASAN_OPTIONS="$asanOpts"
+export IMPORTIZER_OS=linux
+export IMPORTIZER_ARCH=$arch
 
 # We are in CI
 if [ -n "$CI" ]; then
