@@ -1,9 +1,37 @@
+# Setup the development environment for Windows
+
 using namespace System
 
 param (
   [Parameter(Position = 0)][ValidateSet("x64", "arm64")][string]$arch,
   [ValidateNotNullOrEmpty()][string]$llvmPrefix = "C:/Program Files/LLVM"
 )
+
+function exitWithErr {
+  param(
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [object[]]$parts
+  )
+  $sb = [Text.StringBuilder]::new()
+  foreach ($part in $parts) {
+    if ($null -eq $part) { continue }
+    if ($part -is [Collections.IEnumerable] -and $part -isnot [string]) {
+      foreach ($item in $part) {
+        if ($null -ne $item) {
+          $sb.Append($item.ToString())
+          $sb.Append(", ")
+        }
+      }
+    } else {
+      $sb.Append($part.ToString())
+    }
+  }
+  throw [Management.Automation.RuntimeException]::new($sb.ToString())
+}
+
+if($MyInvocation.InvocationName -ne '.') {
+  exitWithErr("Script must be sourced. Do '. {script}' instead of '{script}'.")
+}
 
 # OS detection if not provided
 if (!$PSBoundParameters.ContainsKey("arch")) {
@@ -28,27 +56,6 @@ $opts = [Diagnostics.ProcessStartInfo]::new()
 $opts.RedirectStandardOutput = $true
 $opts.UseShellExecute = $false
 $opts.CreateNoWindow = $true
-function exitWithErr {
-  param(
-    [Parameter(ValueFromRemainingArguments = $true)]
-    [object[]]$parts
-  )
-  $sb = [Text.StringBuilder]::new()
-  foreach ($part in $parts) {
-    if ($null -eq $part) { continue }
-    if ($part -is [Collections.IEnumerable] -and $part -isnot [string]) {
-      foreach ($item in $part) {
-        if ($null -ne $item) {
-          $sb.Append($item.ToString())
-          $sb.Append(", ")
-        }
-      }
-    } else {
-      $sb.Append($part.ToString())
-    }
-  }
-  throw [Management.Automation.RuntimeException]::new($sb.ToString())
-}
 
 # Check SDK (and Clang if :bundled) with vswhere
 $vswhere = [IO.Path]::Combine(

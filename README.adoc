@@ -7,10 +7,10 @@ afraid that modularizing is too cumbersome? *importizer* is here to help.
 And by modularization I don’t mean exposing a module interface & wrapping. headers. I mean native
 modules a.k.a using modules internally.
 
+This project uses https://semver.org[semantic versioning].
+
 *Note:* This project is currently going through a complete rewrite using Clang LibTooling to replace
 Regex (pre-2.0.0). Much pre-2.0.0 code are gone, but releases & git history are preserved.
-
-This project uses https://semver.org[semantic versioning].
 
 == Why native C{plus}{plus} modules?
 * *Improved compilation time:* Modules don’t need to be recompiled every time it is imported, unlike
@@ -113,7 +113,7 @@ For projects without a JSON compilation database, Importizer can attempt to imit
 
 |`srcExts`
 |String Array
-|`["cc","cpp","cxx","c{plus}{plus}","C"]`
+|`["cc","cpp","cxx","c++","C"]`
 |Source file extensions used in the project.
 
 |`includePaths`

@@ -1,3 +1,12 @@
+#!/usr/bin/env zsh
+
+# Setup the development environment for MacOS
+
+if [[ ! $ZSH_EVAL_CONTEXT =~ :file$ ]]; then
+  echo "Script must be sourced. Do '. {script}' instead of '{script}'." >&2
+  exit 1
+fi
+
 # OS detection if not provided
 arch=${1:-$(uname -m)}
 case $arch in
@@ -9,23 +18,31 @@ arm64 | aarch64)
   ;;
 *)
   echo "Unsupported architecture '$arch', only x64 or arm64 is supported" >&2
-  return 1 2>/dev/null || exit 1
+  return 1
   ;;
 esac
 
-if ! command -v brew >/dev/null 2>&1; then
+if ! command -v cmake > /dev/null 2>&1; then
+  echo "CMake not found" >&2
+  return 1
+fi
+
+if ! command -v ninja > /dev/null 2>&1; then
+  echo "Ninja not found" >&2
+  return 1
+fi
+
+if ! command -v brew > /dev/null 2>&1 ; then
   echo "Homebrew is not installed" >&2
-  return 1 2>/dev/null || exit 1
+  return 1
 fi
 
 v=18
 llvmPrefix="$(brew --prefix llvm@$v || true)"
-if [ ! -d "$(brew --prefix llvm@$v || true)" ]; then
+if [ ! -d "$llvmPrefix" ]; then
   echo "Homebrew LLVM $v not found." >&2
-  return 1 2>/dev/null || exit 1
+  return 1
 fi
-
-v=18
 
 export CMAKE_PREFIX_PATH="$llvmPrefix"
 export IMPORTIZER_OS=macos

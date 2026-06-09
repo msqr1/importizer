@@ -1,20 +1,27 @@
 {
   "version": 10,
-  "$comment": "This file is intended for CI/CD, not developers",
+  "$comment": "This file is intended for CI/CD, not developers, but feel free to steal.",
   "configurePresets": [
     {
-      "name": "linux",
+      "name": "all",
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-18",
-        "CMAKE_CXX_COMPILER": "clang++-18"
+        "BUILD_SHARED_LIBS": false
+      }
+    },
+    {
+      "name": "linux",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_LINKER_TYPE": "LLD"
       }
     },
     {
       "name": "macos",
       "hidden": true,
-      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++"
@@ -23,7 +30,6 @@
     {
       "name": "windows",
       "hidden": true,
-      "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-cl",
         "CMAKE_CXX_COMPILER": "clang-cl",
@@ -75,18 +81,18 @@
     },
     {
       "name": "libtooling-linux",
-      "inherits": ["libtooling", "linux"],
+      "inherits": ["libtooling", "linux", "all"],
       "cacheVariables": {
         "LLVM_ENABLE_RPMALLOC": true
       }
     },
     {
       "name": "libtooling-macos",
-      "inherits": ["libtooling", "macos"]
+      "inherits": ["libtooling", "macos", "all"]
     },
     {
       "name": "libtooling-windows",
-      "inherits": ["libtooling", "windows"],
+      "inherits": ["libtooling", "windows", "all"],
       "cacheVariables": {
         "CMAKE_ASM_COMPILER": "llvm-ml",
         "LLVM_ENABLE_RPMALLOC": true
@@ -94,15 +100,15 @@
     },
     {
       "name": "importizer-linux",
-      "inherits": ["importizer", "linux"]
+      "inherits": ["importizer", "linux", "all"]
     },
     {
       "name": "importizer-macos",
-      "inherits": ["importizer", "macos"]
+      "inherits": ["importizer", "macos", "all"]
     },
     {
       "name": "importizer-windows",
-      "inherits": ["importizer", "windows"]
+      "inherits": ["importizer", "windows", "all"]
     }
   ]
 }

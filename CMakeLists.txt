@@ -101,13 +101,8 @@ if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
     -Wall
     -Werror
   )
-
-  # Needs quoting & ';' for add_*_* but not target_*_*
   add_compile_options(
-    "$<$<COMPILE_LANGUAGE:CXX>:
-      -fno-rtti;
-      -fno-exceptions
-    >"
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
   )
 
   set(asan "-fsanitize=address")
@@ -121,10 +116,7 @@ elseif(MSVC)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
   add_compile_options(
     /utf-8
-    "$<$<COMPILE_LANGUAGE:CXX>:
-      /GR-;
-      /EHs-c-
-    >"
+    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c->"
   )
   add_compile_definitions(
     "$<$<COMPILE_LANGUAGE:CXX>:_HAS_EXCEPTIONS=0;_ITERATOR_DEBUG_LEVEL=0>"

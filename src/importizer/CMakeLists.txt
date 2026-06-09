@@ -4,7 +4,9 @@ add_executable(importizer
   Toml.cc
 )
 require(importizer fmt Clang tomlc17)
-if(WIN32)
+if(LINUX)
+  target_link_options(importizer PRIVATE -static)
+elseif(WIN32)
 
   # Exclude Windows UCRT
   install(

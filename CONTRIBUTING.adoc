@@ -17,9 +17,13 @@ set environment variables) by running:
 . scripts/setup-env/{OS}
 ----
 
-Note: For Windows, there's an optional argument `llvmPrefix` to change the directory (default is
-`C:/Program Files/LLVM`) to look for LLVM. It can take the special value of `:bundled` that tells
-the script to look for the LLVM bundled within Visual Studio or Build Tools.
+Note:
+* All scripts currently check if `cmake` and `ninja` is in PATH.
+* *Windows:* There's an optional argument `llvmPrefix` to set the directory (default is
+`C:/Program Files/LLVM`) of the LLVM installation. It can take the special value of `:bundled` that
+tells the script to look for the LLVM bundled within Visual Studio or Build Tools.
+* *MacOS:* The script checks Homebrew LLVM for `clang`.
+* *Linux:* The script checks if `clang` is in PATH.
 
 == Dependency linkage
 [%autowidth]
@@ -49,7 +53,7 @@ guaranteed by MacOS so we can treat as if they're static.
 . CStdlib is Windows UCRT, it's dynamic but also with stable ABI guaranteed by Windows so we can use
 as if it's static.
 . CStdlib is glibc on most systems, but 1, it's only "most systems", & 2, there's no ABI stability
-guaranteed, so we `zig`.
+guaranteed, so we use Musl Alpine Linux.
 
 
 == Building
@@ -73,7 +77,7 @@ cmake -P scripts/EnsureLibtooling.cmake
 3+^.^|Ninja
 
 |Compiler
-|Clang 18.1.8
+|Clang 21.1.2
 |Clang 18.1.8 (Homebrew)
 |Clang 20.1.x^1^
 
@@ -176,11 +180,12 @@ compiler (e.g., `-fsanitize=address`).
 * Use `target\_*_*` to add flags for this project, & `add\_*_*` to add for this & all deps.
 
 === Scripts
-* Use CMake to write scripts, if not possible, then make a folder & add scripts for all
-supported OS'es (like `setup-env`).
+* Use CMake to write scripts, if not possible, then make a folder & add scripts for all supported
+OS'es (like `setup-env`).
 * Environment setup scripts define these environment variables so you can use in other places:
 ** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, or `macos`)
 ** `IMPORTIZER_ARCH`: The architecture (`x64` or `arm64`)
+* For CI detection check if the environment variable `CI` was defined
 
 == Checklists
 

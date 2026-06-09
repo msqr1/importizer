@@ -71,7 +71,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
   if (datum.type == TOML_STRING) {
     opts.inDir = datum.u.s;
   } else {
-    err("'inDir' must be specified & as String");
+    err("'inDir' must be specified and as String");
     return false;
   }
 

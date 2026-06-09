@@ -8,7 +8,6 @@ cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 set(v 22.1.6)
 set(3rdPartyDir "${root}/3rd-party")
 set(repo "msqr1/importizer")
-
 if(IS_READABLE "${3rdPartyDir}/clang" OR IS_READABLE "${3rdPartyDir}/llvm")
   cmake_language(EXIT 0)
 endif()
@@ -54,7 +53,6 @@ if(NOT DEFINED ENV{CI})
 endif()
 
 set(llvmProjSrc "${scriptDir}/llvm-proj-src")
-
 # Get LLVM Project source (which includes LLVM & Clang). There used to be standalone LLVM & Clang
 # sources, but that seems to have ended in 21.x.x
 set(arFile "${scriptDir}/LlvmProj.tar.xz")
@@ -99,10 +97,11 @@ execute_process(COMMAND ${CMAKE_COMMAND}
 )
 
 ## Then build Clang
-execute_process(COMMAND ${CMAKE_COMMAND} -S "${llvmProjSrc}/clang"
+execute_process(COMMAND ${CMAKE_COMMAND}
+  -S "${llvmProjSrc}/clang"
   -B "${llvmProjSrc}/build2"
-  --preset libtooling-windows
-  -DLLVM_DIR="${3rdPartyDir}/llvm/lib/cmake/llvm"
+  --preset libtooling-${os}
+  "-DLLVM_DIR=${3rdPartyDir}/llvm/lib/cmake/llvm"
   --no-warn-unused-cli
   COMMAND_ERROR_IS_FATAL ANY
 )
@@ -113,6 +112,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
   -j ${procCnt}
   COMMAND_ERROR_IS_FATAL ANY
 )
+
 file(REMOVE_RECURSE "${llvmProjSrc}")
 
 # Pack & upload

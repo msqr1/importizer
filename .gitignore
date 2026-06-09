@@ -1,13 +1,18 @@
+# Auto-generated
 /.vscode
-/.cache
 /.vs
+/.zed
+/.cache
+__cmake_systeminformation
+
 /3rd-party
 /test*
+!/tests/
 /build*
 /importizer*
-/act
-/.zed
 /CMakeUserPresets.json
-__cmake_systeminformation
-/scripts/llvm-proj-src
+
+# LibTooling build files
+/scripts/llvm*
+/scripts/LlvmProj.tar.xz
 /scripts/Libtooling.tzst

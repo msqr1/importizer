@@ -16,6 +16,6 @@ TomlResult &TomlResult::operator=(TomlResult &&other) noexcept {
   return *this;
 }
 
-toml_datum_t TomlResult::seek(std::string_view multipartKey) const noexcept {
-  return toml_seek(toptab, multipartKey.data());
+toml_datum_t TomlResult::seek(std::string_view key) const noexcept {
+  return toml_seek(toptab, key.data());
 }
