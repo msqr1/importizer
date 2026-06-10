@@ -21,16 +21,17 @@ jobs:
 
           podman build \
             https://raw.githubusercontent.com/$repo/${{ github.sha }}/scripts/alpine/Containerfile \
-            --arch=${{ matrix.arch }} \
-            --tag img
+            --platform linux/${{ matrix.arch }} \
+            -t img
 
-          echo ${{ github.token }} | \
           podman login ghcr.io \
             -u msqr1 \
-            --password-stdin
+            -p ${{ github.token }}
 
           podman push img \
             ghcr.io/${{ github.repository }}-alpine:3.24.0-${{ matrix.arch }} \
-            --compression-format=zstd \
-            --compression-level=19 \
-            -f=oci
+            -f oci \
+            --compression-format zstd \
+            --compression-level 19
+
+          podman logout --all

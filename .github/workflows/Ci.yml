@@ -6,7 +6,7 @@ jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
     with:
-      jqExpr: 'del(.[] | select(.os != "macos"))'
+      jqExpr: 'del(.[] | select(.os == "windows"))'
   all:
     permissions:
       contents: write

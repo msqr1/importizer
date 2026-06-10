@@ -1,13 +1,14 @@
 {
   "version": 10,
-  "$comment": "This file is intended for CI/CD, not developers, but feel free to steal.",
+  "$comment": "This file is intended for CI/CD, not developers, but feel free to copy.",
   "configurePresets": [
     {
       "name": "all",
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
-        "BUILD_SHARED_LIBS": false
+        "BUILD_SHARED_LIBS": false,
+        "CMAKE_LINKER_TYPE": "LLD"
       }
     },
     {
@@ -15,8 +16,7 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_LINKER_TYPE": "LLD"
+        "CMAKE_CXX_COMPILER": "clang++"
       }
     },
     {
@@ -32,8 +32,7 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl",
-        "CMAKE_LINKER_TYPE": "LLD"
+        "CMAKE_CXX_COMPILER": "clang-cl"
       }
     },
     {
@@ -82,9 +81,7 @@
     {
       "name": "libtooling-linux",
       "inherits": ["libtooling", "linux", "all"],
-      "cacheVariables": {
-        "LLVM_ENABLE_RPMALLOC": true
-      }
+      "$comment": "No rpmalloc on Linux due to a bug"
     },
     {
       "name": "libtooling-macos",

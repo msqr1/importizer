@@ -1,5 +1,5 @@
 = Internals
-:toc:
+:toc: preamble
 
 == Prerequisite
 You are comfortable with C{plus}{plus} & modules. Check out

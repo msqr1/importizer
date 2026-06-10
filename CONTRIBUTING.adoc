@@ -5,62 +5,76 @@ Thank you for contributing to importizer!
 
 == Internals
 Although not a hard requirement, you'd want to know some internals of importizer. It's written out
-link:Internals.adoc[here]. This covers architecture overview, design decisions, transformations &
+link:Internals.adoc[here]. It covers architecture overview, design decisions, transformations &
 their mechanism as well as some history & fun facts.
 
 == Environment
-*Before doing anything else*, setup the environment (check architecture, required tools, backend &
-set environment variables) by running:
+=== If you're on Linux
+Because your Linux is likely based on glibc, development should be done in an Alpine container.
+There's https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[prebuilt ones] with all
+the required tools. Personally, I use https://distrobox.it[distrobox] because it makes the
+host-container boundary (terminal-wise) invisible. Here's how to set it up:
 [,bash]
 ----
-. scripts/setup-env/{OS}
+# Create distrobox container (replace {arch} with your architecture)
+distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:3.24.0-{arch} --no-entry
+
+# Enter container
+distrobox enter importizer-alpine
+----
+
+=== Setup
+Setup the environment (check architecture, required tools, backend & set environment variables) by
+running (replace {os} with the correct file):
+[,bash]
+----
+. scripts/setup-env/{os}
 ----
 
 Note:
 
-* All scripts currently check if `cmake` and `ninja` is in PATH.
+* All scripts currently check if CMake and Ninja is in PATH.
 * *Windows:* There's an optional argument `llvmPrefix` to set the directory (default is
 `C:/Program Files/LLVM`) of the LLVM installation. It can take the special value of `:bundled` that
 tells the script to look for the LLVM bundled within Visual Studio or Build Tools.
-* *MacOS:* The script checks Homebrew LLVM for `clang`.
-* *Linux:* The script checks if `clang` is in PATH.
+* *MacOS:* The script checks Homebrew LLVM (for Clang and LLD).
+* *Linux:* The script checks if Clang and LLD is in PATH.
 
 == Dependency linkage
 [%autowidth]
 |===
 | |Linux |MacOS |Windows
 
-|LibTooling
-|Dynamic^1^
-2+^.^|Static
-
-|Other 3rd-party
+|3rd-party libraries
 3+^.^|Static
 
 |C++ Standard Library (CxxStdlib)
 |Static
-.2+^.^|Dynamic^2^
+.2+^.^|Dynamic^1^
 |Static
 
 |C Standard Library (CStdlib)
+|Static^2^
 |Dynamic^3^
-|Dynamic^4^
 |===
 
-. Package manager doesn’t offer static build, pending self-built LLVM.
 . CStdlib is libSystem, CxxStdlib is a modded libc{plus}{plus}, both are dynamic but with stable ABI
-guaranteed by MacOS so we can treat as if they're static.
-. CStdlib is Windows UCRT, it's dynamic but also with stable ABI guaranteed by Windows so we can use
-as if it's static.
-. CStdlib is glibc on most systems, but 1, it's only "most systems", & 2, there's no ABI stability
-guaranteed, so we use Musl (Alpine).
+between versions guaranteed by MacOS so we can treat as if they're static.
+. CStdlib is Windows UCRT, it's dynamic but also with stable ABI guaranteed between versions by
+Windows so we can use as if it's static.
+. CStdlib is musl libc. glibc was considered, but:
+.. Static linking with it is unsupported.
+.. Even if we do dynamic linking, it's still only on most systems, not all.
+.. There's no ABI stability guarantee between versions.
 
 == Building
 === Skip building LibTooling
-Importizer needs Clang LibTooling. To save developers from compiling it & speed up CI, there's
-prebuilt ones. Since C++ ABIs & LLVM bitcode formats can change between versions, if you
-match the toolchain in the table below (which is used to build LibTooling for CI), the prebuilt
-LibTooling will integrate seamlessly. You can start coding right away.
+Importizer needs Clang LibTooling. But LibTooling isn't like other 3rd-party libraries, it is
+massive! To save one from compiling it, there's
+https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.6[prebuilt ones]. Since C++ ABIs &
+LLVM bitcode formats can change between versions, if you matches the toolchain in the table below
+(used to build LibTooling for CI), the prebuilt LibTooling will integrate seamlessly. One can start
+coding right away.
 [,bash]
 ----
 cmake -P scripts/libtooling/Ensure.cmake
@@ -75,31 +89,31 @@ cmake -P scripts/libtooling/Ensure.cmake
 |Generator
 3+^.^|Ninja
 
-|Compiler
-|Clang 22.1.0
-|Clang 18.1.8 (Homebrew)
-|Clang 20.1.x^1^
+|Compiler toolchain
+|Clang, LLD 22.1.3
+|Clang, LLD 18.1.8 (Homebrew)
+|clang-cl, lld-link, llvm-ml 20.1.x^1^
 
 |Backend
-|None
+|Alpine 3.24.0
 |Xcode SDK (`SDKROOT`)
 |Visual Studio or Build Tools^2^
 |===
 
-. `20.1.8` on AMD64, `20.1.6` on ARM64.
+. `20.1.8` on AMD64, `20.1.6` on ARM64. Basically faking MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
 
 === Building from source entirely
 You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you will
-have to rebuild LibTooling with that toolchain. Good luck! Note that everything in this repo
-will assume that you won't be doing this.
+have to rebuild LibTooling with that toolchain. Good luck! Note that everything else here assumes
+you won't be doing this.
 
 === Build process
-Ok, enough talking, here's how to build the release mode from scratch while skipping building
-LibTooling. Note that cross compilation is not currently supported.
-
+Ok, enough talking, here's how to build the release mode from scratch. Note that cross compilation
+is currently unsupported.
 [,bash]
 ----
+# Shallow clone to save space
 git clone --depth 1 https://github.com/msqr1/importizer
 cd importizer
 
@@ -110,21 +124,30 @@ cd importizer
 cmake -P scripts/libtooling/Ensure.cmake
 
 # Configure
-cmake -B build
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+# Build using all cores
+cmake --build build --config Release -j $(cmake -P scripts/Nproc.cmake)
 ----
+The binary is in `build`, named `importizer` on Linux or MacOS and `importizer.exe` on Windows.
 
 == Testing
 === Running tests
-Tests are not enabled by default, but can be toggled via the `BUILD_TESTING` CMake option.
-
+Tests are disabled by default, but can be toggled via the `BUILD_TESTING` CMake option.
 [,bash]
 ----
-# Ensure tests are configured (Debug mode recommended for testing) cmake -B build
--DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON cmake --build build --config Debug -j $(cmake -P
-scripts/Nproc.cmake)
+# Configure with tests enabled (Debug mode recommended for testing)
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
 
-# Run the test suite using all available cores ctest --test-dir build/tests --output-on-failure
---progress --schedule-random -j \ $(cmake -P scripts/Nproc.cmake)
+# Build using all cores
+cmake --build build --config Debug -j $(cmake -P scripts/Nproc.cmake)
+
+# Run tests with recommended settings & using all cores
+ctest --test-dir build/tests \
+  --output-on-failure \
+  --progress \
+  --schedule-random \
+  -j $(cmake -P scripts/Nproc.cmake)
 ----
 
 === Adding new tests
@@ -141,7 +164,7 @@ will automatically compare the actual output directory against this reference di
 this when expecting an error.
 
 The CMake script dynamically globs the `tests/` folder, so your new test will be automatically
-picked up on the next `cmake` `-B` `build` run.
+picked up on the next `cmake -B build` run.
 
 == Coding conventions
 * 100-column per line limit for files & CLI outputs
@@ -189,12 +212,12 @@ OS'es (like `setup-env`).
 == Checklists
 === New release
 [%interactive]
-* [ ] Update importizer's version string(s) in:
+* [ ] Update the version string(s) in:
 ** `.github/workflows/Release.yml`
 ** `ChangeLog.adoc` (delete "in progress")
 ** `src/importizer/Opts.cc`
 ** `CMakeLists.txt`
-* [ ] Run the Tag Release workflow, it will:
+* [ ] Commit & run the Tag Release workflow, it will:
 ** Check if the last commit built & tested successfully (in Debug mode).
 ** Check if LibTooling binaries are
 ** Build & test on its own (in Release mode).
@@ -207,19 +230,25 @@ OS'es (like `setup-env`).
 ** Tag: `libtooling-{v}`
 ** Description: `LibTooling {v} for developers & CI.`
 ** Pre-release
-* [ ] Update the version string(s) & LLVM Project hash in `scripts/libtooling/Ensure.cmake`
+* [ ] Update the version string(s) in:
+** `scripts/libtooling/Ensure.cmake` (also update LLVM Project source hash)
+** `CONTRIBUTING.adoc`
+* [ ] Add `Bump LibTooling to {v}` to `ChangeLog.adoc`
 * [ ] Commit with message `Bump LibTooling to {v}` & let the CI run
-* [ ] Once CI finish, update the LibTooling hashes in `scripts/libtooling/Ensure.cmake` (for next
-commit)
+* [ ] Once CI finishes sucessfully, for next commit:
+** Update the LibTooling hashes in `scripts/libtooling/Ensure.cmake`
 
-=== Bumping Alpine image version
+=== Bumping Alpine images version
 [%interactive]
 * [ ] Update the version string(s) in:
 ** `.github/workflows/Alpine.yml`
 ** `scripts/alpine/Containerfile`
 ** `CiMatrix.json`
+** `CONTRIBUTING.adoc`
+* [ ] Add `Bump Alpine to {v}` to `ChangeLog.adoc`
 * [ ] Commit with message `[no ci] Bump Alpine to {v}`
-* [ ] Run the Make Alpine Image workflow
+* [ ] Run the Make Alpine Images workflow
+* [ ] Once the workflow finishes sucessfully, run the Tag Continuous workflow
 
 === Permissions
 When pushing, ensure permission of files in `scripts/` is set to executable. You can use the

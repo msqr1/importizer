@@ -64,7 +64,7 @@ $vswhere = [IO.Path]::Combine(
 if (![IO.File]::Exists($vswhere)) {
   exitWithErr("vswhere not found. Visual Studio does not appear to be installed.")
 }
-$x = if ($arch.Equals("amd64")) { "x86.amd64" } else { "ARM64" }
+$x = if ($arch.Equals("amd64")) { "x86.x64" } else { "ARM64" }
 $components = [Collections.Generic.List[string]]@(
   "Microsoft.VisualStudio.Component.Windows1?SDK.*"
   "Microsoft.VisualStudio.Component.VC.*.$x"
@@ -83,7 +83,7 @@ if ($proc.ExitCode -ne 0 -or [string]::IsNullOrEmpty($vsPrefix)) {
     $components)
 }
 if ($llvmPrefix.Equals(":bundled")) {
-  $dir = if ($arch.Equals("amd64")) { "amd64" } else { "ARM64" }
+  $dir = if ($arch.Equals("amd64")) { "x64" } else { "ARM64" }
   $llvmPrefix = [IO.Path]::Combine($vsPrefix, "VC", "Tools", "Llvm", $dir)
 }
 
