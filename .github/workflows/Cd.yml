@@ -1,12 +1,11 @@
 name: Tag Release
-on:
-  - workflow_dispatch
+on: workflow_dispatch
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
     with:
       checkCi: true
-  all:
+  make:
     permissions:
       contents: write
     needs: jobMatrix
@@ -15,6 +14,7 @@ jobs:
         include: ${{ fromJSON(needs.jobMatrix.outputs.m) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
+    container: ${{ matrix.container || '' }}
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@v1.4.2
@@ -26,7 +26,7 @@ jobs:
           . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
 
           # Ensure LibTooling
-          cmake -P scripts/EnsureLibtooling.cmake
+          cmake -P scripts/libtooling/Ensure.cmake
 
           # Make distribution
           cmake -P scripts/MkDist.cmake Release
@@ -42,7 +42,7 @@ jobs:
     permissions:
       contents: write
       repository-projects: write
-    needs: all
+    needs: make
     runs-on: ubuntu-slim
     steps:
       - name: Download distributions
@@ -62,7 +62,7 @@ jobs:
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # 3.0.0
         with:
           tag_name: 3.0.0
-          body: "[Change log](https://github.com/msqr1/importizer/blob/main/ChangeLog.adoc#300)"
+          body: "[Change log](https://github.com/${{ github.repository }}/blob/main/ChangeLog.adoc#300)"
           files: dists/*
       - name: Disable release immutability
         env:

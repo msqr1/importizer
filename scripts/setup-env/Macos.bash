@@ -1,8 +1,8 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 # Setup the development environment for MacOS
 
-if [[ ! $ZSH_EVAL_CONTEXT =~ :file$ ]]; then
+if ! (return 0 2>/dev/null); then
   echo "Script must be sourced. Do '. {script}' instead of '{script}'." >&2
   exit 1
 fi
@@ -10,14 +10,14 @@ fi
 # OS detection if not provided
 arch=${1:-$(uname -m)}
 case $arch in
-x64 | x86_64)
-  arch="x64"
+amd64 | x86_64)
+  arch="amd64"
   ;;
 arm64 | aarch64)
   arch="arm64"
   ;;
 *)
-  echo "Unsupported architecture '$arch', only x64 or arm64 is supported" >&2
+  echo "Unsupported architecture '$arch', only 'amd64' or 'arm64' is supported" >&2
   return 1
   ;;
 esac

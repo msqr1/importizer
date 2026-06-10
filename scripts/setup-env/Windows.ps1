@@ -3,7 +3,7 @@
 using namespace System
 
 param (
-  [Parameter(Position = 0)][ValidateSet("x64", "arm64")][string]$arch,
+  [Parameter(Position = 0)][ValidateSet("amd64", "arm64")][string]$arch,
   [ValidateNotNullOrEmpty()][string]$llvmPrefix = "C:/Program Files/LLVM"
 )
 
@@ -44,9 +44,9 @@ if (!$PSBoundParameters.ContainsKey("arch")) {
     $arch = "arm64"
   } elseif ([Text.RegularExpressions.Regex]::IsMatch($osArch, "amd64",
       [Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
-    $arch = "x64"
+    $arch = "amd64"
   } else {
-    exitWithErr("Unsupported architecture '", $osArch, "', only x64 or arm64 is supported")
+    exitWithErr("Unsupported architecture '", $osArch, "', only 'amd64' or 'arm64' is supported")
   }
 }
 
@@ -64,7 +64,7 @@ $vswhere = [IO.Path]::Combine(
 if (![IO.File]::Exists($vswhere)) {
   exitWithErr("vswhere not found. Visual Studio does not appear to be installed.")
 }
-$x = if ($arch.Equals("x64")) { "x86.x64" } else { "ARM64" }
+$x = if ($arch.Equals("amd64")) { "x86.amd64" } else { "ARM64" }
 $components = [Collections.Generic.List[string]]@(
   "Microsoft.VisualStudio.Component.Windows1?SDK.*"
   "Microsoft.VisualStudio.Component.VC.*.$x"
@@ -83,7 +83,7 @@ if ($proc.ExitCode -ne 0 -or [string]::IsNullOrEmpty($vsPrefix)) {
     $components)
 }
 if ($llvmPrefix.Equals(":bundled")) {
-  $dir = if ($arch.Equals("x64")) { "x64" } else { "ARM64" }
+  $dir = if ($arch.Equals("amd64")) { "amd64" } else { "ARM64" }
   $llvmPrefix = [IO.Path]::Combine($vsPrefix, "VC", "Tools", "Llvm", $dir)
 }
 

@@ -1,8 +1,7 @@
 = Contributing
+:toc: preamble
 
 Thank you for contributing to importizer!
-
-:toc:
 
 == Internals
 Although not a hard requirement, you'd want to know some internals of importizer. It's written out
@@ -18,6 +17,7 @@ set environment variables) by running:
 ----
 
 Note:
+
 * All scripts currently check if `cmake` and `ninja` is in PATH.
 * *Windows:* There's an optional argument `llvmPrefix` to set the directory (default is
 `C:/Program Files/LLVM`) of the LLVM installation. It can take the special value of `:bundled` that
@@ -53,8 +53,7 @@ guaranteed by MacOS so we can treat as if they're static.
 . CStdlib is Windows UCRT, it's dynamic but also with stable ABI guaranteed by Windows so we can use
 as if it's static.
 . CStdlib is glibc on most systems, but 1, it's only "most systems", & 2, there's no ABI stability
-guaranteed, so we use Musl Alpine Linux.
-
+guaranteed, so we use Musl (Alpine).
 
 == Building
 === Skip building LibTooling
@@ -64,7 +63,7 @@ match the toolchain in the table below (which is used to build LibTooling for CI
 LibTooling will integrate seamlessly. You can start coding right away.
 [,bash]
 ----
-cmake -P scripts/EnsureLibtooling.cmake
+cmake -P scripts/libtooling/Ensure.cmake
 ----
 [%autowidth]
 |===
@@ -77,17 +76,17 @@ cmake -P scripts/EnsureLibtooling.cmake
 3+^.^|Ninja
 
 |Compiler
-|Clang 21.1.2
+|Clang 22.1.0
 |Clang 18.1.8 (Homebrew)
 |Clang 20.1.x^1^
 
 |Backend
-|`build-essential`
+|None
 |Xcode SDK (`SDKROOT`)
 |Visual Studio or Build Tools^2^
 |===
 
-. `20.1.8` on x64, `20.1.6` on ARM64.
+. `20.1.8` on AMD64, `20.1.6` on ARM64.
 . Used strictly to provide the Windows SDK.
 
 === Building from source entirely
@@ -108,7 +107,7 @@ cd importizer
 . scripts/setup-env/{OS}
 
 # Ensure LibTooling
-cmake -P scripts/Ensurelibtooling.cmake
+cmake -P scripts/libtooling/Ensure.cmake
 
 # Configure
 cmake -B build
@@ -184,14 +183,13 @@ compiler (e.g., `-fsanitize=address`).
 OS'es (like `setup-env`).
 * Environment setup scripts define these environment variables so you can use in other places:
 ** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, or `macos`)
-** `IMPORTIZER_ARCH`: The architecture (`x64` or `arm64`)
+** `IMPORTIZER_ARCH`: The architecture (`amd64` or `arm64`)
 * For CI detection check if the environment variable `CI` was defined
 
 == Checklists
-
 === New release
 [%interactive]
-* [ ] Update importizer's version string in:
+* [ ] Update importizer's version string(s) in:
 ** `.github/workflows/Release.yml`
 ** `ChangeLog.adoc` (delete "in progress")
 ** `src/importizer/Opts.cc`
@@ -209,9 +207,19 @@ OS'es (like `setup-env`).
 ** Tag: `libtooling-{v}`
 ** Description: `LibTooling {v} for developers & CI.`
 ** Pre-release
-* [ ] Update the version string & LLVM Project hash in `scripts/EnsureLibtooling.cmake`
-* [ ] Commit with message `Bump LibTooling to {v}`, push, & let the CI run
-* [ ] Once CI finish, update the LibTooling hashes in `scripts/EnsureLibtooling.cmake`
+* [ ] Update the version string(s) & LLVM Project hash in `scripts/libtooling/Ensure.cmake`
+* [ ] Commit with message `Bump LibTooling to {v}` & let the CI run
+* [ ] Once CI finish, update the LibTooling hashes in `scripts/libtooling/Ensure.cmake` (for next
+commit)
+
+=== Bumping Alpine image version
+[%interactive]
+* [ ] Update the version string(s) in:
+** `.github/workflows/Alpine.yml`
+** `scripts/alpine/Containerfile`
+** `CiMatrix.json`
+* [ ] Commit with message `[no ci] Bump Alpine to {v}`
+* [ ] Run the Make Alpine Image workflow
 
 === Permissions
 When pushing, ensure permission of files in `scripts/` is set to executable. You can use the

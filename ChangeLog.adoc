@@ -4,7 +4,7 @@
 
 * *Complete* rewrite with Clang Libtooling instead of Regex
 * Build & cache static LibTooling to distribute standalone binaries
-* Support Windows ARM64, Linux ARM64, & MacOS x64
+* Support Windows ARM64, Linux ARM64, & MacOS amd64
 * Major internal changes about organization & build system
 
 == 2.0.0

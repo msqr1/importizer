@@ -6,9 +6,13 @@ on:
         description: Check CI status of HEAD
         type: boolean
         default: false
+      jqExpr:
+        description: jq filter expression for jobs
+        type: string
+        default: ""
     outputs:
       m:
-        description: "Job matrix"
+        description: Job matrix
         value: ${{ jobs.all.outputs.m }}
 jobs:
   all:
@@ -35,4 +39,4 @@ jobs:
           echo "m=$(gh api $repo/contents/CiMatrix.json \
             -H "Accept: application/vnd.github.raw+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
-            -q 'del(.[] | select(.os != "macos"))')" >> "$GITHUB_OUTPUT"
+            -q '${{ inputs.jqExpr }}')" >> "$GITHUB_OUTPUT"

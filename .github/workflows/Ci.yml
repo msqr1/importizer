@@ -5,6 +5,8 @@ on:
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
+    with:
+      jqExpr: 'del(.[] | select(.os != "macos"))'
   all:
     permissions:
       contents: write
@@ -15,6 +17,7 @@ jobs:
         include: ${{ fromJSON(needs.jobMatrix.outputs.m) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
+    container: ${{ matrix.container || '' }}
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@v1.4.2
@@ -26,7 +29,7 @@ jobs:
           . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
 
           # Ensure LibTooling
-          cmake -P scripts/EnsureLibtooling.cmake
+          cmake -P scripts/libtooling/Ensure.cmake
 
           # Make distribution
           cmake -P scripts/MkDist.cmake Debug

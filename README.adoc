@@ -1,5 +1,5 @@
 = importizer
-:toc:
+:toc: preamble
 
 Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
 afraid that modularizing is too cumbersome? *importizer* is here to help.
@@ -29,7 +29,7 @@ are bundled directly in the distribution archive.
 | |Linux |macOS |Windows
 
 |Architecture
-3+^.^|x64, arm64
+3+^.^|AMD64, ARM64
 
 |Minimum OS
 |None

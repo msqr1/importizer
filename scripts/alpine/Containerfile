@@ -1,0 +1,2 @@
+FROM alpine:3.24.0
+RUN apk add --no-cache git cmake ninja-is-really-ninja clang lld

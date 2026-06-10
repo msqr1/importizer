@@ -10,14 +10,14 @@ fi
 # OS detection if not provided
 arch=${1:-$(uname -m)}
 case $arch in
-x64 | x86_64)
-  arch="x64"
+amd64 | x86_64)
+  arch="amd64"
   ;;
 arm64 | aarch64)
   arch="arm64"
   ;;
 *)
-  echo "Unsupported architecture '$arch', only x64 or arm64 is supported" >&2
+  echo "Unsupported architecture '$arch', only 'amd64' or 'arm64' is supported" >&2
   return 1
   ;;
 esac
