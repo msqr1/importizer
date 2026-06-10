@@ -32,7 +32,7 @@ bool getRaw(int argc, const char **argv) noexcept {
     DWORD errCode{GetLastError()};
     // 203 is ERROR_ENVVAR_NOT_FOUND. If it's missing, ignore.
     if (errCode != 0 && errCode != 203) {
-      err("Unable to check environment variable 'RAW': {}",
+      err("Unable to check environment variable 'RAW': {}.",
           std::system_category().message(errCode));
       return false;
     }
@@ -57,7 +57,7 @@ bool getRaw(int argc, const char **argv) noexcept {
       } else if (val == "never") {
         raw = false;
       } else {
-        err("Unknown value {} for '{}'", val, arg);
+        err("Unknown value {} for '{}'.", val, arg);
         return false;
       }
       break; // Found our flag, skip the rest

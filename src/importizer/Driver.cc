@@ -25,7 +25,7 @@ int main(const int argc, const char **argv) {
   std::error_code errCode;
   fs::recursive_directory_iterator it{opts.inDir, errCode};
   if (errCode) {
-    err("Unable to iterate {}: {}", opts.inDir, errCode.message());
+    err("Unable to iterate {}: {}.", opts.inDir, errCode.message());
     return EXIT_FAILURE;
   }
   for (const fs::directory_entry &entry : it) {

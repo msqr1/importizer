@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31.5)
+cmake_minimum_required(VERSION 3.31)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 15)
 project(importizer VERSION 3.0.0)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
@@ -16,8 +16,7 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(BUILD_SHARED_LIBS OFF)
 set(root "${CMAKE_SOURCE_DIR}")
 
-
-# 3rd-parties
+# 3rd-party libs
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
 endif()

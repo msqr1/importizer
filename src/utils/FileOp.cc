@@ -27,12 +27,12 @@ File portableFOpen(const fs::path &path, std::string_view mode) noexcept {
   if (errCode != 0) [[unlikely]] {
     std::array<char, 94> msg;
     strerror_s(msg.data(), msg.size(), errCode);
-    err("Unable to open {}: {}", path, msg.data());
+    err("Unable to open {}: {}.", path, msg.data());
   }
 #else
   f = std::fopen(path.c_str(), mode.data());
   if (f == nullptr) [[unlikely]] {
-    err("Unable to open {}: {}", path, std::strerror(errno));
+    err("Unable to open {}: {}.", path, std::strerror(errno));
   }
 #endif
   return File(f);
@@ -40,17 +40,17 @@ File portableFOpen(const fs::path &path, std::string_view mode) noexcept {
 
 bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
   if (std::fseek(f, 0, SEEK_END)) [[unlikely]] {
-    err("Unseekable to end: {}", path);
+    err("Unseekable to end: {}.", path);
     return false;
   }
 
   const size_t maxSize{static_cast<size_t>(std::ftell(f))};
   if (maxSize == SIZE_MAX) [[unlikely]] {
-    err("Unable to get size of {}", path);
+    err("Unable to get size of {}.", path);
     return false;
   }
   if (std::fseek(f, 0, 0)) [[unlikely]] {
-    err("Unseekable to start: {}", path);
+    err("Unseekable to start: {}.", path);
     return false;
   }
 
@@ -60,7 +60,7 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
     return std::fread(p, sizeof(char), maxSize, f);
   });
   if (std::ferror(f)) [[unlikely]] {
-    err("Error occured while reading {}", path);
+    err("Error occured while reading {}.", path);
     return false;
   }
 

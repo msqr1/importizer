@@ -1,1 +1,1 @@
-importizer: error: 'inDir' must be specified and as String
+importizer: error: 'inDir' must be specified and as String.

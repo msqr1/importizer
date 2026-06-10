@@ -9,7 +9,7 @@ on:
       jqExpr:
         description: jq filter expression for jobs
         type: string
-        default: ""
+        default: "."
     outputs:
       m:
         description: Job matrix

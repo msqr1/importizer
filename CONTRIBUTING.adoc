@@ -84,7 +84,7 @@ cmake -P scripts/libtooling/Ensure.cmake
 | |Linux |MacOS |Windows
 
 |Build system
-3+^.^|CMake 3.31.5{plus}
+3+^.^|CMake 3.31{plus}
 
 |Generator
 3+^.^|Ninja

@@ -30,7 +30,7 @@ struct TomlResult : toml_result_t {
       return true;
     }
     if (datum.type != TOML_ARRAY) {
-      err("'{}' must be a String Array", key);
+      err("'{}' must be a String Array.", key);
       return false;
     }
 
@@ -38,7 +38,7 @@ struct TomlResult : toml_result_t {
     for (int i{}; i < datum.u.arr.size; ++i) {
       toml_datum_t elem{datum.u.arr.elem[i]};
       if (elem.type != TOML_STRING) {
-        err("Element #{} of '{}' is not a String", i + 1, key);
+        err("Element #{} of '{}' is not a String.", i + 1, key);
         return false;
       }
       strs.emplace_back(elem.u.s);

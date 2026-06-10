@@ -7,7 +7,6 @@ require(importizer fmt Clang tomlc17)
 if(LINUX)
   target_link_options(importizer PRIVATE -static)
 elseif(WIN32)
-
   # Exclude Windows UCRT
   install(
     RUNTIME_DEPENDENCY_SET deps
@@ -19,8 +18,6 @@ elseif(WIN32)
       [[^.*[\\/]system32[\\/].*]]
   )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set_target_properties(importizer PROPERTIES INSTALL_RPATH "@executable_path")
-
   # Exclude MacOS CStdlib & CxxStdlib
   install(
     RUNTIME_DEPENDENCY_SET deps

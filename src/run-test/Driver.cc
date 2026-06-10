@@ -40,21 +40,21 @@ int main(const int argc, const char **argv) {
 
   std::error_code errCode{proc.start(cmd, opts)};
   if (errCode) [[unlikely]] {
-    err("Unable to start {}: {}", cmd, errCode.message());
+    err("Unable to start {}: {}.", cmd, errCode.message());
     return EXIT_FAILURE;
   }
 
   std::string out;
   errCode = rp::drain(proc, rp::sink::null, rp::sink::string{out});
   if (errCode) [[unlikely]] {
-    err("Unable to read output of {}: {}", cmd, errCode.message());
+    err("Unable to read output of {}: {}.", cmd, errCode.message());
     return EXIT_FAILURE;
   }
 
   int rtn;
   std::tie(rtn, errCode) = proc.wait(rp::infinite);
   if (errCode) [[unlikely]] {
-    err("Unable to wait for {}: {}", cmd, errCode.message());
+    err("Unable to wait for {}: {}.", cmd, errCode.message());
     return EXIT_FAILURE;
   }
 
@@ -71,7 +71,7 @@ int main(const int argc, const char **argv) {
   const int refRtn{ref.contains("importizer: error: ") ? EXIT_FAILURE
                                                        : EXIT_SUCCESS};
   if ((errored |= refRtn != rtn)) {
-    err("Mismatched return code: expected {}, got {}", refRtn, rtn);
+    err("Mismatched return code: expected {}, got {}.", refRtn, rtn);
   }
 
   if ((errored |= out != ref)) {
