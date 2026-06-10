@@ -5,6 +5,8 @@ on:
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
+    with:
+      jqExpr: 'del(.[] | select(.os != "linux"))'
   all:
     permissions:
       contents: write
