@@ -1,4 +1,5 @@
 # Ensure that LibTooling (LLVM & Clang) is in 3rd-party/
+## Uses Github CLI - set GH_TOKEN env var for Actions' step
 
 set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})

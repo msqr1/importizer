@@ -1,4 +1,5 @@
-# [CI ONLY] Make a distribution
+# Make a distribution
+## Uses Github CLI - set GH_TOKEN env var for Actions' step
 
 set(mode ${CMAKE_ARGV3})
 set(knownModes "Debug;Release")
