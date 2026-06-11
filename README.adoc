@@ -33,7 +33,7 @@ are bundled directly in the distribution archive.
 
 |Minimum OS
 |None
-|macOS 15{plus}
+|MacOS 14{plus}
 |Windows 10{plus}
 
 |Format (release)
@@ -56,8 +56,8 @@ Importizer primarily uses a TOML configuration file, complemented by a few comma
 
 === Command-line interface (CLI)
 By default, running `importizer` looks for an `importizer.toml` file in the current working
-directory. You can override this by passing the path as a positional argument: `importizer`
-`path/to/config.toml`.
+directory. You can override this by passing the path as a positional argument: `importizer
+path/to/config.toml`.
 
 [%autowidth]
 |===

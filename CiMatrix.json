@@ -26,13 +26,13 @@
     "script": "Windows.ps1"
   },
   {
-    "runner": "macos-15-intel",
+    "runner": "macos-26-intel",
     "os": "macos",
     "arch": "amd64",
     "script": "Macos.bash"
   },
   {
-    "runner": "macos-15",
+    "runner": "macos-26",
     "os": "macos",
     "arch": "arm64",
     "script": "Macos.bash"

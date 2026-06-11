@@ -85,9 +85,9 @@ Windows so we can use as if it's static.
 Importizer needs Clang LibTooling. But LibTooling isn't like other 3rd-party libraries, it is
 massive! To save one from compiling it, there's
 https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.6[prebuilt ones]. Since C++ ABIs &
-LLVM bitcode formats can change between versions, if you matches the toolchain in the table below
-(used to build LibTooling for CI), the prebuilt LibTooling will integrate seamlessly. One can start
-coding right away.
+LLVM bitcode formats can change between versions, if you match the toolchain in the table below that
+was used to build LibTooling for CI, the prebuilt LibTooling will integrate seamlessly. One can
+start coding right away.
 [,bash]
 ----
 cmake -P scripts/libtooling/Ensure.cmake
@@ -100,21 +100,43 @@ cmake -P scripts/libtooling/Ensure.cmake
 3+^.^|CMake 3.31{plus}
 
 |Generator
-3+^.^|Ninja
+3+^.^|Ninja^1^
 
 |Compiler toolchain
-|Clang, LLD 22.1.3
-|Clang, LLD 18.1.8 (Homebrew)
-|clang-cl, lld-link, llvm-ml 20.1.x^1^
+|clang, ld.lld 22.1.3
+|clang 20.1.8 (Homebrew)
+|clang-cl, lld-link, llvm-ml 20.1.x^2^
 
 |Backend
 |Alpine 3.24.0
 |Xcode SDK (`SDKROOT`)
-|Visual Studio or Build Tools^2^
+|Visual Studio or Build Tools^3^
 |===
 
-. `20.1.8` on AMD64, `20.1.6` on ARM64. Basically faking MSVC toolchain here.
+. Ninja is the only generator that meets all these requirements:
+.. Available on all supported OS'es & architectures
+.. Can generate JSON compilation database
+. `20.1.8` on AMD64, `20.1.6` on ARM64. Basically replacing MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
+
+Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
+`CMakePresets.json` to customize your local build. This is so you don't have to derive the correct
+settings yourself. For example:
+[,json]
+----
+{
+  "version": 10,
+  "configurePresets": [
+    {
+      "name": "mine",
+      "inherits": ["importizer-linux"],
+
+      "$comment": "Easily switch between debug & release configuration",
+      "generator": "Ninja Multi-Config"
+    }
+  ]
+}
+----
 
 === Building from source entirely
 You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you will
@@ -213,6 +235,8 @@ successfully without an error code.
 compiler (e.g., `-fsanitize=address`).
 * `3rd-party` directory must only contain 3rd-party libraries used by the project
 * Use `target\_*_*` to add flags for this project, & `add\_*_*` to add for this & all deps.
+* If a global setting affects LibTooling too (e.g. `BUILD_SHARED_LIBS`), put in `CMakePresets.json`.
+Otherwise (eg. `CMAKE_CXX_SCAN_FOR_MODULES`), put in `CMakeLists.txt`
 
 === Scripts
 * Use CMake to write scripts, if not possible, then make a folder & add scripts for all supported
@@ -224,7 +248,6 @@ OS'es (like `setup-env`).
 
 == Checklists
 === New release
-[%interactive]
 * [ ] Update the version string(s) in:
 ** `.github/workflows/Release.yml`
 ** `ChangeLog.adoc` (delete "in progress")
@@ -237,7 +260,6 @@ OS'es (like `setup-env`).
 ** Tag the new release.
 
 === Bumping LibTooling version
-[%interactive]
 * [ ] Tag a new release with (replace `{v}` with the new version):
 ** Title: `libtooling-{v}`
 ** Tag: `libtooling-{v}`
@@ -252,7 +274,6 @@ OS'es (like `setup-env`).
 ** Update the LibTooling hashes in `scripts/libtooling/Ensure.cmake`
 
 === Bumping Alpine images version
-[%interactive]
 * [ ] Update the version string(s) in:
 ** `.github/workflows/Alpine.yml`
 ** `scripts/alpine/Containerfile`

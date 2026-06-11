@@ -20,22 +20,22 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     outputs:
-      m: ${{ steps.all.outputs.m }}
+      m: ${{ steps.get.outputs.m }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      repo: repos/${{ github.repository }}
     steps:
-      - id: all
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Check CI status of HEAD
+        if: inputs.checkCi == 'true'
         run: |
-          repo=repos/${{ github.repository }}
-          sha=${{ github.sha }}
-
-          ${{ inputs.checkCi }} &&
-          "$(gh api $repo/actions/workflows/Ci.yml/runs?head_sha=$sha \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2026-03-10" \
-            -q '(.total_count > 0 and .workflow_runs[0].conclusion != "success")')" &&
+          "$(gh api $repo/actions/workflows/Ci.yml/runs?head_sha=${{ github.sha }} \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2026-03-10" \
+          -q '(.total_count > 0 and .workflow_runs[0].conclusion != "success")')" &&
           exit 1
-
+      - name: Get jobs
+        id: get
+        run: |
           echo "m=$(gh api $repo/contents/CiMatrix.json \
             -H "Accept: application/vnd.github.raw+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \

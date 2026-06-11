@@ -1,5 +1,5 @@
 # Make a distribution
-## Uses Github CLI - set GH_TOKEN env var for Actions' step
+## Uses Github CLI - needs GH_TOKEN env var
 
 set(mode ${CMAKE_ARGV3})
 set(knownModes "Debug;Release")
@@ -28,7 +28,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
 execute_process(COMMAND ${CMAKE_CTEST_COMMAND}
   --test-dir "${buildDir}/tests"
   -C ${mode}
-  --verbose
+  --output-on-failure
   --progress
   --schedule-random
   -j ${procCnt}

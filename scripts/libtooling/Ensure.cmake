@@ -1,5 +1,5 @@
 # Ensure that LibTooling (LLVM & Clang) is in 3rd-party/
-## Uses Github CLI - set GH_TOKEN env var for Actions' step
+## Uses Github CLI - needs GH_TOKEN env var
 
 set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
@@ -21,15 +21,15 @@ if(WIN32)
   endif()
 elseif(${os} STREQUAL macos)
   if(${arch} STREQUAL amd64)
-    set(refHash 0a6baaddb0c82496adc7133151807f18acda615f0a625c06c387e32c15bfe647)
+    set(refHash)
   elseif(${arch} STREQUAL arm64)
-    set(refHash de38fb40ae84ded7362ef4c60e232983521374fe734004cbce17279d80515d3b)
+    set(refHash 262aa04c869fd9c36290fedaadaf82a05c0e343786c1b9353ee26b4b17db452b)
   endif()
 elseif(LINUX)
   if(${arch} STREQUAL amd64)
     set(refHash cc8d2b75a4607e88c6895ca06d37c0d2024a8039b077120a501289f2cdc8d52c)
   elseif(${arch} STREQUAL arm64)
-    set(refHash)
+    set(refHash 3d2dd9217eaca6164f2860b8cf60996e784eb1f487f9baf1e2984415b461d4f4)
   endif()
 endif()
 

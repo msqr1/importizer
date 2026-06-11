@@ -2,11 +2,12 @@ name: Tag Continuous
 on:
   - push
   - workflow_dispatch
+concurrency:
+  group: ci
+  cancel-in-progress: false
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
-    with:
-      jqExpr: 'del(.[] | select(.os != "linux" and .arch != "arm64"))'
   all:
     permissions:
       contents: write
@@ -18,16 +19,14 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     container: ${{ matrix.container || '' }}
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@v1.4.2
       - name: Setup
         run: . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
       - name: Ensure LibTooling
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: cmake -P scripts/libtooling/Ensure.cmake
       - name: Make distribution
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: cmake -P scripts/MkDist.cmake Debug

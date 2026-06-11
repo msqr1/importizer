@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 15)
 project(importizer VERSION 3.0.0)
+
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 if(NOT (CMAKE_BUILD_TYPE OR CMAKE_CONFIGURATION_TYPES))
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
@@ -13,7 +13,6 @@ if(CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
-set(BUILD_SHARED_LIBS OFF)
 set(root "${CMAKE_SOURCE_DIR}")
 
 # 3rd-party libs
@@ -91,7 +90,6 @@ function(require target)
 endfunction()
 
 # Project
-## Common configuration
 add_library(common-config INTERFACE)
 target_compile_features(common-config INTERFACE cxx_std_23)
 if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
@@ -145,9 +143,6 @@ if(hasUbsan)
   add_compile_options($<$<CONFIG:Debug>:${ubsan}>)
   add_link_options($<$<CONFIG:Debug>:${ubsan}>)
 endif()
-
-## Still needed for dynamic linking to Windows CRT or MacOS libSystem
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
