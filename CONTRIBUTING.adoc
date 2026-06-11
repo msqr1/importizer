@@ -247,8 +247,8 @@ OS'es (like `setup-env`).
 ** `scripts/libtooling/Ensure.cmake` (also update LLVM Project source hash)
 ** `CONTRIBUTING.adoc`
 * [ ] Add `Bump LibTooling to {v}` to `ChangeLog.adoc`
-* [ ] Commit with message `Bump LibTooling to {v}` & let the CI run
-* [ ] Once CI finishes sucessfully, for next commit:
+* [ ] Commit with message `Bump LibTooling to {v}` & let the CI run & wait for completion
+* [ ] For the next commit:
 ** Update the LibTooling hashes in `scripts/libtooling/Ensure.cmake`
 
 === Bumping Alpine images version
@@ -260,8 +260,8 @@ OS'es (like `setup-env`).
 ** `CONTRIBUTING.adoc`
 * [ ] Add `Bump Alpine to {v}` to `ChangeLog.adoc`
 * [ ] Commit with message `[no ci] Bump Alpine to {v}`
-* [ ] Run the Make Alpine Images workflow
-* [ ] Once the workflow finishes sucessfully, run the Tag Continuous workflow
+* [ ] Run the Make Alpine Images workflow & wait for completion
+* [ ] Run the Tag Continuous workflow
 
 === Permissions
 When pushing, ensure permission of files in `scripts/` is set to executable. You can use the

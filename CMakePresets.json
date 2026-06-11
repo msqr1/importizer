@@ -45,7 +45,7 @@
         "LLVM_USE_LINKER": "lld",
         "LLVM_ENABLE_PROJECTS": "clang",
         "LLVM_ENABLE_RUNTIMES": "",
-        "LLVM_ENABLE_LTO": true,
+        "LLVM_ENABLE_LTO": "Thin",
         "LLVM_ENABLE_UNWIND_TABLES": false,
         "LLVM_ENABLE_ZLIB": false,
         "LLVM_ENABLE_ZSTD": false,
