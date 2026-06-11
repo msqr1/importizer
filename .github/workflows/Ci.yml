@@ -21,15 +21,11 @@ jobs:
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@v1.4.2
-      - name: All
+      - name: Setup
+        run: . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
+      - name: Ensure LibTooling
+        run: cmake -P scripts/libtooling/Ensure.cmake
+      - name: Make distribution
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          # Setup
-          . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
-
-          # Ensure LibTooling
-          cmake -P scripts/libtooling/Ensure.cmake
-
-          # Make distribution
-          cmake -P scripts/MkDist.cmake Debug
+        run: cmake -P scripts/MkDist.cmake Debug

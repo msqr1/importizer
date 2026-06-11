@@ -13,6 +13,5 @@ __cmake_systeminformation
 /CMakeUserPresets.json
 
 # LibTooling build files
-/scripts/libtooling/llvm*
-/scripts/libtooling/LlvmProj.tar.xz
-/scripts/libtooling/Libtooling.tzst
+/scripts/libtooling/*
+!/scripts/libtooling/Ensure.cmake

@@ -1,2 +1,2 @@
 FROM alpine:3.24.0
-RUN apk add --no-cache git python3 cmake ninja-is-really-ninja gcc clang lld
+RUN apk add --no-cache git github-cli python3 cmake ninja-is-really-ninja gcc clang lld

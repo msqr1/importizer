@@ -37,13 +37,18 @@ if ! command -v clang > /dev/null 2>&1; then
   return 1
 fi
 
-export IMPORTIZER_OS=linux
-export IMPORTIZER_ARCH=$arch
-
 # We are in CI
 if [ -n "$CI" ]; then
+  if ! command -v gh > /dev/null 2>&1; then
+    echo "Github CLI not found" >&2
+    return 1
+  fi
+
   {
     echo IMPORTIZER_OS=linux
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"
 fi
+
+export IMPORTIZER_OS=linux
+export IMPORTIZER_ARCH=$arch

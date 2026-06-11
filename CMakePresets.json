@@ -42,8 +42,10 @@
         "INSTALL_PARALLEL": true,
         "CMAKE_BUILD_TYPE": "Release",
         "LLVM_APPEND_VC_REV": false,
+        "LLVM_USE_LINKER": "lld",
         "LLVM_ENABLE_PROJECTS": "clang",
-        "LLVM_ENABLE_LTO": "Thin",
+        "LLVM_ENABLE_RUNTIMES": "",
+        "LLVM_ENABLE_LTO": true,
         "LLVM_ENABLE_UNWIND_TABLES": false,
         "LLVM_ENABLE_ZLIB": false,
         "LLVM_ENABLE_ZSTD": false,
@@ -62,13 +64,16 @@
         "LLVM_INCLUDE_TOOLS": false,
         "LLVM_INCLUDE_UTILS": false,
         "LLVM_INCLUDE_DOCS": false,
+        "LLVM_BUILD_LLVM_DYLIB": false,
+        "LLVM_LINK_LLVM_DYLIB": false,
         "LLVM_BUILD_LLVM_C_DYLIB": false,
         "LLVM_TARGETS_TO_BUILD": "host",
         "LLVM_OPTIMIZED_TABLEGEN": true,
         "LLVM_STATIC_LINK_CXX_STDLIB": true,
         "CLANG_ENABLE_STATIC_ANALYZER": false,
         "CLANG_BUILD_TOOLS": false,
-        "CLANG_PLUGIN_SUPPORT": false
+        "CLANG_PLUGIN_SUPPORT": false,
+        "CLANG_LINK_CLANG_DYLIB": false
       }
     },
     {

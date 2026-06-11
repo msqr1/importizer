@@ -6,7 +6,7 @@
 
 === Distribution
 * [x] Determine platform (with version) & architecture set to support
-* [x] Figure out dependency linkages
+* [x] Figure out dependency linkage
 * [x] Figure out the required build toolchain
 * [x] Setup base CMake project with LibTooling integration
 * [x] Working build, test, upload CI & CD for

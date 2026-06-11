@@ -4,7 +4,8 @@ using namespace System
 
 param (
   [Parameter(Position = 0)][ValidateSet("amd64", "arm64")][string]$arch,
-  [ValidateNotNullOrEmpty()][string]$llvmPrefix = "C:/Program Files/LLVM"
+  [ValidateNotNullOrEmpty()][string]$llvmPrefix = "C:/Program Files/LLVM",
+  [ValidateNotNullOrEmpty()][string]$cmakePrefix = "C:/Program Files/CMake"
 )
 
 function exitWithErr {
@@ -29,7 +30,7 @@ function exitWithErr {
   throw [Management.Automation.RuntimeException]::new($sb.ToString())
 }
 
-if($MyInvocation.InvocationName -ne '.') {
+if ($MyInvocation.InvocationName -ne '.') {
   exitWithErr("Script must be sourced. Do '. {script}' instead of '{script}'.")
 }
 
@@ -48,6 +49,10 @@ if (!$PSBoundParameters.ContainsKey("arch")) {
   } else {
     exitWithErr("Unsupported architecture '", $osArch, "', only 'amd64' or 'arm64' is supported")
   }
+}
+
+if (!(Get-Command ninja -ErrorAction SilentlyContinue)) {
+  exitWithErr("Ninja not found")
 }
 
 $ci = ![string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable("CI"))
@@ -72,6 +77,9 @@ $components = [Collections.Generic.List[string]]@(
 if ($llvmPrefix.Equals(":bundled")) {
   $components.Add("Microsoft.VisualStudio.Component.VC.Llvm.Clang")
 }
+if ($cmakePrefix.Equals(":bundled")) {
+  $components.Add("Microsoft.VisualStudio.Component.VC.CMake.Project")
+}
 $opts.FileName = $vswhere
 $opts.Arguments = "-property installationPath -version `"[17.4,)`" -utf8 -latest -requires " +
 "$components"
@@ -86,17 +94,12 @@ if ($llvmPrefix.Equals(":bundled")) {
   $dir = if ($arch.Equals("amd64")) { "x64" } else { "ARM64" }
   $llvmPrefix = [IO.Path]::Combine($vsPrefix, "VC", "Tools", "Llvm", $dir)
 }
-
-# Get LLVM binary directory into PATH if it's not already in there
-$path = [Environment]::GetEnvironmentVariable("PATH")
-$llvmBin = [IO.Path]::Combine($llvmPrefix, "bin")
-if (!$path.Contains($llvmBin)) {
-  [Environment]::SetEnvironmentVariable("PATH", "$llvmBin;$path")
-  if ($ci) {
-    $ghPath = [Environment]::GetEnvironmentVariable("GITHUB_PATH")
-    [IO.File]::AppendAllText($ghPath, [string[]]$llvmBin, $utf8NoBom)
-  }
+if ($cmakePrefix.Equals(":bundled")) {
+  $cmakePrefix = [IO.Path]::Combine($vsPrefix, "Common7", "IDE",
+    "CommonExtensions", "Microsoft", "CMake", "CMake")
 }
+
+$path = [Environment]::GetEnvironmentVariable("PATH")
 
 # Set SDK environment variables by stealing them from VsDevCmd & filter to not pollute
 $sdkEnvVars = @(
@@ -136,10 +139,23 @@ while (!$stdOut.EndOfStream) {
   }
 }
 $proc.WaitForExit()
+
 [Environment]::SetEnvironmentVariable("IMPORTIZER_OS", "windows")
 [Environment]::SetEnvironmentVariable("IMPORTIZER_ARCH", $arch)
+$llvmBin = [IO.Path]::Combine($llvmPrefix, "bin")
+if (!$path.Contains($llvmBin)) {
+  [Environment]::SetEnvironmentVariable("PATH", "$llvmBin;$path")
+}
+$cmakeBin = [IO.Path]::Combine($cmakePrefix, "bin")
+if (!$path.Contains($cmakeBin)) {
+  [Environment]::SetEnvironmentVariable("PATH", "$cmakeBin;$path")
+}
 if ($ci) {
+  $ghPath = [Environment]::GetEnvironmentVariable("GITHUB_PATH")
+  [IO.File]::AppendAllText($ghPath, [string[]]$cmakeBin, $utf8NoBom)
+  [IO.File]::AppendAllText($ghPath, [string[]]$llvmBin, $utf8NoBom)
   $lines.Add("IMPORTIZER_OS=windows")
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
+

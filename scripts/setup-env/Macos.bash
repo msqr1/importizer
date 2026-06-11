@@ -44,15 +44,20 @@ if [ ! -d "$llvmPrefix" ]; then
   return 1
 fi
 
-export CMAKE_PREFIX_PATH="$llvmPrefix"
-export IMPORTIZER_OS=macos
-export IMPORTIZER_ARCH=$arch
-
 # We are in CI
 if [ -n "$CI" ]; then
+  if ! command -v gh > /dev/null 2>&1; then
+    echo "Github CLI not found" >&2
+    return 1
+  fi
+
   {
     echo "CMAKE_PREFIX_PATH=$llvmPrefix"
     echo IMPORTIZER_OS=macos
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"
 fi
+
+export CMAKE_PREFIX_PATH="$llvmPrefix"
+export IMPORTIZER_OS=macos
+export IMPORTIZER_ARCH=$arch

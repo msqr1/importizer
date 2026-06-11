@@ -56,7 +56,7 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
 
   s.resize_and_overwrite(maxSize, [f](char *p, size_t maxSize) {
     // On Windows due to text mode newline translation of \r\n -> \n it can
-    // need less than maxSize & we size our string accordingly
+    // need less than maxSize so we resize accordingly
     return std::fread(p, sizeof(char), maxSize, f);
   });
   if (std::ferror(f)) [[unlikely]] {
@@ -69,5 +69,5 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
 
 bool readToStr(const fs::path &path, std::string &s) noexcept {
   const File f{portableFOpen(path)};
-  return f ? readToStr(f.get(), s, path) : false;
+  return f && readToStr(f.get(), s, path);
 }

@@ -6,14 +6,14 @@ Thank you for contributing to importizer!
 == Internals
 Although not a hard requirement, you'd want to know some internals of importizer. It's written out
 link:Internals.adoc[here]. It covers architecture overview, design decisions, transformations &
-their mechanism as well as some history & fun facts.
+their mechanism as well as some history & fun facts!
 
 == Environment
 === If you're on Linux
 Because your Linux is likely based on glibc, development should be done in an Alpine container.
 There's https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[prebuilt ones] with all
 the required tools. Personally, I use https://distrobox.it[distrobox] because it makes the
-host-container boundary (terminal-wise) invisible. Here's how to set it up:
+host-container boundary (terminal-wise) almost invisible. Here's how to set it up:
 [,bash]
 ----
 # Create distrobox container (replace {arch} with your architecture)
@@ -34,11 +34,24 @@ running (replace {os} with the correct file):
 Note:
 
 * All scripts currently check if CMake and Ninja is in PATH.
-* *Windows:* There's an optional argument `llvmPrefix` to set the directory (default is
-`C:/Program Files/LLVM`) of the LLVM installation. It can take the special value of `:bundled` that
-tells the script to look for the LLVM bundled within Visual Studio or Build Tools.
-* *MacOS:* The script checks Homebrew LLVM (for Clang and LLD).
 * *Linux:* The script checks if Clang and LLD is in PATH.
+* *MacOS:* The script checks Homebrew LLVM (for Clang and LLD).
+* *Windows:* There's 2 optional arguments:
+[%autowidth]
+|===
+|Argument| Description| Default value
+
+|llvmPrefix
+|Set the directory of the LLVM installation
+|`C:/Program Files/LLVM`
+
+|cmakePrefix
+|Set the directory of the CMake installation
+|`C:/Program Files/CMake`
+|===
+They can take the special value of `:bundled` that tells the script to look for the installation
+bundled within Visual Studio or Build Tools. Note that bundled tools usually lag behind in version,
+so use `:bundled` with cautions.
 
 == Dependency linkage
 [%autowidth]
