@@ -29,53 +29,44 @@ if(NOT EXISTS "${3rdPartyDir}/Cpm.cmake")
   )
 endif()
 include("${3rdPartyDir}/Cpm.cmake")
-function(require target)
+function(require target visibility)
   foreach(pkg IN LISTS ARGN)
     if(pkg STREQUAL WindowsHModular)
       if(WIN32)
         CPMAddPackage("gh:Leandros/WindowsHModular#3adbb67f6f77025b5a9ef9f140c10e3393ca9093")
 
         # SYSTEM to supress warnings
-        target_include_directories(${target} SYSTEM PRIVATE "${WindowsHModular_SOURCE_DIR}/include")
+        target_include_directories(${target} SYSTEM ${visibility}
+          "${WindowsHModular_SOURCE_DIR}/include")
       endif()
     elseif(pkg STREQUAL tomlc17)
       # R260517
       CPMAddPackage("gh:cktan/tomlc17#cb9bba39f2e63a9e67fa61d6c7521a184eb5fc38")
-      target_sources(${target} PRIVATE "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
+      target_sources(${target} ${visibility} "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
 
       # SYSTEM to supress warnings
-      target_include_directories(${target} SYSTEM PRIVATE "${tomlc17_SOURCE_DIR}/src")
+      target_include_directories(${target} SYSTEM ${visibility} "${tomlc17_SOURCE_DIR}/src")
 
       if(WIN32)
         set_source_files_properties("${tomlc17_SOURCE_DIR}/src/tomlc17.c"
           PROPERTIES COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS
         )
       endif()
-    elseif(pkg STREQUAL reproc)
-      set(REPROC++ ON)
-
-      # 14.2.7
-      CPMAddPackage("gh:daandemeyer/reproc#06034a7fca1ec46eddb4997f7764db89380c5216")
-
-      target_link_libraries(${target} PRIVATE reproc++)
-      if(WIN32)
-        target_compile_definitions(reproc PRIVATE _CRT_SECURE_NO_WARNINGS)
-      endif()
     elseif(pkg STREQUAL fmt)
       # 12.1.0
       CPMAddPackage("gh:fmtlib/fmt#407c905e45ad75fc29bf0f9bb7c5c2fd3475976f")
-      target_link_libraries(${target} PRIVATE fmt::fmt)
+      target_link_libraries(${target} ${visibility} fmt::fmt)
     elseif(pkg STREQUAL Clang)
       # Expecting static LLVM & Clang in 3rd-party
       set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
       set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
 
       find_package(Clang REQUIRED)
-      target_include_directories(${target} SYSTEM PRIVATE
+      target_include_directories(${target} SYSTEM ${visibility}
         "${LLVM_INCLUDE_DIRS}"
         "${CLANG_INCLUDE_DIRS}"
       )
-      target_link_libraries(${target} PRIVATE
+      target_link_libraries(${target} ${visibility}
         clangAST
         clangBasic
         clangTooling

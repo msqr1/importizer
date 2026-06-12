@@ -1,9 +1,25 @@
-add_executable(importizer
-  Driver.cc
+# Library for run-test
+add_library(importizer-lib
   Opts.cc
   Toml.cc
+  Entry.cc
 )
-require(importizer fmt Clang tomlc17)
+target_link_libraries(importizer-lib PRIVATE
+  common-config
+  utils
+)
+require(importizer-lib PRIVATE fmt Clang tomlc17)
+
+# Executable for users
+add_executable(importizer
+  Driver.cc
+)
+target_link_libraries(importizer PRIVATE
+  common-config
+  utils
+  importizer-lib
+)
+require(importizer PRIVATE fmt)
 if(LINUX)
   target_link_options(importizer PRIVATE -static)
 elseif(WIN32)
@@ -27,10 +43,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
       [[^libc\+\+\.1\.dylib]]
   )
 endif()
-target_link_libraries(importizer PRIVATE
-  common-config
-  utils
-)
 install(
   TARGETS importizer
   DESTINATION .

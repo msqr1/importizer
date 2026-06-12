@@ -71,10 +71,6 @@ path/to/config.toml`.
 
 |-o, --outDir
 |Override the output directory specified in the config file.
-
-|-r, --raw
-|Disable ANSI styling in logs (`always` or `never`). Defaults to `always` if no value is provided.
-Can also be toggled via the `RAW` environment variable.
 |===
 
 === Configuration file (TOML)

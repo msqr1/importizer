@@ -17,7 +17,7 @@
 
 namespace fs = std::filesystem;
 
-File portableFOpen(const fs::path &path, std::string_view mode) noexcept {
+File openFile(const fs::path &path, std::string_view mode) noexcept {
   std::FILE *f{};
 #ifdef _WIN32
   std::array<wchar_t, 3> wMode;
@@ -68,6 +68,6 @@ bool readToStr(std::FILE *f, std::string &s, const fs::path &path) noexcept {
 }
 
 bool readToStr(const fs::path &path, std::string &s) noexcept {
-  const File f{portableFOpen(path)};
+  const File f{openFile(path)};
   return f && readToStr(f.get(), s, path);
 }

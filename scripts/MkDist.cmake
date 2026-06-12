@@ -28,7 +28,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
 execute_process(COMMAND ${CMAKE_CTEST_COMMAND}
   --test-dir "${buildDir}/tests"
   -C ${mode}
-  --output-on-failure
+  --verbose
   --progress
   --schedule-random
   -j ${procCnt}

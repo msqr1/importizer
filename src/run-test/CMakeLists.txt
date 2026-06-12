@@ -1,8 +1,9 @@
 add_executable(run-test Driver.cc CmpDir.cc)
-require(run-test fmt reproc)
+require(run-test PRIVATE fmt)
 target_link_libraries(run-test PRIVATE
   common-config
   utils
+  importizer-lib
 )
 
 # More predictable output location

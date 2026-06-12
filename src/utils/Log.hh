@@ -6,46 +6,73 @@
 #include <fmt/ranges.h> // IWYU pragma: keep for formatting ranges
 #include <fmt/std.h>    // IWYU pragma: keep for formatting std types
 #include <iterator>
+#include <string>
 #include <string_view>
+#include <variant>
 
-// Require the program's name to be defined
-extern const std::string_view prog;
+struct LogOpts {
+  bool raw;
+  std::string_view prog;
+  std::variant<std::FILE *, std::string *> target;
+} extern *logOpts;
 
-extern bool raw;
+[[nodiscard]] bool getRaw(bool &raw) noexcept;
 
-// Must be called before anything
-[[nodiscard]] bool getRaw(const int argc, const char **argv) noexcept;
+template <typename T>
+concept BackInsertable = requires(T t) { std::back_inserter(t); };
+
+template <BackInsertable T1, typename... T2>
+void fmtErr(T1 &buf, fmt::format_string<T2...> fmt, T2 &&...args) {
+  const std::back_insert_iterator<T1> it{std::back_inserter(buf)};
+  if (logOpts->raw) {
+    fmt::format_to(it, "{}: error: ", logOpts->prog);
+    fmt::format_to(it, fmt, std::forward<T2>(args)...);
+  } else {
+    fmt::format_to(it, "{}: ", logOpts->prog);
+    fmt::format_to(it, fg(fmt::rgb(0xFF727E)) | fmt::emphasis::bold, "error: ");
+    fmt::format_to(it, fmt::emphasis::bold, fmt, std::forward<T2>(args)...);
+  }
+  buf.push_back('\n');
+}
+
+template <BackInsertable T1, typename... T2>
+void fmtWarning(T1 &buf, fmt::format_string<T2...> fmt, T2 &&...args) {
+  const std::back_insert_iterator<T1> it{std::back_inserter(buf)};
+  if (logOpts->raw) {
+    fmt::format_to(it, "{}: warning: ", logOpts->prog);
+    fmt::format_to(it, fmt, std::forward<T2>(args)...);
+
+  } else {
+    fmt::format_to(it, "{}: ", logOpts->prog);
+    fmt::format_to(it, fg(fmt::rgb(0xFFAA00)) | fmt::emphasis::bold,
+                   "warning: ");
+    fmt::format_to(it, fmt::emphasis::bold, fmt, std::forward<T2>(args)...);
+  }
+  buf.push_back('\n');
+}
 
 template <typename... T>
 void err(fmt::format_string<T...> fmt, T &&...args) noexcept {
-  fmt::memory_buffer buf;
-  const auto it{std::back_inserter(buf)};
-  if (raw) {
-    fmt::format_to(it, "{}: error: ", prog);
-    fmt::format_to(it, fmt, std::forward<T>(args)...);
-  } else {
-    fmt::format_to(it, "{}: ", prog);
-    fmt::format_to(it, fg(fmt::rgb(0xFF727E)) | fmt::emphasis::bold, "error: ");
-    fmt::format_to(it, fmt::emphasis::bold, fmt, std::forward<T>(args)...);
+  if (std::holds_alternative<std::FILE *>(logOpts->target)) {
+    fmt::memory_buffer buf;
+    fmtErr(buf, fmt, std::forward<T>(args)...);
+    std::fwrite(buf.data(), sizeof(char), buf.size(),
+                std::get<std::FILE *>(logOpts->target));
+    return;
   }
-  buf.push_back('\n');
-  std::fwrite(buf.data(), sizeof(char), buf.size(), stderr);
+  fmtErr(*std::get<std::string *>(logOpts->target), fmt,
+         std::forward<T>(args)...);
 }
 
 template <typename... T>
 void warn(fmt::format_string<T...> fmt, T &&...args) noexcept {
-  fmt::memory_buffer buf;
-  const auto it{std::back_inserter(buf)};
-  if (raw) {
-    fmt::format_to(it, "{}: warning: ", prog);
-    fmt::format_to(it, fmt, std::forward<T>(args)...);
-
-  } else {
-    fmt::format_to(it, "{}: ", prog);
-    fmt::format_to(it, fg(fmt::rgb(0xFFAA00)) | fmt::emphasis::bold,
-                   "warning: ");
-    fmt::format_to(it, fmt::emphasis::bold, fmt, std::forward<T>(args)...);
+  if (std::holds_alternative<std::FILE *>(logOpts->target)) {
+    fmt::memory_buffer buf;
+    fmtWarning(buf, fmt, std::forward<T>(args)...);
+    std::fwrite(buf.data(), sizeof(char), buf.size(),
+                std::get<std::FILE *>(logOpts->target));
+    return;
   }
-  buf.push_back('\n');
-  std::fwrite(buf.data(), sizeof(char), buf.size(), stderr);
+  fmtWarning(*std::get<std::string *>(logOpts->target), fmt,
+             std::forward<T>(args)...);
 }

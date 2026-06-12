@@ -14,20 +14,13 @@
 #include <vector>
 
 namespace fs = std::filesystem;
-std::optional<bool> getOpts(const int argc, const char **argv,
+std::optional<bool> getOpts(const int argc, const char *const *argv,
                             Opts &opts) noexcept {
   fs::path config{"importizer.toml"};
   int n_pos_args{};
   std::string_view arg;
-  for (int i{1}; i < argc; i++) {
+  for (int i{1}; i < argc; ++i) {
     arg = argv[i];
-
-    // Already handled
-    if (arg == "-r" || arg == "--raw") {
-      ++i;
-      continue;
-    }
-
     if (!arg.starts_with('-')) {
       if (++n_pos_args > 1) {
         err("Too many positional arguments.");
@@ -56,7 +49,7 @@ std::optional<bool> getOpts(const int argc, const char **argv,
     return false;
   }
 
-  File f{portableFOpen(config)};
+  File f{openFile(config)};
   if (!f) {
     return false;
   }

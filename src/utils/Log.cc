@@ -1,5 +1,4 @@
 #include "utils/Log.hh"
-#include <string_view>
 #ifdef _WIN32
 #include <system_error>
 #include <win32/io.h>
@@ -11,9 +10,9 @@
 #include <unistd.h>
 #endif
 
-bool raw;
+LogOpts *logOpts;
 
-bool getRaw(int argc, const char **argv) noexcept {
+bool getRaw(bool &raw) noexcept {
   // 1. Base State: TTY check
 #ifdef _WIN32
   HANDLE h{GetStdHandle(STD_ERROR_HANDLE)};
@@ -41,28 +40,6 @@ bool getRaw(int argc, const char **argv) noexcept {
   const char *envRaw{std::getenv("RAW")};
   raw |= envRaw != nullptr && envRaw[0] != '\0';
 #endif
-
-  // 3. CLI option override
-  std::string_view arg;
-  for (int i = 1; i < argc; ++i) {
-    arg = argv[i];
-    if (arg == "-r" || arg == "--raw") {
-      if (++i >= argc) {
-        raw = true;
-        break; // Reached the end, default to true
-      }
-      std::string_view val{argv[i]};
-      if (val == "always") {
-        raw = true;
-      } else if (val == "never") {
-        raw = false;
-      } else {
-        err("Unknown value {} for '{}'.", val, arg);
-        return false;
-      }
-      break; // Found our flag, skip the rest
-    }
-  }
   return true;
 }
 

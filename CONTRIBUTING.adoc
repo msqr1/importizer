@@ -5,7 +5,7 @@ Thank you for contributing to importizer!
 
 == Internals
 Although not a hard requirement, you'd want to know some internals of importizer. It's written out
-link:Internals.adoc[here]. It covers architecture overview, design decisions, transformations &
+link:Internals.adoc[here]. It covers architecture, design decisions, transformations &
 their mechanism as well as some history & fun facts!
 
 == Environment
@@ -121,7 +121,7 @@ cmake -P scripts/libtooling/Ensure.cmake
 
 Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
 `CMakePresets.json` to customize your local build. This is so you don't have to derive the correct
-settings yourself. For example:
+settings yourself. For example, on MacOS:
 [,json]
 ----
 {
@@ -129,7 +129,7 @@ settings yourself. For example:
   "configurePresets": [
     {
       "name": "mine",
-      "inherits": ["importizer-linux"],
+      "inherits": ["importizer-macos"],
 
       "$comment": "Easily switch between debug & release configuration",
       "generator": "Ninja Multi-Config"

@@ -1,3 +1,4 @@
+#include "importizer/Entry.hh"
 #include "run-test/CmpDir.hh"
 #include "utils/FileOp.hh"
 #include "utils/Log.hh"
@@ -7,69 +8,43 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fmt/base.h>
-#include <reproc++/drain.hpp>
-#include <reproc++/reproc.hpp>
 #include <string>
 #include <string_view>
-#include <system_error>
-#include <tuple>
 
 namespace fs = std::filesystem;
-namespace rp = reproc;
 
-const std::string_view prog{"test"};
-
-// test [importizer path] [testDir] [outDir]
+// test [testDir] [outDir]
 // Expecting absolute paths & no input validation
-int main(const int argc, const char **argv) {
-  assert(argc == 4);
+int main(const int argc, const char *const *argv) {
+  assert(argc == 3);
 
-  if (!getRaw(argc, argv)) {
+  // Always set program and log target before doing things that can log
+  LogOpts selfLogOpts;
+  logOpts = &selfLogOpts;
+  selfLogOpts.prog = "run-test";
+  selfLogOpts.target = stderr;
+  if (!getRaw(selfLogOpts.raw)) {
     return EXIT_FAILURE;
   };
 
-  const fs::path testDir{argv[2]};
-  const fs::path outDir{argv[3]};
+  const fs::path testDir{argv[1]};
+  const fs::path outDir{argv[2]};
   const std::string config{(testDir / "Config.toml").string()};
-  const std::array<std::string_view, 4> cmd{argv[1], config, "-o", argv[3]};
-  rp::process proc;
-  rp::options opts;
+  const std::array<const char *, 4> cmd{"67", config.data(), "-o", argv[2]};
 
-  // Set this to drain(), somehow you don't need this for stdout
-  opts.redirect.err.type = rp::redirect::type::pipe;
-
-  std::error_code errCode{proc.start(cmd, opts)};
-  if (errCode) [[unlikely]] {
-    err("Unable to start {}: {}.", cmd, errCode.message());
-    return EXIT_FAILURE;
-  }
-
-  std::string out;
-  errCode = rp::drain(proc, rp::sink::null, rp::sink::string{out});
-  if (errCode) [[unlikely]] {
-    err("Unable to read output of {}: {}.", cmd, errCode.message());
-    return EXIT_FAILURE;
-  }
-
-  int rtn;
-  std::tie(rtn, errCode) = proc.wait(rp::infinite);
-  if (errCode) [[unlikely]] {
-    err("Unable to wait for {}: {}.", cmd, errCode.message());
-    return EXIT_FAILURE;
-  }
-
-#ifdef _WIN32
-  std::erase(out, '\r');
-#endif
   std::string ref;
   if (!(readToStr(testDir / "RefCli.txt", ref))) [[unlikely]] {
     return EXIT_FAILURE;
   }
-
-  bool errored{};
+  std::string out;
+  LogOpts importizerLogOpts{true, "importizer", &out};
+  logOpts = &importizerLogOpts;
+  const int rtn{entry(cmd.size(), cmd.data())};
+  logOpts = &selfLogOpts;
 
   const int refRtn{ref.contains("importizer: error: ") ? EXIT_FAILURE
                                                        : EXIT_SUCCESS};
+  bool errored{};
   if ((errored |= refRtn != rtn)) {
     err("Mismatched return code: expected {}, got {}.", refRtn, rtn);
   }

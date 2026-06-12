@@ -21,5 +21,5 @@ struct Opts {
   std::variant<std::unique_ptr<JSONCompilationDatabase>, Bootstrap> fileHelper;
 };
 
-[[nodiscard]] std::optional<bool> getOpts(const int argc, const char **argv,
-                                          Opts &opts) noexcept;
+[[nodiscard]] std::optional<bool>
+getOpts(const int argc, const char *const *argv, Opts &opts) noexcept;
