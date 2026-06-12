@@ -56,7 +56,7 @@ int main(const int argc, const char *const *argv) {
     fmt::print(stderr, "{}", out);
   }
 
-  fs::path refDir{testDir / "ref"};
+  const fs::path refDir{testDir / "ref"};
   errored |= fs::exists(refDir) && !cmpDir(outDir, refDir);
 
   return errored ? EXIT_FAILURE : EXIT_SUCCESS;
