@@ -6,7 +6,7 @@
 #include <vector>
 
 template <typename T>
-concept ConstructibleFromCharPtr = std::constructible_from<T, const char *>;
+concept CharPtrConstructible = std::constructible_from<T, const char *>;
 
 // Exceptionless, RAII & more convenient toml_result_t
 struct TomlResult : toml_result_t {
@@ -22,7 +22,7 @@ struct TomlResult : toml_result_t {
   toml_datum_t seek(std::string_view key) const noexcept;
 
   // Get string-type's from TOML.
-  template <ConstructibleFromCharPtr T>
+  template <CharPtrConstructible T>
   [[nodiscard]] bool seekStrs(std::string_view key,
                               std::vector<T> &strs) const noexcept {
     const toml_datum_t datum{this->seek(key)};

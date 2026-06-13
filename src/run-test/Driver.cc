@@ -28,7 +28,6 @@ int main(const int argc, const char *const *argv) {
   };
 
   const fs::path testDir{argv[1]};
-  const fs::path outDir{argv[2]};
   const std::string config{(testDir / "Config.toml").string()};
   const std::array<const char *, 4> cmd{"67", config.data(), "-o", argv[2]};
 
@@ -57,7 +56,7 @@ int main(const int argc, const char *const *argv) {
   }
 
   const fs::path refDir{testDir / "ref"};
-  errored |= fs::exists(refDir) && !cmpDir(outDir, refDir);
+  errored |= fs::exists(refDir) && !cmpDir(argv[2], refDir);
 
   return errored ? EXIT_FAILURE : EXIT_SUCCESS;
 }
