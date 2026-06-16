@@ -52,20 +52,17 @@ function(require target visibility)
           PROPERTIES COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS
         )
       endif()
-    elseif(pkg STREQUAL fmt)
-      # 12.1.0
-      CPMAddPackage("gh:fmtlib/fmt#407c905e45ad75fc29bf0f9bb7c5c2fd3475976f")
-      target_link_libraries(${target} ${visibility} fmt::fmt)
-    elseif(pkg STREQUAL Clang)
-      # Expecting static LLVM & Clang in 3rd-party
-      set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
+    elseif(pkg STREQUAL LLVM)
       set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
-
-      find_package(Clang REQUIRED)
-      target_include_directories(${target} SYSTEM ${visibility}
-        "${LLVM_INCLUDE_DIRS}"
-        "${CLANG_INCLUDE_DIRS}"
+      find_package(LLVM REQUIRED)
+      target_include_directories(${target} SYSTEM ${visibility} "${LLVM_INCLUDE_DIRS}")
+      target_link_libraries(${target} ${visibility}
+        LLVMSupport
       )
+    elseif(pkg STREQUAL Clang)
+      set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
+      find_package(Clang REQUIRED)
+      target_include_directories(${target} SYSTEM ${visibility} "${CLANG_INCLUDE_DIRS}")
       target_link_libraries(${target} ${visibility}
         clangAST
         clangBasic

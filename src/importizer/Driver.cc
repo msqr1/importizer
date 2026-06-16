@@ -1,15 +1,12 @@
 #include "importizer/Entry.hh"
 #include "utils/Log.hh"
-#include <cstdlib>
+#include <llvm/Support/raw_ostream.h>
 
 int main(const int argc, const char *const *argv) {
-  // Always set program and log target before doing things that can log
+  // Always set program and log target before everything
   LogOpts selfLogOpts;
-  selfLogOpts.prog = "importizer";
-  selfLogOpts.target = stderr;
   logOpts = &selfLogOpts;
-  if (!getRaw(selfLogOpts.raw)) {
-    return EXIT_FAILURE;
-  };
+  selfLogOpts.prog = "importizer";
+  selfLogOpts.target = &llvm::errs();
   return entry(argc, argv);
 }

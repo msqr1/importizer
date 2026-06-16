@@ -8,8 +8,6 @@ concurrency:
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
-    with:
-      jqExpr: 'del(.[] | select(.os == "macos"))'
   all:
     permissions:
       contents: write

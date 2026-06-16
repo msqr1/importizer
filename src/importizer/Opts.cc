@@ -1,61 +1,70 @@
 #include "importizer/Opts.hh"
 #include "importizer/Toml.hh"
-#include "utils/FileOp.hh"
 #include "utils/Log.hh"
 #include <clang/Tooling/JSONCompilationDatabase.h>
-#include <filesystem>
-#include <fmt/base.h>
+#include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/CommandLine.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
-#include <optional>
 #include <string>
-#include <string_view>
 #include <tomlc17.h>
 #include <utility>
-#include <vector>
 
-namespace fs = std::filesystem;
-std::optional<bool> getOpts(const int argc, const char *const *argv,
-                            Opts &opts) noexcept {
-  fs::path config{"importizer.toml"};
-  int n_pos_args{};
-  std::string_view arg;
-  for (int i{1}; i < argc; ++i) {
-    arg = argv[i];
-    if (!arg.starts_with('-')) {
-      if (++n_pos_args > 1) {
-        err("Too many positional arguments.");
-        return false;
-      }
-      config = arg;
-      continue;
-    }
-    if (arg == "-h" || arg == "--help") {
-      fmt::println("importizer - native C++20 modularization tool.");
-      return std::nullopt;
-    }
-    if (arg == "-v" || arg == "--version") {
-      fmt::println("3.0.0");
-      return std::nullopt;
-    }
-    if (arg == "-o" || arg == "--outDir") {
-      if (++i >= argc) {
-        err("{} requires a path.", arg);
-        return false;
-      }
-      opts.outDir = argv[i];
-      continue;
-    }
-    err("Unknown option '{}'.", arg);
+namespace cl = llvm::cl;
+namespace tl = clang::tooling;
+namespace pth = llvm::sys::path;
+
+template <unsigned len>
+struct SmallStrParser : public cl::parser<llvm::SmallString<len>> {
+  bool parse(cl::Option &, llvm::StringRef, llvm::StringRef val,
+             llvm::SmallString<len> &dst) const {
+    dst = val;
+    return false;
+  }
+  SmallStrParser(cl::Option &opt) : cl::parser<llvm::SmallString<len>>{opt} {}
+};
+
+bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
+  // LLVM default options will mix into ours if we don't make our own category
+  cl::OptionCategory cat{logOpts->prog};
+  cl::opt<llvm::SmallString<128>, false, SmallStrParser<128>> config{
+      cl::cat(cat),
+      cl::desc("<configuration file>"),
+      cl::init(llvm::StringRef{"importizer.toml"}),
+      cl::Positional,
+      cl::ValueOptional,
+  };
+  cl::opt<llvm::SmallString<128>, true, SmallStrParser<128>> outDir{
+      cl::cat(cat),
+      "outDir",
+      cl::desc(
+          "Override the output directory specified in the configuration file"),
+      cl::value_desc("directory"),
+      cl::location(opts.outDir),
+  };
+  cl::alias _{"o", cl::aliasopt(outDir)};
+  cl::SetVersionPrinter([](llvm::raw_ostream &s) { s << "3.0.0\n"; });
+  cl::HideUnrelatedOptions(cat);
+  auto &optMap{cl::getRegisteredOptions()};
+
+  // Reset default descriptions to be consistent with the README
+  optMap["help"]->setDescription("Display available options");
+  optMap["help-list"]->setDescription("Display list of available options");
+  optMap["version"]->setDescription("Display version");
+
+  if (!cl::ParseCommandLineOptions(argc, argv,
+                                   "importizer - Automagically rewrite "
+                                   "header-based C++ into using modules",
+                                   logOpts->target)) {
     return false;
   }
 
-  File f{openFile(config)};
-  if (!f) {
-    return false;
-  }
-  const TomlResult res{toml_parse_file(f.get())};
+  const TomlResult res{toml_parse_file_ex(config.data())};
   if (!res.ok) {
-    err("Unable to parse config file {}: {}.", config, res.errmsg);
+    err(res.errmsg);
     return false;
   }
 
@@ -64,29 +73,34 @@ std::optional<bool> getOpts(const int argc, const char *const *argv,
   if (datum.type == TOML_STRING) {
     opts.inDir = datum.u.s;
   } else {
-    err("'inDir' must be specified and as String.");
+    err("'inDir' must be specified and as String");
     return false;
   }
+  llvm::SmallString<128> tmp;
+  llvm::StringRef configDir{pth::parent_path(config)};
 
   // Make relative to config file instead of CWD
-  fs::path configDir{config.parent_path()};
-  if (opts.inDir.is_relative()) {
-    opts.inDir = configDir / opts.inDir;
+  if (pth::is_relative(opts.inDir)) {
+    tmp = configDir;
+    pth::append(tmp, opts.inDir);
+    opts.inDir = std::move(tmp);
   }
 
   // outDir
   datum = res.seek("outDir");
   if (datum.type && !opts.outDir.empty()) {
-    warn("outDir from CLI will override config file.");
+    warn("outDir from CLI will override config file");
   } else if (datum.type == TOML_STRING) {
     opts.outDir = datum.u.s;
 
     // Make relative to config file instead of CWD
-    if (opts.outDir.is_relative()) {
-      opts.outDir = configDir / opts.outDir;
+    if (pth::is_relative(opts.outDir)) {
+      tmp = configDir;
+      pth::append(tmp, opts.outDir);
+      opts.outDir = std::move(tmp);
     }
   } else if (opts.outDir.empty()) {
-    err("'outDir' must be specified on CLI or in config file as a String.");
+    err("'outDir' must be specified on CLI or in config file as a String");
     return false;
   }
 
@@ -94,28 +108,25 @@ std::optional<bool> getOpts(const int argc, const char *const *argv,
   datum = res.seek("compilationDb");
   const toml_datum_t bootstrap{res.seek("bootstrap")};
   if (datum.type && bootstrap.type) {
-    warn("'compilationDb' will take precedence over 'bootstrap'.");
+    warn("'compilationDb' will take precedence over 'bootstrap'");
   } else if (datum.type) {
     if (datum.type != TOML_STRING) {
-      err("'compilationDb' must be a String.");
+      err("'compilationDb' must be a String");
       return false;
     }
     std::string msg;
-    std::unique_ptr<JSONCompilationDatabase> db{
-        JSONCompilationDatabase::loadFromFile(
-            datum.u.s, msg, JSONCommandLineSyntax::AutoDetect)};
+    auto db{tl::JSONCompilationDatabase::loadFromFile(
+        datum.u.s, msg, tl::JSONCommandLineSyntax::AutoDetect)};
     if (!db) {
-      err("Unable to parse compilation database: {}.", msg);
+      err("Unable to parse compilation database: {}", msg);
       return false;
     }
-    opts.fileHelper.emplace<std::unique_ptr<JSONCompilationDatabase>>(
+    opts.fileHelper.emplace<std::unique_ptr<tl::JSONCompilationDatabase>>(
         std::move(db));
     return true;
   }
-  opts.fileHelper.emplace<Bootstrap>(
-      std::vector<fs::path>{"h", "hh", "hpp", "hxx", ""},
-      std::vector<fs::path>{"cc", "cpp", "cxx", "c++", "C"});
-  Bootstrap &b{std::get<Bootstrap>(opts.fileHelper)};
+  Bootstrap &b{opts.fileHelper.emplace<Bootstrap>()};
+  b.ignores.emplace_back("CMakeLists.txt");
   if (!bootstrap.type) {
     return true;
   }
@@ -123,18 +134,19 @@ std::optional<bool> getOpts(const int argc, const char *const *argv,
     err("'bootstrap' must be a Table.");
     return false;
   }
-  if (!(res.seekStrs("bootstrap.hdrExts", b.hdrExts) &&
-        res.seekStrs("bootstrap.srcExts", b.srcExts) &&
+  if (!(res.seekStrs("bootstrap.ignores", b.ignores) &&
         res.seekStrs("bootstrap.includePaths", b.includePaths))) {
     return false;
   }
 
   // Make relative to config file instead of CWD
-  for (fs::path &path : b.includePaths) {
-    if (!path.is_relative()) {
+  for (llvm::SmallString<128> &p : b.includePaths) {
+    if (!pth::is_relative(p)) {
       continue;
     }
-    path = configDir / path;
+    tmp = configDir;
+    pth::append(tmp, p);
+    p = std::move(tmp);
   }
   return true;
 }

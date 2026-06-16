@@ -1,62 +1,69 @@
-#include "utils/FileOp.hh"
+#include "utils/FS.hh"
 #include "utils/Log.hh"
 #include <algorithm>
-#include <filesystem>
+#include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/FileUtilities.h>
+#include <llvm/Support/Path.h>
 #include <string>
-#include <system_error>
 #include <utility>
 #include <vector>
 
-namespace fs = std::filesystem;
-bool cmpDir(const fs::path &dir, const fs::path &refDir) noexcept {
-  std::error_code errCode;
+namespace pth = llvm::sys::path;
+
+bool cmpDir(const llvm::StringRef &dir, const llvm::StringRef &ref) noexcept {
   bool res{true};
-  fs::recursive_directory_iterator it{refDir, errCode};
-  if (errCode) {
-    err("Unable to iterate {}: {}.", refDir, errCode.message());
-    return false;
-  }
-  fs::path path;
-  fs::path refPath;
-  fs::path relPath;
-  std::vector<fs::path> refRelPaths;
-  std::string out;
-  std::string ref;
-  for (const fs::directory_entry &ent : it) {
-    if (!ent.is_regular_file()) {
-      continue;
+  std::string msg;
+  llvm::SmallString<128> path;
+  llvm::SmallString<128> refPath;
+  llvm::SmallString<128> relPath;
+  std::vector<llvm::SmallString<128>> refRelPaths;
+
+  auto checkRef{[&](const fs::directory_entry &ent) {
+    if (ent.type() != fs::file_type::regular_file) {
+      return true;
     }
     refPath = ent.path();
-    relPath = refPath.lexically_relative(refDir);
-    path = dir / relPath;
+    relPath = refPath;
+    pth::replace_path_prefix(relPath, ref, "");
+    path = relPath;
+    pth::replace_path_prefix(path, "", dir);
     if (!fs::exists(path)) {
-      err("Not found: {}.", relPath);
+      err("Not found: {}", relPath);
       res = false;
-      continue;
+      return true;
     }
-
-    if (!(readToStr(path, out) && readToStr(refPath, ref))) {
-      return false;
-    }
-    if (out != ref) {
-      err("Mismatched content for {}.", relPath);
+    int diffRes{llvm::DiffFilesWithTolerance(path, refPath, 0, 0, &msg)};
+    switch (diffRes) {
+    case 1:
+      err("Mismatched content for {}", relPath);
       res = false;
+      break;
+    case 2:
+      err("Unable to diff {} and {}: {}", path, refPath, msg);
+      break;
     }
-
     refRelPaths.emplace_back(std::move(relPath));
-  }
-  it = {dir, errCode};
-  if (errCode) {
-    err("Unable to iterate {}: {}.", dir, errCode.message());
+    return true;
+  }};
+  if (!iterateDir(ref, checkRef)) {
     return false;
   }
-  for (const fs::directory_entry &ent : it) {
-    relPath = ent.path().lexically_relative(dir);
-    if (std::ranges::find(refRelPaths, relPath) == refRelPaths.end()) {
-      continue;
+
+  auto checkDir{[&](const fs::directory_entry &ent) {
+    relPath = ent.path();
+    pth::replace_path_prefix(relPath, dir, "");
+    if (std::ranges::find(refRelPaths, relPath) != refRelPaths.end()) {
+      return true;
     }
-    err("Unexpected file: {}.", relPath);
+    err("Unexpected file: {}", relPath);
     res = false;
+    return true;
+  }};
+  if (!iterateDir(dir, checkDir)) {
+    return false;
   }
   return res;
 }

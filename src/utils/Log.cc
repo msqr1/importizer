@@ -1,47 +1,6 @@
 #include "utils/Log.hh"
-#ifdef _WIN32
-#include <system_error>
-#include <win32/io.h>
-#include <win32/misc.h>
-#include <win32/windows_base.h>
-#else
-#include <cstdlib>
-#include <stdio.h>
-#include <unistd.h>
-#endif
 
 LogOpts *logOpts;
-
-bool getRaw(bool &raw) noexcept {
-  // 1. Base State: TTY check
-#ifdef _WIN32
-  HANDLE h{GetStdHandle(STD_ERROR_HANDLE)};
-  DWORD mode;
-  raw = !GetConsoleMode(h, &mode);
-#else
-  raw = !isatty(fileno(stderr));
-#endif
-
-  // 2. Environment variable override
-#ifdef _WIN32
-  DWORD res{GetEnvironmentVariableA("RAW", nullptr, 0)};
-  if (res > 0) {
-    raw = true;
-  } else {
-    DWORD errCode{GetLastError()};
-    // 203 is ERROR_ENVVAR_NOT_FOUND. If it's missing, ignore.
-    if (errCode != 0 && errCode != 203) {
-      err("Unable to check environment variable 'RAW': {}.",
-          std::system_category().message(errCode));
-      return false;
-    }
-  }
-#else
-  const char *envRaw{std::getenv("RAW")};
-  raw |= envRaw != nullptr && envRaw[0] != '\0';
-#endif
-  return true;
-}
 
 #if defined(__has_feature) && __has_feature(address_sanitizer)
 extern "C" const char *__asan_default_options() {

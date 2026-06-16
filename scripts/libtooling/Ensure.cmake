@@ -40,10 +40,10 @@ file(DOWNLOAD
   "${arFile}"
   STATUS status
 )
-list(GET status 0 errCode)
+list(GET status 0 ec)
 list(GET status 1 err)
 
-if(errCode EQUAL 0)
+if(ec EQUAL 0)
   file(SHA256 "${arFile}" hash)
   if(NOT hash STREQUAL refHash)
     message(FATAL_ERROR "Mismatched prebuilt LibTooling hash.")

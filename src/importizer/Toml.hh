@@ -1,7 +1,7 @@
 #pragma once
 #include "utils/Log.hh"
 #include <concepts>
-#include <string_view>
+#include <llvm/ADT/StringRef.h>
 #include <tomlc17.h>
 #include <vector>
 
@@ -19,18 +19,18 @@ struct TomlResult : toml_result_t {
   TomlResult(TomlResult &&other) noexcept;
   TomlResult &operator=(TomlResult &&other) noexcept;
 
-  toml_datum_t seek(std::string_view key) const noexcept;
+  toml_datum_t seek(llvm::StringRef key) const noexcept;
 
   // Get string-type's from TOML.
   template <CharPtrConstructible T>
-  [[nodiscard]] bool seekStrs(std::string_view key,
+  [[nodiscard]] bool seekStrs(llvm::StringRef key,
                               std::vector<T> &strs) const noexcept {
     const toml_datum_t datum{this->seek(key)};
     if (!datum.type) {
       return true;
     }
     if (datum.type != TOML_ARRAY) {
-      err("'{}' must be a String Array.", key);
+      err("'{}' must be a String Array", key);
       return false;
     }
 
@@ -38,7 +38,7 @@ struct TomlResult : toml_result_t {
     for (int i{}; i < datum.u.arr.size; ++i) {
       toml_datum_t elem{datum.u.arr.elem[i]};
       if (elem.type != TOML_STRING) {
-        err("Element #{} of '{}' is not a String.", i + 1, key);
+        err("Element #{} of '{}' is not a String", i + 1, key);
         return false;
       }
       strs.emplace_back(elem.u.s);

@@ -1,6 +1,5 @@
 #pragma once
-#include <filesystem>
+#include <llvm/ADT/StringRef.h>
 
-namespace fs = std::filesystem;
-
-[[nodiscard]] bool cmpDir(const fs::path &dir, const fs::path &ref) noexcept;
+[[nodiscard]] bool cmpDir(const llvm::StringRef &dir,
+                          const llvm::StringRef &ref) noexcept;

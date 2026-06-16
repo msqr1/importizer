@@ -206,16 +206,19 @@ picked up on the next `cmake -B build` run.
 
 === Naming
 * *All code variables & functions:* `camelCase`
-* *C{plus}{plus} classes, types, & files:* `PascalCase` (e.g., `MyClass.cc`)
+* *C{plus}{plus} classes, types, & files:* `PascalCase` (e.g., `MyClass.cc`) unless it's an
+abbreviation
 * *Executables & directories:* `kebab-case` (e.g., `run-test/`)
 * *Environment variables:* `ALL_CAPS_SNAKE_CASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 === C{plus}{plus} style
 * Follow the LLVM coding style.
-* Use `std::string_view` over `const char*`, & `std::array`/`std::vector` over C-style arrays.
+* Use `llvm::StringRef` (not `std::string_view` because it's missing many features like `split`)
+over `const char*`, & `std::array`/`std::vector` over C-style arrays.
 * Use angled brackets (`#include <header.h>`) for external/third-party headers.
 * The C{plus}{plus} file containing `main()` for any executable must be named `Driver.cc`.
 * Maintain the exact same ordering of options in the Options section & parsing logic in `getOpts`.
+* Do not use RTTI, if you must, use https://llvm.org/docs/HowToSetUpLLVMStyleRTTI.html[LLVM's]
 
 ===  C{plus}{plus} error handling
 * *Do not* use C{plus}{plus} Exceptions
@@ -224,9 +227,6 @@ implicitly convertible to `bool`).
 * *Logging:* Functions must handle logging their own errors & should be marked `noexcept`.
 * *System Errors:* Mark branches handling system-level errors (e.g., `fseek` or `ftell` failures)
 with `[unlikely]`. Do not use this for input validation.
-* *Early Exits:* For an errorless early exit (e.g., the user requested `--help` or `--version`),
-return `std::optional<bool>` with `std::nullopt` to signal to the caller that execution should halt
-successfully without an error code.
 
 === CMake
 * Always place `common-config` as the *first* item in your `target_link_libraries` list.

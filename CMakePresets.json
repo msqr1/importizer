@@ -8,8 +8,6 @@
       "generator": "Ninja",
       "cacheVariables": {
         "BUILD_SHARED_LIBS": false,
-
-        "$comment": "For dynamic linking to Windows & MacOS CStdlib & CxxStdlib",
         "CMAKE_POSITION_INDEPENDENT_CODE": true
       }
     },

@@ -11,7 +11,7 @@
 * [x] Setup base CMake project with LibTooling integration
 * [x] Working build, test, upload CI & CD for
 ** [x] Windows
-** [ ] MacOS
+** [ ] MacOS (fix MacOS 26)
 ** [x] Linux
 * [ ] Sign CI & CD distributions with minisign
 * [ ] GitHub Artifact Attestations for CD distributions

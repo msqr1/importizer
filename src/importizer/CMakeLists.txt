@@ -8,7 +8,7 @@ target_link_libraries(importizer-lib PRIVATE
   common-config
   utils
 )
-require(importizer-lib PRIVATE fmt Clang tomlc17)
+require(importizer-lib PRIVATE LLVM Clang tomlc17)
 
 # Executable for users
 add_executable(importizer
@@ -19,7 +19,7 @@ target_link_libraries(importizer PRIVATE
   utils
   importizer-lib
 )
-require(importizer PRIVATE fmt)
+require(importizer PRIVATE LLVM)
 if(LINUX)
   target_link_options(importizer PRIVATE -static)
 elseif(WIN32)

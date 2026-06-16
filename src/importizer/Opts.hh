@@ -1,25 +1,24 @@
 #pragma once
 #include <clang/Tooling/JSONCompilationDatabase.h>
-#include <filesystem>
+#include <llvm/ADT/SmallString.h>
+#include <llvm/Support/FileSystem.h>
 #include <memory>
-#include <optional>
 #include <variant>
 #include <vector>
 
-namespace fs = std::filesystem;
-using namespace clang::tooling;
+namespace tl = clang::tooling;
 
 struct Bootstrap {
-  std::vector<fs::path> hdrExts;
-  std::vector<fs::path> srcExts;
-  std::vector<fs::path> includePaths;
+  std::vector<llvm::SmallString<64>> ignores;
+  std::vector<llvm::SmallString<128>> includePaths;
 };
 
 struct Opts {
-  fs::path inDir;
-  fs::path outDir;
-  std::variant<std::unique_ptr<JSONCompilationDatabase>, Bootstrap> fileHelper;
+  llvm::SmallString<128> inDir;
+  llvm::SmallString<128> outDir;
+  std::variant<std::unique_ptr<tl::JSONCompilationDatabase>, Bootstrap>
+      fileHelper;
 };
 
-[[nodiscard]] std::optional<bool>
-getOpts(const int argc, const char *const *argv, Opts &opts) noexcept;
+[[nodiscard]] bool getOpts(const int argc, const char *const *argv,
+                           Opts &opts) noexcept;

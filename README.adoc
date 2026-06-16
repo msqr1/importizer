@@ -1,5 +1,6 @@
 = importizer
 :toc: preamble
+:hide-uri-scheme:
 
 Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
 afraid that modularizing is too cumbersome? *importizer* is here to help.
@@ -57,24 +58,27 @@ Importizer primarily uses a TOML configuration file, complemented by a few comma
 === Command-line interface (CLI)
 By default, running `importizer` looks for an `importizer.toml` file in the current working
 directory. You can override this by passing the path as a positional argument: `importizer
-path/to/config.toml`.
+path/to/configuration.toml`.
 
 [%autowidth]
 |===
 |Option |Description
 
 |-h, --help
-|Print help information & exit.
+|Display available options.
 
-|-v, --version
-|Print version information & exit.
+|--help-list
+| Display list of available options.
+
+|--version
+|Display version.
 
 |-o, --outDir
-|Override the output directory specified in the config file.
+|Override the output directory specified in the configuration file
 |===
 
 === Configuration file (TOML)
-All relative paths in the configuration file are resolved relative to the configuration file’s
+All relative paths in the configuration file are resolved relative to the file’s
 location, *not* the current working directory.
 
 [%autowidth]
@@ -100,25 +104,20 @@ For projects without a JSON compilation database, Importizer can attempt to imit
 
 [%autowidth]
 |===
-|Option |Type |Default |Description
+|Option |Type |Description |Default
 
-|`hdrExts`
+|`ignores`
 |String Array
-|`["h","hh","hpp","hxx",""]`
-|Header file extensions used in the project.
-
-|`srcExts`
-|String Array
-|`["cc","cpp","cxx","c++","C"]`
-|Source file extensions used in the project.
+|gitignore-style ignores to exclude non-code files.
+|`["CMakeLists.txt"]`
 
 |`includePaths`
+|Include paths to search during resolution.
 |String Array
 |`[]`
-|Include paths to search during resolution.
 |===
 
-=== Example config file
+=== Example configuration file
 [,toml]
 ----
 inDir = "src"

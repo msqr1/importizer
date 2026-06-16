@@ -1,6 +1,7 @@
 #include "importizer/Toml.hh"
-#include <string_view>
+#include <llvm/ADT/StringRef.h>
 #include <tomlc17.h>
+#include <utility>
 
 TomlResult::TomlResult(const toml_result_t &result) noexcept
     : toml_result_t{result} {}
@@ -16,6 +17,6 @@ TomlResult &TomlResult::operator=(TomlResult &&other) noexcept {
   return *this;
 }
 
-toml_datum_t TomlResult::seek(std::string_view key) const noexcept {
+toml_datum_t TomlResult::seek(llvm::StringRef key) const noexcept {
   return toml_seek(toptab, key.data());
 }
