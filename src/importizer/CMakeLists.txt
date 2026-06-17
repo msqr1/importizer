@@ -9,7 +9,6 @@ target_link_libraries(importizer-lib PRIVATE
   utils
 )
 require(importizer-lib PRIVATE LLVM Clang tomlc17)
-requirePch(importizer-lib LLVM)
 
 # Executable for users
 add_executable(importizer
@@ -21,11 +20,8 @@ target_link_libraries(importizer PRIVATE
   importizer-lib
 )
 require(importizer PRIVATE LLVM)
-if(LINUX)
-  target_link_options(importizer PRIVATE
-    "$<IF:$<CONFIG:Debug>,-static-libgcc;-static-libstdc++,-static>"
-  )
-elseif(WIN32)
+target_precompile_headers(importizer REUSE_FROM pch-LLVM)
+if(WIN32)
   # Exclude Windows UCRT
   install(
     RUNTIME_DEPENDENCY_SET deps

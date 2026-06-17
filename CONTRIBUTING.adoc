@@ -108,7 +108,7 @@ cmake -P scripts/EnsureLibtooling.cmake
 |clang-cl, lld-link, llvm-ml 20.1.x^2^
 
 |Backend
-|Alpine 3.24.0
+|Alpine 3.24.1
 |Xcode SDK (`SDKROOT`)
 |Visual Studio or Build Tools^3^
 |===

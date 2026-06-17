@@ -11,24 +11,25 @@ endif()
 if(CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   message(FATAL_ERROR "In-source build is unsupported")
 endif()
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+
 set(root "${CMAKE_SOURCE_DIR}")
 set(3rdPartyDir "${root}/3rd-party")
 set(scriptsDir "${root}/scripts")
 
 # Project
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 add_library(common-config INTERFACE)
 target_compile_features(common-config INTERFACE cxx_std_23)
 if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
   target_compile_options(common-config INTERFACE
     -Wall
     -Werror
+    -fPIE
   )
   add_compile_options(
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
   )
-
   set(asan -fsanitize=address)
 elseif(MSVC)
   target_compile_options(common-config INTERFACE
@@ -72,6 +73,12 @@ if(hasUbsan)
   add_link_options($<$<CONFIG:Debug>:${ubsan}>)
 endif()
 
+if(LINUX)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  list(APPEND CMAKE_EXE_LINKER_FLAGS "-pie")
+endif()
+
 option(TRACE_BUILD "Enable build tracing for use with something like ClangBuildAnalyzer" OFF)
 if(TRACE_BUILD)
   add_compile_options(
@@ -86,7 +93,7 @@ include(scripts/3rdParty.cmake)
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
 
-option(BUILD_TESTING "Build test driver & run tests" ON)
+option(BUILD_TESTING "Build test driver & run tests" OFF)
 if(BUILD_TESTING)
   add_subdirectory(src/run-test)
   add_subdirectory(tests)

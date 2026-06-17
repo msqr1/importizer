@@ -30,7 +30,7 @@ jobs:
             -p ${{ github.token }}
 
           podman push img \
-            ghcr.io/${{ github.repository }}-alpine:3.24.0-${{ matrix.arch }} \
+            ghcr.io/${{ github.repository }}-alpine:3.24.1-${{ matrix.arch }} \
             -f oci \
             --compression-format zstd \
             --compression-level 19

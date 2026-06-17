@@ -7,8 +7,7 @@
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
-        "BUILD_SHARED_LIBS": false,
-        "CMAKE_POSITION_INDEPENDENT_CODE": true
+        "BUILD_SHARED_LIBS": false
       }
     },
     {
@@ -48,6 +47,7 @@
         "LLVM_ENABLE_PROJECTS": "clang",
         "LLVM_ENABLE_RUNTIMES": "",
         "LLVM_ENABLE_LTO": "Thin",
+        "LLVM_ENABLE_PIC": false,
         "LLVM_ENABLE_UNWIND_TABLES": false,
         "LLVM_ENABLE_ZLIB": false,
         "LLVM_ENABLE_ZSTD": false,

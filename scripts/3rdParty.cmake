@@ -40,6 +40,7 @@ function(require target visibility)
         LLVMSupport
       )
     elseif(pkg STREQUAL Clang)
+      set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
       set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
       find_package(Clang REQUIRED)
       target_include_directories(${target} SYSTEM ${visibility} "${CLANG_INCLUDE_DIRS}")
@@ -57,23 +58,12 @@ function(require target visibility)
   endforeach()
 endfunction()
 
-# Add a precompiled header set to a target
-
-file(TOUCH "${CMAKE_BINARY_DIR}/Empty.c")
-add_library(pch-LLVM STATIC "${CMAKE_BINARY_DIR}/Empty.c")
-if(pchSet STREQUAL LLVM)
-  set_target_properties(pch-LLVM PROPERTIES PRECOMPILE_HEADERS
-    <llvm/ADT/StringRef.h>
-    <llvm/Support/FileSystem.h>
-    <llvm/Support/VirtualFileSystem.h>
-  )
-endif()
-
-set(allPchSets "LLVM;")
-
-function(requirePch target pchSet)
-  if(NOT pchSet IN_LIST allPchSets)
-    message(FATAL_ERROR "Unknown precompiled header set '${pchSet}'")
-  endif()
-  target_precompile_headers(${target} REUSE_FROM pch-${pchSet})
-endfunction()
+file(TOUCH "${CMAKE_BINARY_DIR}/Empty.cc")
+add_library(pch-LLVM OBJECT "${CMAKE_BINARY_DIR}/Empty.cc")
+require(pch-LLVM PRIVATE LLVM)
+target_link_libraries(pch-LLVM PRIVATE common-config)
+target_precompile_headers(pch-LLVM PRIVATE
+  <llvm/ADT/StringRef.h>
+  <llvm/Support/FileSystem.h>
+  <llvm/Support/VirtualFileSystem.h>
+)

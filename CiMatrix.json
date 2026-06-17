@@ -4,14 +4,14 @@
     "os": "linux",
     "arch": "amd64",
     "script": "Linux.bash",
-    "container": "ghcr.io/msqr1/importizer-alpine:3.24.0-amd64"
+    "container": "ghcr.io/msqr1/importizer-alpine:3.24.1-amd64"
   },
   {
     "runner": "ubuntu-24.04-arm",
     "os": "linux",
     "arch": "arm64",
     "script": "Linux.bash",
-    "container": "ghcr.io/msqr1/importizer-alpine:3.24.0-arm64"
+    "container": "ghcr.io/msqr1/importizer-alpine:3.24.1-arm64"
   },
   {
     "runner": "windows-2025-vs2026",
