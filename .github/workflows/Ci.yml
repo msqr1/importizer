@@ -8,6 +8,8 @@ concurrency:
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
+    with:
+      jqExpr: 'del(.[] | select(.os == "macos"))'
   all:
     permissions:
       contents: write
@@ -27,6 +29,6 @@ jobs:
       - name: Setup
         run: . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
       - name: Ensure LibTooling
-        run: cmake -P scripts/libtooling/Ensure.cmake
+        run: cmake -P scripts/EnsureLibtooling.cmake
       - name: Make distribution
         run: cmake -P scripts/MkDist.cmake Debug

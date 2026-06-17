@@ -1,4 +1,4 @@
-#include "utils/FS.hh"
+#include "utils/Fs.hh"
 #include "utils/Log.hh"
 #include <algorithm>
 #include <llvm/ADT/SmallString.h>
@@ -13,7 +13,7 @@
 
 namespace pth = llvm::sys::path;
 
-bool cmpDir(const llvm::StringRef &dir, const llvm::StringRef &ref) noexcept {
+bool cmpDir(llvm::StringRef dir, llvm::StringRef ref) noexcept {
   bool res{true};
   std::string msg;
   llvm::SmallString<128> path;

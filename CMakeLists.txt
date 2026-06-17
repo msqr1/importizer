@@ -14,68 +14,8 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(root "${CMAKE_SOURCE_DIR}")
-
-# 3rd-party libs
-if(POLICY CMP0207)
-  cmake_policy(SET CMP0207 NEW)
-endif()
 set(3rdPartyDir "${root}/3rd-party")
-set(CPM_SOURCE_CACHE "${3rdPartyDir}")
-if(NOT EXISTS "${3rdPartyDir}/Cpm.cmake")
-  file(DOWNLOAD
-    https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
-    "${3rdPartyDir}/Cpm.cmake"
-    EXPECTED_HASH SHA256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844
-  )
-endif()
-include("${3rdPartyDir}/Cpm.cmake")
-function(require target visibility)
-  foreach(pkg IN LISTS ARGN)
-    if(pkg STREQUAL WindowsHModular)
-      if(WIN32)
-        CPMAddPackage("gh:Leandros/WindowsHModular#3adbb67f6f77025b5a9ef9f140c10e3393ca9093")
-
-        # SYSTEM to supress warnings
-        target_include_directories(${target} SYSTEM ${visibility}
-          "${WindowsHModular_SOURCE_DIR}/include")
-      endif()
-    elseif(pkg STREQUAL tomlc17)
-      # R260517
-      CPMAddPackage("gh:cktan/tomlc17#cb9bba39f2e63a9e67fa61d6c7521a184eb5fc38")
-      target_sources(${target} ${visibility} "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
-
-      # SYSTEM to supress warnings
-      target_include_directories(${target} SYSTEM ${visibility} "${tomlc17_SOURCE_DIR}/src")
-
-      if(WIN32)
-        set_source_files_properties("${tomlc17_SOURCE_DIR}/src/tomlc17.c"
-          PROPERTIES COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS
-        )
-      endif()
-    elseif(pkg STREQUAL LLVM)
-      set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
-      find_package(LLVM REQUIRED)
-      target_include_directories(${target} SYSTEM ${visibility} "${LLVM_INCLUDE_DIRS}")
-      target_link_libraries(${target} ${visibility}
-        LLVMSupport
-      )
-    elseif(pkg STREQUAL Clang)
-      set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
-      find_package(Clang REQUIRED)
-      target_include_directories(${target} SYSTEM ${visibility} "${CLANG_INCLUDE_DIRS}")
-      target_link_libraries(${target} ${visibility}
-        clangAST
-        clangBasic
-        clangTooling
-        clangFrontend
-        clangRewriteFrontend
-        clangSerialization
-      )
-    else()
-      message(FATAL_ERROR "Unknown 3rd-party library '${pkg}'")
-    endif()
-  endforeach()
-endfunction()
+set(scriptsDir "${root}/scripts")
 
 # Project
 add_library(common-config INTERFACE)
@@ -89,7 +29,7 @@ if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
   )
 
-  set(asan "-fsanitize=address")
+  set(asan -fsanitize=address)
 elseif(MSVC)
   target_compile_options(common-config INTERFACE
     /W4
@@ -106,7 +46,7 @@ elseif(MSVC)
     "$<$<COMPILE_LANGUAGE:CXX>:_HAS_EXCEPTIONS=0;_ITERATOR_DEBUG_LEVEL=0>"
   )
 
-  set(asan "/fsanitize=address")
+  set(asan /fsanitize=address)
 endif()
 target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
 if(POLICY CMP0069)
@@ -124,13 +64,24 @@ if(hasAsan)
   add_compile_options($<$<CONFIG:Debug>:${asan}>)
   add_link_options($<$<CONFIG:Debug>:${asan}>)
 endif()
-set(ubsan "-fsanitize=undefined")
+set(ubsan -fsanitize=undefined)
 set(CMAKE_REQUIRED_LINK_OPTIONS ${ubsan})
 check_cxx_compiler_flag(${ubsan} hasUbsan)
 if(hasUbsan)
   add_compile_options($<$<CONFIG:Debug>:${ubsan}>)
   add_link_options($<$<CONFIG:Debug>:${ubsan}>)
 endif()
+
+option(TRACE_BUILD "Enable build tracing for use with something like ClangBuildAnalyzer" OFF)
+if(TRACE_BUILD)
+  add_compile_options(
+    -ftime-trace
+    -ftime-trace-granularity=1
+  )
+endif()
+
+# 3rd-party stuff
+include(scripts/3rdParty.cmake)
 
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)

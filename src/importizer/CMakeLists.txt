@@ -9,6 +9,7 @@ target_link_libraries(importizer-lib PRIVATE
   utils
 )
 require(importizer-lib PRIVATE LLVM Clang tomlc17)
+requirePch(importizer-lib LLVM)
 
 # Executable for users
 add_executable(importizer
@@ -21,7 +22,9 @@ target_link_libraries(importizer PRIVATE
 )
 require(importizer PRIVATE LLVM)
 if(LINUX)
-  target_link_options(importizer PRIVATE -static)
+  target_link_options(importizer PRIVATE
+    "$<IF:$<CONFIG:Debug>,-static-libgcc;-static-libstdc++,-static>"
+  )
 elseif(WIN32)
   # Exclude Windows UCRT
   install(
@@ -49,7 +52,9 @@ install(
   RUNTIME_DEPENDENCY_SET deps
 )
 
-# More predictable output location
-add_custom_command(POST_BUILD TARGET importizer
-  COMMAND "${CMAKE_COMMAND}" -E create_hardlink "$<TARGET_FILE:importizer>"
-  "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:importizer>")
+# Predictable location
+add_custom_command(TARGET importizer POST_BUILD
+  COMMAND "${CMAKE_COMMAND}" -E create_hardlink
+  "$<TARGET_FILE:importizer>"
+  "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:importizer>"
+)

@@ -1,8 +1,6 @@
 #include "importizer/Entry.hh"
 #include "importizer/Opts.hh"
-#include <cassert>
 #include <cstdlib>
-#include <llvm/Support/FileSystem.h>
 
 int entry(const int argc, const char *const *argv) {
   Opts opts;

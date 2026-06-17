@@ -2,7 +2,6 @@
 #include "importizer/Toml.hh"
 #include "utils/Log.hh"
 #include <clang/Tooling/JSONCompilationDatabase.h>
-#include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/CommandLine.h>
@@ -62,7 +61,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return false;
   }
 
-  const TomlResult res{toml_parse_file_ex(config.data())};
+  const TomlResult res{toml_parse_file_ex(config.c_str())};
   if (!res.ok) {
     err(res.errmsg);
     return false;

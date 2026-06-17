@@ -12,6 +12,7 @@ __cmake_systeminformation
 /importizer*
 /CMakeUserPresets.json
 
-# LibTooling build files
-/scripts/libtooling/*
-!/scripts/libtooling/Ensure.cmake
+# Downloaded
+/scripts/Cpm.cmake
+/scripts/ClangBuildAnalyzer*
+/scripts/ninjatracing

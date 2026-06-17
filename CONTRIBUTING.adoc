@@ -90,7 +90,7 @@ was used to build LibTooling for CI, the prebuilt LibTooling will integrate seam
 start coding right away.
 [,bash]
 ----
-cmake -P scripts/libtooling/Ensure.cmake
+cmake -P scripts/EnsureLibtooling.cmake
 ----
 [%autowidth]
 |===
@@ -156,7 +156,7 @@ cd importizer
 . scripts/setup-env/{OS}
 
 # Ensure LibTooling
-cmake -P scripts/libtooling/Ensure.cmake
+cmake -P scripts/EnsureLibtooling.cmake
 
 # Configure
 cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -206,8 +206,7 @@ picked up on the next `cmake -B build` run.
 
 === Naming
 * *All code variables & functions:* `camelCase`
-* *C{plus}{plus} classes, types, & files:* `PascalCase` (e.g., `MyClass.cc`) unless it's an
-abbreviation
+* *C{plus}{plus} classes, types, & files:* `PascalCase` (e.g., `MyClass.cc`)
 * *Executables & directories:* `kebab-case` (e.g., `run-test/`)
 * *Environment variables:* `ALL_CAPS_SNAKE_CASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
@@ -266,12 +265,12 @@ OS'es (like `setup-env`).
 ** Description: `LibTooling {v} for developers & CI.`
 ** Pre-release
 * [ ] Update the version string(s) in:
-** `scripts/libtooling/Ensure.cmake` (also update LLVM Project source hash)
+** `scripts/EnsureLibtooling.cmake` (also update LLVM Project source hash)
 ** `CONTRIBUTING.adoc`
 * [ ] Add `Bump LibTooling to {v}` to `ChangeLog.adoc`
 * [ ] Commit with message `Bump LibTooling to {v}` & let the CI run & wait for completion
 * [ ] For the next commit:
-** Update the LibTooling hashes in `scripts/libtooling/Ensure.cmake`
+** Update the LibTooling hashes in `scripts/EnsureLibtooling.cmake`
 
 === Bumping Alpine images version
 * [ ] Update the version string(s) in:

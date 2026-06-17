@@ -1,5 +1,5 @@
 #pragma once
 #include <llvm/ADT/StringRef.h>
 
-[[nodiscard]] bool cmpDir(const llvm::StringRef &dir,
-                          const llvm::StringRef &ref) noexcept;
+// Returns true if dir and ref is exactly the same (including file content)
+[[nodiscard]] bool cmpDir(llvm::StringRef dir, llvm::StringRef ref) noexcept;

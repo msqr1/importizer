@@ -28,10 +28,12 @@ int main(const int argc, const char *const *argv) {
 
   llvm::SmallString<128> tmp;
   llvm::Twine testDir{argv[1]};
-  (testDir + "/Config.toml").toNullTerminatedStringRef(tmp);
+  (testDir + "/Config.toml").toStringRef(tmp);
+
+  // Make sure argv strings are always null-terminated
   std::array<const char *, 4> cmd{
       "importizer",
-      tmp.data(),
+      tmp.c_str(),
       "-o",
       argv[2],
   };
@@ -42,9 +44,10 @@ int main(const int argc, const char *const *argv) {
   const int rtn{entry(cmd.size(), cmd.data())};
   logOpts = &selfLogOpts;
 
-  auto buf{llvm::MemoryBuffer::getFile(testDir + "/RefCli.txt", true)};
+  llvm::Twine refCli{testDir + "/RefCli.txt"};
+  auto buf{llvm::MemoryBuffer::getFile(refCli, true)};
   if (!buf) {
-    // bufOrErr.getError() gives you the error_code
+    err("Unable to read {}: {}", refCli, buf.getError().message());
     return EXIT_FAILURE;
   }
   llvm::StringRef ref{buf->get()->getBuffer()};
@@ -63,7 +66,7 @@ int main(const int argc, const char *const *argv) {
     *selfLogOpts.target << out;
   }
 
-  (testDir + "/ref").toNullTerminatedStringRef(tmp);
+  (testDir + "/ref").toStringRef(tmp);
   errored |= fs::exists(tmp) && !cmpDir(argv[2], tmp);
 
   return errored ? EXIT_FAILURE : EXIT_SUCCESS;

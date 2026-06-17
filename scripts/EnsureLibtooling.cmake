@@ -4,7 +4,7 @@
 set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
 cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptDir)
-file(REAL_PATH "${scriptDir}/../.." root)
+file(REAL_PATH "${scriptDir}/.." root)
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 set(v 22.1.6)
 set(3rdPartyDir "${root}/3rd-party")
@@ -33,7 +33,7 @@ elseif(LINUX)
   endif()
 endif()
 
-set(arFile "${scriptDir}/Libtooling.tzst")
+set(arFile "${3rdPartyDir}/Libtooling.tzst")
 
 file(DOWNLOAD
   https://github.com/${repo}/releases/download/libtooling-${v}/${os}-${arch}.tzst
@@ -58,19 +58,20 @@ if(NOT DEFINED ENV{CI})
   message(FATAL_ERROR "${err}")
 endif()
 
-set(llvmProjSrc "${scriptDir}/llvm-proj-src")
+file(MAKE_DIRECTORY "${3rdPartyDir}")
+set(llvmProjSrc "${3rdPartyDir}/llvm-proj-src")
 
 # Get LLVM Project source (which includes LLVM & Clang). There used to be standalone LLVM & Clang
 # sources, but that seems to have ended in 21.x.x
-set(arFile "${scriptDir}/LlvmProj.tar.xz")
+set(arFile "${3rdPartyDir}/LlvmProj.tar.xz")
 file(DOWNLOAD
   https://github.com/llvm/llvm-project/releases/download/llvmorg-${v}/llvm-project-${v}.src.tar.xz
   "${arFile}"
   EXPECTED_HASH SHA256=6e0b376a1f6d9873e7dfb09ae6e04b9c7024400f01733fa4c29be69d5c138bc2
 )
-file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${scriptDir}")
+file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
 file(REMOVE "${arFile}")
-file(RENAME "${scriptDir}/llvm-project-${v}.src" "${llvmProjSrc}")
+file(RENAME "${3rdPartyDir}/llvm-project-${v}.src" "${llvmProjSrc}")
 
 # Load our LibTooling preset
 file(CREATE_LINK "${root}/CMakePresets.json"
@@ -79,8 +80,6 @@ file(CREATE_LINK "${root}/CMakePresets.json"
   "${llvmProjSrc}/clang/CMakeUserPresets.json" COPY_ON_ERROR)
 
 # Build LibTooling
-file(MAKE_DIRECTORY "${3rdPartyDir}")
-
 ## First build LLVM
 execute_process(COMMAND ${CMAKE_COMMAND}
   -S "${llvmProjSrc}/llvm"
