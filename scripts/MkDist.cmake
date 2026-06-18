@@ -1,5 +1,5 @@
 # Make a distribution
-## Uses Github CLI - needs GH_TOKEN env var
+## Uses Github CLI, needs GH_TOKEN env var
 
 set(mode ${CMAKE_ARGV3})
 set(knownModes "Debug;Release")

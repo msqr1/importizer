@@ -3,7 +3,7 @@
 #include <llvm/Support/raw_ostream.h>
 
 int main(const int argc, const char *const *argv) {
-  // Always set program and log target before everything
+  // Always set program & log target before everything
   LogOpts selfLogOpts;
   logOpts = &selfLogOpts;
   selfLogOpts.prog = "importizer";

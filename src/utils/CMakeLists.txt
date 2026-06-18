@@ -1,6 +1,6 @@
-add_library(utils Log.cc)
-require(utils PRIVATE LLVM)
-target_link_libraries(utils PRIVATE
+add_library(utils-lib Log.cc)
+require(utils-lib PRIVATE LLVM)
+target_link_libraries(utils-lib PRIVATE
   common-config
 )
-target_precompile_headers(utils REUSE_FROM pch-LLVM)
+target_precompile_headers(utils-lib REUSE_FROM pch-LLVM)

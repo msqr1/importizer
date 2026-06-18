@@ -1,12 +1,12 @@
 # Ensure that LibTooling (LLVM & Clang) is in 3rd-party/
-## Uses Github CLI - needs GH_TOKEN env var
+## Uses Github CLI, needs GH_TOKEN env var
 
 set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
 cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptDir)
 file(REAL_PATH "${scriptDir}/.." root)
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
-set(v 22.1.6)
+set(v 22.1.8)
 set(3rdPartyDir "${root}/3rd-party")
 set(repo "msqr1/importizer")
 if(IS_READABLE "${3rdPartyDir}/clang" OR IS_READABLE "${3rdPartyDir}/llvm")
@@ -15,21 +15,21 @@ endif()
 
 if(WIN32)
   if(${arch} STREQUAL amd64)
-    set(refHash f464343c6f859f0f7e3ac47efa39ee54baf0ed7fbabc738222cfbb4dbcc9b9c9)
+    set(refHash)
   elseif(${arch} STREQUAL arm64)
-    set(refHash 698db2ae8b0efcbdecb4ee9ec0d6b921ccf67a8cd3cc364b8e9430db6de0ae9b)
+    set(refHash)
   endif()
 elseif(${os} STREQUAL macos)
   if(${arch} STREQUAL amd64)
-    set(refHash 1622568bad03b10561c79761164bfa26eb4035d640e61d7d856d4eee4fbb1174)
+    set(refHash)
   elseif(${arch} STREQUAL arm64)
-    set(refHash 262aa04c869fd9c36290fedaadaf82a05c0e343786c1b9353ee26b4b17db452b)
+    set(refHash)
   endif()
 elseif(LINUX)
   if(${arch} STREQUAL amd64)
-    set(refHash cc8d2b75a4607e88c6895ca06d37c0d2024a8039b077120a501289f2cdc8d52c)
+    set(refHash)
   elseif(${arch} STREQUAL arm64)
-    set(refHash 3d2dd9217eaca6164f2860b8cf60996e784eb1f487f9baf1e2984415b461d4f4)
+    set(refHash)
   endif()
 endif()
 
@@ -58,6 +58,7 @@ if(NOT DEFINED ENV{CI})
   message(FATAL_ERROR "${err}")
 endif()
 
+
 file(MAKE_DIRECTORY "${3rdPartyDir}")
 set(llvmProjSrc "${3rdPartyDir}/llvm-proj-src")
 
@@ -67,7 +68,7 @@ set(arFile "${3rdPartyDir}/LlvmProj.tar.xz")
 file(DOWNLOAD
   https://github.com/llvm/llvm-project/releases/download/llvmorg-${v}/llvm-project-${v}.src.tar.xz
   "${arFile}"
-  EXPECTED_HASH SHA256=6e0b376a1f6d9873e7dfb09ae6e04b9c7024400f01733fa4c29be69d5c138bc2
+  EXPECTED_HASH SHA256=922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888
 )
 file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
 file(REMOVE "${arFile}")
@@ -116,8 +117,9 @@ execute_process(COMMAND ${CMAKE_COMMAND}
 file(REMOVE_RECURSE "${llvmProjSrc}")
 
 # Pack & upload
+set(arFile "${scriptDir}/${os}-${arch}.tzst")
 file(ARCHIVE_CREATE
-  OUTPUT "${scriptDir}/${os}-${arch}.tzst"
+  OUTPUT "${arFile}"
   WORKING_DIRECTORY "${3rdPartyDir}"
   PATHS clang llvm
   COMPRESSION Zstd
@@ -128,3 +130,4 @@ execute_process(COMMAND gh release upload libtooling-${v} "${scriptDir}/${os}-${
   -R ${repo}
   COMMAND_ERROR_IS_FATAL ANY
 )
+file(REMOVE "${arFile}")

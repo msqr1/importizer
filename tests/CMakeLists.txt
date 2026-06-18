@@ -1,5 +1,5 @@
 enable_testing()
-file(GLOB testDirs "./*")
+file(GLOB testDirs ./*)
 foreach(testDir ${testDirs})
   if(NOT IS_DIRECTORY ${testDir})
     continue()

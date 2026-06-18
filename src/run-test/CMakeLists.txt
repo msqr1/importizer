@@ -2,7 +2,7 @@ add_executable(run-test Driver.cc CmpDir.cc)
 require(run-test PRIVATE LLVM)
 target_link_libraries(run-test PRIVATE
   common-config
-  utils
+  utils-lib
   importizer-lib
 )
 target_precompile_headers(run-test REUSE_FROM pch-LLVM)

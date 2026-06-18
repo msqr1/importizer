@@ -25,7 +25,6 @@ if(${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL GNU)
   target_compile_options(common-config INTERFACE
     -Wall
     -Werror
-    -fPIE
   )
   add_compile_options(
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
@@ -62,21 +61,25 @@ include(CheckCXXCompilerFlag)
 set(CMAKE_REQUIRED_LINK_OPTIONS ${asan})
 check_cxx_compiler_flag(${asan} hasAsan)
 if(hasAsan)
-  add_compile_options($<$<CONFIG:Debug>:${asan}>)
-  add_link_options($<$<CONFIG:Debug>:${asan}>)
+  add_compile_options("$<$<CONFIG:Debug>:${asan}>")
+  add_link_options("$<$<CONFIG:Debug>:${asan}>")
 endif()
 set(ubsan -fsanitize=undefined)
 set(CMAKE_REQUIRED_LINK_OPTIONS ${ubsan})
 check_cxx_compiler_flag(${ubsan} hasUbsan)
 if(hasUbsan)
-  add_compile_options($<$<CONFIG:Debug>:${ubsan}>)
-  add_link_options($<$<CONFIG:Debug>:${ubsan}>)
+  add_compile_options("$<$<CONFIG:Debug>:${ubsan}>")
+  add_link_options("$<$<CONFIG:Debug>:${ubsan}>")
 endif()
-
 if(LINUX)
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  list(APPEND CMAKE_EXE_LINKER_FLAGS "-pie")
+  add_link_options(
+    # In Debug mode, we want to still link in whatever dynamic library we need.
+    "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
+
+    # In Release mode, we want a fully static. We use -static-pie here for more security
+    # over -static. On Windows & MacOS things are already secure.
+    "$<$<CONFIG:Release>:-static-pie>"
+  )
 endif()
 
 option(TRACE_BUILD "Enable build tracing for use with something like ClangBuildAnalyzer" OFF)

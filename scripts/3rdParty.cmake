@@ -17,6 +17,8 @@ endif()
 include("${scriptsDir}/Cpm.cmake")
 
 # Setup a 3rd-party library for a target
+set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
+set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
 function(require target visibility)
   foreach(pkg IN LISTS ARGN)
     if(pkg STREQUAL tomlc17)
@@ -33,17 +35,17 @@ function(require target visibility)
         )
       endif()
     elseif(pkg STREQUAL LLVM)
-      set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
       find_package(LLVM REQUIRED)
       target_include_directories(${target} SYSTEM ${visibility} "${LLVM_INCLUDE_DIRS}")
       target_link_libraries(${target} ${visibility}
         LLVMSupport
       )
     elseif(pkg STREQUAL Clang)
-      set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
-      set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
       find_package(Clang REQUIRED)
-      target_include_directories(${target} SYSTEM ${visibility} "${CLANG_INCLUDE_DIRS}")
+      target_include_directories(${target} SYSTEM ${visibility}
+        "${LLVM_INCLUDE_DIRS}"
+        "${CLANG_INCLUDE_DIRS}"
+      )
       target_link_libraries(${target} ${visibility}
         clangAST
         clangBasic
@@ -58,12 +60,10 @@ function(require target visibility)
   endforeach()
 endfunction()
 
-file(TOUCH "${CMAKE_BINARY_DIR}/Empty.cc")
-add_library(pch-LLVM OBJECT "${CMAKE_BINARY_DIR}/Empty.cc")
+add_library(pch-LLVM OBJECT "${CMAKE_SOURCE_DIR}/src/Empty.cc")
 require(pch-LLVM PRIVATE LLVM)
 target_link_libraries(pch-LLVM PRIVATE common-config)
 target_precompile_headers(pch-LLVM PRIVATE
-  <llvm/ADT/StringRef.h>
-  <llvm/Support/FileSystem.h>
-  <llvm/Support/VirtualFileSystem.h>
+  <vector>
+  <chrono>
 )

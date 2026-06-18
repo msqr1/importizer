@@ -20,7 +20,7 @@ namespace fs = llvm::sys::fs;
 int main(const int argc, const char *const *argv) {
   assert(argc == 3);
 
-  // Always set program and log target before everything
+  // Always set program & log target before everything
   LogOpts selfLogOpts;
   logOpts = &selfLogOpts;
   selfLogOpts.prog = "run-test";

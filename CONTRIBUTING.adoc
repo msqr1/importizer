@@ -4,20 +4,23 @@
 Thank you for contributing to importizer!
 
 == Internals
-Although not a hard requirement, you'd want to know some internals of importizer. It's written out
-link:Internals.adoc[here]. It covers architecture, design decisions, transformations &
-their mechanism as well as some history & fun facts!
+Although not a hard requirement, you'd want to know some internals of importizer.
+It's written out link:Internals.adoc[here].
+It covers architecture, design decisions, transformations & their mechanism as well as some history
+& fun facts!
 
 == Environment
 === If you're on Linux
 Because your Linux is likely based on glibc, development should be done in an Alpine container.
 There's https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[prebuilt ones] with all
-the required tools. Personally, I use https://distrobox.it[distrobox] because it makes the
-host-container boundary (terminal-wise) almost invisible. Here's how to set it up:
+the required tools.
+Personally, I use https://distrobox.it[distrobox] because it makes the host-container boundary
+(terminal-wise) almost invisible.
+Here's how to set it up:
 [,bash]
 ----
 # Create distrobox container (replace {arch} with your architecture)
-distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:3.24.0-{arch} --no-entry
+distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:3.24.1-{arch} --no-entry
 
 # Enter container
 distrobox enter importizer-alpine
@@ -33,9 +36,9 @@ running (replace {os} with the correct file):
 
 Note:
 
-* All scripts currently check if CMake and Ninja is in PATH.
-* *Linux:* The script checks if Clang and LLD is in PATH.
-* *MacOS:* The script checks Homebrew LLVM (for Clang and LLD).
+* All scripts currently check if CMake & Ninja is in PATH.
+* *Linux:* The script checks if Clang & LLD is in PATH.
+* *MacOS:* The script checks Homebrew LLVM (for Clang & LLD).
 * *Windows:* There's 2 optional arguments:
 [%autowidth]
 |===
@@ -50,8 +53,8 @@ Note:
 |`C:/Program Files/CMake`
 |===
 They can take the special value of `:bundled` that tells the script to look for the installation
-bundled within Visual Studio or Build Tools. Note that bundled tools usually lag behind in version,
-so use `:bundled` with cautions.
+bundled within Visual Studio or Build Tools.
+Note that bundled tools usually lag behind in version, so use `:bundled` with cautions.
 
 == Dependency linkage
 [%autowidth]
@@ -61,20 +64,26 @@ so use `:bundled` with cautions.
 |3rd-party libraries
 3+^.^|Static
 
-|C++ Standard Library (CxxStdlib)
+|Sanitizers (only in Debug mode)
+|Static
+2+^.^|Dynamic
+
+|C++ Standard Library (a.k.a CxxStdlib)
 |Static
 .2+^.^|Dynamic^1^
 |Static
 
-|C Standard Library (CStdlib)
-|Static^2^
-|Dynamic^3^
+|C Standard Library (a.k.a CStdlib)
+|Static^3^ w/o sanitizers, dynamic with
+|Dynamic^2^
 |===
 
-. CStdlib is libSystem, CxxStdlib is a modded libc{plus}{plus}, both are dynamic but with stable ABI
-between versions guaranteed by MacOS so we can treat as if they're static.
-. CStdlib is Windows UCRT, it's dynamic but also with stable ABI guaranteed between versions by
-Windows so we can use as if it's static.
+. CStdlib is libSystem, CxxStdlib is a modded libc{plus}{plus}.
+Both are dynamic but with stable ABI between versions guaranteed by MacOS so we can treat as if
+they're static.
+. CStdlib is Windows UCRT.
+It's dynamic but also with stable ABI guaranteed between versions by Windows so we can use as if
+it's static.
 . CStdlib is musl libc. glibc was considered, but:
 .. Static linking with it is unsupported.
 .. Even if we do dynamic linking, it's still only on most systems, not all.
@@ -82,12 +91,14 @@ Windows so we can use as if it's static.
 
 == Building
 === Skip building LibTooling
-Importizer needs Clang LibTooling. But LibTooling isn't like other 3rd-party libraries, it is
-massive! To save one from compiling it, there's
-https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.6[prebuilt ones]. Since C++ ABIs &
-LLVM bitcode formats can change between versions, if you match the toolchain in the table below that
-was used to build LibTooling for CI, the prebuilt LibTooling will integrate seamlessly. One can
-start coding right away.
+Importizer needs Clang LibTooling.
+But LibTooling isn't like other 3rd-party libraries, it is massive!
+To save one from compiling it, there's
+https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.8[prebuilt ones].
+Since C++ ABIs & LLVM bitcode formats can change between versions, if you match the toolchain in
+the table below that was used to build LibTooling for CI, the prebuilt LibTooling will integrate
+seamlessly.
+One can start coding right away.
 [,bash]
 ----
 cmake -P scripts/EnsureLibtooling.cmake
@@ -119,9 +130,10 @@ cmake -P scripts/EnsureLibtooling.cmake
 . `20.1.8` on AMD64, `20.1.6` on ARM64. Basically replacing MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
 
-Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
-`CMakePresets.json` to customize your local build. This is so you don't have to derive the correct
-settings yourself. For example, on MacOS:
+Once you installed the toolchain, create a `CMakeUserPresets.json` & inherit from
+`CMakePresets.json` to customize your local build.
+This is so you don't have to derive the correct settings yourself.
+For example, on MacOS:
 [,json]
 ----
 {
@@ -140,12 +152,14 @@ settings yourself. For example, on MacOS:
 
 === Building from source entirely
 You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you will
-have to rebuild LibTooling with that toolchain. Good luck! Note that everything else here assumes
-you won't be doing this.
+have to rebuild LibTooling with that toolchain & deal with bugs on them.
+I gave up & decided that I'd only support using LLVM's toolchain.
+If you're doing this, good luck!
+Note that everything else here assumes you won't be doing this.
 
 === Build process
-Ok, enough talking, here's how to build the release mode from scratch. Note that cross compilation
-is currently unsupported.
+Ok, enough talking, here's how to build the release mode from scratch.
+Note that cross compilation is currently unsupported.
 [,bash]
 ----
 # Shallow clone to save space
@@ -164,7 +178,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 # Build using all cores
 cmake --build build --config Release -j $(cmake -P scripts/Nproc.cmake)
 ----
-The binary is in `build`, named `importizer` on Linux or MacOS and `importizer.exe` on Windows.
+The binary is in `build`, named `importizer` on Linux or MacOS & `importizer.exe` on Windows.
 
 == Testing
 === Running tests
@@ -186,19 +200,20 @@ ctest --test-dir build/tests \
 ----
 
 === Adding new tests
-Importizer uses a custom directory-based test harness (located in `src/run-test`). To add a new test
-case:
+Importizer uses a custom directory-based test harness (located in `src/run-test`).
+To add a new test case:
 
 . Create a new directory under `tests/` with a descriptive name (e.g., `tests/my-new-feature/`).
 . Add a `Config.toml` file inside this directory to configure the importizer run.
 . Add a `RefCli.txt` file containing the expected CLI output.
 . *(Optional)* Create a `in/` subdirectory containing the input files (C{plus}{plus} header-based
 code).
-. *(Optional)* Create a `ref/` subdirectory containing the expected output files. The test driver
-will automatically compare the actual output directory against this reference directory. Don’t add
-this when expecting an error.
+. *(Optional)* Create a `ref/` subdirectory containing the expected output files.
+The test driver will automatically compare the actual output directory against this reference
+directory.
+Don’t add this when expecting an error.
 
-The CMake script dynamically globs the `tests/` folder, so your new test will be automatically
+The CMake script detect changes in `tests/`, so your new test will be automatically
 picked up on the next `cmake -B build` run.
 
 == Coding conventions
@@ -217,7 +232,7 @@ over `const char*`, & `std::array`/`std::vector` over C-style arrays.
 * Use angled brackets (`#include <header.h>`) for external/third-party headers.
 * The C{plus}{plus} file containing `main()` for any executable must be named `Driver.cc`.
 * Maintain the exact same ordering of options in the Options section & parsing logic in `getOpts`.
-* Do not use RTTI, if you must, use https://llvm.org/docs/HowToSetUpLLVMStyleRTTI.html[LLVM's]
+* Do not use RTTI, if you must, use https://llvm.org/docs/HowToSetUpLLVMStyleRTTI.html[LLVM's].
 
 ===  C{plus}{plus} error handling
 * *Do not* use C{plus}{plus} Exceptions
@@ -225,17 +240,19 @@ over `const char*`, & `std::array`/`std::vector` over C-style arrays.
 implicitly convertible to `bool`).
 * *Logging:* Functions must handle logging their own errors & should be marked `noexcept`.
 * *System Errors:* Mark branches handling system-level errors (e.g., `fseek` or `ftell` failures)
-with `[unlikely]`. Do not use this for input validation.
+with `[unlikely]`.
+Do not use this for input validation.
 
 === CMake
 * Always place `common-config` as the *first* item in your `target_link_libraries` list.
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
 * Check before adding a compiler/linker flag if it's not guaranteed to be available on supported
 compiler (e.g., `-fsanitize=address`).
-* `3rd-party` directory must only contain 3rd-party libraries used by the project
 * Use `target\_*_*` to add flags for this project, & `add\_*_*` to add for this & all deps.
 * If a global setting affects LibTooling too (e.g. `BUILD_SHARED_LIBS`), put in `CMakePresets.json`.
 Otherwise (eg. `CMAKE_CXX_SCAN_FOR_MODULES`), put in `CMakeLists.txt`
+* Install rules and post-installation scripts are only used in debug mode.
+In release mode, since the binary is standalone, we'd take it directly from `build`.
 
 === Scripts
 * Use CMake to write scripts, if not possible, then make a folder & add scripts for all supported
@@ -244,6 +261,12 @@ OS'es (like `setup-env`).
 ** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, or `macos`)
 ** `IMPORTIZER_ARCH`: The architecture (`amd64` or `arm64`)
 * For CI detection check if the environment variable `CI` was defined
+
+=== Markup
+* Use https://asciidoc.org[AsciiDoc]
+* Begin every sentence on a new line (one sentence per line).
+* Wrap sentence to a new line at the column limit, but try not to because this means the sentence is
+looooong.
 
 == Checklists
 === New release
@@ -284,8 +307,8 @@ OS'es (like `setup-env`).
 * [ ] Run the Tag Continuous workflow
 
 === Permissions
-When pushing, ensure permission of files in `scripts/` is set to executable. You can use the
-provided git hook to do this for you:
+When pushing, ensure permission of files in `scripts/` is set to executable.
+You can use the provided git hook to do this for you:
 [,bash]
 ----
 git config core.hooksPath .githooks

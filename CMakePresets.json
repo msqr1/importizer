@@ -6,6 +6,10 @@
       "name": "all",
       "hidden": true,
       "generator": "Ninja",
+      "$comment": [
+        "We don't need PIC, only PIE, and that's on by default in all supported OS'es.",
+        "So we don't need CMAKE_POSITION_INDEPENDENT_CODE or later, LLVM_ENABLE_PIC."
+      ],
       "cacheVariables": {
         "BUILD_SHARED_LIBS": false
       }
@@ -98,7 +102,7 @@
       "name": "libtooling-windows",
       "inherits": ["libtooling", "windows", "all"],
       "cacheVariables": {
-        "CMAKE_ASM_COMPILER": "llvm-ml",
+        "CMAKE_ASM_MASM_COMPILER": "llvm-ml",
         "LLVM_ENABLE_RPMALLOC": true
       }
     },

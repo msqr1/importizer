@@ -2,9 +2,9 @@
 
 == 3.0.0 (in progress)
 
-* *Complete* rewrite with Clang Libtooling instead of Regex
-* Build & cache static LibTooling to distribute standalone binaries
-* Support Windows ARM64, Linux ARM64, & MacOS amd64
+* *Complete* rewrite with Clang LibTooling instead of Regex
+* Build & cache LibTooling for developers and CI.
+* Official supported OS & architectures
 * Major internal changes about organization & build system
 
 == 2.0.0
@@ -12,7 +12,8 @@
 ==== Breaking Changes
 
 * Renamed `includeGuardPat` to `includeGuard`.
-* Changed TOML transitional mode to `[transitional]` (was `[Transitional]`) to match the command-line & project naming conventions.
+* Changed TOML transitional mode to `[transitional]` (was `[Transitional]`) to match the
+command-line & project naming conventions.
 
 ==== Breaking Changes: Off-by-default rule
 
@@ -22,7 +23,8 @@
 ==== Potentially Breaking Changes
 
 * Updated default for `moduleInterfaceExt` to `.ixx` (was `.cppm`) for MSVC compatibility.
-* Removed the `logCurrentFile` setting; importizer now automatically logs the current file being processed on errors.
+* Removed the `logCurrentFile` setting; importizer now automatically logs the current file being
+processed on errors.
 
 ==== New Features
 
@@ -31,7 +33,7 @@
 
 ==== Changes & Fixes
 
-* Separated the IncludePrevention test into distinct tests for include guards & `#pragma once`. *
+* Separated the IncludePrevention test into distinct tests for include guards & `#pragma once`.
 Eliminated condition generation for local includes in transitional mode.
 * Updated documentation for the `includeGuard` setting.
 * Renamed the "`Other`" test to "`ModeIndependent`".
@@ -45,7 +47,8 @@ Eliminated condition generation for local includes in transitional mode.
 
 * Added a shared directive section in transitional mode to shorten the preamble.
 * Renamed `CondMinimizer` to `Minimizer`, which now also removes empty `#define`/`#undef` pairs.
-* Removed all `*Action` return values from functions; actions are now performed directly using lambda expressions.
+* Removed all `*Action` return values from functions; actions are now performed directly using
+lambda expressions.
 * Added support for umbrella headers by converting includes to `export import` instead of plain
 `import`.
 * Updated PCRE2 dependency to version 10.45.
