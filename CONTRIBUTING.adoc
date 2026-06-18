@@ -193,7 +193,7 @@ cmake --build build --config Debug -j $(cmake -P scripts/Nproc.cmake)
 
 # Run tests with recommended settings & using all cores
 ctest --test-dir build/tests \
-  --output-on-failure \
+  --verbose \
   --progress \
   --schedule-random \
   -j $(cmake -P scripts/Nproc.cmake)

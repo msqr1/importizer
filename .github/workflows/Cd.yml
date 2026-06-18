@@ -18,8 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@v1.4.2
-      - name: Setup
-        run: . scripts/setup-env/${{ matrix.script }} ${{ matrix.arch }}
+      - name: Setup environment
+        run: . scripts/setup-env/${{ matrix.setup-env }} ${{ matrix.arch }}
       - name: Ensure LibTooling
         run: cmake -P scripts/EnsureLibtooling.cmake
       - name: Make distribution

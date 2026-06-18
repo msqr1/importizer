@@ -2,39 +2,39 @@
   {
     "os": "linux",
     "arch": "amd64",
-    "runner": "ubuntu-24.04",
+    "runner": "ubuntu-26.04",
     "container": "ghcr.io/msqr1/importizer-alpine:3.24.1-amd64",
-    "script": "Linux.bash"
+    "setup-env": "Linux.bash"
   },
   {
     "os": "linux",
     "arch": "arm64",
-    "runner": "ubuntu-24.04-arm",
+    "runner": "ubuntu-26.04-arm",
     "container": "ghcr.io/msqr1/importizer-alpine:3.24.1-arm64",
-    "script": "Linux.bash"
+    "setup-env": "Linux.bash"
   },
   {
     "os": "windows",
     "arch": "amd64",
     "runner": "windows-2025-vs2026",
-    "script": "Windows.ps1"
+    "setup-env": "Windows.ps1"
   },
   {
     "os": "windows",
     "arch": "arm64",
-    "runner": "windows-11-arm",
-    "script": "Windows.ps1"
+    "runner": "windows-11-vs2026-arm",
+    "setup-env": "Windows.ps1"
   },
   {
     "os": "macos",
     "arch": "amd64",
     "runner": "macos-26-intel",
-    "script": "Macos.bash"
+    "setup-env": "Macos.bash"
   },
   {
     "os": "macos",
     "arch": "arm64",
     "runner": "macos-26",
-    "script": "Macos.bash"
+    "setup-env": "Macos.bash"
   }
 ]

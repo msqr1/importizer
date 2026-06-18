@@ -93,6 +93,9 @@ endif()
 # 3rd-party stuff
 include(scripts/3rdParty.cmake)
 
+if(POLICY CMP0207)
+  cmake_policy(SET CMP0207 NEW)
+endif()
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
 

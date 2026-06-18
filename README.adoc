@@ -50,7 +50,7 @@ Necessary shared libraries are bundled directly in the distribution archive.
 * *Stable release:* Download optimized release builds from the
 https://github.com/msqr1/importizer/releases[releases page].
 * *Bleeding edge (debug):* Download unoptimized builds from the
-https://github.com/msqr1/importizer/releases/tag/continuous[continuous tag].
+https://github.com/msqr1/importizer/releases/tag/continuous[Continuous tag].
 Useful for testing latest features or reporting bugs.
 
 == Configuration & usage
@@ -87,15 +87,15 @@ current working directory.
 |===
 |Option |Type |Description
 
-|`inDir`
+|inDir
 |String
 |*Required.* The directory containing the source code to process.
 
-|`outDir`
+|outDir
 |String
 |*Required* (unless provided via CLI). The directory for the modularized output.
 
-|`compilationDb`
+|compilationDb
 |String
 |*Highly Recommended.* Path to a `compile_commands.json` compilation database to provide context.
 |===
@@ -109,12 +109,12 @@ Note: if `compilationDb` is specified, the `bootstrap` table is ignored.
 |===
 |Option |Type |Description |Default
 
-|`ignores`
+|ignores
 |String Array
 |gitignore-style ignores to exclude non-code files.
 |`["CMakeLists.txt"]`
 
-|`includePaths`
+|includePaths
 |Include paths to search during resolution.
 |String Array
 |`[]`
