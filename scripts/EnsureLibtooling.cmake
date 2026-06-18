@@ -9,28 +9,9 @@ cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 set(v 22.1.8)
 set(3rdPartyDir "${root}/3rd-party")
 set(repo "msqr1/importizer")
+
 if(IS_READABLE "${3rdPartyDir}/clang" OR IS_READABLE "${3rdPartyDir}/llvm")
   cmake_language(EXIT 0)
-endif()
-
-if(LINUX)
-  if(${arch} STREQUAL amd64)
-    set(refHash 28bdc8af61997c7af860eef65bc2c0d760bfac96f58ba4776397bdcb879f41c9)
-  elseif(${arch} STREQUAL arm64)
-    set(refHash 4931fc068b72746104f072c93fceec3f361ce5309dcacd53a66642a4260b3f35)
-  endif()
-elseif(${os} STREQUAL macos)
-  if(${arch} STREQUAL amd64)
-    set(refHash 2bec83a6d06222b862e60d8d2fc7ecb11ca3ae7a0ec25acca214cb51533162a7)
-  elseif(${arch} STREQUAL arm64)
-    set(refHash 7d367caf1559f229976a963ae54baed3b596a5e30bcaa07781817d9c8bf65f83)
-  endif()
-elseif(WIN32)
-  if(${arch} STREQUAL amd64)
-    set(refHash 82810bbe9191958ce4e55dd2cef1ec480452b7bb679f19e30ffad9558413b5ca)
-  elseif(${arch} STREQUAL arm64)
-    set(refHash 7e913982d99b30095e315b10904a080c8ea6693a764978b352b9f04e2ff13d8b)
-  endif()
 endif()
 
 set(arFile "${3rdPartyDir}/Libtooling.tzst")
@@ -45,6 +26,28 @@ list(GET status 1 err)
 
 if(ec EQUAL 0)
   file(SHA256 "${arFile}" hash)
+
+  # Prebuilt LibTooling hashes
+  if(LINUX)
+    if(arch STREQUAL amd64)
+      set(refHash 28bdc8af61997c7af860eef65bc2c0d760bfac96f58ba4776397bdcb879f41c9)
+    elseif(arch STREQUAL arm64)
+      set(refHash 4931fc068b72746104f072c93fceec3f361ce5309dcacd53a66642a4260b3f35)
+    endif()
+  elseif(os STREQUAL macos)
+    if(arch STREQUAL amd64)
+      set(refHash 2bec83a6d06222b862e60d8d2fc7ecb11ca3ae7a0ec25acca214cb51533162a7)
+    elseif(arch STREQUAL arm64)
+      set(refHash 7d367caf1559f229976a963ae54baed3b596a5e30bcaa07781817d9c8bf65f83)
+    endif()
+  elseif(WIN32)
+    if(arch STREQUAL amd64)
+      set(refHash 82810bbe9191958ce4e55dd2cef1ec480452b7bb679f19e30ffad9558413b5ca)
+    elseif(arch STREQUAL arm64)
+      set(refHash 7e913982d99b30095e315b10904a080c8ea6693a764978b352b9f04e2ff13d8b)
+    endif()
+  endif()
+
   if(NOT hash STREQUAL refHash)
     file(REMOVE "${arFile}")
     message(FATAL_ERROR "Mismatched prebuilt LibTooling hash.")
@@ -54,11 +57,10 @@ if(ec EQUAL 0)
   cmake_language(EXIT 0)
 endif()
 
-# In local development we don't want to build
+# Don't build on developer's device
 if(NOT DEFINED ENV{CI})
   message(FATAL_ERROR "${err}")
 endif()
-
 
 file(MAKE_DIRECTORY "${3rdPartyDir}")
 set(llvmProjSrc "${3rdPartyDir}/llvm-proj-src")
@@ -124,8 +126,5 @@ file(ARCHIVE_CREATE
   COMPRESSION Zstd
   COMPRESSION_LEVEL 19
 )
-exec(gh release upload libtooling-${v} "${arFile}"
-  --clobber
-  -R ${repo}
-)
+exec(gh release upload libtooling-${v} "${arFile}" --clobber -R ${repo})
 file(REMOVE "${arFile}")

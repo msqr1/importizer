@@ -28,6 +28,6 @@ jobs:
       - name: Ensure LibTooling
         timeout-minutes: 167
         run: cmake -P scripts/EnsureLibtooling.cmake
-      - name: Make distribution
+      - name: Make & upload distribution
         timeout-minutes: 5
         run: cmake -P scripts/MkDist.cmake Debug

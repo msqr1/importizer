@@ -50,7 +50,7 @@ Necessary shared libraries are bundled directly in the distribution archive.
 * *Stable release:* Download optimized release builds from the
 https://github.com/msqr1/importizer/releases[releases page].
 * *Bleeding edge (debug):* Download unoptimized builds from the
-https://github.com/msqr1/importizer/releases/tag/continuous[Continuous tag].
+https://github.com/msqr1/importizer/releases/tag/continuous[Continuous release].
 Useful for testing latest features or reporting bugs.
 
 == Configuration & usage

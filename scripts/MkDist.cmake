@@ -56,7 +56,11 @@ elseif(${mode} STREQUAL Release)
   )
 endif()
 
-if(DEFINED ENV{CI} AND ${mode} STREQUAL Debug)
+if(NOT DEFINED ENV{CI})
+  cmake_language(EXIT 0)
+endif()
+
+if(${mode} STREQUAL Debug)
   set(repo "msqr1/importizer")
 
   # Upload
@@ -67,3 +71,5 @@ if(DEFINED ENV{CI} AND ${mode} STREQUAL Debug)
   exec(git remote set-url --push origin https://msqr1:$ENV{GH_TOKEN}@github.com/${repo}.git)
   execUnsafe(git push -f origin continuous)
 endif()
+
+# CI release mode upload handled by actions/upload-artifact

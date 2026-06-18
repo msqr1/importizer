@@ -4,21 +4,33 @@
 == 3.0.0
 * [ ] Incrementally add to the link:Internals.adoc[internals' documentation]
 
-=== Distribution
-* [x] Determine platform (with version) & architecture set to support
-* [x] Figure out dependency linkage
-* [x] Figure out the required build toolchain
-* [x] Setup base CMake project with LibTooling integration
-* [x] Working build, test, upload CI & CD for
+=== Infrastructure
+==== Building
+* [x] Determine platform (with version) & architecture set to support.
+* [x] Figure out dependency linkage.
+* [x] Figure out the required build toolchain.
+* [x] Setup base CMake project with LibTooling integration.
+
+==== Testing
+* [x] Standardize test formats
+* [x] Directly intergrated test driver
+
+==== Distribution
+* [x] Working build, test, upload CI & CD for:
 ** [x] Windows
 ** [ ] MacOS (fix MacOS 26)
 ** [x] Linux
-* [ ] Sign CI & CD distributions with minisign
-* [ ] GitHub Artifact Attestations for CD distributions
+* [ ] Sign CI & CD distributions with minisign.
+
+=== Documentations
+* [x] Use AsciiDoc instead of Markdown.
+* [x] Separate README and CONTRIBUTING docs.
+* [ ] Rename "How it works" to "Internal" and rewrite (because we're using LibTooling now).
+* [ ] Issues, PR templates & their contribution guidelines
 
 === Features
 * [ ] Dependency graph
-** [ ] Bootstrap mode (file extensions + user-given include paths)
+** [ ] Bootstrap mode
 ** [ ] From JSON compilation database
 * [ ] Include classification (internal vs external)
 * [ ] Include-to-import conversion

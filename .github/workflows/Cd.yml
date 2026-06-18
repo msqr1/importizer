@@ -24,7 +24,7 @@ jobs:
         run: cmake -P scripts/EnsureLibtooling.cmake
       - name: Make distribution
         run: cmake -P scripts/MkDist.cmake Release
-      - name: Upload binary as artifact
+      - name: Upload as artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}
@@ -53,5 +53,5 @@ jobs:
           gh release create $v dists/*
             -d \
             -t $v \
-            -n "[Change log](https://github.com/$repo/blob/main/ChangeLog.adoc#${v//./})"
+            -n "[Change log](https://github.com/$repo/blob/main/ChangeLog.adoc#${v//./})" \
             -R $repo

@@ -1,7 +1,7 @@
 = Contributing
 :toc: preamble
 
-Thank you for contributing to importizer!
+Thank you for contributing to importizer! Below is how to contribute code.
 
 == Internals
 Although not a hard requirement, you'd want to know some internals of importizer.
@@ -93,7 +93,7 @@ it's static.
 === Skip building LibTooling
 Importizer needs Clang LibTooling.
 But LibTooling isn't like other 3rd-party libraries, it is massive!
-To save one from compiling it, there's
+To save one from compiling it, there are
 https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.8[prebuilt ones].
 Since C++ ABIs & LLVM bitcode formats can change between versions, if you match the toolchain in
 the table below that was used to build LibTooling for CI, the prebuilt LibTooling will integrate
@@ -154,7 +154,7 @@ For example, on MacOS:
 You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you will
 have to rebuild LibTooling with that toolchain & deal with bugs on them.
 I gave up & decided that I'd only support using LLVM's toolchain.
-If you're doing this, good luck!
+If you still insist on building from source entirely, good luck!
 Note that everything else here assumes you won't be doing this.
 
 === Build process
@@ -213,11 +213,11 @@ The test driver will automatically compare the actual output directory against t
 directory.
 Don’t add this when expecting an error.
 
-The CMake script detect changes in `tests/`, so your new test will be automatically
-picked up on the next `cmake -B build` run.
+The CMake script detect changes in `tests/`, so your new test will be automatically picked up on the
+next `cmake -B build` run.
 
 == Coding conventions
-* 100-column per line limit for files & CLI outputs
+* 100-column per line limit for files & CLI outputs.
 
 === Naming
 * *All code variables & functions:* `camelCase`
@@ -227,31 +227,30 @@ picked up on the next `cmake -B build` run.
 
 === C{plus}{plus} style
 * Follow the LLVM coding style.
-* Use `llvm::StringRef` (not `std::string_view` because it's missing many features like `split`)
-over `const char*`, & `std::array`/`std::vector` over C-style arrays.
+* Use `llvm::StringRef` (I considered `std::string_view` but it's missing many crucial features like
+`split`, `trim`) over `const char*`, & `std::array`/`std::vector` over C-style arrays.
 * Use angled brackets (`#include <header.h>`) for external/third-party headers.
 * The C{plus}{plus} file containing `main()` for any executable must be named `Driver.cc`.
 * Maintain the exact same ordering of options in the Options section & parsing logic in `getOpts`.
 * Do not use RTTI, if you must, use https://llvm.org/docs/HowToSetUpLLVMStyleRTTI.html[LLVM's].
 
 ===  C{plus}{plus} error handling
-* *Do not* use C{plus}{plus} Exceptions
+* *Do not* use C{plus}{plus} Exceptions.
 * *Return Values:* Mark fallible functions with `[nodiscard]` & return `bool` (or a type
 implicitly convertible to `bool`).
 * *Logging:* Functions must handle logging their own errors & should be marked `noexcept`.
 * *System Errors:* Mark branches handling system-level errors (e.g., `fseek` or `ftell` failures)
 with `[unlikely]`.
-Do not use this for input validation.
+Do not use this for input/argument validation.
 
 === CMake
-* Always place `common-config` as the *first* item in your `target_link_libraries` list.
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
 * Check before adding a compiler/linker flag if it's not guaranteed to be available on supported
 compiler (e.g., `-fsanitize=address`).
 * Use `target\_*_*` to add flags for this project, & `add\_*_*` to add for this & all deps.
 * If a global setting affects LibTooling too (e.g. `BUILD_SHARED_LIBS`), put in `CMakePresets.json`.
-Otherwise (eg. `CMAKE_CXX_SCAN_FOR_MODULES`), put in `CMakeLists.txt`
-* Install rules and post-installation scripts are only used in debug mode.
+Otherwise (eg. `CMAKE_CXX_SCAN_FOR_MODULES`), put in `CMakeLists.txt`.
+* Install rules & post-installation scripts are only used in debug mode.
 In release mode, since the binary is standalone, we'd take it directly from `build`.
 
 === Scripts
@@ -260,13 +259,13 @@ OS'es (like `setup-env`).
 * Environment setup scripts define these environment variables so you can use in other places:
 ** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, or `macos`)
 ** `IMPORTIZER_ARCH`: The architecture (`amd64` or `arm64`)
-* For CI detection check if the environment variable `CI` was defined
+* For CI detection check if the environment variable `CI` was defined.
 
 === Markup
 * Use https://asciidoc.org[AsciiDoc]
 * Begin every sentence on a new line (one sentence per line).
 * Wrap sentence to a new line at the column limit, but try not to because this means the sentence is
-looooong.
+loooooong.
 
 == Checklists
 === New release
@@ -276,17 +275,16 @@ looooong.
 ** `src/importizer/Opts.cc`
 ** `CMakeLists.txt`
 * [ ] Commit & run the Tag Release workflow, it will:
-** Check if the last commit built & tested successfully (in Debug mode).
-** Check if LibTooling binaries are present.
+** Check if the latest commit built & tested successfully (in Debug mode).
 ** Build & test on its own (in Release mode).
 ** Draft the new release.
-* Make sure everything looks good before proceeding.
+* Make sure everything looks good before proceeding!!
 * Enable release immutability (in repository settings).
 * Publish the drafted new release.
 * Disable release immutability.
 
 We do this because release immutability will also be applied to existing releases when we modify
-them, and we don't want Continuous and LibTooling releases to be immutable.
+them, but we don't want Continuous & LibTooling releases to be immutable.
 
 === Bumping LibTooling version
 * [ ] Tag a new release with (replace `{v}` with the new version):
@@ -297,10 +295,10 @@ them, and we don't want Continuous and LibTooling releases to be immutable.
 * [ ] Update the version string(s) in:
 ** `scripts/EnsureLibtooling.cmake` (also update LLVM Project source hash)
 ** `CONTRIBUTING.adoc`
-* [ ] Add `Bump LibTooling to {v}` to `ChangeLog.adoc`
-* [ ] Commit with message `Bump LibTooling to {v}` & let the CI run & wait for completion
+* [ ] Add `Bump LibTooling to {v}` to `ChangeLog.adoc`.
+* [ ] Commit with message `Bump LibTooling to {v}` & let the CI run & wait for completion.
 * [ ] For the next commit:
-** Update the LibTooling hashes in `scripts/EnsureLibtooling.cmake`
+** Update the LibTooling hashes in `scripts/EnsureLibtooling.cmake`.
 
 === Bumping Alpine images version
 * [ ] Update the version string(s) in:
@@ -308,12 +306,10 @@ them, and we don't want Continuous and LibTooling releases to be immutable.
 ** `scripts/alpine/Containerfile`
 ** `CiMatrix.json`
 ** `CONTRIBUTING.adoc`
-* [ ] Add `Bump Alpine to {v}` to `ChangeLog.adoc`
-* [ ] Commit with message `[no ci] Bump Alpine to {v}`
+* [ ] Add `Bump Alpine to {v}` to `ChangeLog.adoc`.
+* [ ] Commit with message `[no ci] Bump Alpine to {v}`.
 * [ ] Run the Make Alpine Images workflow & wait for completion.
-It will:
-**
-* [ ] Run the Tag Continuous workflow
+* [ ] Run the Tag Continuous workflow.
 
 === Permissions
 When pushing, ensure permission of files in `scripts/` is set to executable.
