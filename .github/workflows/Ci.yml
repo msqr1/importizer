@@ -2,12 +2,11 @@ name: Tag Continuous
 on:
   - push
   - workflow_dispatch
-concurrency:
-  group: ci
-  cancel-in-progress: false
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
+    with:
+      jqExpr: 'map(select(.os == "windows" and .arch == "amd64"))'
   all:
     timeout-minutes: 180
     permissions:

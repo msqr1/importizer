@@ -47,21 +47,11 @@ jobs:
         with:
           merge-multiple: true
           path: dists
-      - name: Enable release immutability
-        run: |
-          gh api repos/$repo/immutable-releases \
-            -X PUT \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2026-03-10"
       - name: Create & upload to release
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # 3.0.0
-        with:
-          tag_name: 3.0.0
-          body: "[Change log](https://github.com/$repo/blob/main/ChangeLog.adoc#300)"
-          files: dists/*
-      - name: Disable release immutability
         run: |
-          gh api repos/$repo/immutable-releases \
-            -X DELETE \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2026-03-10"
+          v=3.0.0
+          gh release create $v dists/*
+            -d \
+            -t $v \
+            -n "[Change log](https://github.com/$repo/blob/main/ChangeLog.adoc#${v//./})"
+            -R $repo

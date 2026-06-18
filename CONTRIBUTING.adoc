@@ -277,9 +277,16 @@ looooong.
 ** `CMakeLists.txt`
 * [ ] Commit & run the Tag Release workflow, it will:
 ** Check if the last commit built & tested successfully (in Debug mode).
-** Check if LibTooling binaries are
+** Check if LibTooling binaries are present.
 ** Build & test on its own (in Release mode).
-** Tag the new release.
+** Draft the new release.
+* Make sure everything looks good before proceeding.
+* Enable release immutability (in repository settings).
+* Publish the drafted new release.
+* Disable release immutability.
+
+We do this because release immutability will also be applied to existing releases when we modify
+them, and we don't want Continuous and LibTooling releases to be immutable.
 
 === Bumping LibTooling version
 * [ ] Tag a new release with (replace `{v}` with the new version):
@@ -303,7 +310,9 @@ looooong.
 ** `CONTRIBUTING.adoc`
 * [ ] Add `Bump Alpine to {v}` to `ChangeLog.adoc`
 * [ ] Commit with message `[no ci] Bump Alpine to {v}`
-* [ ] Run the Make Alpine Images workflow & wait for completion
+* [ ] Run the Make Alpine Images workflow & wait for completion.
+It will:
+**
 * [ ] Run the Tag Continuous workflow
 
 === Permissions

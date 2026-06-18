@@ -103,6 +103,7 @@
       "inherits": ["libtooling", "windows", "all"],
       "cacheVariables": {
         "CMAKE_ASM_MASM_COMPILER": "llvm-ml",
+        "CMAKE_ASM_MASM_FLAGS": "-m64",
         "LLVM_ENABLE_RPMALLOC": true
       }
     },
