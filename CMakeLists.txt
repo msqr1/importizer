@@ -53,57 +53,41 @@ endif()
 include(CheckCompilerFlag)
 include(CMakePushCheckState)
 
-# HWASAN is only available on ARM64
-if(arch STREQUAL arm64)
-  set(hwasan -fsanitize=hwaddress)
-  set(CMAKE_REQUIRED_LINK_OPTIONS ${hwasan})
-  check_compiler_flag(C ${hwasan} hasHwasan)
-  cmake_reset_check_state()
-  if(hasHwasan)
-    add_compile_options("$<$<CONFIG:Debug>:${hwasan}>")
-    add_link_options("$<$<CONFIG:Debug>:${hwasan}>")
+set(asan -fsanitize=address)
+if(WIN32)
+  # Windows linkers doesn't know where clang resource directory is, but we need that for ASAN
+  execute_process(
+    COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
+    OUTPUT_VARIABLE resourceDir
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+  if(arch STREQUAL amd64)
+    set(clangArch x86_64)
+  elseif(arch STREQUAL arm64)
+    set(clangArch aarch64)
   endif()
+  set(winAsanLdFlags
+    "-libpath:${resourceDir}\\lib\\windows"
+    clang_rt.asan_dynamic-${clangArch}.lib
+    -wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib
+  )
+  set(CMAKE_REQUIRED_LINK_OPTIONS ${winAsanLdFlags})
 else()
-  set(hasHwasan OFF)
+  set(CMAKE_REQUIRED_LINK_OPTIONS ${asan})
 endif()
-
-if(NOT hasHwasan)
-  set(asan -fsanitize=address)
-  if(WIN32)
-    # Windows linkers doesn't know where clang resource directory is, but we need that for ASAN
-    execute_process(
-      COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
-      OUTPUT_VARIABLE resourceDir
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      COMMAND_ERROR_IS_FATAL ANY
-    )
-    if(arch STREQUAL amd64)
-      set(clangArch x86_64)
-    elseif(arch STREQUAL arm64)
-      set(clangArch aarch64)
-    endif()
-    set(winAsanLdFlags
-      "-libpath:${resourceDir}\\lib\\windows"
-      clang_rt.asan_dynamic-${clangArch}.lib
-      -wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib
-    )
-    set(CMAKE_REQUIRED_LINK_OPTIONS ${winAsanLdFlags})
-  else()
-    set(CMAKE_REQUIRED_LINK_OPTIONS ${asan})
+check_compiler_flag(C ${asan} hasAsan)
+cmake_reset_check_state()
+if(hasAsan)
+  add_compile_options("$<$<CONFIG:Debug>:${asan}>")
+  if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+    add_link_options("$<$<CONFIG:Debug>:${asan}>")
+  elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    # Secret, undocumented definition to make non-MSVC ASAN work.
+    add_compile_definitions("$<$<CONFIG:Debug>:_DISABLE_STL_ANNOTATION>")
   endif()
-  check_compiler_flag(C ${asan} hasAsan)
-  cmake_reset_check_state()
-  if(hasAsan)
-    add_compile_options("$<$<CONFIG:Debug>:${asan}>")
-    if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-      add_link_options("$<$<CONFIG:Debug>:${asan}>")
-    elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-      # Secret, undocumented definition to make non-MSVC ASAN work.
-      add_compile_definitions("$<$<CONFIG:Debug>:_DISABLE_STL_ANNOTATION>")
-    endif()
-    if(WIN32)
-      add_link_options("$<$<CONFIG:Debug>:${winAsanLdFlags}>")
-    endif()
+  if(WIN32)
+    add_link_options("$<$<CONFIG:Debug>:${winAsanLdFlags}>")
   endif()
 endif()
 
@@ -139,6 +123,7 @@ target_compile_options(common-config INTERFACE
   -Wextra
   -Wno-c++98-compat
   -Wno-unsafe-buffer-usage
+  -Wno-switch-default
   -Werror
 )
 
