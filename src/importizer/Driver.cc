@@ -1,4 +1,4 @@
-#include "importizer/Entry.hh"
+#include "importizer/Main.hh"
 #include "utils/Log.hh"
 #include <llvm/Support/raw_ostream.h>
 
@@ -8,5 +8,5 @@ int main(const int argc, const char *const *argv) {
   logOpts = &selfLogOpts;
   selfLogOpts.prog = "importizer";
   selfLogOpts.target = &llvm::errs();
-  return entry(argc, argv);
+  return importizerMain(argc, argv);
 }

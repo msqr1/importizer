@@ -1,3 +1,4 @@
+#include "run-test/CmpDir.hh"
 #include "utils/Fs.hh"
 #include "utils/Log.hh"
 #include <algorithm>
@@ -37,6 +38,8 @@ bool cmpDir(llvm::StringRef dir, llvm::StringRef ref) noexcept {
     }
     int diffRes{llvm::DiffFilesWithTolerance(path, refPath, 0, 0, &msg)};
     switch (diffRes) {
+    case 0: // Matches
+      break;
     case 1:
       err("Mismatched content for {}", relPath);
       res = false;

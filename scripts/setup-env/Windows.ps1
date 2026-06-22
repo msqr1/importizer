@@ -158,4 +158,3 @@ if ($ci) {
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
-

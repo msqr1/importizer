@@ -1,4 +1,4 @@
-# Nicer execute_process for pre-4.0.0
+# execute_process ponyfill (nicer)
 
 function(exec)
   execute_process(COMMAND ${ARGN} COMMAND_ERROR_IS_FATAL ANY)

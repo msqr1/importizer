@@ -2,7 +2,7 @@
 add_library(importizer-lib
   Opts.cc
   Toml.cc
-  Entry.cc
+  Main.cc
 )
 target_link_libraries(importizer-lib PRIVATE
   common-config

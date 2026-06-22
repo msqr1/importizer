@@ -1,4 +1,4 @@
-#include "importizer/Entry.hh"
+#include "importizer/Main.hh"
 #include "run-test/CmpDir.hh"
 #include "utils/Log.hh"
 #include <array>
@@ -16,10 +16,8 @@
 namespace fs = llvm::sys::fs;
 
 // run-test [testDir] [outDir]
-// Expecting absolute paths & no input validation
-int main(const int argc, const char *const *argv) {
-  assert(argc == 3);
-
+// Expecting absolute paths & there's no input validation
+int main(const int, const char *const *argv) {
   // Always set program & log target before everything
   LogOpts selfLogOpts;
   logOpts = &selfLogOpts;
@@ -41,7 +39,7 @@ int main(const int argc, const char *const *argv) {
   llvm::raw_svector_ostream outStream{out};
   LogOpts importizerLogOpts{"importizer", &outStream};
   logOpts = &importizerLogOpts;
-  const int rtn{entry(cmd.size(), cmd.data())};
+  const int rtn{importizerMain(cmd.size(), cmd.data())};
   logOpts = &selfLogOpts;
 
   llvm::Twine refCli{testDir + "/RefCli.txt"};

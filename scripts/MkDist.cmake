@@ -27,7 +27,7 @@ exec(${CMAKE_CTEST_COMMAND}
   -j ${procCnt}
 )
 
-if(${mode} STREQUAL Debug)
+if(mode STREQUAL "Debug")
   # Format in debug mode: tzst(installation)
   exec(${CMAKE_COMMAND}
     --install "${buildDir}"
@@ -41,7 +41,7 @@ if(${mode} STREQUAL Debug)
     COMPRESSION Zstd
     COMPRESSION_LEVEL 19
   )
-elseif(${mode} STREQUAL Release)
+elseif(mode STREQUAL "Release")
   # Format in release mode: zst(bin)
   set(bin "importizer")
   if(WIN32)
@@ -60,7 +60,7 @@ if(NOT DEFINED ENV{CI})
   cmake_language(EXIT 0)
 endif()
 
-if(${mode} STREQUAL Debug)
+if(${mode} STREQUAL "Debug")
   set(repo "msqr1/importizer")
 
   # Upload

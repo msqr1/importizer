@@ -15,7 +15,7 @@ Because your Linux is likely based on glibc, development should be done in an Al
 There's https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[prebuilt ones] with all
 the required tools.
 Personally, I use https://distrobox.it[distrobox] because it makes the host-container boundary
-(terminal-wise) almost invisible.
+(terminal-wise) kinda invisible.
 Here's how to set it up:
 [,bash]
 ----

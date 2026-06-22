@@ -21,10 +21,10 @@ set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
 set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
 function(require target visibility)
   foreach(pkg IN LISTS ARGN)
-    if(pkg STREQUAL tomlc17)
+    if(pkg STREQUAL "tomlc17")
       # R260517
       CPMAddPackage("gh:cktan/tomlc17#cb9bba39f2e63a9e67fa61d6c7521a184eb5fc38")
-      target_sources(${target} ${visibility} "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
+      add_library(tomlc17 "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
 
       # SYSTEM to supress warnings
       target_include_directories(${target} SYSTEM ${visibility} "${tomlc17_SOURCE_DIR}/src")
@@ -34,13 +34,14 @@ function(require target visibility)
           PROPERTIES COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS
         )
       endif()
-    elseif(pkg STREQUAL LLVM)
+      target_link_libraries(${target} ${visibility} tomlc17)
+    elseif(pkg STREQUAL "LLVM")
       find_package(LLVM REQUIRED)
       target_include_directories(${target} SYSTEM ${visibility} "${LLVM_INCLUDE_DIRS}")
       target_link_libraries(${target} ${visibility}
         LLVMSupport
       )
-    elseif(pkg STREQUAL Clang)
+    elseif(pkg STREQUAL "Clang")
       find_package(Clang REQUIRED)
       target_include_directories(${target} SYSTEM ${visibility}
         "${LLVM_INCLUDE_DIRS}"

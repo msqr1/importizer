@@ -12,6 +12,7 @@ if(LINUX)
   get_filename_component(loaderName "${loader}" NAME)
 
   # Trampoline to load the exe with the included loader
+  # We use string(CONCAT ) to be able to use raw strings
   string(CONCAT trampoline
 [[#!/usr/bin/env sh
 DIR="$(cd "$(dirname "$0")" && pwd)"
