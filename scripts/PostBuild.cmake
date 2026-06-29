@@ -1,15 +1,7 @@
 # Post-build script
 # For use in CMake post-build, do not run alone
 
-set(exe "${CMAKE_ARGV3}")
 cmake_path(GET exe PARENT_PATH exeDir)
-set(predictableDir "${CMAKE_ARGV4}")
-set(searchDirs)
-if(CMAKE_ARGC GREATER 4)
-  foreach(i RANGE 4 ${CMAKE_ARGC})
-    list(APPEND searchDirs "${CMAKE_ARGV${i}}")
-  endforeach()
-endif()
 
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
@@ -26,10 +18,13 @@ if(WIN32)
       [[^ext-ms-.*]]
     POST_EXCLUDE_REGEXES
       [[^.*[\\/]system32[\\/].*]]
-    DIRECTORIES ${searchDirs}
+    DIRECTORIES "${searchDirs}"
   )
   foreach(dep IN LISTS deps)
     cmake_path(GET dep FILENAME depName)
+    if(IS_READABLE "${exeDir}/${depName}")
+      continue()
+    endif()
     file(CREATE_LINK "${dep}" "${exeDir}/${depName}" SYMBOLIC)
   endforeach()
 endif()

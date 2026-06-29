@@ -1,8 +1,6 @@
 # Make a distribution
-# TODO: Validate input?
 ## Uses Github CLI, needs GH_TOKEN env var
 
-set(mode ${CMAKE_ARGV3})
 set(knownModes "Debug;Release")
 if(NOT mode IN_LIST knownModes)
   message(FATAL_ERROR "Unknown mode '${mode}', only Debug/Release is allowed")
@@ -51,7 +49,7 @@ elseif(mode STREQUAL "Release")
   file(ARCHIVE_CREATE
     OUTPUT "${root}/${os}-${arch}.zst"
     FORMAT raw
-    PATHS "${root}/build/${bin}"
+    PATHS "${root}/build/importizer/${bin}"
     COMPRESSION Zstd
     COMPRESSION_LEVEL 19
   )
@@ -61,7 +59,7 @@ if(NOT DEFINED ENV{CI})
   cmake_language(EXIT 0)
 endif()
 
-if(${mode} STREQUAL "Debug")
+if(mode STREQUAL "Debug")
   set(repo "msqr1/importizer")
 
   # Upload

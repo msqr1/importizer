@@ -23,17 +23,18 @@ target_link_libraries(importizer PRIVATE
 require(importizer PRIVATE LLVM)
 target_precompile_headers(importizer REUSE_FROM pch-LLVM)
 
-if(LINUX)
-  add_custom_command(
-    TARGET importizer
-    POST_BUILD
-    COMMAND
-      "${CMAKE_COMMAND}" -P "${scriptsDir}/PostBuild.cmake"
-      "$<TARGET_FILE:importizer>"
-      "${CMAKE_BINARY_DIR}/importizer"
-    VERBATIM
-  )
+add_custom_command(
+  TARGET importizer
+  POST_BUILD
+  COMMAND "${CMAKE_COMMAND}"
+    "-DsearchDirs=${clangLibPath}"
+    "-Dexe=$<TARGET_FILE:importizer>"
+    "-DpredictableDir=${CMAKE_BINARY_DIR}/importizer"
+    -P "${scriptsDir}/PostBuild.cmake"
+  VERBATIM
+)
 
+if(LINUX)
   # For Linux, we want to actually install system libraries if needed
   install(
     TARGETS importizer
@@ -42,17 +43,6 @@ if(LINUX)
     DIRECTORIES /lib # TODO: Avoid hardcoding?
   )
 elseif(WIN32)
-  add_custom_command(
-    TARGET importizer
-    POST_BUILD
-    COMMAND
-      "${CMAKE_COMMAND}" -P "${scriptsDir}/PostBuild.cmake"
-      "$<TARGET_FILE:importizer>"
-      "${CMAKE_BINARY_DIR}/importizer"
-      "${resourceDir}\\lib\\windows"
-    VERBATIM
-  )
-
   # Exclude Windows UCRT
   install(
     TARGETS importizer
@@ -65,16 +55,6 @@ elseif(WIN32)
       [[^.*[\\/]system32[\\/].*]]
   )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  add_custom_command(
-    TARGET importizer
-    POST_BUILD
-    COMMAND
-      "${CMAKE_COMMAND}" -P "${scriptsDir}/PostBuild.cmake"
-      "$<TARGET_FILE:importizer>"
-      "${CMAKE_BINARY_DIR}/importizer"
-    VERBATIM
-  )
-
   # Exclude MacOS CStdlib & CxxStdlib
   install(
     TARGETS importizer

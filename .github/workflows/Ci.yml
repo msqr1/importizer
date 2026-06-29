@@ -1,7 +1,13 @@
 name: Tag Continuous
 on:
-  - push
-  - workflow_dispatch
+  push:
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: SSH into the runner after it's done
+        type: boolean
+        required: false
+        default: false
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
@@ -29,4 +35,7 @@ jobs:
         timeout-minutes: 167
         run: cmake -P scripts/EnsureLibtooling.cmake
       - name: Make & upload distribution
-        run: cmake -P scripts/MkDist.cmake Debug
+        run: cmake -Dmode=Debug -P scripts/MkDist.cmake
+      - name: Debug
+        if: inputs.debug == 'true'
+        uses: mxschmitt/action-tmate@35b54afac29c97fb54faba5b513f8fbd1882f113 # 3.24

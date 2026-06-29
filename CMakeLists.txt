@@ -55,20 +55,21 @@ include(CMakePushCheckState)
 
 set(asan -fsanitize=address)
 if(WIN32)
-  # Windows linkers doesn't know where clang resource directory is, but we need that for ASAN
+  # Windows linkers doesn't know where clang resource directory is, but we need that for sanitizers
   execute_process(
     COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
     OUTPUT_VARIABLE resourceDir
     OUTPUT_STRIP_TRAILING_WHITESPACE
     COMMAND_ERROR_IS_FATAL ANY
   )
+  set(clangLibPath "${resourceDir}/lib/windows") # Empty if not on Windows
   if(arch STREQUAL "amd64")
     set(clangArch x86_64)
   elseif(arch STREQUAL "arm64")
     set(clangArch aarch64)
   endif()
   set(winAsanLdFlags
-    "-libpath:${resourceDir}\\lib\\windows"
+    "-libpath:${clangLibPath}"
     clang_rt.asan_dynamic-${clangArch}.lib
     -wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib
   )

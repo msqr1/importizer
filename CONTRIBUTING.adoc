@@ -11,8 +11,9 @@ It covers architecture, design decisions, transformations & their mechanism as w
 
 == Environment
 === If you're on Linux
-Since your Linux is highly likely to be using on glibc, which is <<y0-glibc, not allowed>>, so
-coding must be done somewhere with musl support.
+On Linux, importizer requires a musl-based toolchain to create a truly standalone binary.
+However, your Linux (and as a result, your toolchain) is likely based on glibc (see more on
+<<y0-glibc, why not glibc>>), so we're going to use a container for everything.
 There's prebuilt Alpine Linux container images with all the correct tools installed
 https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[here] to make this easier.
 To set this up locally, personally, I use https://distrobox.it[distrobox] because it makes the
@@ -41,6 +42,7 @@ running (replace {os} with the correct file):
 . scripts/setup-env/{os}
 ----
 
+You must do this before doing anything else, or you will get some weird errors.
 Note:
 
 * All scripts currently check if CMake & Ninja is in PATH.
@@ -75,12 +77,12 @@ Note that bundled tools usually lag behind in version, so use `:bundled` with ca
 |Static
 2+^.^|Dynamic
 
-|C++ Standard Library (a.k.a CxxStdlib)
+|C++ Standard Library (CxxStdlib)
 |Static
 .2+^.^|Dynamic^1^
 |Static
 
-|C Standard Library (a.k.a CStdlib)
+|C Standard Library (CStdlib)
 |Static^3^ w/o sanitizers, dynamic with
 |Dynamic^2^
 |===
@@ -92,9 +94,12 @@ they're static.
 It's dynamic but also with stable ABI guaranteed between versions by Windows so we can use as if
 it's static.
 . [[y0-glibc]] CStdlib is musl. glibc was considered, but:
-.. Static linking with it is unsupported.
-.. Due to (1), we need ABI stability guarantee between versions, which is also unsupported.
-.. And even if we do dynamic linking, it's still only on most Linux systems, not all.
+.. Static linking with glibc is unsupported, so we must link to it dynamically.
+.. For dynamic linking, we need ABI stability guarantee between versions, which glibc doesn't have.
+.. Also for dynamic linking, we'd need glibc to be on *all* Linux systems, just like how Windows
+always comes with UCRT.
+But this is not the case for glibc: it's only on *most*, not all Linux.so
+one with a different CStdlib (musl, LLVM libc, etc.) can't run importizer.
 
 == Building
 === Skip building LibTooling
@@ -200,11 +205,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
 cmake --build build --config Debug -j $(cmake -P scripts/Nproc.cmake)
 
 # Run tests with recommended settings & using all cores
-ctest --test-dir build/tests \
-  --verbose \
-  --progress \
-  --schedule-random \
-  -j $(cmake -P scripts/Nproc.cmake)
+ctest --test-dir build/tests --progress --schedule-random -j $(cmake -P scripts/Nproc.cmake)
 ----
 
 === Adding new tests

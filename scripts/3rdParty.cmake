@@ -22,8 +22,8 @@ set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
 function(require target visibility)
   foreach(pkg IN LISTS ARGN)
     if(pkg STREQUAL "tomlc17")
-      # R260517
-      CPMAddPackage("gh:cktan/tomlc17#cb9bba39f2e63a9e67fa61d6c7521a184eb5fc38")
+      # R260618
+      CPMAddPackage("gh:cktan/tomlc17#7813bdd218b2b5f54940a9759ec0ffb3b60c1d1f")
       add_library(tomlc17 "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
 
       # SYSTEM to supress warnings

@@ -14,7 +14,7 @@
 * Official distribution mean and format
 
 === Backend (developer-facing)
-* Official supported build toolchain (LLVM)
+* Official supported build toolchain (LLVM's)
 * Offical directory-based format for tests
 * Directly intergrated C{plus}{plus} test driver to replace the old CMake-based one
 * AsciiDoc instead of Markdown for documentation

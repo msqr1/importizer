@@ -7,7 +7,7 @@ on:
         type: boolean
         default: false
       jqExpr:
-        description: jq filter expression for jobs
+        description: jq job filter expression
         type: string
         default: .
     outputs:
