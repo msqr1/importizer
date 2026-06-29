@@ -62,9 +62,9 @@ if(WIN32)
     OUTPUT_STRIP_TRAILING_WHITESPACE
     COMMAND_ERROR_IS_FATAL ANY
   )
-  if(arch STREQUAL amd64)
+  if(arch STREQUAL "amd64")
     set(clangArch x86_64)
-  elseif(arch STREQUAL arm64)
+  elseif(arch STREQUAL "arm64")
     set(clangArch aarch64)
   endif()
   set(winAsanLdFlags
@@ -109,10 +109,7 @@ endif()
 
 option(TRACE_BUILD "Enable build tracing for use with something like ClangBuildAnalyzer" OFF)
 if(TRACE_BUILD)
-  add_compile_options(
-    -ftime-trace
-    -ftime-trace-granularity=1
-  )
+  add_compile_options(-ftime-trace -ftime-trace-granularity=1)
 endif()
 
 add_library(common-config INTERFACE)
@@ -136,7 +133,7 @@ endif()
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
 
-option(BUILD_TESTING "Build test driver & run tests" OFF)
+option(BUILD_TESTING "Build test driver & enable tests" OFF)
 if(BUILD_TESTING)
   add_subdirectory(src/run-test)
   add_subdirectory(tests)

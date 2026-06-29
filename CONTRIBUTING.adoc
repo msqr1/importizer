@@ -11,20 +11,27 @@ It covers architecture, design decisions, transformations & their mechanism as w
 
 == Environment
 === If you're on Linux
-Because your Linux is likely based on glibc, development should be done in an Alpine container.
-There's https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[prebuilt ones] with all
-the required tools.
-Personally, I use https://distrobox.it[distrobox] because it makes the host-container boundary
-(terminal-wise) kinda invisible.
-Here's how to set it up:
+Since your Linux is highly likely to be using on glibc, which is <<y0-glibc, not allowed>>, so
+coding must be done somewhere with musl support.
+There's prebuilt Alpine Linux container images with all the correct tools installed
+https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[here] to make this easier.
+To set this up locally, personally, I use https://distrobox.it[distrobox] because it makes the
+host-container boundary (terminal-wise) kinda invisible. Here's how:
 [,bash]
 ----
 # Create distrobox container (replace {arch} with your architecture)
 distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:3.24.1-{arch} --no-entry
 
-# Enter container
+# Enter container (always do this before coding)
 distrobox enter importizer-alpine
 ----
+
+=== If you're on Windows
+Importizer rely on symbolic links, which on Windows, can't be created by default without
+Administrator privileges.
+You'd need to
+https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[enable Developer Mode]
+to allow for their creation.
 
 === Setup
 Setup the environment (check architecture, required tools, backend & set environment variables) by
@@ -42,7 +49,7 @@ Note:
 * *Windows:* There's 2 optional arguments:
 [%autowidth]
 |===
-|Argument| Description| Default value
+|Argument |Description |Default value
 
 |llvmPrefix
 |Set the directory of the LLVM installation
@@ -84,14 +91,14 @@ they're static.
 . CStdlib is Windows UCRT.
 It's dynamic but also with stable ABI guaranteed between versions by Windows so we can use as if
 it's static.
-. CStdlib is musl libc. glibc was considered, but:
+. [[y0-glibc]] CStdlib is musl. glibc was considered, but:
 .. Static linking with it is unsupported.
-.. Even if we do dynamic linking, it's still only on most systems, not all.
-.. There's no ABI stability guarantee between versions.
+.. Due to (1), we need ABI stability guarantee between versions, which is also unsupported.
+.. And even if we do dynamic linking, it's still only on most Linux systems, not all.
 
 == Building
 === Skip building LibTooling
-Importizer needs Clang LibTooling.
+Importizer needs LibTooling, a Clang internal.
 But LibTooling isn't like other 3rd-party libraries, it is massive!
 To save one from compiling it, there are
 https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.8[prebuilt ones].
@@ -126,7 +133,7 @@ cmake -P scripts/EnsureLibtooling.cmake
 
 . Ninja is the only generator that meets all these requirements:
 .. Available on all supported OS'es & architectures
-.. Can generate JSON compilation database
+.. Can generate a JSON compilation database
 . `20.1.8` on AMD64, `20.1.6` on ARM64. Basically replacing MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
 
@@ -178,7 +185,8 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 # Build using all cores
 cmake --build build --config Release -j $(cmake -P scripts/Nproc.cmake)
 ----
-The binary is in `build`, named `importizer` on Linux or MacOS & `importizer.exe` on Windows.
+The binary is in `build/importizer`, named `importizer` on Linux or MacOS & `importizer.exe` on
+Windows.
 
 == Testing
 === Running tests

@@ -9,7 +9,7 @@ if(LINUX)
     "${CMAKE_INSTALL_PREFIX}/ld-*.so*"
   )
   list(GET loaders 0 loader)
-  get_filename_component(loaderName "${loader}" NAME)
+  cmake_path(GET loader FILENAME loaderName)
 
   # Trampoline to load the exe with the included loader
   # We use string(CONCAT ) to be able to use raw strings

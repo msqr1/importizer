@@ -7,9 +7,25 @@ target_link_libraries(run-test PRIVATE
 )
 target_precompile_headers(run-test REUSE_FROM pch-LLVM)
 
-# Predictable location
-add_custom_command(POST_BUILD TARGET run-test
-  COMMAND "${CMAKE_COMMAND}" -E create_hardlink
-  "$<TARGET_FILE:run-test>"
-  "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:run-test>"
-)
+if(WIN32)
+  add_custom_command(
+    TARGET run-test
+    POST_BUILD
+    COMMAND
+      "${CMAKE_COMMAND}" -P "${scriptsDir}/PostBuild.cmake"
+      "$<TARGET_FILE:run-test>"
+      "${CMAKE_BINARY_DIR}/run-test"
+      "${resourceDir}\\lib\\windows"
+    VERBATIM
+  )
+else()
+  add_custom_command(
+    TARGET run-test
+    POST_BUILD
+    COMMAND
+      "${CMAKE_COMMAND}" -P "${scriptsDir}/PostBuild.cmake"
+      "$<TARGET_FILE:run-test>"
+      "${CMAKE_BINARY_DIR}/run-test"
+    VERBATIM
+  )
+endif()

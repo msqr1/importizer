@@ -4,7 +4,7 @@ foreach(testDir ${testDirs})
   if(NOT IS_DIRECTORY ${testDir})
     continue()
   endif()
-  get_filename_component(testName ${testDir} NAME)
+  cmake_path(GET testDir FILENAME testName)
   add_test(
     NAME "${testName}"
     COMMAND "$<TARGET_FILE:run-test>"

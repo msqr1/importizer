@@ -14,7 +14,7 @@
 * Official distribution mean and format
 
 === Backend (developer-facing)
-* Official supported build toolchain
+* Official supported build toolchain (LLVM)
 * Offical directory-based format for tests
 * Directly intergrated C{plus}{plus} test driver to replace the old CMake-based one
 * AsciiDoc instead of Markdown for documentation
@@ -25,7 +25,7 @@
 
 |Core logic
 |https://pcre2project.github.io/pcre2[PCRE2]
-|https://clang.llvm.org/docs/LibTooling.html[Clang LibTooling]
+|https://clang.llvm.org/docs/LibTooling.html[LibTooling]
 |Regex is just pattern matching, it can't understand C{plus}{plus} syntax.
 
 |CLI

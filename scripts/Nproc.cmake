@@ -1,4 +1,4 @@
-# Portable way to get number of process: $(cmake -P Nproc.cmake)
+# Portable way to get number of processes
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 
 # message() can't be used because it prints to stderr, not stdout

@@ -22,17 +22,17 @@ arm64 | aarch64)
   ;;
 esac
 
-if ! command -v cmake > /dev/null 2>&1; then
+if ! command -v cmake >/dev/null 2>&1; then
   echo "CMake not found" >&2
   return 1
 fi
 
-if ! command -v ninja > /dev/null 2>&1; then
+if ! command -v ninja >/dev/null 2>&1; then
   echo "Ninja not found" >&2
   return 1
 fi
 
-if ! command -v brew > /dev/null 2>&1 ; then
+if ! command -v brew >/dev/null 2>&1; then
   echo "Homebrew is not installed" >&2
   return 1
 fi
@@ -46,7 +46,7 @@ fi
 
 # We are in CI
 if [ -n "$CI" ]; then
-  if ! command -v gh > /dev/null 2>&1; then
+  if ! command -v gh >/dev/null 2>&1; then
     echo "Github CLI not found" >&2
     return 1
   fi
