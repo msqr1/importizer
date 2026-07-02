@@ -4,7 +4,7 @@ jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
     with:
-      jqExpr: 'map(select(.os == "linux"))'
+      jqExpr: 'map(select(.os == "macos"))'
   make:
     needs: jobMatrix
     permissions:

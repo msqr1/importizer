@@ -15,6 +15,7 @@ endif()
 set(root "${CMAKE_SOURCE_DIR}")
 set(3rdPartyDir "${root}/3rd-party")
 set(scriptsDir "${root}/scripts")
+set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
 
 # Project
@@ -25,14 +26,16 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   add_compile_options(
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
   )
-  add_link_options(
-    # In Debug mode, we want to still link in whatever dynamic library we need.
-    "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
+  if(LINUX)
+    add_link_options(
+      # In Debug mode, we want to still link in whatever dynamic library we need.
+      "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
 
-    # In Release mode, we want a fully static. But instead of -static we use -static-pie for more
-    # security. On Windows & MacOS things are already secure (PIE always on).
-    "$<$<CONFIG:Release>:-static-pie>"
-  )
+      # In Release mode, we want a fully static. But instead of -static we use -static-pie for more
+      # security. On Windows & MacOS things are already secure (PIE always on).
+      "$<$<CONFIG:Release>:-static-pie>"
+    )
+  endif()
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   add_compile_options(
     "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c->"
