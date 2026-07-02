@@ -7,5 +7,6 @@ int importizerMain(const int argc, const char *const *argv) {
   if (!getOpts(argc, argv, opts)) {
     return EXIT_FAILURE;
   }
+
   return EXIT_SUCCESS;
 }

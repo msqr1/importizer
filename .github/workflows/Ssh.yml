@@ -1,30 +1,35 @@
-name: Tag Continuous
-on: [push, workflow_dispatch]
+name: SSH into a runner
+on:
+  workflow_dispatch:
+    inputs:
+      # It should result in only ONE configuration like:
+      # map(select(.os == "windows" and .arch == "arm64"))
+      jqExpr:
+        description: jq job filter expression
+        type: string
+        required: true
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
     with:
-      jqExpr: 'map(select(.os != "macos"))'
+      jqExpr: ${{ inputs.jqExpr }}
   all:
     permissions:
       contents: write
     needs: jobMatrix
     strategy:
-      fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.jobMatrix.outputs.m) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     container: ${{ matrix.container || '' }}
-    env:
-      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@v1.4.2
       - name: Setup environment
         run: . scripts/setup-env/${{ matrix.setup-env }} ${{ matrix.arch }}
-      - name: Ensure LibTooling
-        timeout-minutes: 167
-        run: cmake -P scripts/EnsureLibtooling.cmake
-      - name: Make & upload distribution
-        run: cmake -Dmode=Debug -P scripts/MkDist.cmake
+      - name: Open SSH tunnel
+        uses: mxschmitt/action-tmate@35b54afac29c97fb54faba5b513f8fbd1882f113 # 3.24
+        timeout-minutes: 5
+        with:
+          sudo: false
