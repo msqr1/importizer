@@ -29,7 +29,7 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_OSX_DEPLOYMENT_TARGET": "14"
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "15"
       }
     },
     {

@@ -28,14 +28,14 @@ Necessary shared libraries are bundled directly in the distribution archive.
 
 [%autowidth]
 |===
-| |Linux |macOS |Windows
+| |Linux |MacOS |Windows
 
 |Architecture
 3+^.^|AMD64, ARM64
 
 |Minimum OS
 |None
-|MacOS 14{plus}
+|MacOS 15{plus}
 |Windows 10{plus}
 
 |Format (release)

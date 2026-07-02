@@ -1,5 +1,5 @@
 # 3rd-party library utilities (downloading, linking, precompiled headers, etc.)
-# For use in CMakeLists.txt, do not run alone
+# For inclusion in CMakeLists.txt
 
 # 3rd-party libs
 if(POLICY CMP0207)
@@ -7,18 +7,18 @@ if(POLICY CMP0207)
 endif()
 
 set(CPM_SOURCE_CACHE "${3rdPartyDir}")
-if(NOT IS_READABLE "${scriptsDir}/Cpm.cmake")
+if(NOT IS_READABLE "${3rdPartyDir}/Cpm.cmake")
   file(DOWNLOAD
     https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
-    "${scriptsDir}/Cpm.cmake"
+    "${3rdPartyDir}/Cpm.cmake"
     EXPECTED_HASH SHA256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844
   )
 endif()
-include("${scriptsDir}/Cpm.cmake")
+include("${3rdPartyDir}/Cpm.cmake")
+
+include("${scriptsDir}/EnsureLibtooling.cmake")
 
 # Setup a 3rd-party library for a target
-set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
-set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
 function(require target visibility)
   foreach(pkg IN LISTS ARGN)
     if(pkg STREQUAL "tomlc17")

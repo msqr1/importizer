@@ -1,17 +1,25 @@
 # Ensure that LibTooling (LLVM & Clang) is in 3rd-party/
+# Can be used either as script or included
 ## Uses Github CLI, needs GH_TOKEN env var
 
-set(os $ENV{IMPORTIZER_OS})
-set(arch $ENV{IMPORTIZER_ARCH})
-cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptsDir)
-file(REAL_PATH "${scriptsDir}/.." root)
+block(SCOPE_FOR VARIABLES PROPAGATE LLVM_DIR Clang_DIR)
+
+if(DEFINED CMAKE_SCRIPT_MODE_FILE)
+  set(os $ENV{IMPORTIZER_OS})
+  set(arch $ENV{IMPORTIZER_ARCH})
+  cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptsDir)
+  file(REAL_PATH "${scriptsDir}/.." root)
+  set(3rdPartyDir "${root}/3rd-party")
+endif()
+
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 set(v 22.1.8)
-set(3rdPartyDir "${root}/3rd-party")
 set(repo "msqr1/importizer")
+set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
+set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
 
 if(IS_READABLE "${3rdPartyDir}/clang" OR IS_READABLE "${3rdPartyDir}/llvm")
-  cmake_language(EXIT 0)
+  return()
 endif()
 
 set(arFile "${3rdPartyDir}/Libtooling.tzst")
@@ -36,9 +44,9 @@ if(ec EQUAL 0)
     endif()
   elseif(os STREQUAL "macos")
     if(arch STREQUAL "amd64")
-      set(refHash 2bec83a6d06222b862e60d8d2fc7ecb11ca3ae7a0ec25acca214cb51533162a7)
+      set(refHash 994317f084246d21c94ce4045fcabf6528a5f731219765484a58b9efedb0aa7d)
     elseif(arch STREQUAL "arm64")
-      set(refHash 7d367caf1559f229976a963ae54baed3b596a5e30bcaa07781817d9c8bf65f83)
+      set(refHash df6b9b9182b1799777a97ccfc5b78091045b4c86b72940232ac17e95eb6c132a)
     endif()
   elseif(WIN32)
     if(arch STREQUAL "amd64")
@@ -54,7 +62,7 @@ if(ec EQUAL 0)
   endif()
   file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
   file(REMOVE "${arFile}")
-  cmake_language(EXIT 0)
+  return()
 endif()
 
 # Don't build on developer's device
@@ -128,3 +136,5 @@ file(ARCHIVE_CREATE
 )
 exec(gh release upload libtooling-${v} "${arFile}" --clobber -R ${repo})
 file(REMOVE "${arFile}")
+
+endblock()

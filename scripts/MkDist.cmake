@@ -56,7 +56,7 @@ elseif(mode STREQUAL "Release")
 endif()
 
 if(NOT DEFINED ENV{CI})
-  cmake_language(EXIT 0)
+  return()
 endif()
 
 if(mode STREQUAL "Debug")

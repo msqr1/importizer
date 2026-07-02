@@ -4,15 +4,11 @@
 /.zed
 /.cache
 __cmake_systeminformation
-
 /3rd-party
+
+# Typical/Default names
+/importizer*
+/build*
+/CMakeUserPresets.json
 /test*
 !/tests/
-/build*
-/importizer*
-/CMakeUserPresets.json
-
-# Downloaded
-/scripts/Cpm.cmake
-/scripts/ClangBuildAnalyzer*
-/scripts/ninjatracing

@@ -1,5 +1,5 @@
 # Post-build script
-# For use in CMake post-build, do not run alone
+# For use as script in CMake post-build
 
 cmake_path(GET exe PARENT_PATH exeDir)
 

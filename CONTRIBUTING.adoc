@@ -106,15 +106,12 @@ one with a different CStdlib (musl, LLVM libc, etc.) can't run importizer.
 Importizer needs LibTooling, a Clang internal.
 But LibTooling isn't like other 3rd-party libraries, it is massive!
 To save one from compiling it, there are
-https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.8[prebuilt ones].
-Since C++ ABIs & LLVM bitcode formats can change between versions, if you match the toolchain in
-the table below that was used to build LibTooling for CI, the prebuilt LibTooling will integrate
-seamlessly.
+https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.8[prebuilt ones], which are
+automatically installed like a package when configuring.
+Since LLVM's ABIs can change between versions, if you match the toolchain in the table below that
+was used to build LibTooling for CI, the prebuilt LibTooling will integrate seamlessly.
 One can start coding right away.
-[,bash]
-----
-cmake -P scripts/EnsureLibtooling.cmake
-----
+
 [%autowidth]
 |===
 | |Linux |MacOS |Windows
