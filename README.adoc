@@ -118,8 +118,8 @@ See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
 |`["!CMakeLists.txt"]`
 
 |includePaths
-|Include paths to search during resolution.
 |string array
+|Include paths to search during resolution.
 |`[]`
 |===
 
