@@ -1,4 +1,4 @@
-#include "importizer/Toml.hh"
+#include "utils/Toml.hh"
 #include <llvm/ADT/StringRef.h>
 #include <tomlc17.h>
 #include <utility>
@@ -9,7 +9,7 @@ TomlResult::TomlResult(const toml_result_t &result) noexcept
 TomlResult::~TomlResult() noexcept { toml_free(*this); }
 
 TomlResult::TomlResult(TomlResult &&other) noexcept : toml_result_t{} {
-  std::swap(*this, other);
+  operator=(std::move(other));
 }
 
 TomlResult &TomlResult::operator=(TomlResult &&other) noexcept {

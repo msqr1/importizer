@@ -19,10 +19,10 @@ namespace fs = llvm::sys::fs;
 // Expecting absolute paths & there's no input validation
 int main(const int, const char *const *argv) {
   // Always set program & log target before everything
-  LogOpts selfLogOpts;
-  logOpts = &selfLogOpts;
-  selfLogOpts.prog = "run-test";
-  selfLogOpts.target = &llvm::errs();
+  LogOpts logOpts;
+  g_logOpts = &logOpts;
+  logOpts.prog = "run-test";
+  logOpts.target = &llvm::errs();
 
   llvm::SmallString<128> tmp;
   llvm::Twine testDir{argv[1]};
@@ -38,9 +38,9 @@ int main(const int, const char *const *argv) {
   llvm::SmallString<128> out{};
   llvm::raw_svector_ostream outStream{out};
   LogOpts importizerLogOpts{"importizer", &outStream};
-  logOpts = &importizerLogOpts;
+  g_logOpts = &importizerLogOpts;
   const int rtn{importizerMain(cmd.size(), cmd.data())};
-  logOpts = &selfLogOpts;
+  g_logOpts = &logOpts;
 
   llvm::Twine refCli{testDir + "/RefCli.txt"};
   auto buf{llvm::MemoryBuffer::getFile(refCli, true)};
@@ -61,7 +61,7 @@ int main(const int, const char *const *argv) {
     err("Mismatched CLI output, got:");
 
     // Don't format importizer's output
-    *selfLogOpts.target << out;
+    *logOpts.target << out;
   }
 
   (testDir + "/ref").toStringRef(tmp);

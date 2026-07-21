@@ -7,17 +7,19 @@
 struct LogOpts {
   llvm::StringRef prog;
   llvm::raw_ostream *target;
-} extern *logOpts;
+} extern *g_logOpts;
 
 template <typename... Ts> void err(llvm::StringRef fmt, Ts &&...args) noexcept {
-  llvm::WithColor::error(*logOpts->target, logOpts->prog);
-  llvm::WithColor{*logOpts->target, llvm::raw_ostream::Colors::SAVEDCOLOR, true}
+  llvm::WithColor::error(*g_logOpts->target, g_logOpts->prog);
+  llvm::WithColor{*g_logOpts->target, llvm::raw_ostream::Colors::SAVEDCOLOR,
+                  true}
       << llvm::formatv(fmt.data(), std::forward<Ts>(args)...) << ".\n";
 }
 
 template <typename... Ts>
 void warn(llvm::StringRef fmt, Ts &&...args) noexcept {
-  llvm::WithColor::warning(*logOpts->target, logOpts->prog);
-  llvm::WithColor{*logOpts->target, llvm::raw_ostream::Colors::SAVEDCOLOR, true}
+  llvm::WithColor::warning(*g_logOpts->target, g_logOpts->prog);
+  llvm::WithColor{*g_logOpts->target, llvm::raw_ostream::Colors::SAVEDCOLOR,
+                  true}
       << llvm::formatv(fmt.data(), std::forward<Ts>(args)...) << ".\n";
 }

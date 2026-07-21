@@ -33,7 +33,7 @@ if ! command -v ninja >/dev/null 2>&1; then
 fi
 
 if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew is not installed" >&2
+  echo "Homebrew isn't installed" >&2
   return 1
 fi
 

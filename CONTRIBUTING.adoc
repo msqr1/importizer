@@ -17,7 +17,7 @@ However, your Linux (and as a result, your toolchain) is likely based on glibc (
 There's prebuilt Alpine Linux container images with all the correct tools installed
 https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[here] to make this easier.
 To set this up locally, personally, I use https://distrobox.it[distrobox] because it makes the
-host-container boundary (terminal-wise) kinda invisible. Here's how:
+host-container boundary (terminal-wise) kinda invisible.
 [,bash]
 ----
 # Create distrobox container (replace {arch} with your architecture)
@@ -98,7 +98,7 @@ it's static.
 .. For dynamic linking, we need ABI stability guarantee between versions, which glibc doesn't have.
 .. Also for dynamic linking, we'd need glibc to be on *all* Linux systems, just like how Windows
 always comes with UCRT.
-But this is not the case for glibc: it's only on *most*, not all Linux.so
+But this isn't the case for glibc: it's only on *most*, not all Linux.so
 one with a different CStdlib (musl, LLVM libc, etc.) can't run importizer.
 
 == Building
@@ -263,8 +263,8 @@ In release mode, since the binary is standalone, we'd take it directly from `bui
 * Use CMake to write scripts, if not possible, then make a folder & add scripts for all supported
 OS'es (like `setup-env`).
 * Environment setup scripts define these environment variables so you can use in other places:
-** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, or `macos`)
-** `IMPORTIZER_ARCH`: The architecture (`amd64` or `arm64`)
+** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, `macos`)
+** `IMPORTIZER_ARCH`: The architecture (`amd64`, `arm64`)
 * For CI detection check if the environment variable `CI` was defined.
 
 === Markup

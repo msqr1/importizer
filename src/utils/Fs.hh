@@ -1,3 +1,4 @@
+#pragma once
 #include "utils/Log.hh"
 #include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/ADT/Twine.h>
@@ -19,12 +20,12 @@ iterateDir(const llvm::Twine &dir,
     return false;
   }
   while (it != end) {
+    if (!fn(*it)) {
+      return false;
+    }
     it.increment(ec);
     if (ec) {
       err("Unable to iterate {}: {}", dir, ec.message());
-      return false;
-    }
-    if (!fn(*it)) {
       return false;
     }
   }
