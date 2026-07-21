@@ -88,15 +88,15 @@ current working directory.
 |Option |Type |Description
 
 |inDir
-|String
+|string
 |*Required.* The directory containing the source code to process.
 
 |outDir
-|String
+|string
 |*Required* (unless provided via CLI). The directory for the modularized output.
 
 |compilationDb
-|String
+|string
 |*Highly Recommended.* Path to a `compile_commands.json` compilation database to provide context.
 |===
 
@@ -109,14 +109,17 @@ Note: if `compilationDb` is specified, the `bootstrap` table is ignored.
 |===
 |Option |Type |Description |Default
 
-|ignores
-|String Array
-|gitignore-style ignores to exclude non-code files.
-|`["CMakeLists.txt"]`
+|globs
+|string array
+|Glob patterns to match code files names.
+Last match wins.
+Starting a pattern with '!' will negate it.
+See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
+|`["!CMakeLists.txt"]`
 
 |includePaths
 |Include paths to search during resolution.
-|String Array
+|string array
 |`[]`
 |===
 

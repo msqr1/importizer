@@ -4,9 +4,9 @@
 
 int main(const int argc, const char *const *argv) {
   // Always set program & log target before everything
-  LogOpts selfLogOpts;
-  logOpts = &selfLogOpts;
-  selfLogOpts.prog = "importizer";
-  selfLogOpts.target = &llvm::errs();
+  LogOpts logOpts;
+  g_logOpts = &logOpts;
+  logOpts.prog = "importizer";
+  logOpts.target = &llvm::errs();
   return importizerMain(argc, argv);
 }

@@ -1,13 +1,18 @@
 #include "importizer/Opts.hh"
-#include "importizer/Toml.hh"
+#include "utils/Glob.hh"
 #include "utils/Log.hh"
+#include "utils/Toml.hh"
+#include <array>
 #include <clang/Tooling/JSONCompilationDatabase.h>
+#include <cstddef>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/CommandLine.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
+#include <optional>
 #include <string>
 #include <tomlc17.h>
 #include <utility>
@@ -28,7 +33,7 @@ struct SmallStrParser : public cl::parser<llvm::SmallString<len>> {
 
 bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   // LLVM default options will mix into ours if we don't make our own category
-  cl::OptionCategory cat{logOpts->prog};
+  cl::OptionCategory cat{g_logOpts->prog};
   cl::opt<llvm::SmallString<128>, false, SmallStrParser<128>> config{
       cl::cat(cat),
       cl::desc("<configuration file>"),
@@ -57,7 +62,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   if (!cl::ParseCommandLineOptions(argc, argv,
                                    "importizer - Automagically rewrite "
                                    "header-based C++ into using modules",
-                                   logOpts->target)) {
+                                   g_logOpts->target)) {
     return false;
   }
 
@@ -69,16 +74,16 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
 
   // inDir
   toml_datum_t datum{res.seek("inDir")};
-  if (datum.type == TOML_STRING) {
-    opts.inDir = datum.u.s;
-  } else {
-    err("'inDir' must be specified and as String");
+  if (datum.type != TOML_STRING) {
+    err("inDir must be specified and as a string");
     return false;
   }
+  opts.inDir = {datum.u.s, static_cast<size_t>(datum.u.str.len)};
+
   llvm::SmallString<128> tmp;
   llvm::StringRef configDir{pth::parent_path(config)};
 
-  // Make relative to config file instead of CWD
+  /// Make relative to config file instead of CWD
   if (pth::is_relative(opts.inDir)) {
     tmp = configDir;
     pth::append(tmp, opts.inDir);
@@ -89,33 +94,37 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   datum = res.seek("outDir");
   if (datum.type && !opts.outDir.empty()) {
     warn("outDir from CLI will override config file");
-  } else if (datum.type == TOML_STRING) {
-    opts.outDir = datum.u.s;
-
-    // Make relative to config file instead of CWD
-    if (pth::is_relative(opts.outDir)) {
-      tmp = configDir;
-      pth::append(tmp, opts.outDir);
-      opts.outDir = std::move(tmp);
-    }
   } else if (opts.outDir.empty()) {
-    err("'outDir' must be specified on CLI or in config file as a String");
-    return false;
+    if (datum.type != TOML_STRING) {
+      err("outDir must be specified on CLI or in config file as a string");
+      return false;
+    }
+    opts.outDir = {datum.u.s, static_cast<size_t>(datum.u.str.len)};
   }
 
-  // compilationDb & bootstrap (fileHelper)
+  /// Make relative to config file instead of CWD
+  if (pth::is_relative(opts.outDir)) {
+    tmp = configDir;
+    pth::append(tmp, opts.outDir);
+    opts.outDir = std::move(tmp);
+  }
+
   datum = res.seek("compilationDb");
   const toml_datum_t bootstrap{res.seek("bootstrap")};
-  if (datum.type && bootstrap.type) {
-    warn("'compilationDb' will take precedence over 'bootstrap'");
-  } else if (datum.type) {
+
+  // compilationDb
+  if (datum.type) {
+    if (bootstrap.type) {
+      warn("compilationDb will take precedence over bootstrap");
+    }
     if (datum.type != TOML_STRING) {
-      err("'compilationDb' must be a String");
+      err("compilationDb must be a string");
       return false;
     }
     std::string msg;
     auto db{tl::JSONCompilationDatabase::loadFromFile(
-        datum.u.s, msg, tl::JSONCommandLineSyntax::AutoDetect)};
+        {datum.u.s, static_cast<size_t>(datum.u.str.len)}, msg,
+        tl::JSONCommandLineSyntax::AutoDetect)};
     if (!db) {
       err("Unable to parse compilation database: {}", msg);
       return false;
@@ -124,28 +133,72 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
         std::move(db));
     return true;
   }
+
+  // bootstrap
+  if (bootstrap.type && bootstrap.type != TOML_TABLE) {
+    err("bootstrap must be a table");
+    return false;
+  }
   Bootstrap &b{opts.fileHelper.emplace<Bootstrap>()};
-  b.ignores.emplace_back("CMakeLists.txt");
-  if (!bootstrap.type) {
-    return true;
-  }
-  if (bootstrap.type != TOML_TABLE) {
-    err("'bootstrap' must be a Table.");
-    return false;
-  }
-  if (!(res.seekStrs("bootstrap.ignores", b.ignores) &&
-        res.seekStrs("bootstrap.includePaths", b.includePaths))) {
-    return false;
+
+  // bootstrap.globs
+  datum = res.seek("bootstrap.globs");
+  if (datum.type) {
+    if (datum.type != TOML_ARRAY) {
+      err("bootstrap.globs must be an array");
+      return false;
+    }
+    size_t len{static_cast<size_t>(datum.u.arr.size)};
+    for (size_t i{}; i < len; ++i) {
+      toml_datum_t &elem{datum.u.arr.elem[i]};
+      if (elem.type != TOML_STRING) {
+        err("Element {} of bootstrap.globs isn't a string", i);
+        return false;
+      }
+      std::optional<Glob> g{
+          mkGlob({elem.u.s, static_cast<size_t>(elem.u.str.len)})};
+      if (!g) {
+        return false;
+      }
+      b.globs.emplace_back(std::move(*g));
+    }
+  } else {
+    std::array<llvm::StringRef, 1> defaultGlobs{"!CMakeLists.txt"};
+    for (llvm::StringRef s : defaultGlobs) {
+      std::optional<Glob> g{mkGlob(s)};
+      if (!g) {
+        return false;
+      }
+      b.globs.emplace_back(std::move(*g));
+    }
   }
 
-  // Make relative to config file instead of CWD
-  for (llvm::SmallString<128> &p : b.includePaths) {
-    if (!pth::is_relative(p)) {
-      continue;
+  // bootstrap.includePaths
+  datum = res.seek("bootstrap.includePaths");
+  if (datum.type) {
+    if (datum.type != TOML_ARRAY) {
+      err("bootstrap.includePaths must be an array");
+      return false;
     }
-    tmp = configDir;
-    pth::append(tmp, p);
-    p = std::move(tmp);
+    size_t len{static_cast<size_t>(datum.u.arr.size)};
+    llvm::SmallString<128> path;
+    for (size_t i{}; i < len; ++i) {
+      toml_datum_t &elem{datum.u.arr.elem[i]};
+      if (elem.type != TOML_STRING) {
+        err("Element {} of bootstrap.includePaths isn't a string", i);
+        return false;
+      }
+      path = {elem.u.s, static_cast<size_t>(elem.u.str.len)};
+
+      /// Make relative to config file instead of CWD
+      if (pth::is_relative(path)) {
+        tmp = configDir;
+        pth::append(tmp, path);
+        path = std::move(tmp);
+      }
+
+      b.includePaths.emplace_back(path);
+    }
   }
   return true;
 }

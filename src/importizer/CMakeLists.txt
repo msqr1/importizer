@@ -1,7 +1,6 @@
 # Library for run-test
 add_library(importizer-lib
   Opts.cc
-  Toml.cc
   Main.cc
 )
 target_link_libraries(importizer-lib PRIVATE

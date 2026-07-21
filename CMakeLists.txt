@@ -21,6 +21,7 @@ set(arch $ENV{IMPORTIZER_ARCH})
 # Project
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   add_compile_options(
@@ -100,15 +101,6 @@ check_compiler_flag(C ${ubsan} hasUbsan)
 cmake_reset_check_state()
 if(hasUbsan)
   add_compile_options("$<$<CONFIG:Debug>:${ubsan}>")
-endif()
-
-set(lsan -fsanitize=leak)
-set(CMAKE_REQUIRED_LINK_OPTIONS ${lsan})
-check_compiler_flag(C ${lsan} hasLsan)
-cmake_reset_check_state()
-if(hasLsan)
-  add_compile_options("$<$<CONFIG:Debug>:${lsan}>")
-  add_link_options("$<$<CONFIG:Debug>:${lsan}>")
 endif()
 
 option(TRACE_BUILD "Enable build tracing for use with something like ClangBuildAnalyzer" OFF)

@@ -80,7 +80,7 @@ https://github.com/Taywee/args[Taywee/args] to avoid `std::any` issues on Window
 == 1.0.1
 * Fixed `includeGuardPat` to match the entire string required for a guard.
 * Corrected `CondMinimizer` to skip only skippable `#if` statements rather than all of them.
-* Resolved an issue with raw string handling where the first `(` was not properly skipped.
+* Resolved an issue with raw string handling where the first `(` wasn't properly skipped.
 * Fixed the handling of integer literals.
 * Improved `CondMinimizer` to correctly handle nested `#if` directives (it previously looked for the
 earliest `#endif`).
