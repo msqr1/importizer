@@ -98,8 +98,8 @@ it's static.
 .. For dynamic linking, we need ABI stability guarantee between versions, which glibc doesn't have.
 .. Also for dynamic linking, we'd need glibc to be on *all* Linux systems, just like how Windows
 always comes with UCRT.
-But this isn't the case for glibc: it's only on *most*, not all Linux.so
-one with a different CStdlib (musl, LLVM libc, etc.) can't run importizer.
+But this isn't the case for glibc: it's only on *most*, not all Linux systems.
+So although rare, one with a different CStdlib (musl, LLVM libc, etc.) can't run importizer.
 
 == Building
 === Skip building LibTooling
@@ -206,6 +206,7 @@ ctest --test-dir build/tests --progress --schedule-random -j $(cmake -P scripts/
 ----
 
 === Adding new tests
+==== Black-box/End-to-end tests
 Importizer uses a custom directory-based test harness (located in `src/run-test`).
 To add a new test case:
 
@@ -221,6 +222,9 @@ Don’t add this when expecting an error.
 
 The CMake script detect changes in `tests/`, so your new test will be automatically picked up on the
 next `cmake -B build` run.
+
+==== White-box/Unit tests
+TODO
 
 == Coding conventions
 * 100-column per line limit for files & CLI outputs.
@@ -284,10 +288,9 @@ loooooong.
 ** Check if the latest commit built & tested successfully (in Debug mode).
 ** Build & test on its own (in Release mode).
 ** Draft the new release.
-* Make sure everything looks good before proceeding!!
-* Enable release immutability (in repository settings).
-* Publish the drafted new release.
-* Disable release immutability.
+* [ ] Enable release immutability (in repository settings).
+* [ ] Publish the drafted new release.
+* [ ] Disable release immutability.
 
 We do this because release immutability will also be applied to existing releases when we modify
 them, but we don't want Continuous & LibTooling releases to be immutable.
