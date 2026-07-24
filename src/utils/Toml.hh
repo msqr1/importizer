@@ -13,7 +13,7 @@ struct TomlResult : toml_result_t {
   TomlResult(TomlResult &&other) noexcept;
   TomlResult &operator=(TomlResult &&other) noexcept;
 
-  toml_datum_t seek(llvm::StringRef key) const noexcept;
+  operator const toml_datum_t &() const noexcept;
 
   ~TomlResult() noexcept;
 };

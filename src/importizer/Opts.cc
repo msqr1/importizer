@@ -73,7 +73,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   }
 
   // inDir
-  toml_datum_t datum{res.seek("inDir")};
+  toml_datum_t datum{toml_get(res, "inDir")};
   if (datum.type != TOML_STRING) {
     err("inDir must be specified and as a string");
     return false;
@@ -91,7 +91,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   }
 
   // outDir
-  datum = res.seek("outDir");
+  datum = toml_get(res, "outDir");
   if (datum.type && !opts.outDir.empty()) {
     warn("outDir from CLI will override config file");
   } else if (opts.outDir.empty()) {
@@ -109,8 +109,8 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     opts.outDir = std::move(tmp);
   }
 
-  datum = res.seek("compilationDb");
-  const toml_datum_t bootstrap{res.seek("bootstrap")};
+  datum = toml_get(res, "compilationDb");
+  const toml_datum_t bootstrap{toml_get(res, "bootstrap")};
 
   // compilationDb
   if (datum.type) {
@@ -142,7 +142,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   Bootstrap &b{opts.fileHelper.emplace<Bootstrap>()};
 
   // bootstrap.globs
-  datum = res.seek("bootstrap.globs");
+  datum = toml_get(bootstrap, "globs");
   if (datum.type) {
     if (datum.type != TOML_ARRAY) {
       err("bootstrap.globs must be an array");
@@ -174,7 +174,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   }
 
   // bootstrap.includePaths
-  datum = res.seek("bootstrap.includePaths");
+  datum = toml_get(bootstrap, "includePaths");
   if (datum.type) {
     if (datum.type != TOML_ARRAY) {
       err("bootstrap.includePaths must be an array");

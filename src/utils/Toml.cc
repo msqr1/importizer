@@ -8,7 +8,7 @@ TomlResult::TomlResult(const toml_result_t &result) noexcept
 
 TomlResult::~TomlResult() noexcept { toml_free(*this); }
 
-TomlResult::TomlResult(TomlResult &&other) noexcept : toml_result_t{} {
+TomlResult::TomlResult(TomlResult &&other) noexcept {
   operator=(std::move(other));
 }
 
@@ -17,6 +17,4 @@ TomlResult &TomlResult::operator=(TomlResult &&other) noexcept {
   return *this;
 }
 
-toml_datum_t TomlResult::seek(llvm::StringRef key) const noexcept {
-  return toml_seek(toptab, key.data());
-}
+TomlResult::operator const toml_datum_t &() const noexcept { return toptab; }

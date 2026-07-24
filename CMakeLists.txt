@@ -117,6 +117,7 @@ target_compile_options(common-config INTERFACE
   -Wno-c++98-compat
   -Wno-unsafe-buffer-usage
   -Wno-switch-default
+  -Wno-padded
   -Werror
 )
 
