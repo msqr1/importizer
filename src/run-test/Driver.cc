@@ -25,11 +25,11 @@ int main(const int, const char *const *argv) {
   logOpts.target = &llvm::errs();
 
   llvm::SmallString<128> tmp;
-  llvm::Twine testDir{argv[1]};
+  const llvm::Twine testDir{argv[1]};
   (testDir + "/Config.toml").toStringRef(tmp);
 
   // Make sure argv strings are always null-terminated
-  std::array<const char *, 4> cmd{
+  const std::array<const char *, 4> cmd{
       "importizer",
       tmp.c_str(),
       "-o",
@@ -42,13 +42,13 @@ int main(const int, const char *const *argv) {
   const int rtn{importizerMain(cmd.size(), cmd.data())};
   g_logOpts = &logOpts;
 
-  llvm::Twine refCli{testDir + "/RefCli.txt"};
-  auto buf{llvm::MemoryBuffer::getFile(refCli, true)};
+  const llvm::Twine refCli{testDir + "/RefCli.txt"};
+  const auto buf{llvm::MemoryBuffer::getFile(refCli, true)};
   if (!buf) {
     err("Unable to read {}: {}", refCli, buf.getError().message());
     return EXIT_FAILURE;
   }
-  llvm::StringRef ref{buf->get()->getBuffer()};
+  const llvm::StringRef ref{buf->get()->getBuffer()};
   const int refRtn{ref.contains("importizer: error: ") ? EXIT_FAILURE
                                                        : EXIT_SUCCESS};
 

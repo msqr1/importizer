@@ -48,6 +48,7 @@ int importizerMain(const int argc, const char *const *argv) {
   }
   while (!files.empty()) {
     llvm::outs() << files.front();
+
     files.pop();
   }
   return EXIT_SUCCESS;

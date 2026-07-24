@@ -113,7 +113,7 @@ Note: if `compilationDb` is specified, the `bootstrap` table is ignored.
 |string array
 |Glob patterns to match code files names.
 Last match wins.
-Starting a pattern with '!' will negate it.
+Prefixing patterns with '!' negates them.
 See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
 |`["!CMakeLists.txt"]`
 

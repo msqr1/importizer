@@ -148,9 +148,9 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
       err("bootstrap.globs must be an array");
       return false;
     }
-    size_t len{static_cast<size_t>(datum.u.arr.size)};
+    const size_t len{static_cast<size_t>(datum.u.arr.size)};
     for (size_t i{}; i < len; ++i) {
-      toml_datum_t &elem{datum.u.arr.elem[i]};
+      const toml_datum_t &elem{datum.u.arr.elem[i]};
       if (elem.type != TOML_STRING) {
         err("Element {} of bootstrap.globs isn't a string", i);
         return false;
@@ -180,10 +180,10 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
       err("bootstrap.includePaths must be an array");
       return false;
     }
-    size_t len{static_cast<size_t>(datum.u.arr.size)};
+    const size_t len{static_cast<size_t>(datum.u.arr.size)};
     llvm::SmallString<128> path;
     for (size_t i{}; i < len; ++i) {
-      toml_datum_t &elem{datum.u.arr.elem[i]};
+      const toml_datum_t &elem{datum.u.arr.elem[i]};
       if (elem.type != TOML_STRING) {
         err("Element {} of bootstrap.includePaths isn't a string", i);
         return false;
