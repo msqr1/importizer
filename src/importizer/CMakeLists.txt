@@ -1,5 +1,6 @@
 # Library for run-test
 add_library(importizer-lib
+  Preproc.cc
   Opts.cc
   Main.cc
 )

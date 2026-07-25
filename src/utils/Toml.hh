@@ -1,5 +1,4 @@
 #pragma once
-#include <llvm/ADT/StringRef.h>
 #include <tomlc17.h>
 
 // Exceptionless, RAII & more convenient toml_result_t

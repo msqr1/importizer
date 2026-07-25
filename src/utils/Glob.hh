@@ -1,7 +1,10 @@
 #pragma once
-#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/GlobPattern.h>
 #include <optional>
+
+namespace llvm {
+class StringRef;
+}
 
 // llvm::GlobPattern with negation
 class Glob {

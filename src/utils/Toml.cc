@@ -1,5 +1,4 @@
 #include "utils/Toml.hh"
-#include <llvm/ADT/StringRef.h>
 #include <tomlc17.h>
 #include <utility>
 

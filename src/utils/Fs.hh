@@ -1,11 +1,13 @@
 #pragma once
 #include "utils/Log.hh"
 #include <llvm/ADT/STLFunctionalExtras.h>
-#include <llvm/ADT/Twine.h>
 #include <llvm/Support/FileSystem.h>
 #include <system_error>
 
 namespace fs = llvm::sys::fs;
+namespace llvm {
+class Twine;
+}
 
 namespace detail {
 
