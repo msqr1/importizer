@@ -5,22 +5,30 @@
 Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
 afraid that modularizing is too cumbersome? *importizer* is here to help.
 
-And by modularization I don’t mean exposing a module interface & wrapping headers.
-I mean native modules a.k.a using modules internally.
-
 This project uses https://semver.org[semantic versioning].
 
 *Note:* This project is currently going through a complete rewrite using LibTooling to replace
 Regex (pre-2.0.0).
 Much pre-2.0.0 code are gone, but releases & git history are preserved.
 
-== Why native C{plus}{plus} modules?
-* *Improved compilation time:* Modules don’t need to be recompiled every time it is imported, unlike
-headers.
+== Why C{plus}{plus} modules?
 * *Improved encapsulation:* Modules allow you to choose what is exposed to users (exported), no need
 to hide stuff with a `detail` namespace.
 Includes & macros from a module will only stay in that module.
 * https://arewemodulesyet.org
+
+=== Native modules
+Native modules mean using modules internally.
+Some advantages of native modules are:
+* *Improved compilation time:* Modules don’t need to be recompiled every time it is imported, unlike
+headers.
+* *No ordering issues:* Modules are compiled in a strict dependency order, and `import`s can be
+ordered freely.
+
+=== Wrapped modules
+Wrapped modules mean exposing a modules interface by wrapping the underlying headers.
+Some advantages of wrapping modules are:
+* *Support modules with headers:* Support a growing amount modules user while not breaking headers.
 
 == Prebuilt binaries
 Importizer provides pre-compiled binaries for major operating systems.
@@ -57,10 +65,10 @@ Useful for testing latest features or reporting bugs.
 Importizer primarily uses a TOML configuration file, complemented by a few command-line options.
 
 === Command-line interface (CLI)
-By default, running `importizer` looks for an `importizer.toml` file in the current working
+By default, running `importizer` looks for an `importizer.yml` file in the current working
 directory.
 You can override this by passing the path as a positional argument: `importizer
-path/to/configuration.toml`.
+path/to/configuration.yml`.
 
 [%autowidth]
 |===
@@ -97,13 +105,17 @@ current working directory.
 
 |compilationDb
 |string
-|*Highly Recommended.* Path to a `compile_commands.json` compilation database to provide context.
+|Path to a `compile_commands.json` compilation database to provide context.
+
+|explicit
+|object
+|See the <<explicit-mode, Explicit mode>> section.
 |===
 
-==== Bootstrap mode
-For projects without a JSON compilation database, Importizer can attempt to imitate one using the
-`[bootstrap]` table.
-Note: if `compilationDb` is specified, the `bootstrap` table is ignored.
+==== Explicit mode
+importizer supports projects without a JSON compilation database via the `explicit` object.
+This can be the case for projects using a build system without JSON compilation database generation.
+`explicit` is mutually exclusive with if `compilationDb`.
 
 [%autowidth]
 |===
@@ -117,21 +129,27 @@ Prefixing patterns with '!' negates them.
 See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
 |`["!CMakeLists.txt"]`
 
-|includePaths
+|compileFlags
 |string array
-|Include paths to search during resolution.
+|Compile flags for globbed files
 |`[]`
 |===
 
 === Example configuration file
-[,toml]
+[,yml]
 ----
-inDir = "src"
-outDir = "modular_src"
-# compilationDb = "build/compile_commands.json"
+inDir: src
+outDir: modular_src
+# compilationDb: build/compile_commands.json
 
-[bootstrap]
-includePaths = ["include", "third_party/libs"]
+explicit:
+  globs:
+    - !CMakeLists.txt
+    - !Makefile
+  compileFlags:
+    - -Iinclude
+    - -Ithird_party/libs
+    - -DNDEBUG
 ----
 
 == link:CONTRIBUTING.adoc[Contributing]

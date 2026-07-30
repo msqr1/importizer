@@ -45,6 +45,7 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   # Since LibTooling was built the release runtime, we must match it even in Debug mode
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 endif()
+
 if(POLICY CMP0069)
   cmake_policy(SET CMP0069 NEW)
 endif()
@@ -114,11 +115,34 @@ target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
 target_compile_options(common-config INTERFACE
   -Wall
   -Wextra
+  -Wconversion
+  -Wsign-conversion
+  -Wimplicit-fallthrough
+  -Werror
   -Wno-c++98-compat
   -Wno-unsafe-buffer-usage
   -Wno-switch-default
   -Wno-padded
-  -Werror
+)
+
+# Security stuff
+set(hardeningFlags
+  -fstrict-flex-arrays=3
+  -fstack-clash-protection
+  -fstack-protector-strong
+  -fno-delete-null-pointer-checks
+  -fno-strict-aliasing
+)
+if(arch STREQUAL "x64")
+  list(APPEND hardeningFlags -fcf-protection=full)
+elseif(arch STREQUAL "arm64")
+  list(APPEND hardeningFlags -mbranch-protection=standard)
+endif()
+
+target_compile_options(common-config INTERFACE ${hardeningFlags})
+target_link_options(common-config INTERFACE
+  ${hardeningFlags}
+  "-Wl,-z,nodlopen,-z,noexecstack,-z,relro,-z,now,--as-needed,--no-copy-dt-needed-entries"
 )
 
 # 3rd-party

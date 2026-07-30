@@ -1,10 +1,14 @@
 #pragma once
 #include "utils/Log.hh"
 #include <llvm/ADT/STLFunctionalExtras.h>
+#include <llvm/ADT/SmallString.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
 #include <system_error>
+#include <utility>
 
 namespace fs = llvm::sys::fs;
+namespace pth = llvm::sys::path;
 namespace llvm {
 class Twine;
 }
@@ -18,8 +22,7 @@ iterateDir(const llvm::Twine &dir,
   std::error_code ec;
   It it{dir, ec}, end;
   if (ec) {
-    err("Unable to iterate {}: {}", dir, ec.message());
-    return false;
+    return err("Unable to iterate {}: {}", dir, ec.message());
   }
   while (it != end) {
     if (!fn(*it)) {
@@ -27,8 +30,7 @@ iterateDir(const llvm::Twine &dir,
     }
     it.increment(ec);
     if (ec) {
-      err("Unable to iterate {}: {}", dir, ec.message());
-      return false;
+      return err("Unable to iterate {}: {}", dir, ec.message());
     }
   }
   return true;
@@ -46,4 +48,15 @@ iterateDir(const llvm::Twine &dir,
   } else {
     return detail::iterateDir<fs::directory_iterator>(dir, fn);
   }
+}
+
+template <unsigned len>
+void makeRelative(llvm::SmallString<len> &path, const llvm::Twine &dir) {
+  if (!pth::is_relative(path)) {
+    return;
+  }
+  llvm::SmallString<len> tmp;
+  dir.toVector(tmp);
+  pth::append(tmp, path);
+  path = std::move(tmp);
 }

@@ -211,7 +211,7 @@ Importizer uses a custom directory-based test harness (located in `src/run-test`
 To add a new test case:
 
 . Create a new directory under `tests/` with a descriptive name (e.g., `tests/my-new-feature/`).
-. Add a `Config.toml` file inside this directory to configure the importizer run.
+. Add a `Config.yml` file inside this directory to configure the importizer run.
 . Add a `RefCli.txt` file containing the expected CLI output.
 . *(Optional)* Create a `in/` subdirectory containing the input files (C{plus}{plus} header-based
 code).

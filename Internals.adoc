@@ -6,4 +6,18 @@ You are comfortable with C{plus}{plus} & modules.
 Check out https://vector-of-bool.github.io/2019/03/10/modules-1.html[this excellent article] for a
 detailed introduction to modules.
 
+== Use cases
+=== Projects without public headers/API
+CLI tools, executables, such as importizer, CMake, ninja, etc can completely modularized
+because there's no public API to break.
+
+=== Typical libraries
+Typical libraries have a public API, but they also have source files and private headers that
+can be modularized. importizer can do a partial/best-effort modularization while respecting the
+public headers. Partially modularized projects can be difficult to maintain, though.
+
+=== What about header-only libraries?
+Because header-only libraries only have headers, it can't be modularized without
+breaking the public API. However, importizer does support wrapping modules, which
+
 == Architecture

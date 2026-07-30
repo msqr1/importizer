@@ -26,7 +26,7 @@ int main(const int, const char *const *argv) {
 
   llvm::SmallString<128> tmp;
   const llvm::Twine testDir{argv[1]};
-  (testDir + "/Config.toml").toStringRef(tmp);
+  (testDir + "/Config.yml").toVector(tmp);
 
   // Make sure argv strings are always null-terminated
   const std::array<const char *, 4> cmd{
@@ -48,9 +48,8 @@ int main(const int, const char *const *argv) {
     err("Unable to read {}: {}", refCli, buf.getError().message());
     return EXIT_FAILURE;
   }
-  const llvm::StringRef ref{buf->get()->getBuffer()};
-  const int refRtn{ref.contains("importizer: error: ") ? EXIT_FAILURE
-                                                       : EXIT_SUCCESS};
+  llvm::StringRef ref{(**buf).getBuffer()};
+  const int refRtn{ref.contains(" error: ") ? EXIT_FAILURE : EXIT_SUCCESS};
 
   bool errored{};
   if ((errored |= refRtn != rtn)) {
@@ -64,7 +63,7 @@ int main(const int, const char *const *argv) {
     *logOpts.target << out;
   }
 
-  (testDir + "/ref").toStringRef(tmp);
+  (testDir + "/ref").toVector(tmp);
   errored |= fs::exists(tmp) && !cmpDir(argv[2], tmp);
 
   return errored ? EXIT_FAILURE : EXIT_SUCCESS;

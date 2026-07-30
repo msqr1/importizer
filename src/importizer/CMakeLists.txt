@@ -1,6 +1,5 @@
 # Library for run-test
 add_library(importizer-lib
-  Preproc.cc
   Opts.cc
   Main.cc
 )
@@ -8,7 +7,7 @@ target_link_libraries(importizer-lib PRIVATE
   common-config
   utils-lib
 )
-require(importizer-lib PRIVATE LLVM Clang tomlc17)
+require(importizer-lib PRIVATE LLVM Clang)
 # TODO: Use PCH here as well
 
 # Executable for users

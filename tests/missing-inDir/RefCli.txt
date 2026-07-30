@@ -1,1 +1,3 @@
-importizer: error: inDir must be specified and as a string.
+importizer: YAML:1:1: error: missing required key 'inDir'
+outDir: "67"
+^

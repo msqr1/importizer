@@ -14,11 +14,11 @@ class Glob {
 public:
   Glob(bool negate, llvm::GlobPattern &&ptn) noexcept;
 
-  // Disallow copying
-  Glob(const Glob &other) = delete;
-
   // Allow moving
-  Glob(Glob &&other) noexcept;
+  Glob(Glob &&) noexcept = default;
+
+  // Disallow copying
+  Glob(const Glob &) = delete;
 
   [[nodiscard]] bool match(llvm::StringRef s) const noexcept;
 };

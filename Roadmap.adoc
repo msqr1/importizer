@@ -17,7 +17,7 @@
 
 ==== Distribution
 * [x] Working build, test, upload CI & CD for:
-** [x] Windows
+** [ ] Windows (fix Windows 11 ARM64)
 ** [ ] MacOS (fix MacOS 26)
 ** [x] Linux
 * [ ] Sign CI & CD distributions with minisign.
@@ -29,19 +29,22 @@
 * [ ] Issues, PR templates & their contribution guidelines
 
 === Features
-* [ ] Dependency graph
-** [ ] Bootstrap mode
-** [ ] From JSON compilation database
-* [ ] Include classification (internal vs external)
-* [ ] Include-to-import conversion
+* [x] Explicit mode
+* [ ] Per-translation-unit include discovery (via `PPCallbacks::InclusionDirective`,
+shared across JSON compilation database & explicit mode argv paths)
+* [ ] Include-to-import conversion (no-public-API case: full rewrite, no classification needed)
+* [ ] Include classification (header+source case: transitive `#include` closure from
+author-specified public entry points; determines which headers are frozen)
+* [ ] Include-to-import conversion (header+source case: classification-gated rewrite)
 * [ ] Pragma once & include guard removal
+* [ ] Wrapping modules generation
 
 === Validation
-* [ ] Importizer 3.0.0 successfully modularizes itself
-* [ ] Modularized importizer compiles cleanly
-* [ ] Modularized importizer passes all tests
+* [ ] Importizer 3.0.0 successfully modularizes itself, compiles and passes all tests
 
 == Post-3.0.0
+
+
 === Validation
 * [ ] stephenberry/glaze
 * [ ] kaldi

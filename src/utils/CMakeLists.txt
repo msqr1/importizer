@@ -1,9 +1,8 @@
 add_library(utils-lib
   Log.cc
   Glob.cc
-  Toml.cc
 )
-require(utils-lib PRIVATE LLVM tomlc17)
+require(utils-lib PRIVATE LLVM)
 target_link_libraries(utils-lib PRIVATE
   common-config
 )

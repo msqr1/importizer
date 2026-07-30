@@ -7,7 +7,7 @@
 ==== Features
 * Removed all 2.0.0 features, restarting from scratch.
 * Added support for using `compile_commands.json` to provide modularizing context for files.
-* Added a `[bootstrap]` fallback mode for projects without JSON compilation database.
+* Added a `[explicit]` fallback mode for projects without JSON compilation database.
 
 ==== Distribution
 * Official supported OS'es and architectures
@@ -38,10 +38,10 @@
 |https://llvm.org/doxygen/classllvm_1_1raw__ostream.html[LLVM streams]
 |Already using LLVM, might as well use more of it.
 
-|TOML
+|Configuration file
 |https://github.com/marzer/tomlplusplus[marzer/toml{plus}{plus}]
-|https://github.com/cktan/tomlc17[cktan/tomlc17]
-|Only need parsing, so the more minimal the better.
+|https://llvm.org/docs/YamlIO.html[LLVM YAML I/O]
+|Already using LLVM, might as well use more of it.
 |===
 
 == 2.0.0

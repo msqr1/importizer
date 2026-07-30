@@ -9,11 +9,14 @@ struct LogOpts {
   llvm::raw_ostream *target;
 } extern *g_logOpts;
 
-template <typename... Ts> void err(llvm::StringRef fmt, Ts &&...args) noexcept {
+template <typename... Ts> bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
   llvm::WithColor::error(*g_logOpts->target, g_logOpts->prog);
   llvm::WithColor{*g_logOpts->target, llvm::raw_ostream::Colors::SAVEDCOLOR,
                   true}
       << llvm::formatv(fmt.data(), std::forward<Ts>(args)...) << ".\n";
+
+  // So we can do return err(...); instead of err(...); return false;
+  return false;
 }
 
 template <typename... Ts>

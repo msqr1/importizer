@@ -61,8 +61,7 @@ bool cmpDir(llvm::StringRef dir, llvm::StringRef ref) noexcept {
     if (std::ranges::find(refRelPaths, relPath) != refRelPaths.end()) {
       return true;
     }
-    err("Unexpected file: {}", relPath);
-    res = false;
+    res = err("Unexpected file: {}", relPath);
     return true;
   }};
   if (!iterateDir(dir, checkDir)) {

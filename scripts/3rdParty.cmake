@@ -6,23 +6,6 @@ if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
 endif()
 
-set(CPM_SOURCE_CACHE "${3rdPartyDir}")
-if(NOT IS_READABLE "${3rdPartyDir}/Cpm.cmake")
-  file(DOWNLOAD
-    https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.3/CPM.cmake
-    "${3rdPartyDir}/Cpm.cmake"
-    EXPECTED_HASH SHA256=a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844
-  )
-endif()
-include("${3rdPartyDir}/Cpm.cmake")
-CPMAddPackage("gh:cktan/tomlc17#7813bdd218b2b5f54940a9759ec0ffb3b60c1d1f") # R260618
-add_library(tomlc17 "${tomlc17_SOURCE_DIR}/src/tomlc17.c")
-if(WIN32)
-  set_source_files_properties("${tomlc17_SOURCE_DIR}/src/tomlc17.c"
-    PROPERTIES COMPILE_DEFINITIONS _CRT_SECURE_NO_WARNINGS
-  )
-endif()
-
 include("${scriptsDir}/EnsureLibtooling.cmake")
 find_package(LLVM REQUIRED)
 find_package(Clang REQUIRED)
@@ -30,11 +13,7 @@ find_package(Clang REQUIRED)
 # Setup a 3rd-party library for a target
 function(require target visibility)
   foreach(pkg IN LISTS ARGN)
-    if(pkg STREQUAL "tomlc17")
-      # SYSTEM to supress warnings
-      target_include_directories(${target} SYSTEM ${visibility} "${tomlc17_SOURCE_DIR}/src")
-      target_link_libraries(${target} ${visibility} tomlc17)
-    elseif(pkg STREQUAL "LLVM")
+    if(pkg STREQUAL "LLVM")
       target_include_directories(${target} SYSTEM ${visibility} "${LLVM_INCLUDE_DIRS}")
       target_link_libraries(${target} ${visibility}
         LLVMSupport
