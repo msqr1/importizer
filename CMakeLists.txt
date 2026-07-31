@@ -23,12 +23,31 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
+add_library(common-config INTERFACE)
+target_compile_features(common-config INTERFACE cxx_std_23)
+target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
+
+# Cautions
+target_compile_options(common-config INTERFACE
+  -Wall
+  -Wextra
+  -Wconversion
+  -Wsign-conversion
+  -Wimplicit-fallthrough
+  -Werror
+  -Wno-c++98-compat
+  -Wno-unsafe-buffer-usage
+  -Wno-switch-default
+  -Wno-padded
+)
+
+# Optimizations
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-  add_compile_options(
+  target_compile_options(common-config INTERFACE
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
   )
   if(LINUX)
-    add_link_options(
+    target_link_options(common-config INTERFACE
       # In Debug mode, we want to still link in whatever dynamic library we need.
       "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
 
@@ -38,7 +57,7 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     )
   endif()
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-  add_compile_options(
+  target_compile_options(common-config INTERFACE
     "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c->"
   )
 
@@ -50,14 +69,24 @@ if(POLICY CMP0069)
   cmake_policy(SET CMP0069 NEW)
 endif()
 include(CheckIPOSupported)
-check_ipo_supported(RESULT res)
+check_ipo_supported(RESULT res OUTPUT output)
 if(res)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+else()
+  message(FATAL_ERROR "IPO is unsupported: ${output}")
 endif()
 
+target_compile_options(common-config INTERFACE
+  -fvisibility=hidden # Better for LTO
+  -funique-source-file-names # Faster LTO
+)
+
+## Strip symbols
+target_link_options(common-config INTERFACE "$<$<CONFIG:Release>:-Wl,-s>")
+
+# Sanitizers
 include(CheckCompilerFlag)
 include(CMakePushCheckState)
-
 set(asan -fsanitize=address)
 if(WIN32)
   # Windows linkers doesn't know where clang resource directory is, but we need that for sanitizers
@@ -82,62 +111,63 @@ if(WIN32)
 else()
   set(CMAKE_REQUIRED_LINK_OPTIONS ${asan})
 endif()
-check_compiler_flag(C ${asan} hasAsan)
+check_compiler_flag(C ${asan} __${asan})
 cmake_reset_check_state()
-if(hasAsan)
-  add_compile_options("$<$<CONFIG:Debug>:${asan}>")
+if(__${asan})
+  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:${asan}>")
   if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-    add_link_options("$<$<CONFIG:Debug>:${asan}>")
+    target_link_options(common-config INTERFACE "$<$<CONFIG:Debug>:${asan}>")
   elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     # Secret, undocumented definition to make non-MSVC ASAN work.
-    add_compile_definitions("$<$<CONFIG:Debug>:_DISABLE_STL_ANNOTATION>")
+    target_compile_definitions(common-config INTERFACE "$<$<CONFIG:Debug>:_DISABLE_STL_ANNOTATION>")
   endif()
   if(WIN32)
-    add_link_options("$<$<CONFIG:Debug>:${winAsanLdFlags}>")
+    target_link_options(common-config INTERFACE "$<$<CONFIG:Debug>:${winAsanLdFlags}>")
   endif()
 endif()
 
 set(ubsan -fsanitize=undefined)
-check_compiler_flag(C ${ubsan} hasUbsan)
+check_compiler_flag(C ${ubsan} __${ubsan})
 cmake_reset_check_state()
-if(hasUbsan)
-  add_compile_options("$<$<CONFIG:Debug>:${ubsan}>")
+if(__${ubsan})
+  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:${ubsan}>")
 endif()
 
 option(TRACE_BUILD "Enable build tracing for use with something like ClangBuildAnalyzer" OFF)
 if(TRACE_BUILD)
-  add_compile_options(-ftime-trace -ftime-trace-granularity=1)
+  target_compile_options(common-config INTERFACE -ftime-trace -ftime-trace-granularity=1)
 endif()
 
-add_library(common-config INTERFACE)
-target_compile_features(common-config INTERFACE cxx_std_23)
-target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
-target_compile_options(common-config INTERFACE
-  -Wall
-  -Wextra
-  -Wconversion
-  -Wsign-conversion
-  -Wimplicit-fallthrough
-  -Werror
-  -Wno-c++98-compat
-  -Wno-unsafe-buffer-usage
-  -Wno-switch-default
-  -Wno-padded
-)
-
-# Security stuff
+# Hardening
 set(hardeningFlags
   -fstrict-flex-arrays=3
   -fstack-clash-protection
-  -fstack-protector-strong
+  -fstack-protector-all
+  -fcf-protection=full
+  -mbranch-protection=standard
+)
+
+foreach(hardeningFlag ${hardeningFlags})
+  check_compiler_flag(C ${hardeningFlag} __${hardeningFlag})
+  cmake_reset_check_state()
+  if(NOT __${hardeningFlag})
+    list(REMOVE_ITEM hardeningFlags ${hardeningFlag})
+  endif()
+endforeach()
+
+set(sssan -fsanitize=safe-stack)
+check_compiler_flag(C ${sssan} __${sssan})
+cmake_reset_check_state()
+if(__${sssan})
+  list(APPEND hardeningFlags "$<$<CONFIG:Release>:${sssan}>")
+endif()
+
+# TODO: -fsanitize=cfi
+
+list(APPEND hardeningFlags
   -fno-delete-null-pointer-checks
   -fno-strict-aliasing
 )
-if(arch STREQUAL "x64")
-  list(APPEND hardeningFlags -fcf-protection=full)
-elseif(arch STREQUAL "arm64")
-  list(APPEND hardeningFlags -mbranch-protection=standard)
-endif()
 
 target_compile_options(common-config INTERFACE ${hardeningFlags})
 target_link_options(common-config INTERFACE

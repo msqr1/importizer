@@ -20,6 +20,7 @@ Includes & macros from a module will only stay in that module.
 === Native modules
 Native modules mean using modules internally.
 Some advantages of native modules are:
+
 * *Improved compilation time:* Modules don’t need to be recompiled every time it is imported, unlike
 headers.
 * *No ordering issues:* Modules are compiled in a strict dependency order, and `import`s can be
@@ -28,6 +29,7 @@ ordered freely.
 === Wrapped modules
 Wrapped modules mean exposing a modules interface by wrapping the underlying headers.
 Some advantages of wrapping modules are:
+
 * *Support modules with headers:* Support a growing amount modules user while not breaking headers.
 
 == Prebuilt binaries

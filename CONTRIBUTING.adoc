@@ -257,7 +257,6 @@ Do not use this for input/argument validation.
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
 * Check before adding a compiler/linker flag if it's not guaranteed to be available on supported
 compiler (e.g., `-fsanitize=address`).
-* Use `target\_*_*` to add flags for this project, & `add\_*_*` to add for this & all deps.
 * If a global setting affects LibTooling too (e.g. `BUILD_SHARED_LIBS`), put in `CMakePresets.json`.
 Otherwise (eg. `CMAKE_CXX_SCAN_FOR_MODULES`), put in `CMakeLists.txt`.
 * Install rules & post-installation scripts are only used in debug mode.

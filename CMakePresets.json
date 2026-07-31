@@ -20,7 +20,9 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_LINKER_TYPE": "LLD"
+        "CMAKE_LINKER_TYPE": "LLD",
+        "CMAKE_CXX_COMPILER_RANLIB": "ranlib",
+        "CMAKE_CXX_COMPILER_AR": "ar"
       }
     },
     {
