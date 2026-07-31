@@ -26,9 +26,7 @@ set(CMAKE_STATIC_LIBRARY_PREFIX "")
 add_library(common-config INTERFACE)
 target_compile_features(common-config INTERFACE cxx_std_23)
 target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
-
-# Cautions
-target_compile_options(common-config INTERFACE
+set(compileFlags
   -Wall
   -Wextra
   -Wconversion
@@ -39,141 +37,84 @@ target_compile_options(common-config INTERFACE
   -Wno-unsafe-buffer-usage
   -Wno-switch-default
   -Wno-padded
+  -fno-delete-null-pointer-checks
+  -fno-strict-aliasing
+  "$<$<CONFIG:Debug>:-fsanitize=address,undefined>"
 )
+set(linkFlags)
 
-# Optimizations
-if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-  target_compile_options(common-config INTERFACE
-    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
+if(arch STREQUAL "amd64")
+  set(clangArch x86_64)
+  list(APPEND compileFlags -fcf-protection=full)
+elseif(arch STREQUAL "arm64")
+  set(clangArch aarch64)
+  list(APPEND compileFlags -mbranch-protection=standard)
+endif()
+
+if(LINUX)
+  list(APPEND linkFlags
+    # In Debug mode, we want to still link in whatever dynamic library we need.
+    "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
+
+    # In Release mode, we want a fully static. But instead of -static we use -static-pie for more
+    # security. On Windows & MacOS things are already secure (PIE always on).
+    "$<$<CONFIG:Release>:-static-pie>"
   )
-  if(LINUX)
-    target_link_options(common-config INTERFACE
-      # In Debug mode, we want to still link in whatever dynamic library we need.
-      "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
+elseif(WIN32)
+  # Windows linkers doesn't know where clang resource directory is, but we need that for sanitizers
+  execute_process(
+    COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
+    OUTPUT_VARIABLE clangLibPath
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+  set(clangLibPath "${clangLibPath}/lib/windows") # Empty if not on Windows
 
-      # In Release mode, we want a fully static. But instead of -static we use -static-pie for more
-      # security. On Windows & MacOS things are already secure (PIE always on).
-      "$<$<CONFIG:Release>:-static-pie>"
-    )
-  endif()
+  # Secret, undocumented define to make non-MSVC ASAN work.
+  list(APPEND compileFlags "$<$<CONFIG:Debug>:-D_DISABLE_STL_ANNOTATION>")
+
+  list(APPEND linkFlags
+    "$<$<CONFIG:Debug>:-libpath:${clangLibPath};clang_rt.asan_dynamic-${clangArch}.lib;-wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib>"
+  )
+endif()
+
+if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+  list(APPEND compileFlags
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
+    -fvisibility=hidden
+    -funique-source-file-names
+    -fstrict-flex-arrays=3
+    -fstack-clash-protection
+    -fstack-protector-all
+  )
+  list(APPEND linkFlags
+    "-Wl,-z,nodlopen,-z,noexecstack,-z,relro,-z,now,--as-needed,--no-copy-dt-needed-entries"
+    "$<$<CONFIG:Release>:-Wl,-s>"
+  )
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-  target_compile_options(common-config INTERFACE
+  list(APPEND compileFlags
     "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c->"
+    /sdl
+    /guard:cf
+  )
+  list(APPEND linkFlags
+    /CETCOMPAT
+    /GUARD:CF
   )
 
   # Since LibTooling was built the release runtime, we must match it even in Debug mode
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 endif()
 
-if(POLICY CMP0069)
-  cmake_policy(SET CMP0069 NEW)
-endif()
-include(CheckIPOSupported)
-check_ipo_supported(RESULT res OUTPUT output)
-if(res)
-  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
-else()
-  message(FATAL_ERROR "IPO is unsupported: ${output}")
-endif()
-
-target_compile_options(common-config INTERFACE
-  -fvisibility=hidden # Better for LTO
-  -funique-source-file-names # Faster LTO
-)
-
-## Strip symbols
-target_link_options(common-config INTERFACE "$<$<CONFIG:Release>:-Wl,-s>")
-
-# Sanitizers
-include(CheckCompilerFlag)
-include(CMakePushCheckState)
-set(asan -fsanitize=address)
-if(WIN32)
-  # Windows linkers doesn't know where clang resource directory is, but we need that for sanitizers
-  execute_process(
-    COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
-    OUTPUT_VARIABLE resourceDir
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    COMMAND_ERROR_IS_FATAL ANY
-  )
-  set(clangLibPath "${resourceDir}/lib/windows") # Empty if not on Windows
-  if(arch STREQUAL "amd64")
-    set(clangArch x86_64)
-  elseif(arch STREQUAL "arm64")
-    set(clangArch aarch64)
-  endif()
-  set(winAsanLdFlags
-    "-libpath:${clangLibPath}"
-    clang_rt.asan_dynamic-${clangArch}.lib
-    -wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib
-  )
-  set(CMAKE_REQUIRED_LINK_OPTIONS ${winAsanLdFlags})
-else()
-  set(CMAKE_REQUIRED_LINK_OPTIONS ${asan})
-endif()
-check_compiler_flag(C ${asan} __${asan})
-cmake_reset_check_state()
-if(__${asan})
-  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:${asan}>")
-  if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-    target_link_options(common-config INTERFACE "$<$<CONFIG:Debug>:${asan}>")
-  elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    # Secret, undocumented definition to make non-MSVC ASAN work.
-    target_compile_definitions(common-config INTERFACE "$<$<CONFIG:Debug>:_DISABLE_STL_ANNOTATION>")
-  endif()
-  if(WIN32)
-    target_link_options(common-config INTERFACE "$<$<CONFIG:Debug>:${winAsanLdFlags}>")
-  endif()
-endif()
-
-set(ubsan -fsanitize=undefined)
-check_compiler_flag(C ${ubsan} __${ubsan})
-cmake_reset_check_state()
-if(__${ubsan})
-  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:${ubsan}>")
-endif()
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
 option(TRACE_BUILD "Enable build tracing for use with something like ClangBuildAnalyzer" OFF)
 if(TRACE_BUILD)
-  target_compile_options(common-config INTERFACE -ftime-trace -ftime-trace-granularity=1)
+  list(APPEND compileFlags -ftime-trace -ftime-trace-granularity=1)
 endif()
 
-# Hardening
-set(hardeningFlags
-  -fstrict-flex-arrays=3
-  -fstack-clash-protection
-  -fstack-protector-all
-  -fcf-protection=full
-  -mbranch-protection=standard
-)
-
-foreach(hardeningFlag ${hardeningFlags})
-  check_compiler_flag(C ${hardeningFlag} __${hardeningFlag})
-  cmake_reset_check_state()
-  if(NOT __${hardeningFlag})
-    list(REMOVE_ITEM hardeningFlags ${hardeningFlag})
-  endif()
-endforeach()
-
-set(sssan -fsanitize=safe-stack)
-check_compiler_flag(C ${sssan} __${sssan})
-cmake_reset_check_state()
-if(__${sssan})
-  list(APPEND hardeningFlags "$<$<CONFIG:Release>:${sssan}>")
-endif()
-
-# TODO: -fsanitize=cfi
-
-list(APPEND hardeningFlags
-  -fno-delete-null-pointer-checks
-  -fno-strict-aliasing
-)
-
-target_compile_options(common-config INTERFACE ${hardeningFlags})
-target_link_options(common-config INTERFACE
-  ${hardeningFlags}
-  "-Wl,-z,nodlopen,-z,noexecstack,-z,relro,-z,now,--as-needed,--no-copy-dt-needed-entries"
-)
+target_compile_options(common-config INTERFACE ${compileFlags})
+target_link_options(common-config INTERFACE ${linkFlags})
 
 # 3rd-party
 include("${scriptsDir}/3rdParty.cmake")

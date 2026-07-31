@@ -63,9 +63,11 @@ template <> struct yml::MappingTraits<NormalOpts> {
   }
 };
 
+namespace {
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) {
   diag.print(g_logOpts->prog.data(), *g_logOpts->target);
 }
+} // namespace
 
 bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   // LLVM default options will mix into ours if we don't make our own category

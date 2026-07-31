@@ -26,7 +26,7 @@ add_custom_command(
   TARGET importizer
   POST_BUILD
   COMMAND "${CMAKE_COMMAND}"
-    "-DsearchDirs=${clangLibPath}"
+    "-DsearchDirs=$<$<CONFIG:Debug>:${clangLibPath}>"
     "-Dexe=$<TARGET_FILE:importizer>"
     "-DpredictableDir=${CMAKE_BINARY_DIR}/importizer"
     -P "${scriptsDir}/PostBuild.cmake"
