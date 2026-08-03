@@ -7,7 +7,7 @@ if ! (return 0 2>/dev/null); then
   exit 1
 fi
 
-# OS detection if not provided
+# Arch detection if not provided
 arch=${1:-$(uname -m)}
 case $arch in
 amd64 | x86_64)
@@ -53,11 +53,9 @@ if [ -n "$CI" ]; then
 
   {
     echo "CMAKE_PREFIX_PATH=$llvmPrefix"
-    echo IMPORTIZER_OS=macos
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"
 fi
 
 export CMAKE_PREFIX_PATH="$llvmPrefix"
-export IMPORTIZER_OS=macos
 export IMPORTIZER_ARCH=$arch

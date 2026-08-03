@@ -5,7 +5,13 @@ set(knownModes "Debug;Release")
 if(NOT mode IN_LIST knownModes)
   message(FATAL_ERROR "Unknown mode '${mode}', only Debug/Release is allowed")
 endif()
-set(os $ENV{IMPORTIZER_OS})
+if(LINUX)
+  set(os "linux")
+elseif(APPLE)
+  set(os "macos")
+elseif(WIN32)
+  set(os "windows")
+endif()
 set(arch $ENV{IMPORTIZER_ARCH})
 cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptsDir)
 file(REAL_PATH "${scriptsDir}/.." root)
@@ -14,7 +20,7 @@ set(buildDir "${root}/build")
 
 include("${scriptsDir}/Exec.cmake")
 
-exec(${CMAKE_COMMAND} -B "${buildDir}" -DCMAKE_BUILD_TYPE=${mode} --preset importizer-${os})
+exec(${CMAKE_COMMAND} -B "${buildDir}" -DCMAKE_BUILD_TYPE=${mode} --preset importizer)
 exec(${CMAKE_COMMAND} --build "${buildDir}" --config ${mode})
 
 exec(${CMAKE_CTEST_COMMAND}

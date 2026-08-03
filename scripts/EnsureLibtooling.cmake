@@ -4,8 +4,15 @@
 
 block(SCOPE_FOR VARIABLES PROPAGATE LLVM_DIR Clang_DIR)
 
+
 if(DEFINED CMAKE_SCRIPT_MODE_FILE)
-  set(os $ENV{IMPORTIZER_OS})
+  if(LINUX)
+    set(os "linux")
+  elseif(APPLE)
+    set(os "macos")
+  elseif(WIN32)
+    set(os "windows")
+  endif()
   set(arch $ENV{IMPORTIZER_ARCH})
   cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptsDir)
   file(REAL_PATH "${scriptsDir}/.." root)
@@ -38,21 +45,19 @@ if(ec EQUAL 0)
   # Prebuilt LibTooling hashes
   if(LINUX)
     if(arch STREQUAL "amd64")
-      set(refHash 28bdc8af61997c7af860eef65bc2c0d760bfac96f58ba4776397bdcb879f41c9)
     elseif(arch STREQUAL "arm64")
-      set(refHash 4931fc068b72746104f072c93fceec3f361ce5309dcacd53a66642a4260b3f35)
     endif()
-  elseif(os STREQUAL "macos")
+  elseif(APPLE)
     if(arch STREQUAL "amd64")
-      set(refHash 994317f084246d21c94ce4045fcabf6528a5f731219765484a58b9efedb0aa7d)
+      set(refHash)
     elseif(arch STREQUAL "arm64")
-      set(refHash df6b9b9182b1799777a97ccfc5b78091045b4c86b72940232ac17e95eb6c132a)
+      set(refHash)
     endif()
   elseif(WIN32)
     if(arch STREQUAL "amd64")
-      set(refHash 82810bbe9191958ce4e55dd2cef1ec480452b7bb679f19e30ffad9558413b5ca)
+      set(refHash)
     elseif(arch STREQUAL "arm64")
-      set(refHash 7e913982d99b30095e315b10904a080c8ea6693a764978b352b9f04e2ff13d8b)
+      set(refHash eb693f9616afb2e7171aceb47d9eac8e5769a6643933e9fc928f5f52116cce07)
     endif()
   endif()
 
@@ -85,21 +90,22 @@ file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
 file(REMOVE "${arFile}")
 file(RENAME "${3rdPartyDir}/llvm-project-${v}.src" "${llvmProjSrc}")
 
-# Load our LibTooling preset
-file(CREATE_LINK "${root}/CMakePresets.json"
-  "${llvmProjSrc}/llvm/CMakeUserPresets.json" COPY_ON_ERROR)
-file(CREATE_LINK "${root}/CMakePresets.json"
-  "${llvmProjSrc}/clang/CMakeUserPresets.json" COPY_ON_ERROR)
-
 include("${scriptsDir}/Exec.cmake")
 
 # Build LibTooling
-## First build LLVM
+## Load toolchain, static & dynamic presets for LLVM
+file(CREATE_LINK "${root}/CMakePresets.json"
+  "${llvmProjSrc}/llvm/CMakeUserPresets.json" COPY_ON_ERROR SYMBOLIC)
+file(CREATE_LINK "${root}/Toolchain.cmake"
+  "${llvmProjSrc}/llvm/Toolchain.cmake" COPY_ON_ERROR SYMBOLIC)
+file(CREATE_LINK "${root}/DynPresets.cmake"
+  "${llvmProjSrc}/llvm/DynPresets.cmake" COPY_ON_ERROR SYMBOLIC)
+
+## Build LLVM
 exec(${CMAKE_COMMAND}
   -S "${llvmProjSrc}/llvm"
   -B "${llvmProjSrc}/build"
-  --preset libtooling-${os}
-  --no-warn-unused-cli
+  --preset llvm
 )
 exec(${CMAKE_COMMAND} --build "${llvmProjSrc}/build")
 exec(${CMAKE_COMMAND}
@@ -108,13 +114,20 @@ exec(${CMAKE_COMMAND}
   -j ${procCnt}
 )
 
-## Then build Clang
+## Load Clang's presets (same as LLVM)
+file(CREATE_LINK "${root}/CMakePresets.json"
+  "${llvmProjSrc}/clang/CMakeUserPresets.json" COPY_ON_ERROR SYMBOLIC)
+file(CREATE_LINK "${root}/Toolchain.cmake"
+  "${llvmProjSrc}/clang/Toolchain.cmake" COPY_ON_ERROR SYMBOLIC)
+file(CREATE_LINK "${root}/DynPresets.cmake"
+  "${llvmProjSrc}/clang/DynPresets.cmake" COPY_ON_ERROR SYMBOLIC)
+
+## Build Clang
 exec(${CMAKE_COMMAND}
   -S "${llvmProjSrc}/clang"
   -B "${llvmProjSrc}/build2"
-  --preset libtooling-${os}
+  --preset clang
   "-DLLVM_DIR=${3rdPartyDir}/llvm/lib/cmake/llvm"
-  --no-warn-unused-cli
 )
 exec(${CMAKE_COMMAND} --build "${llvmProjSrc}/build2")
 exec(${CMAKE_COMMAND}

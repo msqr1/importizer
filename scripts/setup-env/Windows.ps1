@@ -34,7 +34,7 @@ if ($MyInvocation.InvocationName -ne '.') {
   exitWithErr("Script must be sourced. Do '. {script}' instead of '{script}'.")
 }
 
-# OS detection if not provided
+# Arch detection if not provided
 if (!$PSBoundParameters.ContainsKey("arch")) {
   $osArch = [Environment]::GetEnvironmentVariable("PROCESSOR_ARCHITEW6432")
   if ([string]::IsNullOrEmpty($osArch)) {
@@ -140,7 +140,6 @@ while (!$stdOut.EndOfStream) {
 }
 $proc.WaitForExit()
 
-[Environment]::SetEnvironmentVariable("IMPORTIZER_OS", "windows")
 [Environment]::SetEnvironmentVariable("IMPORTIZER_ARCH", $arch)
 $llvmBin = [IO.Path]::Combine($llvmPrefix, "bin")
 if (!$path.Contains($llvmBin)) {
@@ -154,8 +153,6 @@ if ($ci) {
   $ghPath = [Environment]::GetEnvironmentVariable("GITHUB_PATH")
   [IO.File]::AppendAllText($ghPath, [string[]]$cmakeBin, $utf8NoBom)
   [IO.File]::AppendAllText($ghPath, [string[]]$llvmBin, $utf8NoBom)
-  $lines.Add("IMPORTIZER_OS=windows")
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
-

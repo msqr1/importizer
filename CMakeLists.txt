@@ -15,7 +15,6 @@ endif()
 set(root "${CMAKE_SOURCE_DIR}")
 set(3rdPartyDir "${root}/3rd-party")
 set(scriptsDir "${root}/scripts")
-set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
 
 # Project
@@ -37,18 +36,20 @@ set(compileFlags
   -Wno-unsafe-buffer-usage
   -Wno-switch-default
   -Wno-padded
-  -fno-delete-null-pointer-checks
-  -fno-strict-aliasing
   "$<$<CONFIG:Debug>:-fsanitize=address,undefined>"
 )
 set(linkFlags)
 
+execute_process(
+  COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
+  OUTPUT_VARIABLE resourceDir
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  COMMAND_ERROR_IS_FATAL ANY
+)
 if(arch STREQUAL "amd64")
   set(clangArch x86_64)
-  list(APPEND compileFlags -fcf-protection=full)
 elseif(arch STREQUAL "arm64")
   set(clangArch aarch64)
-  list(APPEND compileFlags -mbranch-protection=standard)
 endif()
 
 if(LINUX)
@@ -62,13 +63,7 @@ if(LINUX)
   )
 elseif(WIN32)
   # Windows linkers doesn't know where clang resource directory is, but we need that for sanitizers
-  execute_process(
-    COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
-    OUTPUT_VARIABLE clangLibPath
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    COMMAND_ERROR_IS_FATAL ANY
-  )
-  set(clangLibPath "${clangLibPath}/lib/windows") # Empty if not on Windows
+  set(clangLibPath "${resourceDir}/lib/windows")
 
   # Secret, undocumented define to make non-MSVC ASAN work.
   list(APPEND compileFlags "$<$<CONFIG:Debug>:-D_DISABLE_STL_ANNOTATION>")
@@ -81,29 +76,14 @@ endif()
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   list(APPEND compileFlags
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
-    -fvisibility=hidden
-    -funique-source-file-names
-    -fstrict-flex-arrays=3
-    -fstack-clash-protection
-    -fstack-protector-all
   )
   list(APPEND linkFlags
-    "-Wl,-z,nodlopen,-z,noexecstack,-z,relro,-z,now,--as-needed,--no-copy-dt-needed-entries"
-    "$<$<CONFIG:Release>:-Wl,-s>"
+    "$<$<CONFIG:Debug>:-fsanitize=address>"
   )
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   list(APPEND compileFlags
     "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c->"
-    /sdl
-    /guard:cf
   )
-  list(APPEND linkFlags
-    /CETCOMPAT
-    /GUARD:CF
-  )
-
-  # Since LibTooling was built the release runtime, we must match it even in Debug mode
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 endif()
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)

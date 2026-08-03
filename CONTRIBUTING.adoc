@@ -70,7 +70,7 @@ Note that bundled tools usually lag behind in version, so use `:bundled` with ca
 |===
 | |Linux |MacOS |Windows
 
-|3rd-party libraries
+|LibTooling
 3+^.^|Static
 
 |Sanitizers (only in Debug mode)

@@ -6,46 +6,14 @@
       "name": "all",
       "hidden": true,
       "generator": "Ninja",
-      "$comment": [
-        "We don't need PIC, only PIE, and that's on by default in all supported OS'es.",
-        "So we don't need CMAKE_POSITION_INDEPENDENT_CODE or later, LLVM_ENABLE_PIC."
-      ],
+      "toolchainFile": "${sourceDir}/Toolchain.cmake",
       "cacheVariables": {
-        "BUILD_SHARED_LIBS": false
+        "CMAKE_PROJECT_INCLUDE": "${sourceDir}/DynPresets.cmake"
       }
     },
     {
-      "name": "linux",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_LINKER_TYPE": "LLD",
-        "CMAKE_CXX_COMPILER_RANLIB": "ranlib",
-        "CMAKE_CXX_COMPILER_AR": "ar"
-      }
-    },
-    {
-      "name": "macos",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_OSX_DEPLOYMENT_TARGET": "15"
-      }
-    },
-    {
-      "name": "windows",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl",
-        "CMAKE_LINKER_TYPE": "LLD"
-      }
-    },
-    {
-      "name": "libtooling",
-      "hidden": true,
+      "name": "llvm",
+      "inherits": "all",
       "cacheVariables": {
         "INSTALL_PARALLEL": true,
         "CMAKE_BUILD_TYPE": "Release",
@@ -64,7 +32,6 @@
         "LLVM_ENABLE_BINDINGS": false,
         "LLVM_ENABLE_BACKTRACES": false,
         "LLVM_ENABLE_TELEMETRY": false,
-        "LLVM_ENABLE_OCAMLDOC": false,
         "LLVM_INCLUDE_BENCHMARKS": false,
         "LLVM_INCLUDE_EXAMPLES": false,
         "LLVM_INCLUDE_RUNTIMES": false,
@@ -77,7 +44,13 @@
         "LLVM_BUILD_LLVM_C_DYLIB": false,
         "LLVM_TARGETS_TO_BUILD": "host",
         "LLVM_OPTIMIZED_TABLEGEN": true,
-        "LLVM_STATIC_LINK_CXX_STDLIB": true,
+        "LLVM_STATIC_LINK_CXX_STDLIB": true
+      }
+    },
+    {
+      "name": "clang",
+      "inherits": "llvm",
+      "cacheVariables": {
         "CLANG_ENABLE_STATIC_ANALYZER": false,
         "CLANG_BUILD_TOOLS": false,
         "CLANG_PLUGIN_SUPPORT": false,
@@ -86,40 +59,10 @@
     },
     {
       "name": "importizer",
-      "hidden": true,
+      "inherits": "all",
       "cacheVariables": {
         "BUILD_TESTING": true
       }
-    },
-    {
-      "name": "libtooling-linux",
-      "inherits": ["libtooling", "linux", "all"],
-      "$comment": "No rpmalloc on Linux due to a bug"
-    },
-    {
-      "name": "libtooling-macos",
-      "inherits": ["libtooling", "macos", "all"]
-    },
-    {
-      "name": "libtooling-windows",
-      "inherits": ["libtooling", "windows", "all"],
-      "cacheVariables": {
-        "CMAKE_ASM_MASM_COMPILER": "llvm-ml",
-        "CMAKE_ASM_MASM_FLAGS": "-m64",
-        "LLVM_ENABLE_RPMALLOC": true
-      }
-    },
-    {
-      "name": "importizer-linux",
-      "inherits": ["importizer", "linux", "all"]
-    },
-    {
-      "name": "importizer-macos",
-      "inherits": ["importizer", "macos", "all"]
-    },
-    {
-      "name": "importizer-windows",
-      "inherits": ["importizer", "windows", "all"]
     }
   ]
 }

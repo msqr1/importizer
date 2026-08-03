@@ -7,7 +7,7 @@ if ! (return 0 2>/dev/null); then
   exit 1
 fi
 
-# OS detection if not provided
+# Arch detection if not provided
 arch=${1:-$(uname -m)}
 case $arch in
 amd64 | x86_64)
@@ -50,10 +50,8 @@ if [ -n "$CI" ]; then
   fi
 
   {
-    echo IMPORTIZER_OS=linux
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"
 fi
 
-export IMPORTIZER_OS=linux
 export IMPORTIZER_ARCH=$arch
