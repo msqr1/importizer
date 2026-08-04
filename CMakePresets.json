@@ -1,6 +1,6 @@
 {
   "version": 10,
-  "$comment": "This file is intended for CI/CD but feel free to inherit.",
+  "$comment": "Static presets",
   "configurePresets": [
     {
       "name": "all",
@@ -15,7 +15,6 @@
       "name": "llvm",
       "inherits": "all",
       "cacheVariables": {
-        "INSTALL_PARALLEL": true,
         "CMAKE_BUILD_TYPE": "Release",
         "LLVM_APPEND_VC_REV": false,
         "LLVM_ENABLE_PROJECTS": "clang",

@@ -39,6 +39,7 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     /CETCOMPAT
     /GUARD:CF
   )
+  set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
 endif()
 
 add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:${compileFlags}>")

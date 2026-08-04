@@ -24,8 +24,8 @@ jobs:
       - name: Setup environment
         run: . scripts/setup-env/${{ matrix.setup-env }} ${{ matrix.arch }}
       - name: Ensure LibTooling
-        timeout-minutes: 167
+        timeout-minutes: 180
         run: cmake -P scripts/EnsureLibtooling.cmake
       - name: Make & upload distribution
-        timeout-minutes: 7
+        timeout-minutes: 13
         run: cmake -Dmode=Debug -P scripts/MkDist.cmake
