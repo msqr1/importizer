@@ -36,9 +36,12 @@ set(compileFlags
   -Wno-unsafe-buffer-usage
   -Wno-switch-default
   -Wno-padded
-  "$<$<CONFIG:Debug>:-fsanitize=address,undefined>"
 )
 set(linkFlags)
+
+if(NOT (WIN32 AND arch STREQUAL "arm64"))
+  list(APPEND compileFlags "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
+endif()
 
 execute_process(
   COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
@@ -61,7 +64,7 @@ if(LINUX)
     # security. On Windows & MacOS things are already secure (PIE always on).
     "$<$<CONFIG:Release>:-static-pie>"
   )
-elseif(WIN32)
+elseif(WIN32 AND arch STREQUAL "amd64")
   # Windows linkers doesn't know where clang resource directory is, but we need that for sanitizers
   set(clangLibPath "${resourceDir}/lib/windows")
 
