@@ -37,8 +37,7 @@ if ! command -v brew >/dev/null 2>&1; then
   return 1
 fi
 
-brew install llvm@20
-v=20
+v=18
 llvmPrefix="$(brew --prefix llvm@$v || true)"
 if [ ! -d "$llvmPrefix" ]; then
   echo "Homebrew LLVM $v not found." >&2

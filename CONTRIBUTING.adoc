@@ -124,7 +124,7 @@ One can start coding right away.
 
 |Compiler toolchain
 |clang, ld.lld 22.1.3
-|clang 20.1.8 (Homebrew)
+|clang 18.1.8 (Homebrew)
 |clang-cl, lld-link, llvm-ml 20.1.x^2^
 
 |Backend
