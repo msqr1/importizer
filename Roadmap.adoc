@@ -10,6 +10,7 @@
 * [x] Figure out dependency linkage.
 * [x] Figure out the required build toolchain.
 * [x] Setup base CMake project with LibTooling integration.
+* [x] Hardening
 
 ==== Testing
 * [x] Standardize test formats
@@ -17,8 +18,8 @@
 
 ==== Distribution
 * [x] Working build, test, upload CI & CD for:
-** [ ] Windows (fix Windows 11 ARM64)
-** [ ] MacOS (fix MacOS 26)
+** [x] Windows (fix Windows 11 ARM64)
+** [x] MacOS
 ** [x] Linux
 * [ ] Sign CI & CD distributions with minisign.
 
