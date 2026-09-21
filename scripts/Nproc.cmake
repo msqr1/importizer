@@ -1,3 +1,5 @@
+include_guard(GLOBAL)
+
 # Portable way to get number of processes
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 

@@ -11,16 +11,6 @@ namespace tl = clang::tooling;
 struct Explicit {
   std::vector<llvm::SmallString<128>> files;
   std::vector<std::string> compileFlags;
-  // Allow default construction
-  Explicit() noexcept = default;
-
-  // Allow moving
-  Explicit(Explicit &&) noexcept = default;
-  Explicit &operator=(Explicit &&) noexcept = default;
-
-  // Disallow copying
-  Explicit(const Explicit &) = delete;
-  Explicit &operator=(const Explicit &) = delete;
 };
 
 struct Opts {

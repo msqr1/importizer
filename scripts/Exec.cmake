@@ -1,3 +1,4 @@
+include_guard(GLOBAL)
 # execute_process but nicer ig
 
 function(exec)

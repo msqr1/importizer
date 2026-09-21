@@ -1,3 +1,4 @@
+include_guard(GLOBAL)
 # Ensure that LibTooling (LLVM & Clang) is in 3rd-party/
 # Can be used either as script or included
 ## Uses Github CLI, needs GH_TOKEN env var
