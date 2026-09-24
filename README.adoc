@@ -112,6 +112,11 @@ current working directory.
 |explicit
 |object
 |See the <<explicit-mode, Explicit mode>> section.
+
+|stdImport
+|boolean
+|Replace C{plus}{plus} headers inclusion with `import std;` and if C wrappers headers are used,
+`import std.compat`.
 |===
 
 ==== Explicit mode

@@ -21,7 +21,7 @@ host-container boundary (terminal-wise) kinda invisible.
 [,bash]
 ----
 # Create distrobox container (replace {arch} with your architecture)
-distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:3.24.1-{arch} --no-entry
+distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:3.24.2-{arch} --no-entry
 
 # Enter container (always do this before coding)
 distrobox enter importizer-alpine
@@ -128,7 +128,7 @@ One can start coding right away.
 |clang-cl, lld-link, llvm-ml 20.1.x^2^
 
 |Backend
-|Alpine 3.24.1
+|Alpine 3.24.2
 |Xcode SDK (`SDKROOT`)
 |Visual Studio or Build Tools^3^
 |===
@@ -241,7 +241,6 @@ TODO
 `split`, `trim`) over `const char*`, & `std::array`/`std::vector` over C-style arrays.
 * Use angled brackets (`#include <header.h>`) for external/third-party headers.
 * The C{plus}{plus} file containing `main()` for any executable must be named `Driver.cc`.
-* Maintain the exact same ordering of options in the Options section & parsing logic in `getOpts`.
 * Do not use RTTI, if you must, use https://llvm.org/docs/HowToSetUpLLVMStyleRTTI.html[LLVM's].
 
 ===  C{plus}{plus} error handling

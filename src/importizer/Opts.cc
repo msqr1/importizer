@@ -25,6 +25,7 @@ namespace tl = clang::tooling;
 namespace pth = llvm::sys::path;
 namespace yml = llvm::yaml;
 
+namespace {
 template <unsigned len>
 struct SmallStrParser : public cl::parser<llvm::SmallString<len>> {
   bool parse(cl::Option &, llvm::StringRef, llvm::StringRef val,
@@ -41,11 +42,17 @@ struct NormalExplicit {
 };
 
 struct NormalOpts {
+  bool stdImport;
   llvm::StringRef inDir;
   std::optional<llvm::StringRef> outDir;
   std::optional<llvm::StringRef> dbPath;
   std::optional<NormalExplicit> xplicit;
 };
+
+void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) {
+  diag.print(g_logOpts->prog.data(), *g_logOpts->target);
+}
+} // namespace
 
 template <> struct yml::MappingTraits<NormalExplicit> {
   static void mapping(yml::IO &in, NormalExplicit &xplicit) {
@@ -60,14 +67,9 @@ template <> struct yml::MappingTraits<NormalOpts> {
     in.mapOptional("outDir", opts.outDir);
     in.mapOptional("compilationDb", opts.dbPath);
     in.mapOptional("explicit", opts.xplicit);
+    in.mapOptional("stdImport", opts.stdImport);
   }
 };
-
-namespace {
-void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) {
-  diag.print(g_logOpts->prog.data(), *g_logOpts->target);
-}
-} // namespace
 
 bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   // LLVM default options will mix into ours if we don't make our own category
@@ -132,6 +134,9 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   }
   makeRelative(opts.outDir, configDir);
 
+  // stdImport
+  opts.stdImport = nOpts.stdImport;
+
   // compilationDb
   if (nOpts.dbPath) {
     if (nOpts.xplicit) {
@@ -144,6 +149,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
       return err("Unable to parse compilation database: {}", msg);
     }
   }
+
   // explicit
   else {
     Explicit &xplicit{opts.fileHelper.emplace<Explicit>()};

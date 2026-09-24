@@ -3,14 +3,14 @@
     "os": "linux",
     "arch": "amd64",
     "runner": "ubuntu-26.04",
-    "container": "ghcr.io/msqr1/importizer-alpine:3.24.1-amd64",
+    "container": "ghcr.io/msqr1/importizer-alpine:3.24.2-amd64",
     "setup-env": "Linux.bash"
   },
   {
     "os": "linux",
     "arch": "arm64",
     "runner": "ubuntu-26.04-arm",
-    "container": "ghcr.io/msqr1/importizer-alpine:3.24.1-arm64",
+    "container": "ghcr.io/msqr1/importizer-alpine:3.24.2-arm64",
     "setup-env": "Linux.bash"
   },
   {

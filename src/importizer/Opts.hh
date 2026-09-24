@@ -14,6 +14,7 @@ struct Explicit {
 };
 
 struct Opts {
+  bool stdImport;
   llvm::SmallString<128> inDir;
   llvm::SmallString<128> outDir;
   std::variant<std::unique_ptr<tl::JSONCompilationDatabase>, Explicit>

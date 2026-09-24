@@ -13,12 +13,12 @@ namespace llvm {
 class Twine;
 }
 
-namespace detail {
+namespace {
 
 template <typename It>
-[[nodiscard]] bool
-iterateDir(const llvm::Twine &dir,
-           llvm::function_ref<bool(const fs::directory_entry &)> fn) noexcept {
+[[nodiscard]] bool iterateDirImpl(
+    const llvm::Twine &dir,
+    llvm::function_ref<bool(const fs::directory_entry &)> fn) noexcept {
   std::error_code ec;
   It it{dir, ec}, end;
   if (ec) {
@@ -36,7 +36,7 @@ iterateDir(const llvm::Twine &dir,
   return true;
 }
 
-} // namespace detail
+} // namespace
 
 // Nicer LLVM's directory iterator. fn should return true to continue iterating.
 template <bool recurse = true>
@@ -44,9 +44,9 @@ template <bool recurse = true>
 iterateDir(const llvm::Twine &dir,
            llvm::function_ref<bool(const fs::directory_entry &)> fn) noexcept {
   if constexpr (recurse) {
-    return detail::iterateDir<fs::recursive_directory_iterator>(dir, fn);
+    return iterateDirImpl<fs::recursive_directory_iterator>(dir, fn);
   } else {
-    return detail::iterateDir<fs::directory_iterator>(dir, fn);
+    return iterateDirImpl<fs::directory_iterator>(dir, fn);
   }
 }
 
