@@ -9,20 +9,31 @@ struct LogOpts {
   llvm::raw_ostream *target;
 } extern *g_logOpts;
 
-template <typename... Ts> bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
+template <bool period = true, typename... Ts>
+bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
   llvm::WithColor::error(*g_logOpts->target, g_logOpts->prog);
-  llvm::WithColor{*g_logOpts->target, llvm::raw_ostream::Colors::SAVEDCOLOR,
-                  true}
-      << llvm::formatv(fmt.data(), std::forward<Ts>(args)...) << ".\n";
+  llvm::WithColor stream{*g_logOpts->target,
+                         llvm::raw_ostream::Colors::SAVEDCOLOR, true};
+  stream << llvm::formatv(fmt.data(), std::forward<Ts>(args)...);
+  if constexpr (period) {
+    stream << ".\n";
+  } else {
+    stream << '\n';
+  }
 
   // So we can do return err(...); instead of err(...); return false;
   return false;
 }
 
-template <typename... Ts>
+template <bool period = true, typename... Ts>
 void warn(llvm::StringRef fmt, Ts &&...args) noexcept {
   llvm::WithColor::warning(*g_logOpts->target, g_logOpts->prog);
-  llvm::WithColor{*g_logOpts->target, llvm::raw_ostream::Colors::SAVEDCOLOR,
-                  true}
-      << llvm::formatv(fmt.data(), std::forward<Ts>(args)...) << ".\n";
+  llvm::WithColor stream{*g_logOpts->target,
+                         llvm::raw_ostream::Colors::SAVEDCOLOR, true};
+  stream << llvm::formatv(fmt.data(), std::forward<Ts>(args)...);
+  if constexpr (period) {
+    stream << ".\n";
+  } else {
+    stream << '\n';
+  }
 }

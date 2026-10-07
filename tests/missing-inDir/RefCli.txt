@@ -1,3 +1,0 @@
-importizer: YAML:1:1: error: missing required key 'inDir'
-outDir: "67"
-^

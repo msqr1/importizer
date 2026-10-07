@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/FileSystem.h>
@@ -26,20 +27,22 @@ int main(const int, const char *const *argv) {
 
   llvm::SmallString<128> tmp;
   const llvm::Twine testDir{argv[1]};
+  (testDir + "/ref").toVector(tmp);
+  bool checkWrite{fs::exists(tmp)};
+
   (testDir + "/Config.yml").toVector(tmp);
 
   // Make sure argv strings are always null-terminated
-  const std::array<const char *, 4> cmd{
-      "importizer",
-      tmp.c_str(),
-      "-o",
-      argv[2],
-  };
+  llvm::SmallVector<const char *, 3> cmd{"importizer", tmp.c_str()};
+  if (checkWrite) {
+    cmd.emplace_back("-w");
+  }
+
   llvm::SmallString<128> out{};
   llvm::raw_svector_ostream outStream{out};
   LogOpts importizerLogOpts{"importizer", &outStream};
   g_logOpts = &importizerLogOpts;
-  const int rtn{importizerMain(cmd.size(), cmd.data())};
+  const int rtn{importizerMain(static_cast<int>(cmd.size()), cmd.data())};
   g_logOpts = &logOpts;
 
   const llvm::Twine refCli{testDir + "/RefCli.txt"};
@@ -57,14 +60,13 @@ int main(const int, const char *const *argv) {
   }
 
   if ((errored |= out != ref)) {
-    err("Mismatched CLI output, got:");
+    err<false>("Mismatched CLI output, got:");
 
     // Don't format importizer's output
     *logOpts.target << out;
   }
 
-  (testDir + "/ref").toVector(tmp);
-  errored |= fs::exists(tmp) && !cmpDir(argv[2], tmp);
+  errored |= checkWrite && !cmpDir(argv[2], tmp);
 
   return errored ? EXIT_FAILURE : EXIT_SUCCESS;
 }

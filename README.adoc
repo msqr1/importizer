@@ -80,30 +80,38 @@ path/to/configuration.yml`.
 |Display available options.
 
 |--help-list
-| Display list of available options.
+|Display list of available options.
 
 |--version
 |Display version.
 
-|-o, --outDir
-|Override the output directory specified in the configuration file
+|-w, --write
+|Actually rewrite files.
+Without this flag it's a dry-run, useful for validating configuration and see a summary of what will
+change.
 |===
 
 === Configuration file (TOML)
 All relative paths in the configuration file are resolved relative to the file’s location, *not* the
 current working directory.
 
+For globs, it's always:
+- Last match wins.
+- Prefixing patterns with '!' negates them.
+- See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
+
 [%autowidth]
 |===
 |Option |Type |Description
 
-|inDir
+|root
 |string
-|*Required.* The directory containing the source code to process.
+|*Required.* Root of the project to run importizer on.
+Globs are resolved through this.
 
-|outDir
-|string
-|*Required* (unless provided via CLI). The directory for the modularized output.
+|hdrGlobs
+|string array
+|*Required.* Glob patterns to match header files.
 
 |compilationDb
 |string
@@ -122,37 +130,33 @@ current working directory.
 ==== Explicit mode
 importizer supports projects without a JSON compilation database via the `explicit` object.
 This can be the case for projects using a build system without JSON compilation database generation.
-`explicit` is mutually exclusive with if `compilationDb`.
+`explicit` is mutually exclusive with `compilationDb` but at least one of them must be specified.
 
 [%autowidth]
 |===
-|Option |Type |Description |Default
+|Option |Type |Description
 
-|globs
+|srcGlobs
 |string array
-|Glob patterns to match code files names.
-Last match wins.
-Prefixing patterns with '!' negates them.
-See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
-|`["!CMakeLists.txt"]`
+|*Required.* Glob patterns to match source files.
 
 |compileFlags
 |string array
-|Compile flags for globbed files
-|`[]`
+|Compile flags for source files.
+Defaults to `[]`.
 |===
 
 === Example configuration file
 [,yml]
 ----
-inDir: src
-outDir: modular_src
+root: importizer
+hdrGlobs:
+  - src/**.hh
 # compilationDb: build/compile_commands.json
 
 explicit:
-  globs:
-    - !CMakeLists.txt
-    - !Makefile
+  srcGlobs:
+    - src/**.cc
   compileFlags:
     - -Iinclude
     - -Ithird_party/libs

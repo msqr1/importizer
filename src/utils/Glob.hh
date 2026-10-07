@@ -1,6 +1,8 @@
 #pragma once
 #include <llvm/Support/GlobPattern.h>
 #include <optional>
+#include <span>
+#include <vector>
 
 namespace llvm {
 class StringRef;
@@ -24,3 +26,6 @@ public:
 };
 
 std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept;
+
+bool mkGlobs(std::vector<Glob> &globs,
+             std::span<llvm::StringRef> globExprs) noexcept;

@@ -1,24 +1,19 @@
 #pragma once
-#include <clang/Tooling/JSONCompilationDatabase.h>
+#include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/SmallString.h>
 #include <memory>
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace tl = clang::tooling;
 
-struct Explicit {
-  std::vector<llvm::SmallString<128>> files;
-  std::vector<std::string> compileFlags;
-};
-
 struct Opts {
+  bool write;
   bool stdImport;
-  llvm::SmallString<128> inDir;
-  llvm::SmallString<128> outDir;
-  std::variant<std::unique_ptr<tl::JSONCompilationDatabase>, Explicit>
-      fileHelper;
+  std::unique_ptr<tl::CompilationDatabase> compDB;
+  std::string root;
+  std::vector<std::string> hdrs;
+  std::vector<std::string> srcs;
 
   // Allow default construction
   Opts() noexcept = default;

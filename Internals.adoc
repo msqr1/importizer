@@ -13,11 +13,14 @@ because there's no public API to break.
 
 === Typical libraries
 Typical libraries have a public API, but they also have source files and private headers that
-can be modularized. importizer can do a partial/best-effort modularization while respecting the
-public headers. Partially modularized projects can be difficult to maintain, though.
+can be modularized.
+importizer can do a partial/best-effort modularization while respecting the public headers.
+Partially modularized projects can be difficult to maintain, though.
 
 === What about header-only libraries?
-Because header-only libraries only have headers, it can't be modularized without
-breaking the public API. However, importizer does support wrapping modules, which
+Because header-only libraries only have headers, it can't be modularized without breaking the public
+API.
+However, importizer does support wrapped modules, which exposes a module interface while keeping
+headers.
 
 == Architecture

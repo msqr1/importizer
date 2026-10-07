@@ -1,4 +1,5 @@
 add_library(utils-lib
+  Fs.cc
   Log.cc
   Glob.cc
 )

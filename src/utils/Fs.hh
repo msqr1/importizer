@@ -1,14 +1,12 @@
 #pragma once
 #include "utils/Log.hh"
 #include <llvm/ADT/STLFunctionalExtras.h>
-#include <llvm/ADT/SmallString.h>
 #include <llvm/Support/FileSystem.h>
-#include <llvm/Support/Path.h>
+#include <string>
 #include <system_error>
-#include <utility>
 
 namespace fs = llvm::sys::fs;
-namespace pth = llvm::sys::path;
+
 namespace llvm {
 class Twine;
 }
@@ -50,13 +48,4 @@ iterateDir(const llvm::Twine &dir,
   }
 }
 
-template <unsigned len>
-void makeRelative(llvm::SmallString<len> &path, const llvm::Twine &dir) {
-  if (!pth::is_relative(path)) {
-    return;
-  }
-  llvm::SmallString<len> tmp;
-  dir.toVector(tmp);
-  pth::append(tmp, path);
-  path = std::move(tmp);
-}
+void mkRelative(std::string &path, const llvm::Twine &dir);

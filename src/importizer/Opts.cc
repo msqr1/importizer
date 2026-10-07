@@ -2,8 +2,14 @@
 #include "utils/Fs.hh"
 #include "utils/Glob.hh"
 #include "utils/Log.hh"
+#include <array>
+#include <cassert>
+#include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/JSONCompilationDatabase.h>
+#include <cstddef>
+#include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/Error.h>
@@ -15,6 +21,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <system_error>
 #include <utility>
@@ -26,74 +33,83 @@ namespace pth = llvm::sys::path;
 namespace yml = llvm::yaml;
 
 namespace {
-template <unsigned len>
-struct SmallStrParser : public cl::parser<llvm::SmallString<len>> {
-  bool parse(cl::Option &, llvm::StringRef, llvm::StringRef val,
-             llvm::SmallString<len> &dst) const {
-    dst = val;
-    return false;
-  }
-  SmallStrParser(cl::Option &opt) : cl::parser<llvm::SmallString<len>>{opt} {}
-};
 
 struct NormalExplicit {
-  std::optional<std::vector<llvm::StringRef>> globExprs;
-  std::optional<std::vector<llvm::StringRef>> compileFlags;
+  std::vector<llvm::StringRef> srcGlobExprs;
+  std::vector<std::string> compileFlags;
 };
 
 struct NormalOpts {
   bool stdImport;
-  llvm::StringRef inDir;
-  std::optional<llvm::StringRef> outDir;
+  llvm::StringRef root;
   std::optional<llvm::StringRef> dbPath;
+  std::vector<llvm::StringRef> hdrGlobExprs;
   std::optional<NormalExplicit> xplicit;
 };
 
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) {
   diag.print(g_logOpts->prog.data(), *g_logOpts->target);
 }
+
+bool globDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
+             std::span<std::vector<std::string> *> outs) {
+  assert(ins.size() == outs.size());
+  auto checkDir{[&](const fs::directory_entry &ent) {
+    llvm::StringRef relPath{ent.path()};
+    relPath.consume_front(dir);
+    for (size_t i{}; i < ins.size(); ++i) {
+      for (const Glob &glob : ins[i]) {
+        if (glob.match(ent.path())) {
+          outs[i]->emplace_back(ent.path());
+        }
+      }
+    }
+    return true;
+  }};
+  return iterateDir<true>(dir, checkDir);
+}
+
 } // namespace
 
 template <> struct yml::MappingTraits<NormalExplicit> {
   static void mapping(yml::IO &in, NormalExplicit &xplicit) {
-    in.mapOptional("globs", xplicit.globExprs);
+    in.mapRequired("srcGlobs", xplicit.srcGlobExprs);
     in.mapOptional("compileFlags", xplicit.compileFlags);
   }
 };
 
 template <> struct yml::MappingTraits<NormalOpts> {
   static void mapping(yml::IO &in, NormalOpts &opts) {
-    in.mapRequired("inDir", opts.inDir);
-    in.mapOptional("outDir", opts.outDir);
+    in.mapRequired("root", opts.root);
+    in.mapRequired("hdrGlobs", opts.hdrGlobExprs);
     in.mapOptional("compilationDb", opts.dbPath);
-    in.mapOptional("explicit", opts.xplicit);
     in.mapOptional("stdImport", opts.stdImport);
+    in.mapOptional("explicit", opts.xplicit);
   }
 };
 
 bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   // LLVM default options will mix into ours if we don't make our own category
   cl::OptionCategory cat{g_logOpts->prog};
-  cl::opt<llvm::SmallString<128>, false, SmallStrParser<128>> config{
+  cl::opt<std::string> config{
       cl::cat(cat),
-      cl::desc("<configuration file>"),
-      cl::init(llvm::StringRef{"importizer.yml"}),
+      cl::desc("<YAML configuration file>"),
+      cl::init("importizer.yml"),
       cl::Positional,
       cl::ValueOptional,
   };
-  cl::opt<llvm::SmallString<128>, true, SmallStrParser<128>> outDir{
+  cl::opt<bool, true> write{
       cl::cat(cat),
-      "outDir",
-      cl::desc(
-          "Override the output directory specified in the configuration file"),
-      cl::value_desc("directory"),
-      cl::location(opts.outDir),
+      "write",
+      cl::desc("Actually rewrite files. Without this flag it's a dry-run."),
+      cl::location(opts.write),
   };
-  cl::alias _{"o", cl::aliasopt(outDir)};
+  cl::alias _{"w", cl::aliasopt(write)};
 
   cl::SetVersionPrinter([](llvm::raw_ostream &s) { s << "3.0.0\n"; });
   cl::HideUnrelatedOptions(cat);
-  auto &optMap{cl::getRegisteredOptions()};
+  llvm::DenseMap<llvm::StringRef, cl::Option *> &optMap{
+      cl::getRegisteredOptions()};
 
   // Reset default descriptions to be consistent with the README
   optMap["help"]->setDescription("Display available options");
@@ -117,76 +133,58 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return false;
   }
 
-  // inDir
-  opts.inDir = nOpts.inDir;
+  // root
+  opts.root = nOpts.root;
   llvm::StringRef configDir{pth::parent_path(config)};
-  makeRelative(opts.inDir, configDir);
-
-  // outDir
-  if (nOpts.outDir && !opts.outDir.empty()) {
-    warn("outDir from CLI will override config file");
-  } else if (opts.outDir.empty()) {
-    if (!nOpts.outDir) {
-      return err(
-          "outDir must be specified on CLI or in config file as a string");
-    }
-    opts.outDir = *nOpts.outDir;
-  }
-  makeRelative(opts.outDir, configDir);
+  mkRelative(opts.root, configDir);
+  std::vector<std::vector<Glob>> rootGlobIns;
+  std::vector<std::vector<std::string> *> rootGlobOuts;
 
   // stdImport
   opts.stdImport = nOpts.stdImport;
 
+  // hdrGlobs
+  std::vector<Glob> tmp;
+  if (!mkGlobs(tmp, nOpts.hdrGlobExprs)) {
+    return false;
+  }
+  rootGlobIns.emplace_back(std::move(tmp));
+  rootGlobOuts.emplace_back(&opts.hdrs);
+  tmp.clear();
+
+  if (nOpts.dbPath && nOpts.xplicit) {
+    return err("'compilationDb' and 'explicit' are mutually exclusive");
+  }
+
   // compilationDb
-  if (nOpts.dbPath) {
-    if (nOpts.xplicit) {
-      warn("Key 'compilationDb' will take precedence over 'explicit'");
-    }
+  else if (nOpts.dbPath) {
     std::string msg;
-    if (!opts.fileHelper.emplace<std::unique_ptr<tl::JSONCompilationDatabase>>(
-            tl::JSONCompilationDatabase::loadFromFile(
-                *nOpts.dbPath, msg, tl::JSONCommandLineSyntax::AutoDetect))) {
+    std::unique_ptr<tl::JSONCompilationDatabase> jsonCompDb{
+        tl::JSONCompilationDatabase::loadFromFile(
+            *nOpts.dbPath, msg, tl::JSONCommandLineSyntax::AutoDetect)};
+    if (!jsonCompDb) {
       return err("Unable to parse compilation database: {}", msg);
     }
+    opts.srcs = jsonCompDb->getAllFiles();
+    opts.compDB = std::move(jsonCompDb);
   }
 
   // explicit
-  else {
-    Explicit &xplicit{opts.fileHelper.emplace<Explicit>()};
-
-    // explicit.globs
-    std::vector<Glob> globs;
-    for (llvm::StringRef globExpr :
-         nOpts.xplicit &&nOpts.xplicit->globExprs
-             ? *nOpts.xplicit->globExprs
-             : std::vector<llvm::StringRef>{"!CMakeLists.txt"}) {
-      std::optional<Glob> g{mkGlob(globExpr)};
-      if (!g) {
-        return false;
-      }
-      globs.emplace_back(std::move(*g));
-    }
-    llvm::StringRef path;
-    auto checkInDir{[&](const fs::directory_entry &ent) {
-      path = ent.path();
-      for (const Glob &g : globs) {
-        if (g.match(pth::filename(path))) {
-          xplicit.files.emplace_back(path);
-          break;
-        }
-      }
-      return true;
-    }};
-    if (!iterateDir(opts.inDir, checkInDir)) {
+  else if (nOpts.xplicit) {
+    // explicit.srcGlobs
+    if (!mkGlobs(tmp, nOpts.xplicit->srcGlobExprs)) {
       return false;
     }
+    rootGlobIns.emplace_back(std::move(tmp));
+    rootGlobOuts.emplace_back(&opts.srcs);
+    tmp.clear();
 
     // explicit.compileFlags
-    if (nOpts.xplicit && nOpts.xplicit->compileFlags) {
-      for (llvm::StringRef compileFlag : *nOpts.xplicit->compileFlags) {
-        xplicit.compileFlags.emplace_back(compileFlag);
-      }
-    }
+    opts.compDB = std::make_unique<tl::FixedCompilationDatabase>(
+        ".", nOpts.xplicit->compileFlags);
+  } else {
+    return err(
+        "At least one of 'compilationDb' or 'explicit' must be specified");
   }
-  return true;
+  return globDir(opts.root, rootGlobIns, rootGlobOuts);
 }
