@@ -6,10 +6,10 @@ InlayHints:
   ParameterNames: Yes
   DeducedTypes: Yes
   Designators: Yes
+  BlockEnd: Yes
 
 Hover:
   ShowAKA: Yes
 
 Diagnostics:
-  UnusedIncludes: Strict
   MissingIncludes: Strict

@@ -1,7 +1,6 @@
 #include "importizer/Main.hh"
 #include "run-test/CmpDir.hh"
 #include "utils/Log.hh"
-#include <array>
 #include <cassert>
 #include <cstdlib>
 #include <llvm/ADT/SmallString.h>
@@ -18,7 +17,9 @@ namespace fs = llvm::sys::fs;
 
 // run-test [testDir] [outDir]
 // Expecting absolute paths & there's no input validation
-int main(const int, const char *const *argv) {
+int main(const int argc, const char *const *argv) {
+  assert(argc == 2);
+
   // Always set program & log target before everything
   LogOpts logOpts;
   g_logOpts = &logOpts;
@@ -27,14 +28,14 @@ int main(const int, const char *const *argv) {
 
   llvm::SmallString<128> tmp;
   const llvm::Twine testDir{argv[1]};
-  (testDir + "/ref").toVector(tmp);
-  bool checkWrite{fs::exists(tmp)};
+  const llvm::Twine refDir{testDir + "/ref"};
+  bool hasRef{fs::exists(refDir)};
 
   (testDir + "/Config.yml").toVector(tmp);
 
   // Make sure argv strings are always null-terminated
   llvm::SmallVector<const char *, 3> cmd{"importizer", tmp.c_str()};
-  if (checkWrite) {
+  if (hasRef) {
     cmd.emplace_back("-w");
   }
 
@@ -66,7 +67,10 @@ int main(const int, const char *const *argv) {
     *logOpts.target << out;
   }
 
-  errored |= checkWrite && !cmpDir(argv[2], tmp);
+  if (hasRef) {
+    refDir.toVector(tmp);
+    errored |= !cmpDir(argv[2], tmp);
+  }
 
   return errored ? EXIT_FAILURE : EXIT_SUCCESS;
 }

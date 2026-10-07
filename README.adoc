@@ -92,13 +92,13 @@ change.
 |===
 
 === Configuration file (TOML)
-All relative paths in the configuration file are resolved relative to the file’s location, *not* the
+Relative paths in the configuration file are resolved relative to the file’s location, *not* the
 current working directory.
 
 For globs, it's always:
-- Last match wins.
-- Prefixing patterns with '!' negates them.
-- See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
+* First match wins.
+* Prefixing patterns with `!` negates them.
+* See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
 
 [%autowidth]
 |===

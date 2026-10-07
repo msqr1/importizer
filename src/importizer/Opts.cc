@@ -2,7 +2,6 @@
 #include "utils/Fs.hh"
 #include "utils/Glob.hh"
 #include "utils/Log.hh"
-#include <array>
 #include <cassert>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/JSONCompilationDatabase.h>
@@ -51,16 +50,17 @@ void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) {
   diag.print(g_logOpts->prog.data(), *g_logOpts->target);
 }
 
-bool globDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
-             std::span<std::vector<std::string> *> outs) {
+bool globFromDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
+                 std::span<std::vector<std::string> *> outs) {
   assert(ins.size() == outs.size());
   auto checkDir{[&](const fs::directory_entry &ent) {
     llvm::StringRef relPath{ent.path()};
     relPath.consume_front(dir);
-    for (size_t i{}; i < ins.size(); ++i) {
-      for (const Glob &glob : ins[i]) {
-        if (glob.match(ent.path())) {
+    for (size_t i{}; std::span<Glob> in : ins) {
+      for (const Glob &glob : in) {
+        if (glob.match(relPath)) {
           outs[i]->emplace_back(ent.path());
+          break;
         }
       }
     }
@@ -102,6 +102,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
       cl::cat(cat),
       "write",
       cl::desc("Actually rewrite files. Without this flag it's a dry-run."),
+      cl::init(false),
       cl::location(opts.write),
   };
   cl::alias _{"w", cl::aliasopt(write)};
@@ -112,9 +113,9 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
       cl::getRegisteredOptions()};
 
   // Reset default descriptions to be consistent with the README
-  optMap["help"]->setDescription("Display available options");
-  optMap["help-list"]->setDescription("Display list of available options");
-  optMap["version"]->setDescription("Display version");
+  optMap["help"]->setDescription("Display available options.");
+  optMap["help-list"]->setDescription("Display list of available options.");
+  optMap["version"]->setDescription("Display version.");
 
   if (!cl::ParseCommandLineOptions(argc, argv,
                                    "importizer - Automagically rewrite "
@@ -186,5 +187,5 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return err(
         "At least one of 'compilationDb' or 'explicit' must be specified");
   }
-  return globDir(opts.root, rootGlobIns, rootGlobOuts);
+  return globFromDir(opts.root, rootGlobIns, rootGlobOuts);
 }
