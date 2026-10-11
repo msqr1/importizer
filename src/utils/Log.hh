@@ -6,13 +6,14 @@
 
 struct LogOpts {
   llvm::StringRef prog;
-  llvm::raw_ostream *target;
+  llvm::raw_ostream *stream;
 } extern *g_logOpts;
 
+// Log an error to the global output stream
 template <bool period = true, typename... Ts>
 bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
-  llvm::WithColor::error(*g_logOpts->target, g_logOpts->prog);
-  llvm::WithColor stream{*g_logOpts->target,
+  llvm::WithColor::error(*g_logOpts->stream, g_logOpts->prog);
+  llvm::WithColor stream{*g_logOpts->stream,
                          llvm::raw_ostream::Colors::SAVEDCOLOR, true};
   stream << llvm::formatv(fmt.data(), std::forward<Ts>(args)...);
   if constexpr (period) {
@@ -25,10 +26,11 @@ bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
   return false;
 }
 
+// Log a warning to the global output stream
 template <bool period = true, typename... Ts>
 void warn(llvm::StringRef fmt, Ts &&...args) noexcept {
-  llvm::WithColor::warning(*g_logOpts->target, g_logOpts->prog);
-  llvm::WithColor stream{*g_logOpts->target,
+  llvm::WithColor::warning(*g_logOpts->stream, g_logOpts->prog);
+  llvm::WithColor stream{*g_logOpts->stream,
                          llvm::raw_ostream::Colors::SAVEDCOLOR, true};
   stream << llvm::formatv(fmt.data(), std::forward<Ts>(args)...);
   if constexpr (period) {

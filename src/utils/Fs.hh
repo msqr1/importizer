@@ -48,4 +48,5 @@ iterateDir(const llvm::Twine &dir,
   }
 }
 
+// Resolve a relative path from a given directory
 void mkRelative(std::string &path, const llvm::Twine &dir);

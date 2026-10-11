@@ -47,7 +47,7 @@ struct NormalOpts {
 };
 
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) noexcept {
-  diag.print(g_logOpts->prog.data(), *g_logOpts->target);
+  diag.print(g_logOpts->prog.data(), *g_logOpts->stream);
 }
 
 bool globFromDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
@@ -120,7 +120,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   if (!cl::ParseCommandLineOptions(argc, argv,
                                    "importizer - Automagically rewrite "
                                    "header-based C++ into using modules",
-                                   g_logOpts->target)) {
+                                   g_logOpts->stream)) {
     return false;
   }
 

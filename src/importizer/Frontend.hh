@@ -3,8 +3,8 @@
 
 #pragma once
 #include <clang/AST/ASTConsumer.h>
-#include <clang/Basic/Diagnostic.h>
 #include <clang/Frontend/FrontendAction.h>
+#include <clang/Tooling/Tooling.h>
 #include <memory>
 
 namespace llvm {
@@ -15,19 +15,24 @@ namespace clang {
 class ASTConsumer;
 }
 
+namespace tl = clang::tooling;
+
 struct FrontendInfo {};
 
-class MyDiagnosticConsumer : public clang::DiagnosticConsumer {
-public:
-  void HandleDiagnostic(clang::DiagnosticsEngine::Level lvl,
-                        const clang::Diagnostic &info) noexcept override;
-};
-
 class FrontendAnalyzer : public clang::ASTFrontendAction {
+  FrontendInfo &info;
 
 public:
-  bool BeginSourceFileAction(clang::CompilerInstance &CI) noexcept override;
+  FrontendAnalyzer(FrontendInfo &info);
   std::unique_ptr<clang::ASTConsumer>
   CreateASTConsumer(clang::CompilerInstance &CI,
                     llvm::StringRef file) noexcept override;
+};
+
+class FrontendAnalyzerFactory : public tl::FrontendActionFactory {
+  FrontendInfo &info;
+
+public:
+  FrontendAnalyzerFactory(FrontendInfo &info);
+  std::unique_ptr<clang::FrontendAction> create() noexcept override;
 };

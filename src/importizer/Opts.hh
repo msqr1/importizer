@@ -27,5 +27,6 @@ struct Opts {
   Opts &operator=(const Opts &) = delete;
 };
 
+// Populate a struct Opts from CLI args
 [[nodiscard]] bool getOpts(const int argc, const char *const *argv,
                            Opts &opts) noexcept;

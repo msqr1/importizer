@@ -20,11 +20,11 @@ namespace fs = llvm::sys::fs;
 int main(const int argc, const char *const *argv) {
   assert(argc == 2);
 
-  // Always set program & log target before everything
+  // Always set program & log stream before everything
   LogOpts logOpts;
   g_logOpts = &logOpts;
   logOpts.prog = "run-test";
-  logOpts.target = &llvm::errs();
+  logOpts.stream = &llvm::errs();
 
   llvm::SmallString<128> tmp;
   const llvm::Twine testDir{argv[1]};
@@ -64,7 +64,7 @@ int main(const int argc, const char *const *argv) {
     err<false>("Mismatched CLI output, got:");
 
     // Don't format importizer's output
-    *logOpts.target << out;
+    *logOpts.stream << out;
   }
 
   if (hasRef) {

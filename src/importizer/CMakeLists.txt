@@ -5,6 +5,7 @@ add_library(importizer-lib
   PP.cc
   AST.cc
   Frontend.cc
+  Diagnostics.cc
 )
 target_link_libraries(importizer-lib PRIVATE
   common-config

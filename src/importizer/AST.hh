@@ -3,12 +3,16 @@
 /// class.
 
 #pragma once
+#include "importizer/Frontend.hh"
 #include <clang/AST/ASTConsumer.h>
 #include <llvm/ADT/StringRef.h>
 
+struct FrontendInfo;
+
 class ASTAnalyzer : public clang::ASTConsumer {
   llvm::StringRef file;
+  FrontendInfo &info;
 
 public:
-  ASTAnalyzer(llvm::StringRef file);
+  ASTAnalyzer(llvm::StringRef file, FrontendInfo &info);
 };

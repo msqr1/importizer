@@ -8,6 +8,8 @@
 #include <clang/Basic/SourceManager.h>
 #include <clang/Lex/PPCallbacks.h>
 
+struct FrontendInfo;
+
 namespace llvm {
 class StringRef;
 } // namespace llvm
@@ -21,24 +23,24 @@ class SourceRange;
 
 class PPAnalyzer : public clang::PPCallbacks {
   unsigned int macroLvl;
-  clang::SourceManager &srcMgr;
+  clang::SourceManager &SM;
+  FrontendInfo &info;
 
 public:
-  PPAnalyzer();
-  bool FileNotFound(llvm::StringRef fileName) noexcept override;
+  PPAnalyzer(clang::SourceManager &SM, FrontendInfo &info);
+  bool FileNotFound(llvm::StringRef) noexcept override;
   void InclusionDirective(
       clang::SourceLocation hashLoc, const clang::Token &includeTok,
-      llvm::StringRef fileName, bool isAngled,
+      llvm::StringRef fileName, bool angle,
       clang::CharSourceRange filenameRange, clang::OptionalFileEntryRef file,
       llvm::StringRef searchPath, llvm::StringRef relativePath,
       const clang::Module *suggestedModule, bool moduleImported,
       clang::SrcMgr::CharacteristicKind fileType) noexcept override;
-  void If(clang::SourceLocation loc, clang::SourceRange condRange,
-          ConditionValueKind condVal) noexcept override;
-  void Ifdef(clang::SourceLocation loc, const clang::Token &macroNameTok,
-             const clang::MacroDefinition &md) noexcept override;
-  void Ifndef(clang::SourceLocation loc, const clang::Token &macroNameTok,
-              const clang::MacroDefinition &md) noexcept override;
-  void Endif(clang::SourceLocation loc,
-             clang::SourceLocation ifLoc) noexcept override;
+  void If(clang::SourceLocation, clang::SourceRange,
+          ConditionValueKind) noexcept override;
+  void Ifdef(clang::SourceLocation, const clang::Token &,
+             const clang::MacroDefinition &) noexcept override;
+  void Ifndef(clang::SourceLocation, const clang::Token &,
+              const clang::MacroDefinition &) noexcept override;
+  void Endif(clang::SourceLocation, clang::SourceLocation) noexcept override;
 };

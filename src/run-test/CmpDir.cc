@@ -36,8 +36,7 @@ bool cmpDir(llvm::StringRef dir, llvm::StringRef ref) noexcept {
       res = false;
       return true;
     }
-    int diffRes{llvm::DiffFilesWithTolerance(path, refPath, 0, 0, &msg)};
-    switch (diffRes) {
+    switch (llvm::DiffFilesWithTolerance(path, refPath, 0, 0, &msg)) {
     case 0: // Matches
       break;
     case 1:
