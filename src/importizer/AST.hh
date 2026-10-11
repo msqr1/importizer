@@ -1,0 +1,14 @@
+/// Extract AST-related information such as top-level class, functions and
+/// variables of a TU to rewrite later. FrontendAction own an instance of this
+/// class.
+
+#pragma once
+#include <clang/AST/ASTConsumer.h>
+#include <llvm/ADT/StringRef.h>
+
+class ASTAnalyzer : public clang::ASTConsumer {
+  llvm::StringRef file;
+
+public:
+  ASTAnalyzer(llvm::StringRef file);
+};

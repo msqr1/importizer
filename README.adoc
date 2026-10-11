@@ -87,8 +87,9 @@ path/to/configuration.yml`.
 
 |-w, --write
 |Actually rewrite files.
-Without this flag it's a dry-run, useful for validating configuration and see a summary of what will
-change.
+Without this flag importizer does everything else but that.
+It's useful for validating configuration, see if your project is modularizable, and see a summary of
+what will change.
 |===
 
 === Configuration file (TOML)

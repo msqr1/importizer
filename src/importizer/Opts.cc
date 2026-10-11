@@ -46,7 +46,7 @@ struct NormalOpts {
   std::optional<NormalExplicit> xplicit;
 };
 
-void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) {
+void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) noexcept {
   diag.print(g_logOpts->prog.data(), *g_logOpts->target);
 }
 
@@ -128,9 +128,9 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   if (!buf) {
     return err("Unable to read {}: {}", config, buf.getError().message());
   }
-  yml::Input yin{(**buf).getBuffer(), nullptr, ymlDiagHandler};
+  yml::Input in{(**buf).getBuffer(), nullptr, ymlDiagHandler};
   NormalOpts nOpts;
-  if ((yin >> nOpts).error()) {
+  if ((in >> nOpts).error()) {
     return false;
   }
 

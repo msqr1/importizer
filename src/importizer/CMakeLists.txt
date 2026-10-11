@@ -2,7 +2,9 @@
 add_library(importizer-lib
   Opts.cc
   Main.cc
-  Deps.cc
+  PP.cc
+  AST.cc
+  Frontend.cc
 )
 target_link_libraries(importizer-lib PRIVATE
   common-config
