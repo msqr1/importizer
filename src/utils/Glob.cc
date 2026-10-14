@@ -16,7 +16,7 @@ std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept {
   bool negate{ptn.consume_front('!')};
   llvm::Expected<llvm::GlobPattern> p{llvm::GlobPattern::create(ptn, {})};
   if (!p) {
-    err("Unable to make glob {}", ptn);
+    err("Error making glob {}", ptn);
     return std::nullopt;
   }
   return std::optional<Glob>(std::in_place, negate, std::move(*p));

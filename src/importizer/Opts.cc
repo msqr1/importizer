@@ -53,9 +53,11 @@ void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) noexcept {
 bool globFromDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
                  std::span<std::vector<std::string> *> outs) {
   assert(ins.size() == outs.size());
+  llvm::StringRef relPath;
   auto checkDir{[&](const fs::directory_entry &ent) {
-    llvm::StringRef relPath{ent.path()};
-    relPath.consume_front(dir);
+    relPath = ent.path();
+    assert(relPath.starts_with(dir));
+    relPath = relPath.take_front(dir.size());
     for (size_t i{}; std::span<Glob> in : ins) {
       for (const Glob &glob : in) {
         if (glob.match(relPath)) {
@@ -64,7 +66,7 @@ bool globFromDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
         }
       }
     }
-    return true;
+    return 0;
   }};
   return iterateDir<true>(dir, checkDir);
 }
@@ -124,9 +126,9 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return false;
   }
 
-  const auto buf{llvm::MemoryBuffer::getFile(config, true)};
+  const auto buf{llvm::MemoryBuffer::getFile(config, false, false, false)};
   if (!buf) {
-    return err("Unable to read {}: {}", config, buf.getError().message());
+    return err("Error opening {}: {}", config, buf.getError().message());
   }
   yml::Input in{(**buf).getBuffer(), nullptr, ymlDiagHandler};
   NormalOpts nOpts;
@@ -164,7 +166,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
         tl::JSONCompilationDatabase::loadFromFile(
             *nOpts.dbPath, msg, tl::JSONCommandLineSyntax::AutoDetect)};
     if (!jsonCompDb) {
-      return err("Unable to parse compilation database: {}", msg);
+      return err("Error parsing compilation database: {}", msg);
     }
     opts.srcs = jsonCompDb->getAllFiles();
     opts.compDB = std::move(jsonCompDb);

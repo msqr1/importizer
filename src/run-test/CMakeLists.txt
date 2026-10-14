@@ -1,4 +1,4 @@
-add_executable(run-test Driver.cc CmpDir.cc)
+add_executable(run-test Driver.cc)
 require(run-test PRIVATE LLVM)
 target_link_libraries(run-test PRIVATE
   common-config

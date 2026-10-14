@@ -1,5 +1,5 @@
 #include "importizer/Main.hh"
-#include "run-test/CmpDir.hh"
+#include "utils/Fs.hh"
 #include "utils/Log.hh"
 #include <cassert>
 #include <cstdlib>
@@ -49,7 +49,7 @@ int main(const int argc, const char *const *argv) {
   const llvm::Twine refCli{testDir + "/RefCli.txt"};
   const auto buf{llvm::MemoryBuffer::getFile(refCli, true)};
   if (!buf) {
-    err("Unable to read {}: {}", refCli, buf.getError().message());
+    err("Error reading {}: {}", refCli, buf.getError().message());
     return EXIT_FAILURE;
   }
   llvm::StringRef ref{(**buf).getBuffer()};
@@ -68,8 +68,7 @@ int main(const int argc, const char *const *argv) {
   }
 
   if (hasRef) {
-    refDir.toVector(tmp);
-    errored |= !cmpDir(argv[2], tmp);
+    errored |= !cmpDir(argv[2], refDir);
   }
 
   return errored ? EXIT_FAILURE : EXIT_SUCCESS;
