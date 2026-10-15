@@ -22,7 +22,7 @@ class SourceRange;
 } // namespace clang
 
 class PPAnalyzer : public clang::PPCallbacks {
-  unsigned int macroLvl;
+  unsigned int condDepth;
   clang::SourceManager &SM;
   FrontendInfo &info;
 

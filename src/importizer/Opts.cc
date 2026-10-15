@@ -7,9 +7,11 @@
 #include <clang/Tooling/JSONCompilationDatabase.h>
 #include <cstddef>
 #include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/StringSet.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/FileSystem.h>
@@ -50,8 +52,9 @@ void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) noexcept {
   diag.print(g_logOpts->prog.data(), *g_logOpts->stream);
 }
 
+using PathSink = llvm::function_ref<void(llvm::StringRef)>;
 bool globFromDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
-                 std::span<std::vector<std::string> *> outs) {
+                 std::span<PathSink> outs) {
   assert(ins.size() == outs.size());
   llvm::StringRef relPath;
   auto checkDir{[&](const fs::directory_entry &ent) {
@@ -61,14 +64,14 @@ bool globFromDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
     for (size_t i{}; std::span<Glob> in : ins) {
       for (const Glob &glob : in) {
         if (glob.match(relPath)) {
-          outs[i]->emplace_back(ent.path());
+          outs[i](ent.path());
           break;
         }
       }
     }
-    return 0;
+    return IterDirCtrl::Continue;
   }};
-  return iterateDir<true>(dir, checkDir);
+  return iterDir<true>(dir, checkDir);
 }
 
 } // namespace
@@ -104,8 +107,8 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
       cl::cat(cat),
       "write",
       cl::desc("Actually rewrite files. Without this flag it's a dry-run."),
-      cl::init(false),
       cl::location(opts.write),
+      cl::init(false),
   };
   cl::alias _{"w", cl::aliasopt(write)};
 
@@ -141,7 +144,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   llvm::StringRef configDir{pth::parent_path(config)};
   mkRelative(opts.root, configDir);
   std::vector<std::vector<Glob>> rootGlobIns;
-  std::vector<std::vector<std::string> *> rootGlobOuts;
+  std::vector<PathSink> rootGlobOuts;
 
   // stdImport
   opts.stdImport = nOpts.stdImport;
@@ -152,7 +155,8 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return false;
   }
   rootGlobIns.emplace_back(std::move(tmp));
-  rootGlobOuts.emplace_back(&opts.hdrs);
+  rootGlobOuts.emplace_back(
+      [&](llvm::StringRef path) { opts.hdrs.try_emplace(path); });
   tmp.clear();
 
   if (nOpts.dbPath && nOpts.xplicit) {
@@ -179,7 +183,8 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
       return false;
     }
     rootGlobIns.emplace_back(std::move(tmp));
-    rootGlobOuts.emplace_back(&opts.srcs);
+    rootGlobOuts.emplace_back(
+        [&](llvm::StringRef path) { opts.srcs.emplace_back(path); });
     tmp.clear();
 
     // explicit.compileFlags

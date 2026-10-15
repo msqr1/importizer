@@ -64,7 +64,7 @@ https://github.com/msqr1/importizer/releases/tag/continuous[Continuous release].
 Useful for testing latest features or reporting bugs.
 
 == Configuration & usage
-Importizer primarily uses a TOML configuration file, complemented by a few command-line options.
+Importizer primarily uses a YAML configuration file, complemented by a few command-line options.
 
 === Command-line interface (CLI)
 By default, running `importizer` looks for an `importizer.yml` file in the current working
@@ -90,13 +90,15 @@ path/to/configuration.yml`.
 Without this flag importizer does everything else but that.
 It's useful for validating configuration, see if your project is modularizable, and see a summary of
 what will change.
+
 |===
 
-=== Configuration file (TOML)
+=== Configuration file (YAML)
 Relative paths in the configuration file are resolved relative to the file’s location, *not* the
 current working directory.
 
 For globs, it's always:
+
 * First match wins.
 * Prefixing patterns with `!` negates them.
 * See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
@@ -112,7 +114,7 @@ Globs are resolved through this.
 
 |hdrGlobs
 |string array
-|*Required.* Glob patterns to match header files.
+|*Required.* Glob patterns to match header files to be modularized.
 
 |compilationDb
 |string
@@ -139,7 +141,7 @@ This can be the case for projects using a build system without JSON compilation 
 
 |srcGlobs
 |string array
-|*Required.* Glob patterns to match source files.
+|*Required.* Glob patterns to match source files to be modularized.
 
 |compileFlags
 |string array

@@ -13,12 +13,20 @@ namespace llvm {
 class Twine;
 class StringRef;
 } // namespace llvm
+
+enum class IterDirCtrl : char {
+  Continue,
+  Stop,    // Return true from iterDir
+  ErrStop, // Return false from iterDir (errorneous stop)
+};
+
+using IterateDirFn =
+    llvm::function_ref<IterDirCtrl(const fs::directory_entry &)>;
 namespace {
 
 template <typename It>
-[[nodiscard]] bool iterateDirImpl(
-    const llvm::Twine &dir,
-    llvm::function_ref<int(const fs::directory_entry &)> fn) noexcept {
+[[nodiscard]] bool iterDirImpl(const llvm::Twine &dir,
+                               IterateDirFn fn) noexcept {
   std::error_code ec;
   It it{dir, ec}, end;
   if (ec) {
@@ -26,11 +34,11 @@ template <typename It>
   }
   while (it != end) {
     switch (fn(*it)) {
-    case 0:
+    case IterDirCtrl::Continue:
       break;
-    case 1:
+    case IterDirCtrl::Stop:
       return true;
-    case 2:
+    case IterDirCtrl::ErrStop:
       return false;
     default:
       assert(false);
@@ -45,18 +53,13 @@ template <typename It>
 
 } // namespace
 
-// Nicer LLVM's directory iterator. fn returns values:
-// 0 - Keep going
-// 1 - Stop and return true from iterateDir (ok stop)
-// 2 - Stop and return false from iterateDir (errorneous stop)
+// Nicer LLVM's directory iterator.
 template <bool recurse = true>
-[[nodiscard]] bool
-iterateDir(const llvm::Twine &dir,
-           llvm::function_ref<int(const fs::directory_entry &)> fn) noexcept {
+[[nodiscard]] bool iterDir(const llvm::Twine &dir, IterateDirFn fn) noexcept {
   if constexpr (recurse) {
-    return iterateDirImpl<fs::recursive_directory_iterator>(dir, fn);
+    return iterDirImpl<fs::recursive_directory_iterator>(dir, fn);
   } else {
-    return iterateDirImpl<fs::directory_iterator>(dir, fn);
+    return iterDirImpl<fs::directory_iterator>(dir, fn);
   }
 }
 
@@ -64,19 +67,20 @@ iterateDir(const llvm::Twine &dir,
 void mkRelative(std::string &path, const llvm::Twine &dir) noexcept;
 
 // Copy the contents of from into to. Returns true if successful.
-[[nodiscard]] bool copyDir(const llvm::Twine &from,
-                           const llvm::Twine &to) noexcept;
+[[nodiscard]] bool cpyDir(const llvm::Twine &from,
+                          const llvm::Twine &to) noexcept;
 
-// Compare 2 files, returns values are:
-// 0 - file1 & file2 has the same content
-// 1 - file1 & file2 has different content
-// 2 - Error occured
-[[nodiscard]] int cmpFile(const llvm::Twine &file1,
-                          const llvm::Twine &file2) noexcept;
+enum class CmpRes : char {
+  Same,
+  Mismatch,
+  Err,
+};
 
-// Compare 2 directories and print mismatches, returns value are:
-// 0 - dir & ref is exactly the same (including file content)
-// 1 - Any kind of mismatch (missing & unexpected files, unequal file content)
-// 2 - Error occured
-[[nodiscard]] int cmpDir(const llvm::Twine &dir,
-                         const llvm::Twine &ref) noexcept;
+// Compare the content of 2 files
+[[nodiscard]] CmpRes cmpFile(const llvm::Twine &file1,
+                             const llvm::Twine &file2) noexcept;
+
+// Compare the content of 2 directories (including file content) and print
+// mismatches
+[[nodiscard]] CmpRes cmpDir(const llvm::Twine &dir,
+                            const llvm::Twine &ref) noexcept;

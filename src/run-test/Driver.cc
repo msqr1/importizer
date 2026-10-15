@@ -15,7 +15,7 @@
 
 namespace fs = llvm::sys::fs;
 
-// run-test [testDir] [outDir]
+// run-test [testDir] [root]
 // Expecting absolute paths & there's no input validation
 int main(const int argc, const char *const *argv) {
   assert(argc == 2);
@@ -26,8 +26,11 @@ int main(const int argc, const char *const *argv) {
   logOpts.prog = "run-test";
   logOpts.stream = &llvm::errs();
 
-  llvm::SmallString<128> tmp;
+  // CLI args
   const llvm::Twine testDir{argv[1]};
+  const llvm::Twine root{argv[2]};
+
+  llvm::SmallString<128> tmp;
   const llvm::Twine refDir{testDir + "/ref"};
   bool hasRef{fs::exists(refDir)};
 
@@ -46,21 +49,21 @@ int main(const int argc, const char *const *argv) {
   const int rtn{importizerMain(static_cast<int>(cmd.size()), cmd.data())};
   g_logOpts = &logOpts;
 
-  const llvm::Twine refCli{testDir + "/RefCli.txt"};
-  const auto buf{llvm::MemoryBuffer::getFile(refCli, true)};
+  const llvm::Twine refCliPath{testDir + "/RefCli.txt"};
+  const auto buf{llvm::MemoryBuffer::getFile(refCliPath, false, false, false)};
   if (!buf) {
-    err("Error reading {}: {}", refCli, buf.getError().message());
+    err("Error reading {}: {}", refCliPath, buf.getError().message());
     return EXIT_FAILURE;
   }
-  llvm::StringRef ref{(**buf).getBuffer()};
-  const int refRtn{ref.contains(" error: ") ? EXIT_FAILURE : EXIT_SUCCESS};
+  llvm::StringRef refCli{(**buf).getBuffer()};
+  const int refRtn{refCli.contains(" error: ") ? EXIT_FAILURE : EXIT_SUCCESS};
 
   bool errored{};
   if ((errored |= refRtn != rtn)) {
     err("Mismatched return code: expected {}, got {}", refRtn, rtn);
   }
 
-  if ((errored |= out != ref)) {
+  if ((errored |= out != refCli)) {
     err<false>("Mismatched CLI output, got:");
 
     // Don't format importizer's output
@@ -68,7 +71,7 @@ int main(const int argc, const char *const *argv) {
   }
 
   if (hasRef) {
-    errored |= !cmpDir(argv[2], refDir);
+    errored |= cmpDir(root, refDir) != CmpRes::Same;
   }
 
   return errored ? EXIT_FAILURE : EXIT_SUCCESS;

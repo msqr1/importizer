@@ -26,15 +26,6 @@ bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
   return false;
 }
 
-// int version return of err, always return 2
-template <bool period = true, typename... Ts>
-int errI(llvm::StringRef fmt, Ts &&...args) noexcept {
-  err<period>(fmt, std::forward<Ts>(args)...);
-
-  // So we can do return err(...); instead of err(...); return 2;
-  return 2;
-}
-
 // Log a warning to the global output stream
 template <bool period = true, typename... Ts>
 void warn(llvm::StringRef fmt, Ts &&...args) noexcept {

@@ -5,7 +5,7 @@
 #include <clang/Lex/PPCallbacks.h>
 
 PPAnalyzer::PPAnalyzer(clang::SourceManager &SM, FrontendInfo &info)
-    : macroLvl{0}, SM{SM}, info{info} {}
+    : condDepth{0}, SM{SM}, info{info} {}
 
 bool PPAnalyzer::FileNotFound(llvm::StringRef) noexcept { return false; }
 void PPAnalyzer::InclusionDirective(
@@ -17,16 +17,16 @@ void PPAnalyzer::InclusionDirective(
 
 void PPAnalyzer::If(clang::SourceLocation, clang::SourceRange,
                     ConditionValueKind) noexcept {
-  ++macroLvl;
+  ++condDepth;
 }
 void PPAnalyzer::Ifdef(clang::SourceLocation, const clang::Token &,
                        const clang::MacroDefinition &) noexcept {
-  ++macroLvl;
+  ++condDepth;
 }
 void PPAnalyzer::Ifndef(clang::SourceLocation, const clang::Token &,
                         const clang::MacroDefinition &) noexcept {
-  ++macroLvl;
+  ++condDepth;
 }
 void PPAnalyzer::Endif(clang::SourceLocation, clang::SourceLocation) noexcept {
-  --macroLvl;
+  --condDepth;
 }

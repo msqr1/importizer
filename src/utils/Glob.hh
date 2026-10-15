@@ -18,13 +18,13 @@ public:
   Glob(Glob &&) noexcept = default; // Allow moving
   Glob(const Glob &) = delete;      // Disallow copying
 
-  // Check if the glob matches the given string
+  // Check if the glob matches the given string.
   [[nodiscard]] bool match(llvm::StringRef s) const noexcept;
 };
 
-// Make a glob
+// Make a glob.
 std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept;
 
-// Make many globs where none can fail
+// Make many globs, return true if none fails.
 bool mkGlobs(std::vector<Glob> &globs,
              std::span<llvm::StringRef> globExprs) noexcept;

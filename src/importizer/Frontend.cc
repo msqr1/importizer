@@ -7,12 +7,13 @@
 #include <llvm/ADT/SmallString.h>
 #include <memory>
 
+FrontendAnalyzer::FrontendAnalyzer(FrontendInfo &info) : info{info} {}
+
 std::unique_ptr<clang::ASTConsumer>
 FrontendAnalyzer::CreateASTConsumer(clang::CompilerInstance &CI,
                                     llvm::StringRef file) noexcept {
   CI.getPreprocessor().addPPCallbacks(
       std::make_unique<PPAnalyzer>(CI.getSourceManager(), info));
-  CI.getFrontendOpts().SkipFunctionBodies = true;
   return std::make_unique<ASTAnalyzer>(file, info);
 }
 

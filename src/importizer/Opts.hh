@@ -1,6 +1,7 @@
 #pragma once
 #include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringSet.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,7 +13,7 @@ struct Opts {
   bool stdImport;
   std::unique_ptr<tl::CompilationDatabase> compDB;
   std::string root;
-  std::vector<std::string> hdrs;
+  llvm::StringSet<> hdrs;
   std::vector<std::string> srcs;
 
   // Allow default construction
