@@ -36,6 +36,7 @@ set(compileFlags
   -Wno-unsafe-buffer-usage
   -Wno-switch-default
   -Wno-padded
+  "-ffile-prefix-map=${CMAKE_SOURCE_DIR}="
 )
 set(linkFlags)
 

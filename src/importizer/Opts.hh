@@ -1,3 +1,7 @@
+/// "Resolved" options (struct Opts) that the user passed in through the CLI and
+/// configuration file. Resolved means globs becomes paths, compilation
+/// databases availability are handled, etc.
+
 #pragma once
 #include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/SmallString.h>
@@ -8,13 +12,25 @@
 
 namespace tl = clang::tooling;
 
+// Resolved options
 struct Opts {
-  bool write;
-  bool stdImport;
-  std::unique_ptr<tl::CompilationDatabase> compDB;
+  // Root directory
   std::string root;
+
+  // Headers to be modularized (resolved from hdrGlobs)
   llvm::StringSet<> hdrs;
+
+  // Sources to be modularized (resolved from srcGlobs)
   std::vector<std::string> srcs;
+
+  // Explicit and default mode compile commands centralized
+  std::unique_ptr<tl::CompilationDatabase> compDB;
+
+  // Actually rewrite files
+  bool write;
+
+  // Convert standard #include to import std or std.compat
+  bool stdImport;
 
   // Allow default construction
   Opts() noexcept = default;

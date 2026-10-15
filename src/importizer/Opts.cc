@@ -41,37 +41,15 @@ struct NormalExplicit {
 };
 
 struct NormalOpts {
-  bool stdImport;
-  llvm::StringRef root;
+  std::optional<NormalExplicit> xplicit;
   std::optional<llvm::StringRef> dbPath;
   std::vector<llvm::StringRef> hdrGlobExprs;
-  std::optional<NormalExplicit> xplicit;
+  llvm::StringRef root;
+  bool stdImport;
 };
 
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) noexcept {
   diag.print(g_logOpts->prog.data(), *g_logOpts->stream);
-}
-
-using PathSink = llvm::function_ref<void(llvm::StringRef)>;
-bool globFromDir(llvm::StringRef dir, std::span<std::vector<Glob>> ins,
-                 std::span<PathSink> outs) {
-  assert(ins.size() == outs.size());
-  llvm::StringRef relPath;
-  auto checkDir{[&](const fs::directory_entry &ent) {
-    relPath = ent.path();
-    assert(relPath.starts_with(dir));
-    relPath = relPath.take_front(dir.size());
-    for (size_t i{}; std::span<Glob> in : ins) {
-      for (const Glob &glob : in) {
-        if (glob.match(relPath)) {
-          outs[i](ent.path());
-          break;
-        }
-      }
-    }
-    return IterDirCtrl::Continue;
-  }};
-  return iterDir<true>(dir, checkDir);
 }
 
 } // namespace
@@ -143,20 +121,20 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   opts.root = nOpts.root;
   llvm::StringRef configDir{pth::parent_path(config)};
   mkRelative(opts.root, configDir);
-  std::vector<std::vector<Glob>> rootGlobIns;
-  std::vector<PathSink> rootGlobOuts;
+  std::vector<GlobContainer> rootGlobIns;
+  std::vector<MatchedCallback> rootGlobOuts;
 
   // stdImport
   opts.stdImport = nOpts.stdImport;
 
   // hdrGlobs
-  std::vector<Glob> tmp;
+  GlobContainer tmp;
   if (!mkGlobs(tmp, nOpts.hdrGlobExprs)) {
     return false;
   }
   rootGlobIns.emplace_back(std::move(tmp));
   rootGlobOuts.emplace_back(
-      [&](llvm::StringRef path) { opts.hdrs.try_emplace(path); });
+      [&opts](llvm::StringRef path) { opts.hdrs.try_emplace(path); });
   tmp.clear();
 
   if (nOpts.dbPath && nOpts.xplicit) {
@@ -184,7 +162,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     }
     rootGlobIns.emplace_back(std::move(tmp));
     rootGlobOuts.emplace_back(
-        [&](llvm::StringRef path) { opts.srcs.emplace_back(path); });
+        [&opts](llvm::StringRef path) { opts.srcs.emplace_back(path); });
     tmp.clear();
 
     // explicit.compileFlags

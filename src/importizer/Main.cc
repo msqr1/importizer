@@ -15,7 +15,7 @@ int importizerMain(const int argc, const char *const *argv) {
     return EXIT_FAILURE;
   }
   tl::ClangTool tool{*opts.compDB, opts.srcs};
-  FrontendInfo info;
+  FrontendInfo info{opts};
   FrontendAnalyzerFactory factory{info};
   std::unique_ptr<MyDiagnosticConsumer> diagHandler{
       std::make_unique<MyDiagnosticConsumer>()};
@@ -25,8 +25,8 @@ int importizerMain(const int argc, const char *const *argv) {
     break;
   case 1: // Yes error
     return EXIT_FAILURE;
-  case 2: // Skipped files (impossible)
-    assert(false);
+  case 2:
+    assert(false && "Skipped files, missing compile commands??");
   };
   return EXIT_SUCCESS;
 }

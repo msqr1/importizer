@@ -2,6 +2,7 @@
 #include "utils/Log.hh"
 #include <cassert>
 #include <llvm/ADT/STLFunctionalExtras.h>
+#include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
 #include <string>
@@ -18,30 +19,37 @@ enum class IterDirCtrl : char {
   Continue,
   Stop,    // Return true from iterDir
   ErrStop, // Return false from iterDir (errorneous stop)
+  Skip,    // Skip descending into this directory (only for recusive)
 };
 
-using IterateDirFn =
+using IterDirCallback =
     llvm::function_ref<IterDirCtrl(const fs::directory_entry &)>;
 namespace {
 
 template <typename It>
 [[nodiscard]] bool iterDirImpl(const llvm::Twine &dir,
-                               IterateDirFn fn) noexcept {
+                               IterDirCallback callback) noexcept {
   std::error_code ec;
   It it{dir, ec}, end;
   if (ec) {
     return err("Error iterating {}: {}", dir, ec.message());
   }
   while (it != end) {
-    switch (fn(*it)) {
+    switch (callback(*it)) {
     case IterDirCtrl::Continue:
       break;
     case IterDirCtrl::Stop:
       return true;
     case IterDirCtrl::ErrStop:
       return false;
-    default:
-      assert(false);
+    case IterDirCtrl::Skip:
+      if constexpr (std::is_same_v<It, fs::recursive_directory_iterator>) {
+        it.no_push();
+      } else {
+        assert(false && "IterDirCtrl::Skip can't be used for non-recursive "
+                        "directory iterator.");
+      }
+      break;
     }
     it.increment(ec);
     if (ec) {
@@ -53,13 +61,14 @@ template <typename It>
 
 } // namespace
 
-// Nicer LLVM's directory iterator.
+// Nicer LLVM's directory iterator. Returns true if iteration is successful.
 template <bool recurse = true>
-[[nodiscard]] bool iterDir(const llvm::Twine &dir, IterateDirFn fn) noexcept {
+[[nodiscard]] bool iterDir(const llvm::Twine &dir,
+                           IterDirCallback callback) noexcept {
   if constexpr (recurse) {
-    return iterDirImpl<fs::recursive_directory_iterator>(dir, fn);
+    return iterDirImpl<fs::recursive_directory_iterator>(dir, callback);
   } else {
-    return iterDirImpl<fs::directory_iterator>(dir, fn);
+    return iterDirImpl<fs::directory_iterator>(dir, callback);
   }
 }
 

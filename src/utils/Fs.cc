@@ -30,7 +30,7 @@ bool cpyDir(const llvm::Twine &from, const llvm::Twine &to) noexcept {
   llvm::SmallString<128> tmp;
   from.toVector(tmp);
   std::error_code ec;
-  auto copy{[&](const fs::directory_entry &ent) {
+  auto copier{[&](const fs::directory_entry &ent) noexcept {
     relPath = ent.path();
     assert(relPath.starts_with(tmp));
     relPath = relPath.drop_front(tmp.size());
@@ -59,7 +59,7 @@ bool cpyDir(const llvm::Twine &from, const llvm::Twine &to) noexcept {
     }
     return IterDirCtrl::Continue;
   }};
-  return iterDir<true>(from, copy);
+  return iterDir<true>(from, copier);
 }
 
 CmpRes cmpFile(const llvm::Twine &file1, const llvm::Twine &file2) noexcept {
@@ -84,7 +84,7 @@ CmpRes cmpDir(const llvm::Twine &dir, const llvm::Twine &ref) noexcept {
   ref.toVector(tmp);
   std::vector<std::string> refRelPaths;
 
-  auto checkRef{[&](const fs::directory_entry &ent) {
+  auto checkRef{[&](const fs::directory_entry &ent) noexcept {
     if (ent.type() != fs::file_type::regular_file) {
       return IterDirCtrl::Continue;
     }
@@ -115,7 +115,7 @@ CmpRes cmpDir(const llvm::Twine &dir, const llvm::Twine &ref) noexcept {
   }
 
   dir.toVector(tmp);
-  auto checkDir{[&](const fs::directory_entry &ent) {
+  auto checkDir{[&](const fs::directory_entry &ent) noexcept {
     relPath = ent.path();
     assert(relPath.starts_with(tmp));
     relPath = relPath.drop_front(tmp.size());

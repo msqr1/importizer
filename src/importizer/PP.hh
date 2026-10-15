@@ -7,6 +7,7 @@
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Basic/SourceManager.h>
 #include <clang/Lex/PPCallbacks.h>
+#include <clang/Lex/Preprocessor.h>
 
 struct FrontendInfo;
 
@@ -22,12 +23,14 @@ class SourceRange;
 } // namespace clang
 
 class PPAnalyzer : public clang::PPCallbacks {
-  unsigned int condDepth;
-  clang::SourceManager &SM;
+  clang::Preprocessor &PP;
   FrontendInfo &info;
+  const unsigned nestedIncludeDiagID;
+  const unsigned macroIncludeDiagID;
+  unsigned condDepth;
 
 public:
-  PPAnalyzer(clang::SourceManager &SM, FrontendInfo &info);
+  PPAnalyzer(clang::Preprocessor &PP, FrontendInfo &info);
   bool FileNotFound(llvm::StringRef) noexcept override;
   void InclusionDirective(
       clang::SourceLocation hashLoc, const clang::Token &includeTok,

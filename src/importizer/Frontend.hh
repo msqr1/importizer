@@ -7,6 +7,7 @@
 #include <clang/Tooling/Tooling.h>
 #include <memory>
 
+struct Opts;
 namespace llvm {
 class StringRef;
 } // namespace llvm
@@ -17,7 +18,10 @@ class ASTConsumer;
 
 namespace tl = clang::tooling;
 
-struct FrontendInfo {};
+// Used to pass information in and out of all layers of a ClangTool.
+struct FrontendInfo {
+  Opts &opts;
+};
 
 class FrontendAnalyzer : public clang::ASTFrontendAction {
   FrontendInfo &info;

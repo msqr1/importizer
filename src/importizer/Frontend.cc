@@ -12,8 +12,8 @@ FrontendAnalyzer::FrontendAnalyzer(FrontendInfo &info) : info{info} {}
 std::unique_ptr<clang::ASTConsumer>
 FrontendAnalyzer::CreateASTConsumer(clang::CompilerInstance &CI,
                                     llvm::StringRef file) noexcept {
-  CI.getPreprocessor().addPPCallbacks(
-      std::make_unique<PPAnalyzer>(CI.getSourceManager(), info));
+  clang::Preprocessor &PP{CI.getPreprocessor()};
+  PP.addPPCallbacks(std::make_unique<PPAnalyzer>(PP, info));
   return std::make_unique<ASTAnalyzer>(file, info);
 }
 
