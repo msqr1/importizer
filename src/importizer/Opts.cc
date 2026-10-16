@@ -2,27 +2,22 @@
 #include "utils/Fs.hh"
 #include "utils/Glob.hh"
 #include "utils/Log.hh"
+#include "clang/Tooling/CompilationDatabase.h"
+#include "clang/Tooling/JSONCompilationDatabase.h"
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/StringSet.h"
+#include "llvm/Support/CommandLine.h"
+#include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/Path.h"
+#include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/YAMLTraits.h"
+#include "llvm/Support/raw_ostream.h"
 #include <cassert>
-#include <clang/Tooling/CompilationDatabase.h>
-#include <clang/Tooling/JSONCompilationDatabase.h>
-#include <cstddef>
-#include <llvm/ADT/DenseMap.h>
-#include <llvm/ADT/STLFunctionalExtras.h>
-#include <llvm/ADT/SmallString.h>
-#include <llvm/ADT/SmallVector.h>
-#include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/StringSet.h>
-#include <llvm/Support/CommandLine.h>
-#include <llvm/Support/Error.h>
 #include <llvm/Support/FileSystem.h>
-#include <llvm/Support/MemoryBuffer.h>
-#include <llvm/Support/Path.h>
-#include <llvm/Support/SourceMgr.h>
-#include <llvm/Support/YAMLTraits.h>
-#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
-#include <span>
 #include <string>
 #include <system_error>
 #include <utility>
@@ -118,24 +113,30 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   }
 
   // root
-  opts.root = nOpts.root;
-  llvm::StringRef configDir{pth::parent_path(config)};
-  mkRelative(opts.root, configDir);
-  std::vector<GlobContainer> rootGlobIns;
+  llvm::SmallString<128> tmp{nOpts.root};
+  llvm::Twine configDir{pth::parent_path(config)};
+  pth::make_absolute(configDir, tmp);
+  opts.root = tmp.str();
+  std::error_code ec{fs::real_path(opts.root, tmp)};
+  if (ec) {
+    return err("Unable to get real path of {}: {}", opts.root, ec.message());
+  }
+  opts.root = tmp.str();
+  std::vector<GlobStorage> rootGlobIns;
   std::vector<MatchedCallback> rootGlobOuts;
 
   // stdImport
   opts.stdImport = nOpts.stdImport;
 
   // hdrGlobs
-  GlobContainer tmp;
-  if (!mkGlobs(tmp, nOpts.hdrGlobExprs)) {
+  GlobStorage globs;
+  if (!mkGlobs(globs, nOpts.hdrGlobExprs)) {
     return false;
   }
-  rootGlobIns.emplace_back(std::move(tmp));
+  rootGlobIns.emplace_back(std::move(globs));
   rootGlobOuts.emplace_back(
       [&opts](llvm::StringRef path) { opts.hdrs.try_emplace(path); });
-  tmp.clear();
+  globs.clear();
 
   if (nOpts.dbPath && nOpts.xplicit) {
     return err("'compilationDb' and 'explicit' are mutually exclusive");
@@ -157,13 +158,12 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   // explicit
   else if (nOpts.xplicit) {
     // explicit.srcGlobs
-    if (!mkGlobs(tmp, nOpts.xplicit->srcGlobExprs)) {
+    if (!mkGlobs(globs, nOpts.xplicit->srcGlobExprs)) {
       return false;
     }
-    rootGlobIns.emplace_back(std::move(tmp));
+    rootGlobIns.emplace_back(std::move(globs));
     rootGlobOuts.emplace_back(
         [&opts](llvm::StringRef path) { opts.srcs.emplace_back(path); });
-    tmp.clear();
 
     // explicit.compileFlags
     opts.compDB = std::make_unique<tl::FixedCompilationDatabase>(

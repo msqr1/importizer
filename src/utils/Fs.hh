@@ -1,11 +1,9 @@
 #pragma once
 #include "utils/Log.hh"
+#include "llvm/ADT/STLFunctionalExtras.h"
+#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/FileSystem.h"
 #include <cassert>
-#include <llvm/ADT/STLFunctionalExtras.h>
-#include <llvm/Support/ErrorHandling.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Support/Path.h>
-#include <string>
 #include <system_error>
 
 namespace fs = llvm::sys::fs;
@@ -71,9 +69,6 @@ template <bool recurse = true>
     return iterDirImpl<fs::directory_iterator>(dir, callback);
   }
 }
-
-// Resolve a relative path from a given directory
-void mkRelative(std::string &path, const llvm::Twine &dir) noexcept;
 
 // Copy the contents of from into to. Returns true if successful.
 [[nodiscard]] bool cpyDir(const llvm::Twine &from,

@@ -2,8 +2,8 @@
 #include "importizer/Diagnostics.hh"
 #include "importizer/Frontend.hh"
 #include "importizer/Opts.hh"
+#include "clang/Tooling/Tooling.h"
 #include <cassert>
-#include <clang/Tooling/Tooling.h>
 #include <cstdlib>
 #include <memory>
 

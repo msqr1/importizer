@@ -3,12 +3,14 @@
 
 #pragma once
 #include "utils/Fs.hh"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/STLFunctionalExtras.h"
+#include "llvm/ADT/SmallString.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/GlobPattern.h"
 #include <cassert>
 #include <concepts>
-#include <llvm/ADT/STLExtras.h>
-#include <llvm/ADT/STLFunctionalExtras.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Support/GlobPattern.h>
+#include <cstddef>
 #include <optional>
 #include <ranges>
 #include <utility>
@@ -36,7 +38,7 @@ public:
   [[nodiscard]] bool match(llvm::StringRef s) const noexcept;
 };
 
-using GlobContainer = std::vector<Glob>;
+using GlobStorage = std::vector<Glob>;
 
 // Make a glob.
 std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept;
@@ -48,7 +50,7 @@ concept ConvertibleRange =
 
 // Make many globs, return true if none fails.
 template <ConvertibleRange<llvm::StringRef> T>
-bool mkGlobs(GlobContainer &globs, const T &globExprs) noexcept {
+bool mkGlobs(GlobStorage &globs, const T &globExprs) noexcept {
   for (llvm::StringRef globExpr : globExprs) {
     std::optional<Glob> g{mkGlob(globExpr)};
     if (!g) {
@@ -60,14 +62,17 @@ bool mkGlobs(GlobContainer &globs, const T &globExprs) noexcept {
 };
 
 using MatchedCallback = llvm::function_ref<void(llvm::StringRef)>;
-template <ConvertibleRange<GlobContainer> InT,
+template <ConvertibleRange<GlobStorage> InT,
           ConvertibleRange<MatchedCallback> OutT>
-bool globFromDir(llvm::StringRef dir, const InT &ins, const OutT &callbacks) {
+bool globFromDir(const llvm::Twine &dir, const InT &ins,
+                 const OutT &callbacks) {
   llvm::StringRef relPath;
+  llvm::SmallString<128> tmp;
+  dir.toVector(tmp);
+  size_t baseLen{tmp.size() + !(*tmp.rbegin() == '/' || *tmp.rbegin() == '\\')};
   auto checkDir{[&](const fs::directory_entry &ent) noexcept {
     relPath = ent.path();
-    assert(relPath.starts_with(dir));
-    relPath = relPath.drop_front(dir.size());
+    relPath = relPath.drop_front(baseLen);
     for (const auto &[globs, callback] : llvm::zip_equal(ins, callbacks)) {
       for (const Glob &glob : globs) {
         if (glob.match(relPath)) {
@@ -78,5 +83,5 @@ bool globFromDir(llvm::StringRef dir, const InT &ins, const OutT &callbacks) {
     }
     return IterDirCtrl::Continue;
   }};
-  return iterDir<true>(dir, checkDir);
+  return iterDir<true>(tmp, checkDir);
 }

@@ -1,12 +1,11 @@
 #include "importizer/PP.hh"
 #include "importizer/Frontend.hh"
 #include "importizer/Opts.hh"
-
-#include <clang/Basic/Diagnostic.h>
-#include <clang/Basic/FileEntry.h>
-#include <clang/Basic/SourceManager.h>
-#include <clang/Lex/PPCallbacks.h>
-#include <clang/Lex/Preprocessor.h>
+#include "clang/Basic/Diagnostic.h"
+#include "clang/Basic/FileEntry.h"
+#include "clang/Basic/SourceManager.h"
+#include "clang/Lex/PPCallbacks.h"
+#include "clang/Lex/Preprocessor.h"
 
 PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP, FrontendInfo &info)
     : PP{PP}, info{info},
@@ -27,13 +26,13 @@ void PPAnalyzer::InclusionDirective(
     bool moduleImported, clang::SrcMgr::CharacteristicKind fileType) noexcept {
   clang::SourceManager &SM{PP.getSourceManager()};
 
-  // Restrict only to the main file
-  if (!SM.isInMainFile(hashLoc)) {
+  // Restrict only to the main file, and only resolved #include
+  if (!(SM.isInMainFile(hashLoc) && file)) {
     return;
   }
 
   // Only enforce top-level #include for modularizable headers
-  if (info.opts.hdrs.contains(fileName)) {
+  if (info.opts.hdrs.contains(file->getFileEntry().tryGetRealPathName())) {
     // Check if #include is nested within a conditional block
     if (condDepth > 0) {
       PP.getDiagnostics().Report(hashLoc, nestedIncludeDiagID);

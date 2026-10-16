@@ -3,9 +3,8 @@
 /// class.
 
 #pragma once
-#include "importizer/Frontend.hh"
-#include <clang/AST/ASTConsumer.h>
-#include <llvm/ADT/StringRef.h>
+#include "clang/AST/ASTConsumer.h"
+#include "llvm/ADT/StringRef.h"
 
 struct FrontendInfo;
 

@@ -1,8 +1,8 @@
 #pragma once
-#include <llvm/ADT/StringRef.h>
-#include <llvm/Support/FormatVariadic.h>
-#include <llvm/Support/WithColor.h>
-#include <llvm/Support/raw_ostream.h>
+#include "llvm/ADT/StringRef.h"
+#include "llvm/Support/FormatVariadic.h"
+#include "llvm/Support/WithColor.h"
+#include "llvm/Support/raw_ostream.h"
 
 struct LogOpts {
   llvm::StringRef prog;

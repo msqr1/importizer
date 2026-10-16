@@ -1,46 +1,45 @@
 #include "utils/Fs.hh"
 #include "utils/Log.hh"
+#include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/StringSet.h"
+#include "llvm/ADT/Twine.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/Path.h"
 #include <cassert>
+#include <cstddef>
 #include <filesystem>
-#include <llvm/ADT/SmallString.h>
-#include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/Twine.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Support/MemoryBuffer.h>
-#include <llvm/Support/Path.h>
-#include <string>
 #include <system_error>
-#include <vector>
 
 namespace pth = llvm::sys::path;
 namespace fs = llvm::sys::fs;
 
-void mkRelative(std::string &path, const llvm::Twine &dir) noexcept {
-  if (!pth::is_relative(path)) {
-    return;
-  }
-  llvm::SmallString<128> tmp;
-  dir.toVector(tmp);
-  pth::append(tmp, path);
-  path.assign(tmp.data(), tmp.size());
-}
-
 bool cpyDir(const llvm::Twine &from, const llvm::Twine &to) noexcept {
+  std::error_code ec{fs::create_directories(to)};
+  if (ec) {
+    return err("Error making directory {}: {}", to, ec.message());
+  }
   llvm::StringRef relPath;
   llvm::SmallString<128> tmp;
   from.toVector(tmp);
-  std::error_code ec;
-  auto copier{[&](const fs::directory_entry &ent) noexcept {
+  size_t baseLen{tmp.size() + !(*tmp.rbegin() == '/' || *tmp.rbegin() == '\\')};
+  auto copy{[&](const fs::directory_entry &ent) noexcept {
     relPath = ent.path();
-    assert(relPath.starts_with(tmp));
-    relPath = relPath.drop_front(tmp.size());
-    const llvm::Twine dst{to + relPath};
+    relPath = relPath.drop_front(baseLen);
+    const llvm::Twine dst{to + pth::get_separator() + relPath};
     switch (ent.type()) {
     case fs::file_type::directory_file:
-      ec = fs::create_directory(dst);
+      if ((ec = fs::create_directory(dst))) {
+        err("Error making directory {}: {}", dst, ec.message());
+        return IterDirCtrl::ErrStop;
+      }
       break;
     case fs::file_type::regular_file:
-      ec = fs::copy_file(ent.path(), dst);
+      if ((ec = fs::copy_file(ent.path(), dst))) {
+        err("Error copying file {}: {}", ent.path(), ec.message());
+        return IterDirCtrl::ErrStop;
+      }
       break;
     case fs::file_type::symlink_file:
       // Falling back to std::filesystem because fs::read_link() won't be here
@@ -48,18 +47,17 @@ bool cpyDir(const llvm::Twine &from, const llvm::Twine &to) noexcept {
       tmp.clear();
       dst.toVector(tmp);
       std::filesystem::copy_symlink(ent.path(), tmp.data(), ec);
+      if (!ec) {
+        err("Error copying symlink {}: {}", ent.path(), ec.message());
+        return IterDirCtrl::ErrStop;
+      }
       break;
-    default: // Ignore
-      return IterDirCtrl::Continue;
-    }
-
-    if (!ec) {
-      err("Error copying {}: {}", ent.path(), ec.message());
-      return IterDirCtrl::ErrStop;
+    default: // Other file types
+      break;
     }
     return IterDirCtrl::Continue;
   }};
-  return iterDir<true>(from, copier);
+  return iterDir<true>(tmp, copy);
 }
 
 CmpRes cmpFile(const llvm::Twine &file1, const llvm::Twine &file2) noexcept {
@@ -79,18 +77,18 @@ CmpRes cmpFile(const llvm::Twine &file1, const llvm::Twine &file2) noexcept {
 
 CmpRes cmpDir(const llvm::Twine &dir, const llvm::Twine &ref) noexcept {
   CmpRes res{CmpRes::Same};
+  llvm::StringSet<> refRelPaths;
+
   llvm::StringRef relPath;
   llvm::SmallString<128> tmp;
   ref.toVector(tmp);
-  std::vector<std::string> refRelPaths;
-
+  size_t baseLen{tmp.size() + !(*tmp.rbegin() == '/' || *tmp.rbegin() == '\\')};
   auto checkRef{[&](const fs::directory_entry &ent) noexcept {
     if (ent.type() != fs::file_type::regular_file) {
       return IterDirCtrl::Continue;
     }
     relPath = ent.path();
-    assert(relPath.starts_with(tmp));
-    relPath = relPath.drop_front(tmp.size());
+    relPath = relPath.drop_front(baseLen);
     const llvm::Twine path{dir + relPath};
     if (!fs::exists(path)) {
       err("Missing file: {}", relPath);
@@ -107,30 +105,24 @@ CmpRes cmpDir(const llvm::Twine &dir, const llvm::Twine &ref) noexcept {
     case CmpRes::Err:
       return IterDirCtrl::ErrStop;
     }
-    refRelPaths.emplace_back(relPath);
+    refRelPaths.try_emplace(relPath);
     return IterDirCtrl::Continue;
   }};
-  if (!iterDir(ref, checkRef)) {
+  if (!iterDir(tmp, checkRef)) {
     return CmpRes::Err;
   }
 
+  tmp.clear();
   dir.toVector(tmp);
+  baseLen = tmp.size() + !(*tmp.rbegin() == '/' || *tmp.rbegin() == '\\');
   auto checkDir{[&](const fs::directory_entry &ent) noexcept {
     relPath = ent.path();
-    assert(relPath.starts_with(tmp));
-    relPath = relPath.drop_front(tmp.size());
-    bool found{};
-    for (llvm::StringRef refRelPath : refRelPaths) {
-      if (refRelPath == relPath) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
+    relPath = relPath.drop_front(baseLen);
+    if (!refRelPaths.contains(relPath)) {
       err("Unexpected file: {}", relPath);
       res = CmpRes::Mismatch;
     }
     return IterDirCtrl::Continue;
   }};
-  return iterDir(dir, checkDir) ? res : CmpRes::Err;
+  return iterDir(tmp, checkDir) ? res : CmpRes::Err;
 }

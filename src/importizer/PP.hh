@@ -3,11 +3,11 @@
 /// must register an instance of this to.
 
 #pragma once
-#include <clang/Basic/FileEntry.h>
-#include <clang/Basic/SourceLocation.h>
-#include <clang/Basic/SourceManager.h>
-#include <clang/Lex/PPCallbacks.h>
-#include <clang/Lex/Preprocessor.h>
+#include "clang/Basic/FileEntry.h"
+#include "clang/Basic/SourceLocation.h"
+#include "clang/Basic/SourceManager.h"
+#include "clang/Lex/PPCallbacks.h"
+#include "clang/Lex/Preprocessor.h"
 
 struct FrontendInfo;
 

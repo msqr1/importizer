@@ -24,7 +24,7 @@ set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 add_library(common-config INTERFACE)
 target_compile_features(common-config INTERFACE cxx_std_23)
-target_include_directories(common-config INTERFACE "${CMAKE_SOURCE_DIR}/src")
+target_include_directories(common-config INTERFACE "${root}/src")
 set(compileFlags
   -Wall
   -Wextra
@@ -36,7 +36,7 @@ set(compileFlags
   -Wno-unsafe-buffer-usage
   -Wno-switch-default
   -Wno-padded
-  "-ffile-prefix-map=${CMAKE_SOURCE_DIR}="
+  "-ffile-prefix-map=${root}="
 )
 set(linkFlags)
 

@@ -239,7 +239,6 @@ TODO
 * Follow the LLVM coding style.
 * Use `llvm::StringRef` (I considered `std::string_view` but it's missing many crucial features like
 `split`, `trim`) over `const char*`, & `std::array`/`std::vector` over C-style arrays.
-* Use angled brackets (`#include <header.h>`) for external/third-party headers.
 * The C{plus}{plus} file containing `main()` for any executable must be named `Driver.cc`.
 * Do not use RTTI, if you must, use https://llvm.org/docs/HowToSetUpLLVMStyleRTTI.html[LLVM's].
 

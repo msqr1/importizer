@@ -1,8 +1,8 @@
 #include "importizer/Diagnostics.hh"
 #include "utils/Log.hh"
-#include <clang/Basic/Diagnostic.h>
-#include <clang/Basic/DiagnosticIDs.h>
-#include <llvm/ADT/SmallString.h>
+#include "clang/Basic/Diagnostic.h"
+#include "clang/Basic/DiagnosticIDs.h"
+#include "llvm/ADT/SmallString.h"
 
 void MyDiagnosticConsumer::HandleDiagnostic(
     clang::DiagnosticsEngine::Level lvl,

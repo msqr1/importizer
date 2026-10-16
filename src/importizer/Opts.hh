@@ -3,9 +3,8 @@
 /// databases availability are handled, etc.
 
 #pragma once
-#include <clang/Tooling/CompilationDatabase.h>
-#include <llvm/ADT/SmallString.h>
-#include <llvm/ADT/StringSet.h>
+#include "clang/Tooling/CompilationDatabase.h"
+#include "llvm/ADT/StringSet.h"
 #include <memory>
 #include <string>
 #include <vector>
