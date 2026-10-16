@@ -4,7 +4,7 @@ jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
     with:
-      jqExpr: 'map(select(.os == "macos" and .arch == "amd64"))'
+      jqExpr: "."
   all:
     permissions:
       contents: write
@@ -27,5 +27,5 @@ jobs:
         timeout-minutes: 180
         run: cmake -P scripts/EnsureLibtooling.cmake
       - name: Make & upload distribution
-        timeout-minutes: 13
+        timeout-minutes: 20
         run: cmake -Dmode=Debug -P scripts/MkDist.cmake

@@ -38,7 +38,6 @@ set(compileFlags
   -Wno-unsafe-buffer-usage
   -Wno-switch-default
   -Wno-padded
-  "-ffile-prefix-map=${root}="
 )
 set(linkFlags)
 
@@ -81,14 +80,14 @@ endif()
 
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   list(APPEND compileFlags
-    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions>"
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-ffile-prefix-map=${root}/src/=>"
   )
   list(APPEND linkFlags
     "$<$<CONFIG:Debug>:-fsanitize=address>"
   )
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   list(APPEND compileFlags
-    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c->"
+    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-ffile-prefix-map=${root}/src/=>"
   )
 endif()
 
