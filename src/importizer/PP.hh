@@ -6,10 +6,12 @@
 #include "clang/Basic/FileEntry.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Lex/ModuleLoader.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
 
-struct FrontendInfo;
+struct FrontendCtx;
+struct Opts;
 
 namespace llvm {
 class StringRef;
@@ -24,13 +26,13 @@ class SourceRange;
 
 class PPAnalyzer : public clang::PPCallbacks {
   clang::Preprocessor &PP;
-  FrontendInfo &info;
+  FrontendCtx &ctx;
   const unsigned nestedIncludeDiagID;
   const unsigned macroIncludeDiagID;
   unsigned condDepth;
 
 public:
-  PPAnalyzer(clang::Preprocessor &PP, FrontendInfo &info);
+  PPAnalyzer(clang::Preprocessor &PP, FrontendCtx &ctx);
   bool FileNotFound(llvm::StringRef) noexcept override;
   void InclusionDirective(
       clang::SourceLocation hashLoc, const clang::Token &includeTok,
@@ -39,11 +41,14 @@ public:
       llvm::StringRef searchPath, llvm::StringRef relativePath,
       const clang::Module *suggestedModule, bool moduleImported,
       clang::SrcMgr::CharacteristicKind fileType) noexcept override;
-  void If(clang::SourceLocation, clang::SourceRange,
-          ConditionValueKind) noexcept override;
-  void Ifdef(clang::SourceLocation, const clang::Token &,
-             const clang::MacroDefinition &) noexcept override;
-  void Ifndef(clang::SourceLocation, const clang::Token &,
-              const clang::MacroDefinition &) noexcept override;
-  void Endif(clang::SourceLocation, clang::SourceLocation) noexcept override;
+  void moduleImport(clang::SourceLocation importLoc, clang::ModuleIdPath path,
+                    const clang::Module *imported) noexcept override;
+  void If(clang::SourceLocation loc, clang::SourceRange condRange,
+          ConditionValueKind condVal) noexcept override;
+  void Ifdef(clang::SourceLocation cond, const clang::Token &macroNameTok,
+             const clang::MacroDefinition &MD) noexcept override;
+  void Ifndef(clang::SourceLocation cond, const clang::Token &macroNameTok,
+              const clang::MacroDefinition &MD) noexcept override;
+  void Endif(clang::SourceLocation loc,
+             clang::SourceLocation ifLoc) noexcept override;
 };

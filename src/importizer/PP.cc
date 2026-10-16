@@ -4,11 +4,12 @@
 #include "clang/Basic/Diagnostic.h"
 #include "clang/Basic/FileEntry.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Lex/ModuleLoader.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
 
-PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP, FrontendInfo &info)
-    : PP{PP}, info{info},
+PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP, FrontendCtx &ctx)
+    : PP{PP}, ctx{ctx},
       nestedIncludeDiagID{PP.getDiagnostics().getCustomDiagID(
           clang::DiagnosticsEngine::Fatal,
           "#include within conditional block(s) is un-modularizable.")},
@@ -19,11 +20,10 @@ PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP, FrontendInfo &info)
 
 bool PPAnalyzer::FileNotFound(llvm::StringRef) noexcept { return false; }
 void PPAnalyzer::InclusionDirective(
-    clang::SourceLocation hashLoc, const clang::Token &includeTok,
-    llvm::StringRef fileName, bool angle, clang::CharSourceRange filenameRange,
-    clang::OptionalFileEntryRef file, llvm::StringRef searchPath,
-    llvm::StringRef relativePath, const clang::Module *suggestedModule,
-    bool moduleImported, clang::SrcMgr::CharacteristicKind fileType) noexcept {
+    clang::SourceLocation hashLoc, const clang::Token &, llvm::StringRef, bool,
+    clang::CharSourceRange filenameRange, clang::OptionalFileEntryRef file,
+    llvm::StringRef, llvm::StringRef, const clang::Module *, bool,
+    clang::SrcMgr::CharacteristicKind) noexcept {
   clang::SourceManager &SM{PP.getSourceManager()};
 
   // Restrict only to the main file, and only resolved #include
@@ -32,7 +32,7 @@ void PPAnalyzer::InclusionDirective(
   }
 
   // Only enforce top-level #include for modularizable headers
-  if (info.opts.hdrs.contains(file->getFileEntry().tryGetRealPathName())) {
+  if (ctx.opts.hdrs.contains(file->getFileEntry().tryGetRealPathName())) {
     // Check if #include is nested within a conditional block
     if (condDepth > 0) {
       PP.getDiagnostics().Report(hashLoc, nestedIncludeDiagID);
@@ -46,7 +46,8 @@ void PPAnalyzer::InclusionDirective(
     }
   }
 }
-
+void PPAnalyzer::moduleImport(clang::SourceLocation, clang::ModuleIdPath,
+                              const clang::Module *) noexcept {}
 void PPAnalyzer::If(clang::SourceLocation, clang::SourceRange,
                     ConditionValueKind) noexcept {
   ++condDepth;

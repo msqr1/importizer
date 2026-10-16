@@ -6,20 +6,19 @@
 #include "clang/Lex/Preprocessor.h"
 #include <memory>
 
-FrontendAnalyzer::FrontendAnalyzer(FrontendInfo &info) : info{info} {}
+FrontendAnalyzer::FrontendAnalyzer(FrontendCtx &ctx) : ctx{ctx} {}
 
-std::unique_ptr "clang::ASTConsumer>
-    FrontendAnalyzer::CreateASTConsumer(clang::CompilerInstance &CI,
-                                        llvm::StringRef file) noexcept {
+std::unique_ptr<clang::ASTConsumer>
+FrontendAnalyzer::CreateASTConsumer(clang::CompilerInstance &CI,
+                                    llvm::StringRef) noexcept {
   clang::Preprocessor &PP{CI.getPreprocessor()};
-  PP.addPPCallbacks(std::make_unique<PPAnalyzer>(PP, info));
-  return std::make_unique<ASTAnalyzer>(file, info);
+  PP.addPPCallbacks(std::make_unique<PPAnalyzer>(PP, ctx));
+  return std::make_unique<ASTAnalyzer>(ctx);
 }
 
-FrontendAnalyzerFactory::FrontendAnalyzerFactory(FrontendInfo &info)
-    : info{info} {}
+FrontendAnalyzerFactory::FrontendAnalyzerFactory(FrontendCtx &ctx) : ctx{ctx} {}
 
-std::unique_ptr "clang::FrontendAction>
-    FrontendAnalyzerFactory::create() noexcept {
-  return std::make_unique<FrontendAnalyzer>(info);
+std::unique_ptr<clang::FrontendAction>
+FrontendAnalyzerFactory::create() noexcept {
+  return std::make_unique<FrontendAnalyzer>(ctx);
 }

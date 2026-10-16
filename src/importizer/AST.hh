@@ -4,14 +4,13 @@
 
 #pragma once
 #include "clang/AST/ASTConsumer.h"
-#include "llvm/ADT/StringRef.h"
 
-struct FrontendInfo;
+struct FrontendCtx;
 
 class ASTAnalyzer : public clang::ASTConsumer {
-  llvm::StringRef file;
-  FrontendInfo &info;
+  FrontendCtx &ctx;
 
 public:
-  ASTAnalyzer(llvm::StringRef file, FrontendInfo &info);
+  ASTAnalyzer(FrontendCtx &ctx);
+  void HandleTranslationUnit(clang::ASTContext &AST) noexcept override;
 };

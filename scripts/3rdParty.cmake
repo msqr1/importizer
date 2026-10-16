@@ -28,8 +28,6 @@ function(require target visibility)
         clangBasic
         clangTooling
         clangFrontend
-        clangRewriteFrontend
-        clangSerialization
       )
     else()
       message(FATAL_ERROR "Unknown 3rd-party library '${pkg}'")

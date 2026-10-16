@@ -9,13 +9,14 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/StringSet.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/YAMLTraits.h"
 #include "llvm/Support/raw_ostream.h"
+#include <array>
 #include <cassert>
-#include <llvm/Support/FileSystem.h>
 #include <memory>
 #include <optional>
 #include <string>
@@ -122,21 +123,19 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return err("Unable to get real path of {}: {}", opts.root, ec.message());
   }
   opts.root = tmp.str();
-  std::vector<GlobStorage> rootGlobIns;
-  std::vector<MatchedCallback> rootGlobOuts;
+  std::array<GlobDirRule, 2> rootGlobRules;
 
   // stdImport
   opts.stdImport = nOpts.stdImport;
 
   // hdrGlobs
-  GlobStorage globs;
-  if (!mkGlobs(globs, nOpts.hdrGlobExprs)) {
+  if (!mkGlobs(rootGlobRules[0].globs, nOpts.hdrGlobExprs)) {
     return false;
   }
-  rootGlobIns.emplace_back(std::move(globs));
-  rootGlobOuts.emplace_back(
-      [&opts](llvm::StringRef path) { opts.hdrs.try_emplace(path); });
-  globs.clear();
+
+  rootGlobRules[0].callback = [&opts](llvm::StringRef path) {
+    opts.hdrs.try_emplace(path);
+  };
 
   if (nOpts.dbPath && nOpts.xplicit) {
     return err("'compilationDb' and 'explicit' are mutually exclusive");
@@ -158,12 +157,12 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   // explicit
   else if (nOpts.xplicit) {
     // explicit.srcGlobs
-    if (!mkGlobs(globs, nOpts.xplicit->srcGlobExprs)) {
+    if (!mkGlobs(rootGlobRules[1].globs, nOpts.xplicit->srcGlobExprs)) {
       return false;
     }
-    rootGlobIns.emplace_back(std::move(globs));
-    rootGlobOuts.emplace_back(
-        [&opts](llvm::StringRef path) { opts.srcs.emplace_back(path); });
+    rootGlobRules[1].callback = [&opts](llvm::StringRef path) {
+      opts.srcs.emplace_back(path);
+    };
 
     // explicit.compileFlags
     opts.compDB = std::make_unique<tl::FixedCompilationDatabase>(
@@ -172,5 +171,5 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return err(
         "At least one of 'compilationDb' or 'explicit' must be specified");
   }
-  return globFromDir(opts.root, rootGlobIns, rootGlobOuts);
+  return globDir(opts.root, rootGlobRules);
 }

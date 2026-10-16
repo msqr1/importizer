@@ -32,6 +32,8 @@ set(compileFlags
   -Wsign-conversion
   -Wimplicit-fallthrough
   -Werror
+  -Wno-error=unused-parameter
+  -Wno-error=unused-private-field
   -Wno-c++98-compat
   -Wno-unsafe-buffer-usage
   -Wno-switch-default

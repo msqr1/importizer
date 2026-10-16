@@ -3,11 +3,12 @@
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/GlobPattern.h"
+#include <llvm/ADT/FunctionExtras.h>
 #include <optional>
 #include <utility>
 
-Glob::Glob(bool negate_, llvm::GlobPattern &&ptn_) noexcept
-    : negate{negate_}, ptn{std::move(ptn_)} {}
+Glob::Glob(bool negate, llvm::GlobPattern &&ptn) noexcept
+    : negate{negate}, ptn{std::move(ptn)} {}
 
 std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept {
   bool negate{ptn.consume_front('!')};

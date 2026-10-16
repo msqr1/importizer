@@ -19,24 +19,27 @@ class ASTConsumer;
 namespace tl = clang::tooling;
 
 // Used to pass information in and out of all layers of a ClangTool.
-struct FrontendInfo {
-  Opts &opts;
+struct FrontendCtx {
+  // Inputs (const refs)
+  const Opts &opts;
+
+  // Outputs
 };
 
 class FrontendAnalyzer : public clang::ASTFrontendAction {
-  FrontendInfo &info;
+  FrontendCtx &ctx;
 
 public:
-  FrontendAnalyzer(FrontendInfo &info);
+  FrontendAnalyzer(FrontendCtx &ctx);
   std::unique_ptr<clang::ASTConsumer>
   CreateASTConsumer(clang::CompilerInstance &CI,
                     llvm::StringRef file) noexcept override;
 };
 
 class FrontendAnalyzerFactory : public tl::FrontendActionFactory {
-  FrontendInfo &info;
+  FrontendCtx &ctx;
 
 public:
-  FrontendAnalyzerFactory(FrontendInfo &info);
+  FrontendAnalyzerFactory(FrontendCtx &ctx);
   std::unique_ptr<clang::FrontendAction> create() noexcept override;
 };

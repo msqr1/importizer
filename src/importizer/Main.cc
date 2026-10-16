@@ -15,8 +15,8 @@ int importizerMain(const int argc, const char *const *argv) {
     return EXIT_FAILURE;
   }
   tl::ClangTool tool{*opts.compDB, opts.srcs};
-  FrontendInfo info{opts};
-  FrontendAnalyzerFactory factory{info};
+  FrontendCtx ctx{opts};
+  FrontendAnalyzerFactory factory{ctx};
   std::unique_ptr<MyDiagnosticConsumer> diagHandler{
       std::make_unique<MyDiagnosticConsumer>()};
   tool.setDiagnosticConsumer(diagHandler.get());

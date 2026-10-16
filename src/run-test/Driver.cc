@@ -16,7 +16,7 @@ namespace fs = llvm::sys::fs;
 // run-test [testDir] [root]
 // Expecting absolute paths & there's no input validation
 int main(const int argc, const char *const *argv) {
-  assert(argc == 2 && "More CLI args than expected.");
+  assert(argc == 3 && "More CLI args than expected.");
 
   // Always set program & log stream before everything
   LogOpts logOpts;

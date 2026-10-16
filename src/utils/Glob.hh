@@ -3,8 +3,7 @@
 
 #pragma once
 #include "utils/Fs.hh"
-#include "llvm/ADT/STLExtras.h"
-#include "llvm/ADT/STLFunctionalExtras.h"
+#include "llvm/ADT/FunctionExtras.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/GlobPattern.h"
@@ -61,11 +60,13 @@ bool mkGlobs(GlobStorage &globs, const T &globExprs) noexcept {
   return true;
 };
 
-using MatchedCallback = llvm::function_ref<void(llvm::StringRef)>;
-template <ConvertibleRange<GlobStorage> InT,
-          ConvertibleRange<MatchedCallback> OutT>
-bool globFromDir(const llvm::Twine &dir, const InT &ins,
-                 const OutT &callbacks) {
+struct GlobDirRule {
+  GlobStorage globs;
+  llvm::unique_function<void(llvm::StringRef) const> callback;
+};
+
+template <ConvertibleRange<GlobDirRule> T>
+bool globDir(const llvm::Twine &dir, const T &rules) {
   llvm::StringRef relPath;
   llvm::SmallString<128> tmp;
   dir.toVector(tmp);
@@ -73,7 +74,7 @@ bool globFromDir(const llvm::Twine &dir, const InT &ins,
   auto checkDir{[&](const fs::directory_entry &ent) noexcept {
     relPath = ent.path();
     relPath = relPath.drop_front(baseLen);
-    for (const auto &[globs, callback] : llvm::zip_equal(ins, callbacks)) {
+    for (const auto &[globs, callback] : rules) {
       for (const Glob &glob : globs) {
         if (glob.match(relPath)) {
           callback(ent.path());
