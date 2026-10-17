@@ -17,7 +17,7 @@
 * Official supported build toolchain (LLVM's)
 * Offical directory-based format for tests
 * Directly intergrated C{plus}{plus} test driver to replace the old CMake-based one
-* Document with AsciiDoc instead of Markdown for much more control over formatting & referencing
+* Document with AsciiDoc instead of Markdown for much more control over formatting and referencing
 
 ==== Library changes
 |===
@@ -48,25 +48,25 @@
 === Breaking changes
 * Renamed `includeGuardPat` to `includeGuard`.
 * Changed TOML transitional mode to `[transitional]` (was `[Transitional]`) to match the
-command-line & project naming conventions.
+command-line and project naming conventions.
 * Updated default for `moduleInterfaceExt` to `ixx` (was `cppm`) for MSVC compatibility.
 * Removed the `logCurrentFile` setting; importizer now automatically logs the current file being
 processed on errors.
 
 ==== Off-by-default rule
-* Include guards & `#pragma once` are no longer processed by default.
+* Include guards and `#pragma once` are no longer processed by default.
 * Introduced a new `pragmaOnce` setting to control `#pragma once` handling.
 
 === Features
 * `SOFComments` setting for handling start-of-file comments (e.g., license headers).
 * Minimizer can now remove empty `#el...` statements.
 
-=== Changes & fixes
-* Separated the IncludePrevention test into distinct tests for include guards & `#pragma once`.
+=== Changes and fixes
+* Separated the IncludePrevention test into distinct tests for include guards and `#pragma once`.
 Eliminated condition generation for local includes in transitional mode.
 * Updated documentation for the `includeGuard` setting.
 * Renamed the "`Other`" test to "`ModeIndependent`".
-* Classified Minimizer & umbrella header tests as ModeIndependent.
+* Classified Minimizer and umbrella header tests as ModeIndependent.
 * Made CMake precompiled headers optional (opt-in via `PCH`).
 * Change the argument parser from https://github.com/p-ranav/argparse[p-ranav/argparse] to
 https://github.com/Taywee/args[Taywee/args] to avoid `std::any` issues on Windows Clang #13.

@@ -11,13 +11,13 @@ class SymbolVisitor : public clang::RecursiveASTVisitor<SymbolVisitor> {
   FrontendCtx &ctx;
 
 public:
-  SymbolVisitor(clang ::ASTContext &AST, FrontendCtx &ctx)
-      : AST{AST}, ctx{ctx} {}
+  SymbolVisitor(clang ::ASTContext &AST_, FrontendCtx &ctx_)
+      : AST{AST_}, ctx{ctx_} {}
 };
 
 } // namespace
 
-ASTAnalyzer::ASTAnalyzer(FrontendCtx &ctx) : ctx{ctx} {}
+ASTAnalyzer::ASTAnalyzer(FrontendCtx &ctx_) : ctx{ctx_} {}
 void ASTAnalyzer::HandleTranslationUnit(clang::ASTContext &AST) noexcept {
   SymbolVisitor{AST, ctx}.TraverseDecl(AST.getTranslationUnitDecl());
 }

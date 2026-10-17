@@ -6,7 +6,7 @@ Thank you for contributing to importizer! Below is how to contribute code.
 == Internals
 Although not a hard requirement, you'd want to know some internals of importizer.
 It's written out link:Internals.adoc[here].
-It covers architecture, design decisions, transformations & their mechanism as well as some history
+It covers architecture, design decisions, transformations and their mechanism as well as some history
 & fun facts!
 
 == Environment
@@ -35,7 +35,7 @@ https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[enabl
 to allow for their creation.
 
 === Setup
-Setup the environment (check architecture, required tools, backend & set environment variables) by
+Setup the environment (check architecture, required tools, backend and set environment variables) by
 running (replace {os} with the correct file):
 [,bash]
 ----
@@ -45,9 +45,9 @@ running (replace {os} with the correct file):
 You must do this before doing anything else, or you will get some weird errors.
 Note:
 
-* All scripts currently check if CMake & Ninja is in PATH.
-* *Linux:* The script checks if Clang & LLD is in PATH.
-* *MacOS:* The script checks Homebrew LLVM (for Clang & LLD).
+* All scripts currently check if CMake and Ninja is in PATH.
+* *Linux:* The script checks if Clang and LLD is in PATH.
+* *MacOS:* The script checks Homebrew LLVM (for Clang and LLD).
 * *Windows:* There's 2 optional arguments:
 [%autowidth]
 |===
@@ -134,12 +134,12 @@ One can start coding right away.
 |===
 
 . Ninja is the only generator that meets all these requirements:
-.. Available on all supported OS'es & architectures
+.. Available on all supported OS'es and architectures
 .. Can generate a JSON compilation database
 . `20.1.8` on AMD64, `20.1.6` on ARM64. Basically replacing MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
 
-Once you installed the toolchain, create a `CMakeUserPresets.json` & inherit from
+Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
 `CMakePresets.json` to customize your local build.
 This is so you don't have to derive the correct settings yourself.
 For example, on MacOS:
@@ -152,7 +152,7 @@ For example, on MacOS:
       "name": "mine",
       "inherits": ["importizer-macos"],
 
-      "$comment": "Easily switch between debug & release configuration",
+      "$comment": "Easily switch between debug and release configuration",
       "generator": "Ninja Multi-Config"
     }
   ]
@@ -161,10 +161,9 @@ For example, on MacOS:
 
 === Building from source entirely
 You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you will
-have to rebuild LibTooling with that toolchain & deal with bugs on them.
-I gave up & decided that I'd only support using LLVM's toolchain.
-If you still insist on building from source entirely, good luck!
-Note that everything else here assumes you won't be doing this.
+have to rebuild LibTooling with that toolchain and deal with bugs on them.
+I gave up and decided that I'd only support using LLVM's toolchain.
+If you still insist, good luck, and note that everything else here assumes you won't be doing this.
 
 === Build process
 Ok, enough talking, here's how to build the release mode from scratch.
@@ -187,7 +186,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 # Build using all cores
 cmake --build build --config Release -j $(cmake -P scripts/Nproc.cmake)
 ----
-The binary is in `build/importizer`, named `importizer` on Linux or MacOS & `importizer.exe` on
+The binary is in `build/importizer`, named `importizer` on Linux or MacOS and `importizer.exe` on
 Windows.
 
 == Testing
@@ -201,7 +200,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
 # Build using all cores
 cmake --build build --config Debug -j $(cmake -P scripts/Nproc.cmake)
 
-# Run tests with recommended settings & using all cores
+# Run tests with recommended settings and using all cores
 ctest --test-dir build/tests --progress --schedule-random -j $(cmake -P scripts/Nproc.cmake)
 ----
 
@@ -227,41 +226,35 @@ next `cmake -B build` run.
 TODO
 
 == Coding conventions
-* 100-column per line limit for files & CLI outputs.
+* 100-column per line limit for files and CLI outputs.
 
 === Naming
-* *All code variables & functions:* `camelCase`
-* *C{plus}{plus} classes, types, & files:* `PascalCase` (e.g., `MyClass.cc`)
-* *Executables & directories:* `kebab-case` (e.g., `run-test/`)
+* *All code variables and functions:* `camelCase`
+* *C{plus}{plus} classes, types, and files:* `PascalCase` (e.g., `MyClass.cc`)
+* *Executables and directories:* `kebab-case` (e.g., `run-test/`)
 * *Environment variables:* `ALL_CAPS_SNAKE_CASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 === C{plus}{plus} style
 * Follow the LLVM coding style.
 * Use `llvm::StringRef` (I considered `std::string_view` but it's missing many crucial features like
-`split`, `trim`) over `const char*`, & `std::array`/`std::vector` over C-style arrays.
+`split`, `trim`), no C-style arrays.
 * The C{plus}{plus} file containing `main()` for any executable must be named `Driver.cc`.
 * Do not use RTTI, if you must, use https://llvm.org/docs/HowToSetUpLLVMStyleRTTI.html[LLVM's].
 
-===  C{plus}{plus} error handling
+=== C{plus}{plus} error handling
 * *Do not* use C{plus}{plus} Exceptions.
-* *Return Values:* Mark fallible functions with `[nodiscard]` & return `bool` (or a type
-implicitly convertible to `bool`).
-* *Logging:* Functions must handle logging their own errors & should be marked `noexcept`.
-* *System Errors:* Mark branches handling system-level errors (e.g., `fseek` or `ftell` failures)
-with `[unlikely]`.
+* *Return Values:* Mark fallible functions with `[[nodiscard]]` to force caller to check return
+values.
+* *Logging:* Functions must log their own errors and should always be marked `noexcept`.
 Do not use this for input/argument validation.
 
 === CMake
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
-* Check before adding a compiler/linker flag if it's not guaranteed to be available on supported
-compiler (e.g., `-fsanitize=address`).
 * If a global setting affects LibTooling too (e.g. `BUILD_SHARED_LIBS`), put in `CMakePresets.json`.
 Otherwise (eg. `CMAKE_CXX_SCAN_FOR_MODULES`), put in `CMakeLists.txt`.
-* Install rules & post-installation scripts are only used in debug mode.
-In release mode, since the binary is standalone, we'd take it directly from `build`.
 
 === Scripts
-* Use CMake to write scripts, if not possible, then make a folder & add scripts for all supported
+* Use CMake to write scripts, if not possible, then make a folder and add scripts for all supported
 OS'es (like `setup-env`).
 * Environment setup scripts define these environment variables so you can use in other places:
 ** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, `macos`)
@@ -281,28 +274,28 @@ loooooong.
 ** `ChangeLog.adoc` (delete "in progress")
 ** `src/importizer/Opts.cc`
 ** `CMakeLists.txt`
-* [ ] Commit & run the Tag Release workflow, it will:
-** Check if the latest commit built & tested successfully (in Debug mode).
-** Build & test on its own (in Release mode).
+* [ ] Commit and run the Tag Release workflow, it will:
+** Check if the latest commit built and tested successfully (in Debug mode).
+** Build and test on its own (in Release mode).
 ** Draft the new release.
 * [ ] Enable release immutability (in repository settings).
 * [ ] Publish the drafted new release.
 * [ ] Disable release immutability.
 
 We do this because release immutability will also be applied to existing releases when we modify
-them, but we don't want Continuous & LibTooling releases to be immutable.
+them, but we don't want Continuous and LibTooling releases to be immutable.
 
 === Bumping LibTooling version
 * [ ] Tag a new release with (replace `{v}` with the new version):
 ** Title: `libtooling-{v}`
 ** Tag: `libtooling-{v}`
-** Description: `LibTooling {v} for developers & CI.`
+** Description: `LibTooling {v} for developers and CI.`
 ** Pre-release
 * [ ] Update the version string(s) in:
 ** `scripts/EnsureLibtooling.cmake` (also update LLVM Project source hash)
 ** `CONTRIBUTING.adoc`
 * [ ] Add `Bump LibTooling to {v}` to `ChangeLog.adoc`.
-* [ ] Commit with message `Bump LibTooling to {v}` & let the CI run & wait for completion.
+* [ ] Commit with message `Bump LibTooling to {v}` and let the CI run and wait for completion.
 * [ ] For the next commit:
 ** Update the LibTooling hashes in `scripts/EnsureLibtooling.cmake`.
 
@@ -314,13 +307,21 @@ them, but we don't want Continuous & LibTooling releases to be immutable.
 ** `CONTRIBUTING.adoc`
 * [ ] Add `Bump Alpine to {v}` to `ChangeLog.adoc`.
 * [ ] Commit with message `[no ci] Bump Alpine to {v}`.
-* [ ] Run the Make Alpine Images workflow & wait for completion.
+* [ ] Run the Make Alpine Images workflow and wait for completion.
 * [ ] Run the Tag Continuous workflow.
 
-=== Permissions
+== Misc
 When pushing, ensure permission of files in `scripts/` is set to executable.
-You can use the provided git hook to do this for you:
+Use the provided git hook to do this automatically:
 [,bash]
 ----
 git config core.hooksPath .githooks
+----
+
+When pulling, the remote `continous` tag can be ahead of the local one, preventing pull unless
+you overwrite it.
+Add a custom git refspec to overwrite it automatically:
+[,bash]
+----
+git config --add remote.origin.fetch "+refs/tags/continous:refs/tags/continous"
 ----

@@ -27,6 +27,6 @@ int importizerMain(const int argc, const char *const *argv) {
     return EXIT_FAILURE;
   case 2:
     assert(false && "Skipped files, missing compile commands??");
-  };
+  }
   return EXIT_SUCCESS;
 }

@@ -6,7 +6,7 @@
 #include "clang/Lex/Preprocessor.h"
 #include <memory>
 
-FrontendAnalyzer::FrontendAnalyzer(FrontendCtx &ctx) : ctx{ctx} {}
+FrontendAnalyzer::FrontendAnalyzer(FrontendCtx &ctx_) : ctx{ctx_} {}
 
 std::unique_ptr<clang::ASTConsumer>
 FrontendAnalyzer::CreateASTConsumer(clang::CompilerInstance &CI,
@@ -16,7 +16,8 @@ FrontendAnalyzer::CreateASTConsumer(clang::CompilerInstance &CI,
   return std::make_unique<ASTAnalyzer>(ctx);
 }
 
-FrontendAnalyzerFactory::FrontendAnalyzerFactory(FrontendCtx &ctx) : ctx{ctx} {}
+FrontendAnalyzerFactory::FrontendAnalyzerFactory(FrontendCtx &ctx_)
+    : ctx{ctx_} {}
 
 std::unique_ptr<clang::FrontendAction>
 FrontendAnalyzerFactory::create() noexcept {

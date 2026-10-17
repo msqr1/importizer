@@ -3,9 +3,13 @@
 
 cmake_path(GET exe PARENT_PATH exeDir)
 
+if(POLICY CMP0205)
+  cmake_policy(SET CMP0205 NEW)
+endif()
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
 endif()
+
 if(WIN32)
   # Windows has no Rpath so we symlink DLL's into the executable's directory
 

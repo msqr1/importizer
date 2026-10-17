@@ -8,14 +8,14 @@
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
 
-PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP, FrontendCtx &ctx)
-    : PP{PP}, ctx{ctx},
+PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP_, FrontendCtx &ctx_)
+    : PP{PP_}, ctx{ctx_},
       nestedIncludeDiagID{PP.getDiagnostics().getCustomDiagID(
           clang::DiagnosticsEngine::Fatal,
-          "#include within conditional block(s) is un-modularizable.")},
+          "#include within conditional block(s) is not modularizable.")},
       macroIncludeDiagID{PP.getDiagnostics().getCustomDiagID(
           clang::DiagnosticsEngine::Fatal,
-          "Macro-expanded #include is un-modularizable.")},
+          "Macro-expanded #include is not modularizable.")},
       condDepth{0} {}
 
 bool PPAnalyzer::FileNotFound(llvm::StringRef) noexcept { return false; }

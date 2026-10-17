@@ -28,14 +28,22 @@ target_include_directories(common-config INTERFACE "${root}/src")
 set(compileFlags
   -Wall
   -Wextra
+  -Wpedantic
   -Wconversion
-  -Wsign-conversion
   -Wimplicit-fallthrough
+  -Wshadow
+  -Wold-style-cast
+  -Wsuggest-override
+  -Wnon-virtual-dtor
+  -Wundef
+  -Wextra-semi-stmt
   -Werror
   -Wno-error=unused-parameter
   -Wno-error=unused-private-field
   -Wno-c++98-compat
+  -Wno-c++98-compat-pedantic
   -Wno-unsafe-buffer-usage
+  -Wno-switch-enum
   -Wno-switch-default
   -Wno-padded
 )
@@ -63,7 +71,7 @@ if(LINUX)
     "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
 
     # In Release mode, we want a fully static. But instead of -static we use -static-pie for more
-    # security. On Windows & MacOS things are already secure (PIE always on).
+    # security. On Windows and MacOS things are already secure (PIE always on).
     "$<$<CONFIG:Release>:-static-pie>"
   )
 elseif(WIN32 AND arch STREQUAL "amd64")
@@ -110,7 +118,7 @@ endif()
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
 
-option(BUILD_TESTING "Build test driver & enable tests" OFF)
+option(BUILD_TESTING "Build test driver and enable tests" OFF)
 if(BUILD_TESTING)
   add_subdirectory(src/run-test)
   add_subdirectory(tests)

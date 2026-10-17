@@ -101,7 +101,7 @@ if ($cmakePrefix.Equals(":bundled")) {
 
 $path = [Environment]::GetEnvironmentVariable("PATH")
 
-# Set SDK environment variables by stealing them from VsDevCmd & filter to not pollute
+# Set SDK environment variables by stealing them from VsDevCmd and filter to not pollute
 $sdkEnvVars = @(
   "INCLUDE",
   "LIB"
@@ -156,3 +156,4 @@ if ($ci) {
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
+

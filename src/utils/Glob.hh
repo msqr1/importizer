@@ -48,8 +48,9 @@ concept ConvertibleRange =
     std::convertible_to<std::ranges::range_value_t<Container>, ElemT>;
 
 // Make many globs, return true if none fails.
+
 template <ConvertibleRange<llvm::StringRef> T>
-bool mkGlobs(GlobStorage &globs, const T &globExprs) noexcept {
+[[nodiscard]] bool mkGlobs(GlobStorage &globs, const T &globExprs) noexcept {
   for (llvm::StringRef globExpr : globExprs) {
     std::optional<Glob> g{mkGlob(globExpr)};
     if (!g) {
@@ -66,7 +67,7 @@ struct GlobDirRule {
 };
 
 template <ConvertibleRange<GlobDirRule> T>
-bool globDir(const llvm::Twine &dir, const T &rules) {
+[[nodiscard]] bool globDir(const llvm::Twine &dir, const T &rules) {
   llvm::StringRef relPath;
   llvm::SmallString<128> tmp;
   dir.toVector(tmp);

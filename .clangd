@@ -2,14 +2,14 @@ Index:
   Background: Build
 
 InlayHints:
-  Enabled: Yes
-  ParameterNames: Yes
-  DeducedTypes: Yes
-  Designators: Yes
-  BlockEnd: Yes
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+  Designators: true
+  BlockEnd: true
 
 Hover:
-  ShowAKA: Yes
+  ShowAKA: true
 
 Diagnostics:
   MissingIncludes: Strict

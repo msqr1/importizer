@@ -47,7 +47,7 @@ jobs:
         with:
           merge-multiple: true
           path: dists
-      - name: Create & upload to release
+      - name: Create and upload to release
         run: |
           v=3.0.0
           gh release create $v dists/*

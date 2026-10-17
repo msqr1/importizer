@@ -17,12 +17,11 @@ enum class IterDirCtrl : char {
   Continue,
   Stop,    // Return true from iterDir
   ErrStop, // Return false from iterDir (errorneous stop)
-  Skip,    // Skip descending into this directory (only for recusive)
+  Skip,    // Skip descending into this directory (only for recursion)
 };
 
 using IterDirCallback =
     llvm::function_ref<IterDirCtrl(const fs::directory_entry &)>;
-namespace {
 
 template <typename It>
 [[nodiscard]] bool iterDirImpl(const llvm::Twine &dir,
@@ -56,8 +55,6 @@ template <typename It>
   }
   return true;
 }
-
-} // namespace
 
 // Nicer LLVM's directory iterator. Returns true if iteration is successful.
 template <bool recurse = true>

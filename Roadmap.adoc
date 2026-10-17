@@ -6,7 +6,7 @@
 
 === Infrastructure
 ==== Building
-* [x] Determine platform (with version) & architecture set to support.
+* [x] Determine platform (with version) and architecture set to support.
 * [x] Figure out dependency linkage.
 * [x] Figure out the required build toolchain.
 * [x] Setup base CMake project with LibTooling integration.
@@ -17,27 +17,27 @@
 * [x] Directly intergrated test driver
 
 ==== Distribution
-* [x] Working build, test, upload CI & CD for:
+* [x] Working build, test, upload CI and CD for:
 ** [x] Windows (fix Windows 11 ARM64)
 ** [x] MacOS
 ** [x] Linux
-* [ ] Sign CI & CD distributions with minisign.
+* [ ] Sign CI and CD distributions with minisign.
 
 === Documentations
 * [x] Use AsciiDoc instead of Markdown.
 * [x] Separate README and CONTRIBUTING docs.
 * [ ] Rename "How it works" to "Internal" and rewrite (because we're using LibTooling now).
-* [ ] Issues, PR templates & their contribution guidelines
+* [ ] Issues, PR templates and their contribution guidelines
 
 === Features
 * [x] Explicit mode
-* [ ] Per-translation-unit include discovery (via `PPCallbacks::InclusionDirective`,
-shared across JSON compilation database & explicit mode argv paths)
+* [x] Per-translation-unit include discovery (via `PPCallbacks::InclusionDirective`,
+shared across JSON compilation database and explicit mode argv paths)
 * [ ] Include-to-import conversion (no-public-API case: full rewrite, no classification needed)
 * [ ] Include classification (header+source case: transitive `#include` closure from
 author-specified public entry points; determines which headers are frozen)
 * [ ] Include-to-import conversion (header+source case: classification-gated rewrite)
-* [ ] Pragma once & include guard removal
+* [ ] Pragma once and include guard removal
 * [ ] Wrapping modules generation
 
 === Validation

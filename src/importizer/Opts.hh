@@ -26,7 +26,7 @@ struct Opts {
   std::unique_ptr<tl::CompilationDatabase> compDB;
 
   // Actually rewrite files
-  bool write;
+  bool write{};
 
   // Convert standard #include to import std or std.compat
   bool stdImport;

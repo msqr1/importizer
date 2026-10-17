@@ -7,8 +7,8 @@
 #include <optional>
 #include <utility>
 
-Glob::Glob(bool negate, llvm::GlobPattern &&ptn) noexcept
-    : negate{negate}, ptn{std::move(ptn)} {}
+Glob::Glob(bool negate_, llvm::GlobPattern &&ptn_) noexcept
+    : negate{negate_}, ptn{std::move(ptn_)} {}
 
 std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept {
   bool negate{ptn.consume_front('!')};

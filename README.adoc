@@ -9,12 +9,12 @@ This project uses https://semver.org[semantic versioning].
 
 *Note:* This project is currently going through a complete rewrite using LibTooling to replace
 Regex (pre-2.0.0).
-Much pre-2.0.0 code are gone, but releases & git history are preserved.
+Much pre-2.0.0 code are gone, but releases and git history are preserved.
 
 == Why C{plus}{plus} modules?
 * *Improved encapsulation:* Modules allow you to choose what is exposed to users (exported), no need
 to hide stuff with a `detail` namespace.
-Includes & macros from a module will only stay in that module.
+Includes and macros from a module will only stay in that module.
 * https://arewemodulesyet.org
 
 === Native modules
@@ -63,7 +63,7 @@ https://github.com/msqr1/importizer/releases[releases page].
 https://github.com/msqr1/importizer/releases/tag/continuous[Continuous release].
 Useful for testing latest features or reporting bugs.
 
-== Configuration & usage
+== Configuration and usage
 Importizer primarily uses a YAML configuration file, complemented by a few command-line options.
 
 === Command-line interface (CLI)

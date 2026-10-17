@@ -58,7 +58,7 @@ elseif(WIN32)
       [[^.*[\\/]system32[\\/].*]]
   )
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  # Exclude MacOS CStdlib & CxxStdlib
+  # Exclude MacOS CStdlib and CxxStdlib
   install(
     TARGETS importizer
     DESTINATION .

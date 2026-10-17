@@ -71,7 +71,7 @@ if(mode STREQUAL "Debug")
   # Upload
   exec(gh release upload continuous "${root}/${os}-${arch}.tzst" --clobber -R ${repo})
 
-  # Update Continous tag to current commit
+  # Update continous tag to current commit
   exec(git tag -f continuous)
   exec(git remote set-url --push origin https://msqr1:$ENV{GH_TOKEN}@github.com/${repo}.git)
   execUnsafe(git push -f origin continuous)

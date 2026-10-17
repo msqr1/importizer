@@ -14,11 +14,11 @@
 namespace fs = llvm::sys::fs;
 
 // run-test [testDir] [root]
-// Expecting absolute paths & there's no input validation
+// Expecting absolute paths and there's no input validation
 int main(const int argc, const char *const *argv) {
   assert(argc == 3 && "More CLI args than expected.");
 
-  // Always set program & log stream before everything
+  // Always set program and log stream before everything
   LogOpts logOpts;
   g_logOpts = &logOpts;
   logOpts.prog = "run-test";
