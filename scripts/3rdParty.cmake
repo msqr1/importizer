@@ -1,24 +1,28 @@
 # 3rd-party library utilities (downloading, linking, precompiled headers, etc.)
 # For inclusion in CMakeLists.txt
 
+include_guard(GLOBAL)
+
 # 3rd-party libs
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
 endif()
 
-include("${scriptsDir}/EnsureLibtooling.cmake")
-find_package(LLVM REQUIRED)
-find_package(Clang REQUIRED)
-
 # Setup a 3rd-party library for a target
+include("${scriptsDir}/EnsureLibTooling.cmake")
+include("${scriptsDir}/EnsureDoctest.cmake")
+
 function(require target visibility)
   foreach(pkg IN LISTS ARGN)
     if(pkg STREQUAL "LLVM")
+      find_package(LLVM REQUIRED)
       target_include_directories(${target} SYSTEM ${visibility} "${LLVM_INCLUDE_DIRS}")
       target_link_libraries(${target} ${visibility}
         LLVMSupport
       )
     elseif(pkg STREQUAL "Clang")
+      find_package(LLVM REQUIRED)
+      find_package(Clang REQUIRED)
       target_include_directories(${target} SYSTEM ${visibility}
         "${LLVM_INCLUDE_DIRS}"
         "${CLANG_INCLUDE_DIRS}"
@@ -29,6 +33,9 @@ function(require target visibility)
         clangTooling
         clangFrontend
       )
+    elseif(pkg STREQUAL "doctest")
+      find_package(doctest REQUIRED)
+      target_link_libraries(${target} ${visibility} doctest::doctest)
     else()
       message(FATAL_ERROR "Unknown 3rd-party library '${pkg}'")
     endif()

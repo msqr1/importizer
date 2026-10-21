@@ -1,4 +1,4 @@
-#include "utils/Log.hh"
+#include "utils/Diag.hh"
 
 LogOpts *g_logOpts;
 

@@ -1,6 +1,6 @@
-/// Extract AST-related information such as top-level class, functions and
-/// variables of a TU to rewrite later. FrontendAction own an instance of this
-/// class.
+// Extract AST-related information such as top-level class, functions and
+// variables of a TU to rewrite later. FrontendAction own an instance of this
+// class.
 
 #pragma once
 #include "clang/AST/ASTConsumer.h"

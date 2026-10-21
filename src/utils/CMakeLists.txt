@@ -1,6 +1,6 @@
 add_library(utils-lib
   Fs.cc
-  Log.cc
+  Diag.cc
   Glob.cc
 )
 require(utils-lib PRIVATE LLVM)

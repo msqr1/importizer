@@ -178,7 +178,7 @@ cd importizer
 . scripts/setup-env/{OS}
 
 # Ensure LibTooling
-cmake -P scripts/EnsureLibtooling.cmake
+cmake -P scripts/EnsureLibTooling.cmake
 
 # Configure
 cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -205,8 +205,8 @@ ctest --test-dir build/tests --progress --schedule-random -j $(cmake -P scripts/
 ----
 
 === Adding new tests
-==== Black-box/End-to-end tests
-Importizer uses a custom directory-based test harness (located in `src/run-test`).
+==== End-to-end tests
+Importizer uses a custom directory-based test harness (located in `src/testing`).
 To add a new test case:
 
 . Create a new directory under `tests/` with a descriptive name (e.g., `tests/my-new-feature/`).
@@ -222,7 +222,10 @@ Don’t add this when expecting an error.
 The CMake script detect changes in `tests/`, so your new test will be automatically picked up on the
 next `cmake -B build` run.
 
-==== White-box/Unit tests
+==== Integration tests
+TODO
+
+==== Unit tests
 TODO
 
 == Coding conventions
@@ -231,7 +234,7 @@ TODO
 === Naming
 * *All code variables and functions:* `camelCase`
 * *C{plus}{plus} classes, types, and files:* `PascalCase` (e.g., `MyClass.cc`)
-* *Executables and directories:* `kebab-case` (e.g., `run-test/`)
+* *Executables and directories:* `kebab-case` (e.g., `testing/`)
 * *Environment variables:* `ALL_CAPS_SNAKE_CASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 === C{plus}{plus} style
@@ -292,12 +295,12 @@ them, but we don't want Continuous and LibTooling releases to be immutable.
 ** Description: `LibTooling {v} for developers and CI.`
 ** Pre-release
 * [ ] Update the version string(s) in:
-** `scripts/EnsureLibtooling.cmake` (also update LLVM Project source hash)
+** `scripts/EnsureLibTooling.cmake` (also update LLVM Project source hash)
 ** `CONTRIBUTING.adoc`
 * [ ] Add `Bump LibTooling to {v}` to `ChangeLog.adoc`.
 * [ ] Commit with message `Bump LibTooling to {v}` and let the CI run and wait for completion.
 * [ ] For the next commit:
-** Update the LibTooling hashes in `scripts/EnsureLibtooling.cmake`.
+** Update the LibTooling hashes in `scripts/EnsureLibTooling.cmake`.
 
 === Bumping Alpine images version
 * [ ] Update the version string(s) in:

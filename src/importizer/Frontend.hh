@@ -1,5 +1,5 @@
-/// Links the AST and preprocessor information extractor together. A ClangTool
-/// will create an instance of this class per file.
+// Links the AST and preprocessor information extractor together. A ClangTool
+// will create an instance of this class per file.
 
 #pragma once
 #include "clang/AST/ASTConsumer.h"

@@ -1,19 +1,14 @@
-include_guard(GLOBAL)
-# Ensure that LibTooling (LLVM and Clang) is in 3rd-party/
+# Ensure a built LibTooling (LLVM and Clang) is in 3rd-party/
 # Can be used either as script or included
-## Uses Github CLI, needs GH_TOKEN env var
+## Uses Github CLI, needs GH_TOKEN env var when on CI
+
+include_guard(GLOBAL)
 
 block(SCOPE_FOR VARIABLES PROPAGATE LLVM_DIR Clang_DIR)
 
-if(LINUX)
-  set(os "linux")
-elseif(APPLE)
-  set(os "macos")
-elseif(WIN32)
-  set(os "windows")
-endif()
+set(os $ENV{IMPORTIZER_OS})
+set(arch $ENV{IMPORTIZER_ARCH})
 if(DEFINED CMAKE_SCRIPT_MODE_FILE)
-  set(arch $ENV{IMPORTIZER_ARCH})
   cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptsDir)
   file(REAL_PATH "${scriptsDir}/.." root)
   set(3rdPartyDir "${root}/3rd-party")
@@ -21,18 +16,17 @@ endif()
 
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 set(v 22.1.8)
-set(repo "msqr1/importizer")
 set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
 set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
 
-if(IS_READABLE "${3rdPartyDir}/clang" OR IS_READABLE "${3rdPartyDir}/llvm")
+if(IS_READABLE "${LLVM_DIR}" OR IS_READABLE "${Clang_DIR}")
   return()
 endif()
 
-set(arFile "${3rdPartyDir}/Libtooling.tzst")
-
+set(arFile "${3rdPartyDir}/LibTooling.tzst")
+set(repo "msqr1/importizer")
 file(DOWNLOAD
-  https://github.com/${repo}/releases/download/libtooling-${v}/${os}-${arch}.tzst
+  https://github.com/${repo}/releases/download/LibTooling-${v}/LibTooling-${os}-${arch}.tzst
   "${arFile}"
   STATUS status
 )
@@ -74,15 +68,15 @@ endif()
 
 # Don't build on developer's device
 if(NOT DEFINED ENV{CI})
-  message(FATAL_ERROR "${err}")
+  message(FATAL_ERROR "${err} (${ec})")
 endif()
 
 file(MAKE_DIRECTORY "${3rdPartyDir}")
-set(llvmProjSrc "${3rdPartyDir}/llvm-proj-src")
+set(LLVMProjSrc "${3rdPartyDir}/llvm-proj-src")
 
-# Get LLVM Project source (which includes LLVM and Clang). There used to be standalone LLVM and Clang
-# sources, but that seems to have ended in 21.x.x
-set(arFile "${3rdPartyDir}/LlvmProj.tar.xz")
+# Get LLVM Project source (which includes LLVM and Clang). There used to be standalone LLVM and
+# Clang sources, but that seems to have ended in 21.x.x
+set(arFile "${3rdPartyDir}/LLVMProj.tar.xz")
 file(DOWNLOAD
   https://github.com/llvm/llvm-project/releases/download/llvmorg-${v}/llvm-project-${v}.src.tar.xz
   "${arFile}"
@@ -90,58 +84,58 @@ file(DOWNLOAD
 )
 file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
 file(REMOVE "${arFile}")
-file(RENAME "${3rdPartyDir}/llvm-project-${v}.src" "${llvmProjSrc}")
+file(RENAME "${3rdPartyDir}/llvm-project-${v}.src" "${LLVMProjSrc}")
 
 include("${scriptsDir}/Exec.cmake")
 
 # Build LibTooling
 ## Load toolchain, static and dynamic presets for LLVM
 file(CREATE_LINK "${root}/CMakePresets.json"
-  "${llvmProjSrc}/llvm/CMakeUserPresets.json" COPY_ON_ERROR SYMBOLIC)
+  "${LLVMProjSrc}/llvm/CMakeUserPresets.json" SYMBOLIC)
 file(CREATE_LINK "${root}/Toolchain.cmake"
-  "${llvmProjSrc}/llvm/Toolchain.cmake" COPY_ON_ERROR SYMBOLIC)
+  "${LLVMProjSrc}/llvm/Toolchain.cmake" SYMBOLIC)
 file(CREATE_LINK "${root}/DynPresets.cmake"
-  "${llvmProjSrc}/llvm/DynPresets.cmake" COPY_ON_ERROR SYMBOLIC)
+  "${LLVMProjSrc}/llvm/DynPresets.cmake" SYMBOLIC)
 
 ## Build LLVM
 exec(${CMAKE_COMMAND}
-  -S "${llvmProjSrc}/llvm"
-  -B "${llvmProjSrc}/build"
+  -S "${LLVMProjSrc}/llvm"
+  -B "${LLVMProjSrc}/build"
   --preset llvm
 )
-exec(${CMAKE_COMMAND} --build "${llvmProjSrc}/build")
+exec(${CMAKE_COMMAND} --build "${LLVMProjSrc}/build")
 exec(${CMAKE_COMMAND}
-  --install "${llvmProjSrc}/build"
+  --install "${LLVMProjSrc}/build"
   --prefix "${3rdPartyDir}/llvm"
   -j ${procCnt}
 )
 
 ## Load Clang's presets (same as LLVM)
 file(CREATE_LINK "${root}/CMakePresets.json"
-  "${llvmProjSrc}/clang/CMakeUserPresets.json" COPY_ON_ERROR SYMBOLIC)
+  "${LLVMProjSrc}/clang/CMakeUserPresets.json" SYMBOLIC)
 file(CREATE_LINK "${root}/Toolchain.cmake"
-  "${llvmProjSrc}/clang/Toolchain.cmake" COPY_ON_ERROR SYMBOLIC)
+  "${LLVMProjSrc}/clang/Toolchain.cmake" SYMBOLIC)
 file(CREATE_LINK "${root}/DynPresets.cmake"
-  "${llvmProjSrc}/clang/DynPresets.cmake" COPY_ON_ERROR SYMBOLIC)
+  "${LLVMProjSrc}/clang/DynPresets.cmake" SYMBOLIC)
 
 ## Build Clang
 exec(${CMAKE_COMMAND}
-  -S "${llvmProjSrc}/clang"
-  -B "${llvmProjSrc}/build2"
+  -S "${LLVMProjSrc}/clang"
+  -B "${LLVMProjSrc}/build2"
   --preset clang
   "-DLLVM_DIR=${3rdPartyDir}/llvm/lib/cmake/llvm"
 )
-exec(${CMAKE_COMMAND} --build "${llvmProjSrc}/build2")
+exec(${CMAKE_COMMAND} --build "${LLVMProjSrc}/build2")
 exec(${CMAKE_COMMAND}
-  --install "${llvmProjSrc}/build2"
+  --install "${LLVMProjSrc}/build2"
   --prefix "${3rdPartyDir}/clang"
   -j ${procCnt}
 )
 
-file(REMOVE_RECURSE "${llvmProjSrc}")
+file(REMOVE_RECURSE "${LLVMProjSrc}")
 
 # Pack and upload
-set(arFile "${3rdPartyDir}/${os}-${arch}.tzst")
+set(arFile "${3rdPartyDir}/LibTooling-${os}-${arch}.tzst")
 file(ARCHIVE_CREATE
   OUTPUT "${arFile}"
   WORKING_DIRECTORY "${3rdPartyDir}"

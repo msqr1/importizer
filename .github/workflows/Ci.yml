@@ -3,8 +3,6 @@ on: [push, workflow_dispatch]
 jobs:
   jobMatrix:
     uses: ./.github/workflows/JobMatrix.yml
-    with:
-      jqExpr: 'map(select(.os == "windows"))'
   all:
     permissions:
       contents: write
@@ -24,8 +22,11 @@ jobs:
       - name: Setup environment
         run: . scripts/setup-env/${{ matrix.setup-env }} ${{ matrix.arch }}
       - name: Ensure LibTooling
-        timeout-minutes: 180
-        run: cmake -P scripts/EnsureLibtooling.cmake
-      - name: Make and upload distribution
+        timeout-minutes: 167
+        run: cmake -P scripts/EnsureLibTooling.cmake
+      - name: Ensure doctest
+        timeout-minutes: 5
+        run: cmake -P scripts/EnsureDoctest.cmake
+      - name: Make & upload distribution
         timeout-minutes: 20
         run: cmake -Dmode=Debug -P scripts/MkDist.cmake

@@ -120,6 +120,6 @@ add_subdirectory(src/utils)
 
 option(BUILD_TESTING "Build test driver and enable tests" OFF)
 if(BUILD_TESTING)
-  add_subdirectory(src/run-test)
+  add_subdirectory(src/testing)
   add_subdirectory(tests)
 endif()

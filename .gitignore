@@ -10,5 +10,5 @@ __cmake_systeminformation
 /importizer*
 /build*
 /CMakeUserPresets.json
-/test*
+**/test/
 !/tests/

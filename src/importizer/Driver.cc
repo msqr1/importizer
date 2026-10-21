@@ -1,5 +1,5 @@
 #include "importizer/Main.hh"
-#include "utils/Log.hh"
+#include "utils/Diag.hh"
 #include "llvm/Support/raw_ostream.h"
 
 int main(const int argc, const char *const *argv) {

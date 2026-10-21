@@ -41,7 +41,7 @@ if(mode STREQUAL "Debug")
     -j ${procCnt}
   )
   file(ARCHIVE_CREATE
-    OUTPUT "${root}/${os}-${arch}.tzst"
+    OUTPUT "${root}/importizer-${os}-${arch}.tzst"
     PATHS "${root}/importizer"
     COMPRESSION Zstd
     COMPRESSION_LEVEL 19
@@ -53,7 +53,7 @@ elseif(mode STREQUAL "Release")
     set(bin "${bin}.exe")
   endif()
   file(ARCHIVE_CREATE
-    OUTPUT "${root}/${os}-${arch}.zst"
+    OUTPUT "${root}/importizer-${os}-${arch}.zst"
     FORMAT raw
     PATHS "${root}/build/importizer/${bin}"
     COMPRESSION Zstd

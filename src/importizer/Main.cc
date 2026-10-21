@@ -1,5 +1,5 @@
 #include "importizer/Main.hh"
-#include "importizer/Diagnostics.hh"
+#include "importizer/ClangDiag.hh"
 #include "importizer/Frontend.hh"
 #include "importizer/Opts.hh"
 #include "clang/Tooling/Tooling.h"

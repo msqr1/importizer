@@ -1,5 +1,13 @@
-add_executable(run-test Driver.cc)
-require(run-test PRIVATE LLVM)
+add_executable(run-test
+  Driver.cc
+  E2E.cc
+  Unit.cc
+  DiagTest.cc
+  FSTest.cc
+  GlobTest.cc
+  OptsTest.cc
+)
+require(run-test PRIVATE LLVM doctest)
 target_link_libraries(run-test PRIVATE
   common-config
   utils-lib

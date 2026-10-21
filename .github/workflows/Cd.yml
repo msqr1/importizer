@@ -21,7 +21,9 @@ jobs:
       - name: Setup environment
         run: . scripts/setup-env/${{ matrix.setup-env }} ${{ matrix.arch }}
       - name: Ensure LibTooling
-        run: cmake -P scripts/EnsureLibtooling.cmake
+        run: cmake -P scripts/EnsureLibTooling.cmake
+      - name: Ensure doctest
+        run: cmake -P scripts/EnsureDoctest.cmake
       - name: Make distribution
         run: cmake -Dmode=Release -P scripts/MkDist.cmake
       - name: Upload as artifact

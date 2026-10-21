@@ -8,6 +8,7 @@ foreach(testDir ${testDirs})
   add_test(
     NAME "${testName}"
     COMMAND "$<TARGET_FILE:run-test>"
+      "e2e"
       "${CMAKE_CURRENT_SOURCE_DIR}/${testName}"
       "${CMAKE_CURRENT_BINARY_DIR}/${testName}"
   )

@@ -4,8 +4,8 @@ using namespace System
 
 param (
   [Parameter(Position = 0)][ValidateSet("amd64", "arm64")][string]$arch,
-  [ValidateNotNullOrEmpty()][string]$llvmPrefix = "C:/Program Files/LLVM",
-  [ValidateNotNullOrEmpty()][string]$cmakePrefix = "C:/Program Files/CMake"
+  [ValidateNotNullOrEmpty()][string]$LLVMPrefix = "C:/Program Files/LLVM",
+  [ValidateNotNullOrEmpty()][string]$CMakePrefix = "C:/Program Files/CMake"
 )
 
 function exitWithErr {
@@ -74,10 +74,10 @@ $components = [Collections.Generic.List[string]]@(
   "Microsoft.VisualStudio.Component.Windows1?SDK.*"
   "Microsoft.VisualStudio.Component.VC.*.$x"
 )
-if ($llvmPrefix.Equals(":bundled")) {
+if ($LLVMPrefix.Equals(":bundled")) {
   $components.Add("Microsoft.VisualStudio.Component.VC.Llvm.Clang")
 }
-if ($cmakePrefix.Equals(":bundled")) {
+if ($CMakePrefix.Equals(":bundled")) {
   $components.Add("Microsoft.VisualStudio.Component.VC.CMake.Project")
 }
 $opts.FileName = $vswhere
@@ -90,12 +90,12 @@ if ($proc.ExitCode -ne 0 -or [string]::IsNullOrEmpty($vsPrefix)) {
   exitWithErr("No suitable Visual Studio installation found. One must have these components: ",
     $components)
 }
-if ($llvmPrefix.Equals(":bundled")) {
+if ($LLVMPrefix.Equals(":bundled")) {
   $dir = if ($arch.Equals("amd64")) { "x64" } else { "ARM64" }
-  $llvmPrefix = [IO.Path]::Combine($vsPrefix, "VC", "Tools", "Llvm", $dir)
+  $LLVMPrefix = [IO.Path]::Combine($vsPrefix, "VC", "Tools", "Llvm", $dir)
 }
-if ($cmakePrefix.Equals(":bundled")) {
-  $cmakePrefix = [IO.Path]::Combine($vsPrefix, "Common7", "IDE",
+if ($CMakePrefix.Equals(":bundled")) {
+  $CMakePrefix = [IO.Path]::Combine($vsPrefix, "Common7", "IDE",
     "CommonExtensions", "Microsoft", "CMake", "CMake")
 }
 
@@ -141,11 +141,11 @@ while (!$stdOut.EndOfStream) {
 $proc.WaitForExit()
 
 [Environment]::SetEnvironmentVariable("IMPORTIZER_ARCH", $arch)
-$llvmBin = [IO.Path]::Combine($llvmPrefix, "bin")
+$llvmBin = [IO.Path]::Combine($LLVMPrefix, "bin")
 if (!$path.Contains($llvmBin)) {
   [Environment]::SetEnvironmentVariable("PATH", "$llvmBin;$path")
 }
-$cmakeBin = [IO.Path]::Combine($cmakePrefix, "bin")
+$cmakeBin = [IO.Path]::Combine($CMakePrefix, "bin")
 if (!$path.Contains($cmakeBin)) {
   [Environment]::SetEnvironmentVariable("PATH", "$cmakeBin;$path")
 }
@@ -156,4 +156,3 @@ if ($ci) {
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
-

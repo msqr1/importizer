@@ -1,5 +1,5 @@
 #include "utils/Glob.hh"
-#include "utils/Log.hh"
+#include "utils/Diag.hh"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Error.h"
 #include "llvm/Support/GlobPattern.h"
@@ -7,7 +7,7 @@
 #include <optional>
 #include <utility>
 
-Glob::Glob(bool negate_, llvm::GlobPattern &&ptn_) noexcept
+Glob::Glob(const bool negate_, llvm::GlobPattern &&ptn_) noexcept
     : negate{negate_}, ptn{std::move(ptn_)} {}
 
 std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept {

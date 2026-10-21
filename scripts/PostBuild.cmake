@@ -10,9 +10,9 @@ if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
 endif()
 
+# Windows has no rpath so we symlink DLL's into the executable's directory post-build. For
+# post-install, CMake install(RUNTIME_DEPENDENCIES) does the same thing
 if(WIN32)
-  # Windows has no Rpath so we symlink DLL's into the executable's directory
-
   # Exclude Windows UCRT
   file(GET_RUNTIME_DEPENDENCIES
     RESOLVED_DEPENDENCIES_VAR deps

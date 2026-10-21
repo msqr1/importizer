@@ -1,11 +1,11 @@
-# Library for run-test
+# Library for testing
 add_library(importizer-lib
   Opts.cc
   Main.cc
   PP.cc
   AST.cc
   Frontend.cc
-  Diagnostics.cc
+  ClangDiag.cc
 )
 target_link_libraries(importizer-lib PRIVATE
   common-config
@@ -57,7 +57,7 @@ elseif(WIN32)
     POST_EXCLUDE_REGEXES
       [[^.*[\\/]system32[\\/].*]]
   )
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+elseif(APPLE)
   # Exclude MacOS CStdlib and CxxStdlib
   install(
     TARGETS importizer

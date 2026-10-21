@@ -1,7 +1,7 @@
 #include "importizer/Opts.hh"
+#include "utils/Diag.hh"
 #include "utils/Fs.hh"
 #include "utils/Glob.hh"
-#include "utils/Log.hh"
 #include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/JSONCompilationDatabase.h"
 #include "llvm/ADT/DenseMap.h"
@@ -13,6 +13,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/Support/YAMLTraits.h"
 #include "llvm/Support/raw_ostream.h"
 #include <array>
@@ -26,6 +27,7 @@
 
 namespace cl = llvm::cl;
 namespace tl = clang::tooling;
+namespace vfs = llvm::vfs;
 namespace pth = llvm::sys::path;
 namespace yml = llvm::yaml;
 
@@ -67,7 +69,8 @@ template <> struct yml::MappingTraits<NormalOpts> {
   }
 };
 
-bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
+bool getOpts(const int argc, const char *const *argv, Opts &opts,
+             vfs::FileSystem &VFS) noexcept {
   // LLVM default options will mix into ours if we don't make our own category
   cl::OptionCategory cat{g_logOpts->prog};
   cl::opt<std::string> config{
@@ -103,7 +106,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return false;
   }
 
-  const auto buf{llvm::MemoryBuffer::getFile(config, false, false, false)};
+  auto buf{VFS.getBufferForFile(config, false, false, false)};
   if (!buf) {
     return err("Error opening {}: {}", config, buf.getError().message());
   }
@@ -118,7 +121,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
   llvm::Twine configDir{pth::parent_path(config)};
   pth::make_absolute(configDir, tmp);
   opts.root = tmp.str();
-  std::error_code ec{fs::real_path(opts.root, tmp)};
+  std::error_code ec{VFS.getRealPath(opts.root, tmp)};
   if (ec) {
     return err("Unable to get real path of {}: {}", opts.root, ec.message());
   }
@@ -143,10 +146,14 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
 
   // compilationDb
   else if (nOpts.dbPath) {
+    buf = VFS.getBufferForFile(*nOpts.dbPath, false, false, false);
+    if (!buf) {
+      return err("Error opening {}: {}", config, buf.getError().message());
+    }
     std::string msg;
     std::unique_ptr<tl::JSONCompilationDatabase> jsonCompDb{
-        tl::JSONCompilationDatabase::loadFromFile(
-            *nOpts.dbPath, msg, tl::JSONCommandLineSyntax::AutoDetect)};
+        tl::JSONCompilationDatabase::loadFromBuffer(
+            (**buf).getBuffer(), msg, tl::JSONCommandLineSyntax::AutoDetect)};
     if (!jsonCompDb) {
       return err("Error parsing compilation database: {}", msg);
     }
@@ -171,5 +178,5 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts) noexcept {
     return err(
         "At least one of 'compilationDb' or 'explicit' must be specified");
   }
-  return globDir(opts.root, rootGlobRules);
+  return globDir(opts.root, rootGlobRules, VFS);
 }

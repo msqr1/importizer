@@ -1,15 +1,17 @@
-/// "Resolved" options (struct Opts) that the user passed in through the CLI and
-/// configuration file. Resolved means globs becomes paths, compilation
-/// databases availability are handled, etc.
+// "Resolved" options (struct Opts) that the user passed in through the CLI and
+// configuration file. Resolved means globs becomes paths, compilation
+// databases availability are handled, etc.
 
 #pragma once
 #include "clang/Tooling/CompilationDatabase.h"
 #include "llvm/ADT/StringSet.h"
+#include "llvm/Support/VirtualFileSystem.h"
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace tl = clang::tooling;
+namespace vfs = llvm::vfs;
 
 // Resolved options
 struct Opts {
@@ -44,5 +46,6 @@ struct Opts {
 };
 
 // Populate a struct Opts from CLI args
-[[nodiscard]] bool getOpts(const int argc, const char *const *argv,
-                           Opts &opts) noexcept;
+[[nodiscard]] bool
+getOpts(const int argc, const char *const *argv, Opts &opts,
+        vfs::FileSystem &VFS = *vfs::createPhysicalFileSystem()) noexcept;

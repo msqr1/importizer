@@ -1,6 +1,6 @@
-/// Extract preprocessor-related information such as inclusion and macros to
-/// figure out dependencies of a TU. FrontendAction owns a preprocessor which we
-/// must register an instance of this to.
+// Extract preprocessor-related information such as inclusion and macros to
+// figure out dependencies of a TU. FrontendAction owns a preprocessor which we
+// must register an instance of this to.
 
 #pragma once
 #include "clang/Basic/FileEntry.h"
