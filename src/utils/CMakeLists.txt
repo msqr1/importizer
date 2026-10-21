@@ -1,5 +1,5 @@
 add_library(utils-lib
-  Fs.cc
+  FS.cc
   Diag.cc
   Glob.cc
 )

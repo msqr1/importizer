@@ -1,6 +1,6 @@
 #include "importizer/Opts.hh"
 #include "utils/Diag.hh"
-#include "utils/Fs.hh"
+#include "utils/FS.hh"
 #include "utils/Glob.hh"
 #include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/JSONCompilationDatabase.h"

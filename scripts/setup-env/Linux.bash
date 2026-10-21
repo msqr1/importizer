@@ -50,8 +50,10 @@ if [ -n "$CI" ]; then
   fi
 
   {
+    echo "IMPORTIZER_OS=linux"
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"
 fi
 
+export IMPORTIZER_OS=linux
 export IMPORTIZER_ARCH=$arch

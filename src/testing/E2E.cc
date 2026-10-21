@@ -1,7 +1,7 @@
 #include "testing/E2E.hh"
 #include "importizer/Main.hh"
 #include "utils/Diag.hh"
-#include "utils/Fs.hh"
+#include "utils/FS.hh"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
@@ -9,6 +9,7 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
+#include <cstdlib>
 
 namespace fs = llvm::sys::fs;
 
@@ -38,20 +39,20 @@ bool runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) {
   const int rtn{importizerMain(static_cast<int>(cmd.size()), cmd.data())};
   g_logOpts = &logOpts;
 
-  const llvm::Twine refCliPath{testDir + "/RefCli.txt"};
-  const auto buf{llvm::MemoryBuffer::getFile(refCliPath, false, false, false)};
+  const llvm::Twine refCLIPath{testDir + "/RefCLI.txt"};
+  const auto buf{llvm::MemoryBuffer::getFile(refCLIPath, false, false, false)};
   if (!buf) {
-    return err("Error reading {}: {}", refCliPath, buf.getError().message());
+    return err("Error reading {}: {}", refCLIPath, buf.getError().message());
   }
-  llvm::StringRef refCli{(**buf).getBuffer()};
-  const int refRtn{refCli.contains(" error: ") ? EXIT_FAILURE : EXIT_SUCCESS};
+  llvm::StringRef refCLI{(**buf).getBuffer()};
+  const int refRtn{refCLI.contains(" error: ") ? EXIT_FAILURE : EXIT_SUCCESS};
 
   bool errored{};
   if ((errored |= refRtn != rtn)) {
     err("Mismatched return code: expected {}, got {}", refRtn, rtn);
   }
 
-  if ((errored |= out != refCli)) {
+  if ((errored |= out != refCLI)) {
     err<false>("Mismatched CLI output, got:");
 
     // Don't format importizer's output
@@ -59,7 +60,7 @@ bool runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) {
   }
 
   if (hasRef) {
-    errored |= cmpDir(root, refDir) != CmpRes::Same;
+    errored |= cmpDirs(root, refDir) != CmpRes::Same;
   }
 
   return errored;

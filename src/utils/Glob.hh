@@ -3,7 +3,7 @@
 
 #pragma once
 #include "utils/Diag.hh"
-#include "utils/Fs.hh"
+#include "utils/FS.hh"
 #include "llvm/ADT/FunctionExtras.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/GlobPattern.h"
@@ -69,9 +69,8 @@ struct GlobDirRule {
 };
 
 template <ConvertibleRange<GlobDirRule> T>
-[[nodiscard]] bool
-globDir(const llvm::Twine &dir, const T &rules,
-        vfs::FileSystem &dirVFS = *vfs::createPhysicalFileSystem()) {
+[[nodiscard]] bool globDir(const llvm::Twine &dir, const T &rules,
+                           vfs::FileSystem &dirVFS = *realFS) {
   llvm::StringRef relPath;
   llvm::SmallString<128> tmp;
   if (dir.toStringRef(tmp).empty()) {

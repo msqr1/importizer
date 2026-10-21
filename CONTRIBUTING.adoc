@@ -248,7 +248,7 @@ TODO
 * *Do not* use C{plus}{plus} Exceptions.
 * *Return Values:* Mark fallible functions with `[[nodiscard]]` to force caller to check return
 values.
-* *Logging:* Functions must log their own errors and should always be marked `noexcept`.
+* *Diagnostics:* Functions must log their own errors and should always be marked `noexcept`.
 Do not use this for input/argument validation.
 
 === CMake

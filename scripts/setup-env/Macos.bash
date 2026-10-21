@@ -53,9 +53,11 @@ if [ -n "$CI" ]; then
 
   {
     echo "CMAKE_PREFIX_PATH=$llvmPrefix"
+    echo "IMPORTIZER_OS=macos"
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"
 fi
 
 export CMAKE_PREFIX_PATH="$llvmPrefix"
+export IMPORTIZER_OS=macos
 export IMPORTIZER_ARCH=$arch

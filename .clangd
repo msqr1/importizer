@@ -12,4 +12,5 @@ Hover:
   ShowAKA: true
 
 Diagnostics:
+  UnusedIncludes: Strict
   MissingIncludes: Strict

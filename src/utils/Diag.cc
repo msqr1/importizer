@@ -1,6 +1,6 @@
 #include "utils/Diag.hh"
 
-LogOpts *g_logOpts;
+LogOpts *g_logOpts{};
 
 #ifdef __has_feature
 #if __has_feature(address_sanitizer)

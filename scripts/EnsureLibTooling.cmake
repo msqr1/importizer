@@ -25,8 +25,9 @@ endif()
 
 set(arFile "${3rdPartyDir}/LibTooling.tzst")
 set(repo "msqr1/importizer")
+
 file(DOWNLOAD
-  https://github.com/${repo}/releases/download/LibTooling-${v}/LibTooling-${os}-${arch}.tzst
+  https://github.com/${repo}/releases/download/libtooling-${v}/LibTooling-${os}-${arch}.tzst
   "${arFile}"
   STATUS status
 )

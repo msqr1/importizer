@@ -6,17 +6,13 @@
 #include <cstring>
 
 // run-test e2e [testDir] [root]
-// run-test unit [name]
+// run-test unit [suiteName]
 int main(const int argc, const char *const *argv) {
-  bool E2ETesting{argc == 4 && std::strcmp(argv[1], "E2E")};
-  bool unitTesting{argc == 3 && std::strcmp(argv[1], "unit")};
-
-  // Must be one of them
-  assert(E2ETesting ^ unitTesting);
-
-  if (E2ETesting) {
+  if (argc == 4 && std::strcmp(argv[1], "E2E")) {
     return runE2ETest(argv[2], argv[3]) ? EXIT_SUCCESS : EXIT_FAILURE;
-  } else if (unitTesting) {
+  } else if (argc == 3 && std::strcmp(argv[1], "unit")) {
     return runUnitTest(argv[2]);
+  } else {
+    return EXIT_FAILURE;
   }
 }

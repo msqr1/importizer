@@ -1,7 +1,7 @@
 enable_testing()
 file(GLOB testDirs ./*)
 foreach(testDir ${testDirs})
-  if(NOT IS_DIRECTORY ${testDir})
+  if(NOT IS_DIRECTORY "${testDir}")
     continue()
   endif()
   cmake_path(GET testDir FILENAME testName)

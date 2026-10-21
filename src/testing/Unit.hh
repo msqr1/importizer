@@ -4,4 +4,4 @@ namespace llvm {
 class StringRef;
 }
 
-int runUnitTest(llvm::StringRef name);
+int runUnitTest(llvm::StringRef suiteName);

@@ -7,6 +7,7 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/VirtualFileSystem.h"
 #include <cassert>
+#include <memory>
 #include <system_error>
 #include <type_traits>
 
@@ -16,6 +17,8 @@ namespace llvm {
 class Twine;
 class StringRef;
 } // namespace llvm
+
+extern std::unique_ptr<vfs::FileSystem> realFS;
 
 enum class IterDirCtrl : char {
   Continue,
@@ -32,9 +35,8 @@ using IterDirCallback =
 
 // Nicer LLVM's directory iterator. Returns true if iteration is successful.
 template <bool recurse = false>
-[[nodiscard]] bool
-iterDir(const llvm::Twine &dir, IterDirCallback callback,
-        vfs::FileSystem &VFS = *vfs::createPhysicalFileSystem()) noexcept {
+[[nodiscard]] bool iterDir(const llvm::Twine &dir, IterDirCallback callback,
+                           vfs::FileSystem &VFS = *realFS) noexcept {
   std::error_code ec;
   DirItT<recurse> it, end;
   if constexpr (recurse) {
@@ -72,9 +74,8 @@ iterDir(const llvm::Twine &dir, IterDirCallback callback,
 
 // Copy the contents of src into dst. Returns true if successful. Since
 // vfs::FileSystem isn't writable, dst is in the real FS.
-[[nodiscard]] bool
-cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
-       vfs::FileSystem &srcVFS = *vfs::createPhysicalFileSystem()) noexcept;
+[[nodiscard]] bool cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
+                          vfs::FileSystem &srcVFS = *realFS) noexcept;
 
 enum class CmpRes : char {
   Same,
@@ -82,14 +83,13 @@ enum class CmpRes : char {
   Err,
 };
 
-[[nodiscard]] CmpRes
-cmpFile(const llvm::Twine &file1, const llvm::Twine &file2,
-        vfs::FileSystem &file1VFS = *vfs::createPhysicalFileSystem(),
-        vfs::FileSystem &file2VFS = *vfs::createPhysicalFileSystem()) noexcept;
+[[nodiscard]] CmpRes cmpFiles(const llvm::Twine &file1,
+                              const llvm::Twine &file2,
+                              vfs::FileSystem &file1VFS = *realFS,
+                              vfs::FileSystem &file2VFS = *realFS) noexcept;
 
 // Compare the content of 2 directories (including file content) and print
 // mismatches
-[[nodiscard]] CmpRes
-cmpDir(const llvm::Twine &dir, const llvm::Twine &ref,
-       vfs::FileSystem &dirVFS = *vfs::createPhysicalFileSystem(),
-       vfs::FileSystem &refVFS = *vfs::createPhysicalFileSystem()) noexcept;
+[[nodiscard]] CmpRes cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref,
+                             vfs::FileSystem &dirVFS = *realFS,
+                             vfs::FileSystem &refVFS = *realFS) noexcept;

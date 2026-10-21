@@ -5,15 +5,17 @@
 #include "llvm/Support/FormatVariadic.h"
 #include "llvm/Support/WithColor.h"
 #include "llvm/Support/raw_ostream.h"
+#include <cassert>
 
 struct LogOpts {
   llvm::StringRef prog;
-  llvm::raw_ostream *stream;
+  llvm::raw_ostream *stream{};
 } extern *g_logOpts;
 
 // Log an error to the global output stream, always return false
 template <bool period = true, typename... Ts>
 bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
+  assert(!(g_logOpts == nullptr || g_logOpts->stream == nullptr));
   llvm::WithColor::error(*g_logOpts->stream, g_logOpts->prog);
   llvm::WithColor stream{*g_logOpts->stream,
                          llvm::raw_ostream::Colors::SAVEDCOLOR, true};
@@ -31,6 +33,7 @@ bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
 // Log a warning to the global output stream
 template <bool period = true, typename... Ts>
 void warn(llvm::StringRef fmt, Ts &&...args) noexcept {
+  assert(!(g_logOpts == nullptr || g_logOpts->stream == nullptr));
   llvm::WithColor::warning(*g_logOpts->stream, g_logOpts->prog);
   llvm::WithColor stream{*g_logOpts->stream,
                          llvm::raw_ostream::Colors::SAVEDCOLOR, true};

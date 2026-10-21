@@ -1,4 +1,4 @@
-#include "utils/Fs.hh"
+#include "utils/FS.hh"
 #include "utils/Diag.hh"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
@@ -10,12 +10,16 @@
 #include "llvm/Support/VirtualFileSystem.h"
 #include <cassert>
 #include <cstddef>
+#include <cstdio>
 #include <filesystem>
+#include <memory>
 #include <system_error>
 
 namespace pth = llvm::sys::path;
 namespace fs = llvm::sys::fs;
 namespace vfs = llvm::vfs;
+
+std::unique_ptr<vfs::FileSystem> realFS{vfs::createPhysicalFileSystem()};
 
 bool cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
             vfs::FileSystem &srcVFS) noexcept {
@@ -46,6 +50,11 @@ bool cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
         return IterDirCtrl::ErrStop;
       }
       break;
+    case fs::file_type::regular_file:
+      if ((ec = fs::copy_file(ent.path(), tmp))) {
+        err("Error copying file {}: {}", tmp, ec.message());
+        return IterDirCtrl::ErrStop;
+      }
       break;
     case fs::file_type::symlink_file:
       // Falling back to std::filesystem because fs::read_link() won't be here
@@ -64,8 +73,8 @@ bool cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
   return iterDir<true>(tmp, copy, srcVFS);
 }
 
-CmpRes cmpFile(const llvm::Twine &file1, const llvm::Twine &file2,
-               vfs::FileSystem &file1VFS, vfs::FileSystem &file2VFS) noexcept {
+CmpRes cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2,
+                vfs::FileSystem &file1VFS, vfs::FileSystem &file2VFS) noexcept {
   llvm::SmallString<128> tmp;
   if (file1.toStringRef(tmp).empty()) {
     err("Error comparing file: file1 path is empty");
@@ -89,8 +98,8 @@ CmpRes cmpFile(const llvm::Twine &file1, const llvm::Twine &file2,
                                                       : CmpRes::Mismatch;
 }
 
-CmpRes cmpDir(const llvm::Twine &dir, const llvm::Twine &ref,
-              vfs::FileSystem &dirVFS, vfs::FileSystem &refVFS) noexcept {
+CmpRes cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref,
+               vfs::FileSystem &dirVFS, vfs::FileSystem &refVFS) noexcept {
   CmpRes res{CmpRes::Same};
   llvm::StringSet<> refRelPaths;
   llvm::SmallString<128> tmp;
@@ -120,7 +129,7 @@ CmpRes cmpDir(const llvm::Twine &dir, const llvm::Twine &ref,
       res = CmpRes::Mismatch;
       return IterDirCtrl::Continue;
     }
-    switch (cmpFile(tmp, ent.path(), dirVFS, refVFS)) {
+    switch (cmpFiles(tmp, ent.path(), dirVFS, refVFS)) {
     case CmpRes::Same:
       break;
     case CmpRes::Mismatch:
