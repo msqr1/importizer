@@ -321,10 +321,10 @@ Use the provided git hook to do this automatically:
 git config core.hooksPath .githooks
 ----
 
-When pulling, the remote `continous` tag can be ahead of the local one, preventing pull unless
+When pulling, the remote `continuous` tag can be ahead of the local one, preventing pull unless
 you overwrite it.
 Add a custom git refspec to overwrite it automatically:
 [,bash]
 ----
-git config --add remote.origin.fetch "+refs/tags/continous:refs/tags/continous"
+git config --add remote.origin.fetch "+refs/tags/continuous:refs/tags/continuous"
 ----
