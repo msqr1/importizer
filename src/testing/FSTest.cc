@@ -1,20 +1,22 @@
 #include "utils/FS.hh"
-#include "doctest/doctest.h"
-#include "llvm/Support/VirtualFileSystem.h"
+#include <doctest/doctest.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/MemoryBufferRef.h>
-#include <memory>
+#include <llvm/Support/VirtualFileSystem.h>
 
 namespace vfs = llvm::vfs;
 
-const auto buf1{
-    llvm::MemoryBuffer::getMemBuffer("When I say six, what do you say?")};
-const auto buf2{llvm::MemoryBuffer::getMemBuffer("Seven!")};
+namespace {
+const llvm::StringRef content1{"When I say six, what do you say?"};
+const llvm::StringRef content2{"Seven!"};
+} // namespace
 
 TEST_SUITE_BEGIN("FS");
 
 TEST_CASE("Compare files") {
+  const auto buf1{llvm::MemoryBuffer::getMemBuffer(content1)};
+  const auto buf2{llvm::MemoryBuffer::getMemBuffer(content2)};
   vfs::InMemoryFileSystem memFS;
   /*
     /

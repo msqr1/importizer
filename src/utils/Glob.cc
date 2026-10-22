@@ -1,16 +1,16 @@
 #include "utils/Glob.hh"
 #include "utils/Diag.hh"
-#include "llvm/ADT/StringRef.h"
-#include "llvm/Support/Error.h"
-#include "llvm/Support/GlobPattern.h"
 #include <llvm/ADT/FunctionExtras.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/Error.h>
+#include <llvm/Support/GlobPattern.h>
 #include <optional>
 #include <utility>
 
 Glob::Glob(const bool negate_, llvm::GlobPattern &&ptn_) noexcept
     : negate{negate_}, ptn{std::move(ptn_)} {}
 
-std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept {
+auto mkGlob(llvm::StringRef ptn) noexcept -> std::optional<Glob> {
   bool negate{ptn.consume_front('!')};
   llvm::Expected<llvm::GlobPattern> p{llvm::GlobPattern::create(ptn, {})};
   if (!p) {
@@ -20,6 +20,6 @@ std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept {
   return std::optional<Glob>(std::in_place, negate, std::move(*p));
 }
 
-bool Glob::match(llvm::StringRef s) const noexcept {
-  return (ptn.isTrivialMatchAll() || ptn.match(s)) ^ negate;
+auto Glob::match(llvm::StringRef str) const noexcept -> bool {
+  return (ptn.isTrivialMatchAll() || ptn.match(str)) ^ negate;
 }

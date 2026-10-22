@@ -1,0 +1,44 @@
+---
+Checks: >
+  -*,
+  llvm-*,
+  -llvm-include-order,
+  -llvm-header-guard,
+  -llvm-prefer-static-over-anonymous-namespace,
+  -llvm-twine-local,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  concurrency-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-special-member-functions,
+  modernize-*,
+  performance-*,
+  portability-*,
+  -portability-avoid-pragma-once,
+  readability-*,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-suspicious-call-argument
+
+WarningsAsErrors: ""
+FormatStyle: none
+HeaderFilterRegex: '.*[/\\]src[/\\]'
+HeaderFileExtensions: ["hh"]
+ImplementationFileExtensions: ["cc"]
+CheckOptions:
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE

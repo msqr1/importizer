@@ -2,9 +2,9 @@
 // will create an instance of this class per file.
 
 #pragma once
-#include "clang/AST/ASTConsumer.h"
-#include "clang/Frontend/FrontendAction.h"
-#include "clang/Tooling/Tooling.h"
+#include <clang/AST/ASTConsumer.h>
+#include <clang/Frontend/FrontendAction.h>
+#include <clang/Tooling/Tooling.h>
 #include <memory>
 
 struct Opts;
@@ -14,7 +14,7 @@ class StringRef;
 
 namespace clang {
 class ASTConsumer;
-}
+} // namespace clang
 
 namespace tl = clang::tooling;
 
@@ -31,9 +31,8 @@ class FrontendAnalyzer : public clang::ASTFrontendAction {
 
 public:
   FrontendAnalyzer(FrontendCtx &ctx);
-  std::unique_ptr<clang::ASTConsumer>
-  CreateASTConsumer(clang::CompilerInstance &CI,
-                    llvm::StringRef file) noexcept override;
+  auto CreateASTConsumer(clang::CompilerInstance &compiler, llvm::StringRef file) noexcept
+      -> std::unique_ptr<clang::ASTConsumer> override;
 };
 
 class FrontendAnalyzerFactory : public tl::FrontendActionFactory {
@@ -41,5 +40,5 @@ class FrontendAnalyzerFactory : public tl::FrontendActionFactory {
 
 public:
   FrontendAnalyzerFactory(FrontendCtx &ctx);
-  std::unique_ptr<clang::FrontendAction> create() noexcept override;
+  auto create() noexcept -> std::unique_ptr<clang::FrontendAction> override;
 };

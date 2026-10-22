@@ -211,7 +211,7 @@ To add a new test case:
 
 . Create a new directory under `tests/` with a descriptive name (e.g., `tests/my-new-feature/`).
 . Add a `Config.yml` file inside this directory to configure the importizer run.
-. Add a `RefCli.txt` file containing the expected CLI output.
+. Add a `RefCLI.txt` file containing the expected CLI output.
 . *(Optional)* Create a `in/` subdirectory containing the input files (C{plus}{plus} header-based
 code).
 . *(Optional)* Create a `ref/` subdirectory containing the expected output files.
@@ -222,9 +222,6 @@ Don’t add this when expecting an error.
 The CMake script detect changes in `tests/`, so your new test will be automatically picked up on the
 next `cmake -B build` run.
 
-==== Integration tests
-TODO
-
 ==== Unit tests
 TODO
 
@@ -233,23 +230,11 @@ TODO
 
 === Naming
 * *All code variables and functions:* `camelCase`
-* *C{plus}{plus} classes, types, and files:* `PascalCase` (e.g., `MyClass.cc`)
 * *Executables and directories:* `kebab-case` (e.g., `testing/`)
 * *Environment variables:* `ALL_CAPS_SNAKE_CASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
-=== C{plus}{plus} style
-* Follow the LLVM coding style.
-* Use `llvm::StringRef` (I considered `std::string_view` but it's missing many crucial features like
-`split`, `trim`), no C-style arrays.
-* The C{plus}{plus} file containing `main()` for any executable must be named `Driver.cc`.
-* Do not use RTTI, if you must, use https://llvm.org/docs/HowToSetUpLLVMStyleRTTI.html[LLVM's].
-
-=== C{plus}{plus} error handling
-* *Do not* use C{plus}{plus} Exceptions.
-* *Return Values:* Mark fallible functions with `[[nodiscard]]` to force caller to check return
-values.
-* *Diagnostics:* Functions must log their own errors and should always be marked `noexcept`.
-Do not use this for input/argument validation.
+=== C{plus}{plus}
+* See, and make use of `.clangd`, `.clang_format`, `.clang_tidy`
 
 === CMake
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).

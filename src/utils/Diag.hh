@@ -1,25 +1,27 @@
 // Diagnostics utility functions
 
 #pragma once
-#include "llvm/ADT/StringRef.h"
-#include "llvm/Support/FormatVariadic.h"
-#include "llvm/Support/WithColor.h"
-#include "llvm/Support/raw_ostream.h"
 #include <cassert>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/FormatVariadic.h>
+#include <llvm/Support/WithColor.h>
+#include <llvm/Support/raw_ostream.h>
 
 struct LogOpts {
-  llvm::StringRef prog;
-  llvm::raw_ostream *stream{};
-} extern *g_logOpts;
+  mutable const char *prog;
+  mutable llvm::raw_ostream *stream;
+} const extern globalLogOpts;
+
+void setGlobalLogOpts(const LogOpts &opts);
 
 // Log an error to the global output stream, always return false
 template <bool period = true, typename... Ts>
-bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
-  assert(!(g_logOpts == nullptr || g_logOpts->stream == nullptr));
-  llvm::WithColor::error(*g_logOpts->stream, g_logOpts->prog);
-  llvm::WithColor stream{*g_logOpts->stream,
+auto err(const char *fmt, Ts &&...args) noexcept -> bool {
+  assert(globalLogOpts.stream != nullptr);
+  llvm::WithColor::error(*globalLogOpts.stream, globalLogOpts.prog);
+  llvm::WithColor stream{*globalLogOpts.stream,
                          llvm::raw_ostream::Colors::SAVEDCOLOR, true};
-  stream << llvm::formatv(fmt.data(), std::forward<Ts>(args)...);
+  stream << llvm::formatv(fmt, std::forward<Ts>(args)...);
   if constexpr (period) {
     stream << ".\n";
   } else {
@@ -32,12 +34,12 @@ bool err(llvm::StringRef fmt, Ts &&...args) noexcept {
 
 // Log a warning to the global output stream
 template <bool period = true, typename... Ts>
-void warn(llvm::StringRef fmt, Ts &&...args) noexcept {
-  assert(!(g_logOpts == nullptr || g_logOpts->stream == nullptr));
-  llvm::WithColor::warning(*g_logOpts->stream, g_logOpts->prog);
-  llvm::WithColor stream{*g_logOpts->stream,
+void warn(const char *fmt, Ts &&...args) noexcept {
+  assert(globalLogOpts.stream != nullptr);
+  llvm::WithColor::warning(*globalLogOpts.stream, globalLogOpts.prog);
+  llvm::WithColor stream{*globalLogOpts.stream,
                          llvm::raw_ostream::Colors::SAVEDCOLOR, true};
-  stream << llvm::formatv(fmt.data(), std::forward<Ts>(args)...);
+  stream << llvm::formatv(fmt, std::forward<Ts>(args)...);
   if constexpr (period) {
     stream << ".\n";
   } else {

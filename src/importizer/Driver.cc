@@ -1,12 +1,10 @@
 #include "importizer/Main.hh"
 #include "utils/Diag.hh"
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/Support/raw_ostream.h>
 
-int main(const int argc, const char *const *argv) {
+auto main(const int argc, const char *const *argv) -> int {
   // Always set program and log stream before everything
-  LogOpts logOpts;
-  g_logOpts = &logOpts;
-  logOpts.prog = "importizer";
-  logOpts.stream = &llvm::errs();
+  setGlobalLogOpts({.prog = "importizer", .stream = &llvm::errs()});
+
   return importizerMain(argc, argv);
 }

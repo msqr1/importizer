@@ -2,6 +2,6 @@
 
 namespace llvm {
 class StringRef;
-}
+} // namespace llvm
 
-int runUnitTest(llvm::StringRef suiteName);
+auto runUnitTest(const char *suiteName) -> int;

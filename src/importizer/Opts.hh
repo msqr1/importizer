@@ -3,9 +3,9 @@
 // databases availability are handled, etc.
 
 #pragma once
-#include "clang/Tooling/CompilationDatabase.h"
-#include "llvm/ADT/StringSet.h"
-#include "llvm/Support/VirtualFileSystem.h"
+#include <clang/Tooling/CompilationDatabase.h>
+#include <llvm/ADT/StringSet.h>
+#include <llvm/Support/VirtualFileSystem.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,21 +31,21 @@ struct Opts {
   bool write{};
 
   // Convert standard #include to import std or std.compat
-  bool stdImport;
+  bool stdImport{};
 
   // Allow default construction
   Opts() noexcept = default;
 
   // Allow moving
   Opts(Opts &&) noexcept = default;
-  Opts &operator=(Opts &&) noexcept = default;
+  auto operator=(Opts &&) noexcept -> Opts & = default;
 
   // Disallow copying
   Opts(const Opts &) = delete;
-  Opts &operator=(const Opts &) = delete;
+  auto operator=(const Opts &) -> Opts & = delete;
 };
 
 // Populate a struct Opts from CLI args
-[[nodiscard]] bool
-getOpts(const int argc, const char *const *argv, Opts &opts,
-        vfs::FileSystem &VFS = *vfs::createPhysicalFileSystem()) noexcept;
+[[nodiscard]] auto getOpts(int argc, const char *const *argv, Opts &opts,
+                           vfs::FileSystem &VFS = *vfs::createPhysicalFileSystem()) noexcept
+    -> bool;

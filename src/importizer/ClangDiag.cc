@@ -1,12 +1,11 @@
 #include "importizer/ClangDiag.hh"
 #include "utils/Diag.hh"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/DiagnosticIDs.h"
-#include "llvm/ADT/SmallString.h"
+#include <clang/Basic/Diagnostic.h>
+#include <clang/Basic/DiagnosticIDs.h>
+#include <llvm/ADT/SmallString.h>
 
-void MyDiagnosticConsumer::HandleDiagnostic(
-    clang::DiagnosticsEngine::Level lvl,
-    const clang::Diagnostic &info) noexcept {
+void MyDiagnosticConsumer::HandleDiagnostic(clang::DiagnosticsEngine::Level lvl,
+                                            const clang::Diagnostic &info) noexcept {
   llvm::SmallString<128> msg;
   info.FormatDiagnostic(msg);
 

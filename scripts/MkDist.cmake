@@ -20,8 +20,8 @@ set(buildDir "${root}/build")
 
 include("${scriptsDir}/Exec.cmake")
 
-exec(${CMAKE_COMMAND} -B "${buildDir}" -DCMAKE_BUILD_TYPE=${mode} --preset importizer)
-exec(${CMAKE_COMMAND} --build "${buildDir}" --config ${mode})
+exec("${CMAKE_COMMAND}" -B "${buildDir}" -DCMAKE_BUILD_TYPE=${mode} --preset importizer)
+exec("${CMAKE_COMMAND}" --build "${buildDir}" --config ${mode})
 
 exec(${CMAKE_CTEST_COMMAND}
   --test-dir "${buildDir}/tests"
@@ -34,7 +34,7 @@ exec(${CMAKE_CTEST_COMMAND}
 
 if(mode STREQUAL "Debug")
   # Format in debug mode: tzst(installation)
-  exec(${CMAKE_COMMAND}
+  exec("${CMAKE_COMMAND}"
     --install "${buildDir}"
     --config ${mode}
     --prefix "${root}/importizer"

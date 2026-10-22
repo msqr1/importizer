@@ -2,7 +2,7 @@
 // instead of Clang's default.
 
 #pragma once
-#include "clang/Basic/Diagnostic.h"
+#include <clang/Basic/Diagnostic.h>
 
 class MyDiagnosticConsumer : public clang::DiagnosticConsumer {
 public:

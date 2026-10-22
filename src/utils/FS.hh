@@ -3,11 +3,10 @@
 
 #pragma once
 #include "utils/Diag.hh"
-#include "llvm/ADT/STLFunctionalExtras.h"
-#include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/VirtualFileSystem.h"
 #include <cassert>
-#include <memory>
+#include <llvm/ADT/STLFunctionalExtras.h>
+#include <llvm/Support/ErrorHandling.h>
+#include <llvm/Support/VirtualFileSystem.h>
 #include <system_error>
 #include <type_traits>
 
@@ -18,7 +17,7 @@ class Twine;
 class StringRef;
 } // namespace llvm
 
-extern std::unique_ptr<vfs::FileSystem> realFS;
+auto getRealFS() -> vfs::FileSystem &;
 
 enum class IterDirCtrl : char {
   Continue,
@@ -27,25 +26,25 @@ enum class IterDirCtrl : char {
 };
 
 template <bool recurse>
-using DirItT = std::conditional_t<recurse, vfs::recursive_directory_iterator,
-                                  vfs::directory_iterator>;
+using DirItT =
+    std::conditional_t<recurse, vfs::recursive_directory_iterator, vfs::directory_iterator>;
 
-using IterDirCallback =
-    llvm::function_ref<IterDirCtrl(const vfs::directory_entry &)>;
+using IterDirCallback = llvm::function_ref<IterDirCtrl(const vfs::directory_entry &)>;
 
 // Nicer LLVM's directory iterator. Returns true if iteration is successful.
 template <bool recurse = false>
-[[nodiscard]] bool iterDir(const llvm::Twine &dir, IterDirCallback callback,
-                           vfs::FileSystem &VFS = *realFS) noexcept {
-  std::error_code ec;
-  DirItT<recurse> it, end;
+[[nodiscard]] auto iterDir(const llvm::Twine &dir, IterDirCallback callback,
+                           vfs::FileSystem &VFS = getRealFS()) noexcept -> bool {
+  std::error_code errCode;
+  DirItT<recurse> it;
+  DirItT<recurse> end;
   if constexpr (recurse) {
-    it = vfs::recursive_directory_iterator(VFS, dir, ec);
+    it = vfs::recursive_directory_iterator(VFS, dir, errCode);
   } else {
-    it = VFS.dir_begin(dir, ec);
+    it = VFS.dir_begin(dir, errCode);
   }
-  if (ec) {
-    return err("Error iterating {}: {}", dir, ec.message());
+  if (errCode) {
+    return err("Error iterating {}: {}", dir, errCode.message());
   }
   while (it != end) {
     switch (callback(*it)) {
@@ -55,18 +54,10 @@ template <bool recurse = false>
       return true;
     case IterDirCtrl::ErrStop:
       return false;
-    case IterDirCtrl::Skip:
-      if constexpr (std::is_same_v<It, fs::recursive_directory_iterator>) {
-        it.no_push();
-      } else {
-        assert(false && "IterDirCtrl::Skip can't be used for non-recursive "
-                        "directory iterator.");
-      }
-      break;
     }
-    it.increment(ec);
-    if (ec) {
-      return err("Error iterating {}: {}", dir, ec.message());
+    it.increment(errCode);
+    if (errCode) {
+      return err("Error iterating {}: {}", dir, errCode.message());
     }
   }
   return true;
@@ -74,8 +65,8 @@ template <bool recurse = false>
 
 // Copy the contents of src into dst. Returns true if successful. Since
 // vfs::FileSystem isn't writable, dst is in the real FS.
-[[nodiscard]] bool cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
-                          vfs::FileSystem &srcVFS = *realFS) noexcept;
+[[nodiscard]] auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
+                          vfs::FileSystem &srcVFS = getRealFS()) noexcept -> bool;
 
 enum class CmpRes : char {
   Same,
@@ -83,13 +74,12 @@ enum class CmpRes : char {
   Err,
 };
 
-[[nodiscard]] CmpRes cmpFiles(const llvm::Twine &file1,
-                              const llvm::Twine &file2,
-                              vfs::FileSystem &file1VFS = *realFS,
-                              vfs::FileSystem &file2VFS = *realFS) noexcept;
+[[nodiscard]] auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2,
+                            vfs::FileSystem &file1VFS = getRealFS(),
+                            vfs::FileSystem &file2VFS = getRealFS()) noexcept -> CmpRes;
 
 // Compare the content of 2 directories (including file content) and print
 // mismatches
-[[nodiscard]] CmpRes cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref,
-                             vfs::FileSystem &dirVFS = *realFS,
-                             vfs::FileSystem &refVFS = *realFS) noexcept;
+[[nodiscard]] auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref,
+                           vfs::FileSystem &dirVFS = getRealFS(),
+                           vfs::FileSystem &refVFS = getRealFS()) noexcept -> CmpRes;

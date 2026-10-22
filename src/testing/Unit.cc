@@ -6,20 +6,18 @@
 #define DOCTEST_CONFIG_NO_EXCEPTIONS
 #define DOCTEST_CONFIG_NO_WINDOWS_SEH
 #define DOCTEST_CONFIG_NO_POSIX_SIGNALS
-#include "doctest/doctest.h"
-#include "llvm/ADT/StringRef.h"
-#include "llvm/Support/raw_ostream.h"
+#include <doctest/doctest.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/raw_ostream.h>
 
-int runUnitTest(llvm::StringRef suiteName) {
+auto runUnitTest(const char *suiteName) -> int {
   // Always set program and log stream before everything
-  LogOpts logOpts;
-  g_logOpts = &logOpts;
-  logOpts.prog = "run-test unit";
-  logOpts.stream = &llvm::errs();
+  LogOpts logOpts{.prog = "run-test unit", .stream = &llvm::errs()};
+  setGlobalLogOpts(logOpts);
 
   doctest::Context ctx;
   std::stringstream doctestCLI;
-  ctx.setOption("ts", suiteName.data());
+  ctx.setOption("ts", suiteName);
   ctx.setCout(&doctestCLI);
   const int doctestRtn{ctx.run()};
   *logOpts.stream << doctestCLI.rdbuf();

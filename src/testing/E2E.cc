@@ -2,23 +2,21 @@
 #include "importizer/Main.hh"
 #include "utils/Diag.hh"
 #include "utils/FS.hh"
-#include "llvm/ADT/SmallString.h"
-#include "llvm/ADT/SmallVector.h"
-#include "llvm/ADT/StringRef.h"
-#include "llvm/ADT/Twine.h"
-#include "llvm/Support/FileSystem.h"
-#include "llvm/Support/MemoryBuffer.h"
-#include "llvm/Support/raw_ostream.h"
 #include <cstdlib>
+#include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/SmallVector.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/MemoryBuffer.h>
+#include <llvm/Support/raw_ostream.h>
 
 namespace fs = llvm::sys::fs;
 
-bool runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) {
+auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) -> bool {
   // Always set program and log stream before everything
-  LogOpts logOpts;
-  g_logOpts = &logOpts;
-  logOpts.prog = "run-test e2e";
-  logOpts.stream = &llvm::errs();
+  LogOpts logOpts{.prog = "run-test e2e", .stream = &llvm::errs()};
+  setGlobalLogOpts(logOpts);
 
   llvm::SmallString<128> tmp;
   const llvm::Twine refDir{testDir + "/ref"};
@@ -34,10 +32,10 @@ bool runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) {
 
   llvm::SmallString<128> out{};
   llvm::raw_svector_ostream outStream{out};
-  LogOpts importizerLogOpts{"importizer", &outStream};
-  g_logOpts = &importizerLogOpts;
+  LogOpts importizerLogOpts{.prog = "importizer", .stream = &outStream};
+  setGlobalLogOpts(importizerLogOpts);
   const int rtn{importizerMain(static_cast<int>(cmd.size()), cmd.data())};
-  g_logOpts = &logOpts;
+  setGlobalLogOpts(logOpts);
 
   const llvm::Twine refCLIPath{testDir + "/RefCLI.txt"};
   const auto buf{llvm::MemoryBuffer::getFile(refCLIPath, false, false, false)};
@@ -47,12 +45,12 @@ bool runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) {
   llvm::StringRef refCLI{(**buf).getBuffer()};
   const int refRtn{refCLI.contains(" error: ") ? EXIT_FAILURE : EXIT_SUCCESS};
 
-  bool errored{};
-  if ((errored |= refRtn != rtn)) {
+  bool errored{refRtn != rtn};
+  if (errored) {
     err("Mismatched return code: expected {}, got {}", refRtn, rtn);
   }
-
-  if ((errored |= out != refCLI)) {
+  errored |= out != refCLI;
+  if (errored) {
     err<false>("Mismatched CLI output, got:");
 
     // Don't format importizer's output

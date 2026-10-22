@@ -4,14 +4,14 @@
 #pragma once
 #include "utils/Diag.hh"
 #include "utils/FS.hh"
-#include "llvm/ADT/FunctionExtras.h"
-#include "llvm/ADT/SmallString.h"
-#include "llvm/Support/GlobPattern.h"
-#include "llvm/Support/Path.h"
-#include "llvm/Support/VirtualFileSystem.h"
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <llvm/ADT/FunctionExtras.h>
+#include <llvm/ADT/SmallString.h>
+#include <llvm/Support/GlobPattern.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/VirtualFileSystem.h>
 #include <optional>
 #include <ranges>
 #include <utility>
@@ -21,38 +21,33 @@ namespace pth = llvm::sys::path;
 
 namespace llvm {
 class StringRef;
-}
+} // namespace llvm
 
 class Glob {
   const bool negate;
   llvm::GlobPattern ptn;
 
 public:
-  Glob(const bool negate, llvm::GlobPattern &&ptn) noexcept;
-
-  // Allow moving
+  Glob(bool negate, llvm::GlobPattern &&ptn) noexcept;
   Glob(Glob &&) noexcept = default;
-
-  // Disallow copying
   Glob(const Glob &) = delete;
-  Glob &operator=(const Glob &) = delete;
+  auto operator=(const Glob &) -> Glob & = delete;
 
   // Check if the glob matches the given string.
-  [[nodiscard]] bool match(llvm::StringRef s) const noexcept;
+  [[nodiscard]] auto match(llvm::StringRef s) const noexcept -> bool;
 };
 
 using GlobStorage = std::vector<Glob>;
 
-std::optional<Glob> mkGlob(llvm::StringRef ptn) noexcept;
+auto mkGlob(llvm::StringRef ptn) noexcept -> std::optional<Glob>;
 
 template <typename Container, typename ElemT>
-concept ConvertibleRange =
-    std::ranges::range<Container> &&
-    std::convertible_to<std::ranges::range_value_t<Container>, ElemT>;
+concept ConvertibleRange = std::ranges::range<Container> &&
+                           std::convertible_to<std::ranges::range_value_t<Container>, ElemT>;
 
 // Make many globs, return true if none fails.
 template <ConvertibleRange<llvm::StringRef> T>
-[[nodiscard]] bool mkGlobs(GlobStorage &globs, const T &globExprs) noexcept {
+[[nodiscard]] auto mkGlobs(GlobStorage &globs, const T &globExprs) noexcept -> bool {
   for (llvm::StringRef globExpr : globExprs) {
     std::optional<Glob> g{mkGlob(globExpr)};
     if (!g) {
@@ -69,15 +64,15 @@ struct GlobDirRule {
 };
 
 template <ConvertibleRange<GlobDirRule> T>
-[[nodiscard]] bool globDir(const llvm::Twine &dir, const T &rules,
-                           vfs::FileSystem &dirVFS = *realFS) {
+[[nodiscard]] auto globDir(const llvm::Twine &dir, const T &rules,
+                           vfs::FileSystem &dirVFS = getRealFS()) -> bool {
   llvm::StringRef relPath;
   llvm::SmallString<128> tmp;
   if (dir.toStringRef(tmp).empty()) {
     return err("Error globbing directory: dir path is empty");
   }
   const size_t baseLen{tmp.size() + !pth::is_separator(tmp.back())};
-  auto checkDir{[&](const vfs::directory_entry &ent) noexcept {
+  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> auto {
     relPath = ent.path().drop_front(baseLen);
     for (const auto &[globs, callback] : rules) {
       for (const Glob &glob : globs) {

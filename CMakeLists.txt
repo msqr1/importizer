@@ -37,9 +37,11 @@ set(compileFlags
   -Wnon-virtual-dtor
   -Wundef
   -Wextra-semi-stmt
+  -Wglobal-constructors
   -Werror
   -Wno-error=unused-parameter
   -Wno-error=unused-private-field
+  -Wno-exit-time-destructors
   -Wno-c++98-compat
   -Wno-c++98-compat-pedantic
   -Wno-unsafe-buffer-usage

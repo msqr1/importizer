@@ -2,6 +2,6 @@
 
 namespace llvm {
 class Twine;
-}
+} // namespace llvm
 
-bool runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root);
+auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) -> bool;

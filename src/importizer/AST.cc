@@ -1,8 +1,8 @@
 #include "importizer/AST.hh"
 #include "importizer/Frontend.hh"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/RecursiveASTVisitor.h"
+#include <clang/AST/ASTConsumer.h>
 #include <clang/AST/ASTContext.h>
+#include <clang/AST/RecursiveASTVisitor.h>
 
 namespace {
 
@@ -11,8 +11,7 @@ class SymbolVisitor : public clang::RecursiveASTVisitor<SymbolVisitor> {
   FrontendCtx &ctx;
 
 public:
-  SymbolVisitor(clang ::ASTContext &AST_, FrontendCtx &ctx_)
-      : AST{AST_}, ctx{ctx_} {}
+  SymbolVisitor(clang::ASTContext &AST_, FrontendCtx &ctx_) : AST{AST_}, ctx{ctx_} {}
 };
 
 } // namespace

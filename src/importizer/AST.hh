@@ -3,7 +3,7 @@
 // class.
 
 #pragma once
-#include "clang/AST/ASTConsumer.h"
+#include <clang/AST/ASTConsumer.h>
 
 struct FrontendCtx;
 

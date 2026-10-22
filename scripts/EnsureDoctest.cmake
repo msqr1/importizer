@@ -46,13 +46,13 @@ file(CREATE_LINK "${root}/DynPresets.cmake"
 include("${scriptsDir}/Exec.cmake")
 
 # Build
-exec(${CMAKE_COMMAND}
+exec("${CMAKE_COMMAND}"
   -S "${doctestSrc}"
   -B "${doctestSrc}/build"
   --preset doctest
 )
-exec(${CMAKE_COMMAND} --build "${doctestSrc}/build")
-exec(${CMAKE_COMMAND}
+exec("${CMAKE_COMMAND}" --build "${doctestSrc}/build")
+exec("${CMAKE_COMMAND}"
   --install "${doctestSrc}/build"
   --prefix "${3rdPartyDir}/doctest"
   -j ${procCnt}

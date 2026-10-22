@@ -1,4 +1,5 @@
 BasedOnStyle: LLVM
 ColumnLimit: 100
-SortIncludes: true
+SortIncludes:
+  Enabled: true
 LineEnding: LF

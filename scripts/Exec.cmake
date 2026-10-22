@@ -1,4 +1,3 @@
-include_guard(GLOBAL)
 # execute_process but nicer ig
 
 include_guard(GLOBAL)

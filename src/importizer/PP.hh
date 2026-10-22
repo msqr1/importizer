@@ -3,12 +3,12 @@
 // must register an instance of this to.
 
 #pragma once
-#include "clang/Basic/FileEntry.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Lex/ModuleLoader.h"
-#include "clang/Lex/PPCallbacks.h"
-#include "clang/Lex/Preprocessor.h"
+#include <clang/Basic/FileEntry.h>
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Basic/SourceManager.h>
+#include <clang/Lex/ModuleLoader.h>
+#include <clang/Lex/PPCallbacks.h>
+#include <clang/Lex/Preprocessor.h>
 
 struct FrontendCtx;
 struct Opts;
@@ -29,11 +29,11 @@ class PPAnalyzer : public clang::PPCallbacks {
   FrontendCtx &ctx;
   const unsigned nestedIncludeDiagID;
   const unsigned macroIncludeDiagID;
-  unsigned condDepth;
+  unsigned condDepth{0};
 
 public:
   PPAnalyzer(clang::Preprocessor &PP, FrontendCtx &ctx);
-  bool FileNotFound(llvm::StringRef) noexcept override;
+  auto FileNotFound(llvm::StringRef /*FileName*/) noexcept -> bool override;
   void InclusionDirective(
       clang::SourceLocation hashLoc, const clang::Token &includeTok,
       llvm::StringRef fileName, bool angle,

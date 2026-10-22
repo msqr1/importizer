@@ -2,22 +2,21 @@
 #include "utils/Diag.hh"
 #include "utils/FS.hh"
 #include "utils/Glob.hh"
-#include "clang/Tooling/CompilationDatabase.h"
-#include "clang/Tooling/JSONCompilationDatabase.h"
-#include "llvm/ADT/DenseMap.h"
-#include "llvm/ADT/SmallString.h"
-#include "llvm/ADT/StringRef.h"
-#include "llvm/ADT/StringSet.h"
-#include "llvm/Support/CommandLine.h"
-#include "llvm/Support/FileSystem.h"
-#include "llvm/Support/MemoryBuffer.h"
-#include "llvm/Support/Path.h"
-#include "llvm/Support/SourceMgr.h"
-#include "llvm/Support/VirtualFileSystem.h"
-#include "llvm/Support/YAMLTraits.h"
-#include "llvm/Support/raw_ostream.h"
 #include <array>
 #include <cassert>
+#include <clang/Tooling/CompilationDatabase.h>
+#include <clang/Tooling/JSONCompilationDatabase.h>
+#include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/StringSet.h>
+#include <llvm/Support/CommandLine.h>
+#include <llvm/Support/MemoryBuffer.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/SourceMgr.h>
+#include <llvm/Support/VirtualFileSystem.h>
+#include <llvm/Support/YAMLTraits.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 #include <string>
@@ -43,11 +42,11 @@ struct NormalOpts {
   std::optional<llvm::StringRef> dbPath;
   std::vector<llvm::StringRef> hdrGlobExprs;
   llvm::StringRef root;
-  bool stdImport;
+  bool stdImport{};
 };
 
-void ymlDiagHandler(const llvm::SMDiagnostic &diag, void *) noexcept {
-  diag.print(g_logOpts->prog.data(), *g_logOpts->stream);
+void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*unused*/) noexcept {
+  diag.print(globalLogOpts.prog, *globalLogOpts.stream);
 }
 
 } // namespace
@@ -69,10 +68,10 @@ template <> struct yml::MappingTraits<NormalOpts> {
   }
 };
 
-bool getOpts(const int argc, const char *const *argv, Opts &opts,
-             vfs::FileSystem &VFS) noexcept {
+auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSystem &VFS) noexcept
+    -> bool {
   // LLVM default options will mix into ours if we don't make our own category
-  cl::OptionCategory cat{g_logOpts->prog};
+  cl::OptionCategory cat{globalLogOpts.prog};
   cl::opt<std::string> config{
       cl::cat(cat),
       cl::desc("<YAML configuration file>"),
@@ -89,10 +88,9 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts,
   };
   cl::alias _{"w", cl::aliasopt(write)};
 
-  cl::SetVersionPrinter([](llvm::raw_ostream &s) { s << "3.0.0\n"; });
+  cl::SetVersionPrinter([](llvm::raw_ostream &stream) -> void { stream << "3.0.0\n"; });
   cl::HideUnrelatedOptions(cat);
-  llvm::DenseMap<llvm::StringRef, cl::Option *> &optMap{
-      cl::getRegisteredOptions()};
+  llvm::DenseMap<llvm::StringRef, cl::Option *> &optMap{cl::getRegisteredOptions()};
 
   // Reset default descriptions to be consistent with the README
   optMap["help"]->setDescription("Display available options.");
@@ -102,28 +100,27 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts,
   if (!cl::ParseCommandLineOptions(argc, argv,
                                    "importizer - Automagically rewrite "
                                    "header-based C++ into using modules",
-                                   g_logOpts->stream)) {
+                                   globalLogOpts.stream)) {
     return false;
   }
 
-  auto buf{VFS.getBufferForFile(config, false, false, false)};
+  auto buf{VFS.getBufferForFile(config, 0, false, false)};
   if (!buf) {
     return err("Error opening {}: {}", config, buf.getError().message());
   }
-  yml::Input in{(**buf).getBuffer(), nullptr, ymlDiagHandler};
+  yml::Input ymlIn{(**buf).getBuffer(), nullptr, ymlDiagHandler};
   NormalOpts nOpts;
-  if ((in >> nOpts).error()) {
+  if ((ymlIn >> nOpts).error()) {
     return false;
   }
 
   // root
   llvm::SmallString<128> tmp{nOpts.root};
-  llvm::Twine configDir{pth::parent_path(config)};
+  llvm::StringRef configDir{pth::parent_path(config)};
   pth::make_absolute(configDir, tmp);
   opts.root = tmp.str();
-  std::error_code ec{VFS.getRealPath(opts.root, tmp)};
-  if (ec) {
-    return err("Unable to get real path of {}: {}", opts.root, ec.message());
+  if (std::error_code errCode{VFS.getRealPath(opts.root, tmp)}) {
+    return err("Unable to get real path of {}: {}", opts.root, errCode.message());
   }
   opts.root = tmp.str();
   std::array<GlobDirRule, 2> rootGlobRules;
@@ -136,7 +133,7 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts,
     return false;
   }
 
-  rootGlobRules[0].callback = [&opts](llvm::StringRef path) {
+  rootGlobRules[0].callback = [&opts](llvm::StringRef path) -> void {
     opts.hdrs.try_emplace(path);
   };
 
@@ -145,15 +142,15 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts,
   }
 
   // compilationDb
-  else if (nOpts.dbPath) {
-    buf = VFS.getBufferForFile(*nOpts.dbPath, false, false, false);
+  if (nOpts.dbPath) {
+    buf = VFS.getBufferForFile(*nOpts.dbPath, 0, false, false);
     if (!buf) {
       return err("Error opening {}: {}", config, buf.getError().message());
     }
     std::string msg;
     std::unique_ptr<tl::JSONCompilationDatabase> jsonCompDb{
-        tl::JSONCompilationDatabase::loadFromBuffer(
-            (**buf).getBuffer(), msg, tl::JSONCommandLineSyntax::AutoDetect)};
+        tl::JSONCompilationDatabase::loadFromBuffer((**buf).getBuffer(), msg,
+                                                    tl::JSONCommandLineSyntax::AutoDetect)};
     if (!jsonCompDb) {
       return err("Error parsing compilation database: {}", msg);
     }
@@ -167,16 +164,14 @@ bool getOpts(const int argc, const char *const *argv, Opts &opts,
     if (!mkGlobs(rootGlobRules[1].globs, nOpts.xplicit->srcGlobExprs)) {
       return false;
     }
-    rootGlobRules[1].callback = [&opts](llvm::StringRef path) {
+    rootGlobRules[1].callback = [&opts](llvm::StringRef path) -> void {
       opts.srcs.emplace_back(path);
     };
 
     // explicit.compileFlags
-    opts.compDB = std::make_unique<tl::FixedCompilationDatabase>(
-        ".", nOpts.xplicit->compileFlags);
+    opts.compDB = std::make_unique<tl::FixedCompilationDatabase>(".", nOpts.xplicit->compileFlags);
   } else {
-    return err(
-        "At least one of 'compilationDb' or 'explicit' must be specified");
+    return err("At least one of 'compilationDb' or 'explicit' must be specified");
   }
   return globDir(opts.root, rootGlobRules, VFS);
 }
