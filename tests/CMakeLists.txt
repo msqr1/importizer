@@ -1,29 +1,32 @@
 enable_testing()
 
-# Add unit tests
-foreach(suiteName "Diag;Glob;FS;Opts")
+# Unit tests
+set(unitTestNames "Diag;Glob;FS;Opts")
+foreach(unitTestName ${unitTestNames})
   add_test(
-    NAME "${suiteName}"
-    LABELS unit
+    NAME ${unitTestName}
     COMMAND "$<TARGET_FILE:run-test>"
       unit
-      "${suiteName}"
+      ${unitTestName}
   )
 endforeach()
+set_tests_properties(${unitTestNames} PROPERTIES LABELS "unit")
 
-# Add end-to-end tests
+# End-to-end tests
+set(E2ETestNames)
 file(GLOB testDirs ./*)
 foreach(testDir ${testDirs})
   if(NOT IS_DIRECTORY "${testDir}")
     continue()
   endif()
-  cmake_path(GET testDir FILENAME testName)
+  cmake_path(GET testDir FILENAME E2ETestName)
   add_test(
-    NAME "${testName}"
-    LABELS E2E
+    NAME "${E2ETestName}"
     COMMAND "$<TARGET_FILE:run-test>"
       E2E
-      "${CMAKE_CURRENT_SOURCE_DIR}/${testName}"
-      "${CMAKE_CURRENT_BINARY_DIR}/${testName}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/${E2ETestName}"
+      "${CMAKE_CURRENT_BINARY_DIR}/${E2ETestName}"
   )
+  list(APPEND E2ETestNames ${E2ETestName})
 endforeach()
+set_tests_properties(${E2ETestNames} PROPERTIES LABELS "E2E")

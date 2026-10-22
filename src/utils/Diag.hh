@@ -19,8 +19,7 @@ template <bool period = true, typename... Ts>
 auto err(const char *fmt, Ts &&...args) noexcept -> bool {
   assert(globalLogOpts.stream != nullptr);
   llvm::WithColor::error(*globalLogOpts.stream, globalLogOpts.prog);
-  llvm::WithColor stream{*globalLogOpts.stream,
-                         llvm::raw_ostream::Colors::SAVEDCOLOR, true};
+  llvm::WithColor stream{*globalLogOpts.stream, llvm::raw_ostream::Colors::SAVEDCOLOR, true};
   stream << llvm::formatv(fmt, std::forward<Ts>(args)...);
   if constexpr (period) {
     stream << ".\n";
@@ -33,12 +32,10 @@ auto err(const char *fmt, Ts &&...args) noexcept -> bool {
 }
 
 // Log a warning to the global output stream
-template <bool period = true, typename... Ts>
-void warn(const char *fmt, Ts &&...args) noexcept {
+template <bool period = true, typename... Ts> void warn(const char *fmt, Ts &&...args) noexcept {
   assert(globalLogOpts.stream != nullptr);
   llvm::WithColor::warning(*globalLogOpts.stream, globalLogOpts.prog);
-  llvm::WithColor stream{*globalLogOpts.stream,
-                         llvm::raw_ostream::Colors::SAVEDCOLOR, true};
+  llvm::WithColor stream{*globalLogOpts.stream, llvm::raw_ostream::Colors::SAVEDCOLOR, true};
   stream << llvm::formatv(fmt, std::forward<Ts>(args)...);
   if constexpr (period) {
     stream << ".\n";

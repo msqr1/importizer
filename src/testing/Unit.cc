@@ -11,15 +11,15 @@
 #include <llvm/Support/raw_ostream.h>
 
 auto runUnitTest(const char *suiteName) -> int {
-  // Always set program and log stream before everything
-  LogOpts logOpts{.prog = "run-test unit", .stream = &llvm::errs()};
+  // Always set program and log stream before everything, in this case, we suppress everything.
+  LogOpts logOpts{.prog = "", .stream = &llvm::nulls()};
   setGlobalLogOpts(logOpts);
 
   doctest::Context ctx;
-  std::stringstream doctestCLI;
+  std::stringstream doctestOut;
   ctx.setOption("ts", suiteName);
-  ctx.setCout(&doctestCLI);
+  ctx.setCout(&doctestOut);
   const int doctestRtn{ctx.run()};
-  *logOpts.stream << doctestCLI.rdbuf();
+  llvm::outs() << doctestOut.rdbuf();
   return doctestRtn;
 }

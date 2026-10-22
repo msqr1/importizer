@@ -39,7 +39,7 @@ struct NormalExplicit {
 
 struct NormalOpts {
   std::optional<NormalExplicit> xplicit;
-  std::optional<llvm::StringRef> dbPath;
+  std::optional<llvm::StringRef> compDBPath;
   std::vector<llvm::StringRef> hdrGlobExprs;
   llvm::StringRef root;
   bool stdImport{};
@@ -62,7 +62,7 @@ template <> struct yml::MappingTraits<NormalOpts> {
   static void mapping(yml::IO &in, NormalOpts &opts) {
     in.mapRequired("root", opts.root);
     in.mapRequired("hdrGlobs", opts.hdrGlobExprs);
-    in.mapOptional("compilationDB", opts.dbPath);
+    in.mapOptional("compilationDB", opts.compDBPath);
     in.mapOptional("stdImport", opts.stdImport);
     in.mapOptional("explicit", opts.xplicit);
   }
@@ -72,7 +72,7 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     -> bool {
   // LLVM default options will mix into ours if we don't make our own category
   cl::OptionCategory cat{globalLogOpts.prog};
-  cl::opt<std::string> config{
+  cl::opt<std::string> configPath{
       cl::cat(cat),
       cl::desc("<YAML configuration file>"),
       cl::init("importizer.yml"),
@@ -104,9 +104,9 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     return false;
   }
 
-  auto buf{VFS.getBufferForFile(config, 0, false, false)};
+  auto buf{VFS.getBufferForFile(configPath, 0, false, false)};
   if (!buf) {
-    return err("Error opening {}: {}", config, buf.getError().message());
+    return err("Error opening {}: {}", configPath, buf.getError().message());
   }
   yml::Input ymlIn{(**buf).getBuffer(), nullptr, ymlDiagHandler};
   NormalOpts nOpts;
@@ -116,7 +116,7 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
 
   // root
   llvm::SmallString<128> tmp{nOpts.root};
-  llvm::StringRef configDir{pth::parent_path(config)};
+  llvm::StringRef configDir{pth::parent_path(configPath)};
   pth::make_absolute(configDir, tmp);
   opts.root = tmp.str();
   if (std::error_code errCode{VFS.getRealPath(opts.root, tmp)}) {
@@ -137,15 +137,15 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     opts.hdrs.try_emplace(path);
   };
 
-  if (nOpts.dbPath && nOpts.xplicit) {
+  if (nOpts.compDBPath && nOpts.xplicit) {
     return err("'compilationDB' and 'explicit' are mutually exclusive");
   }
 
   // compilationDB
-  if (nOpts.dbPath) {
-    buf = VFS.getBufferForFile(*nOpts.dbPath, 0, false, false);
+  if (nOpts.compDBPath) {
+    buf = VFS.getBufferForFile(*nOpts.compDBPath, 0, false, false);
     if (!buf) {
-      return err("Error opening {}: {}", config, buf.getError().message());
+      return err("Error opening {}: {}", *nOpts.compDBPath, buf.getError().message());
     }
     std::string msg;
     std::unique_ptr<tl::JSONCompilationDatabase> jsonCompDb{

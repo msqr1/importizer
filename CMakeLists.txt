@@ -83,7 +83,7 @@ elseif(WIN32 AND arch STREQUAL "amd64")
   list(APPEND compileFlags "$<$<CONFIG:Debug>:-D_DISABLE_STL_ANNOTATION>")
 
   list(APPEND linkFlags
-    "$<$<CONFIG:Debug>:-libpath:${clangLibPath};clang_rt.asan_dynamic-${clangArch}.lib"
+    "$<$<CONFIG:Debug>:-libpath:${clangLibPath};clang_rt.asan_dynamic-${clangArch}.lib>"
     "$<$<CONFIG:Debug>:-wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib>"
   )
 endif()
@@ -114,7 +114,7 @@ target_compile_options(common-config INTERFACE ${compileFlags})
 target_link_options(common-config INTERFACE ${linkFlags})
 
 # 3rd-party
-set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
+include("${scriptsDir}/3rdParty.cmake")
 
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
@@ -122,7 +122,7 @@ endif()
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
 
-option(BUILD_TESTING "Build test driver and enable tests" FALSE)
+option(BUILD_TESTING "Build test driver and enable testing" FALSE)
 if(BUILD_TESTING)
   add_subdirectory(src/testing)
   add_subdirectory(tests)

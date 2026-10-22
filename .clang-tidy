@@ -8,6 +8,7 @@ Checks: >
   -llvm-twine-local,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-derived-method-shadowing-base-method,
   concurrency-*,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-const-or-ref-data-members,

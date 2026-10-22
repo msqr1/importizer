@@ -37,7 +37,8 @@ jobs:
         uses: taiki-e/checkout-action@v1.4.2
       - name: C++ format check
         run: |
-          find src -name "*.cc" -o -name "*.hh" | xargs clang-format-22 --dry-run --Werror
+          find src -name "*.cc" -o -name "*.hh" | \
+          xargs -P 0 -I {} clang-format-22 --dry-run --Werror {}
       - name: C++ lint check
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Debug --preset importizer

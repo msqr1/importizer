@@ -34,13 +34,12 @@ class PPAnalyzer : public clang::PPCallbacks {
 public:
   PPAnalyzer(clang::Preprocessor &PP, FrontendCtx &ctx);
   auto FileNotFound(llvm::StringRef /*FileName*/) noexcept -> bool override;
-  void InclusionDirective(
-      clang::SourceLocation hashLoc, const clang::Token &includeTok,
-      llvm::StringRef fileName, bool angle,
-      clang::CharSourceRange filenameRange, clang::OptionalFileEntryRef file,
-      llvm::StringRef searchPath, llvm::StringRef relativePath,
-      const clang::Module *suggestedModule, bool moduleImported,
-      clang::SrcMgr::CharacteristicKind fileType) noexcept override;
+  void InclusionDirective(clang::SourceLocation hashLoc, const clang::Token &includeTok,
+                          llvm::StringRef fileName, bool angle,
+                          clang::CharSourceRange filenameRange, clang::OptionalFileEntryRef file,
+                          llvm::StringRef searchPath, llvm::StringRef relativePath,
+                          const clang::Module *suggestedModule, bool moduleImported,
+                          clang::SrcMgr::CharacteristicKind fileType) noexcept override;
   void moduleImport(clang::SourceLocation importLoc, clang::ModuleIdPath path,
                     const clang::Module *imported) noexcept override;
   void If(clang::SourceLocation loc, clang::SourceRange condRange,
@@ -49,6 +48,5 @@ public:
              const clang::MacroDefinition &MD) noexcept override;
   void Ifndef(clang::SourceLocation cond, const clang::Token &macroNameTok,
               const clang::MacroDefinition &MD) noexcept override;
-  void Endif(clang::SourceLocation loc,
-             clang::SourceLocation ifLoc) noexcept override;
+  void Endif(clang::SourceLocation loc, clang::SourceLocation ifLoc) noexcept override;
 };

@@ -9,11 +9,16 @@
 #include <clang/Lex/Preprocessor.h>
 
 PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP_, FrontendCtx &ctx_)
-    : PP{PP_}, ctx{ctx_}, nestedIncludeDiagID{PP.getDiagnostics().getCustomDiagID(
-                              clang::DiagnosticsEngine::Fatal,
-                              "#include within conditional block(s) is not modularizable.")},
-      macroIncludeDiagID{PP.getDiagnostics().getCustomDiagID(
-          clang::DiagnosticsEngine::Fatal, "Macro-expanded #include is not modularizable.")} {}
+    : PP{PP_}, ctx{ctx_},
+      nestedIncludeDiagID{
+          PP.getDiagnostics().getCustomDiagID(
+              clang::DiagnosticsEngine::Fatal,
+              "#include within conditional block(s) is not modularizable."),
+      },
+      macroIncludeDiagID{
+          PP.getDiagnostics().getCustomDiagID(clang::DiagnosticsEngine::Fatal,
+                                              "Macro-expanded #include is not modularizable."),
+      } {}
 
 auto PPAnalyzer::FileNotFound(llvm::StringRef /*FileName*/) noexcept -> bool { return false; }
 void PPAnalyzer::InclusionDirective(
