@@ -1,23 +1,16 @@
 = Contributing
 :toc: preamble
 
-Thank you for contributing to importizer! Below is how to contribute code.
-
-== Internals
-Although not a hard requirement, you'd want to know some internals of importizer.
-It's written out link:Internals.adoc[here].
-It covers architecture, design decisions, transformations and their mechanism as well as some history
-& fun facts!
+Thank you for contributing to importizer!
 
 == Environment
-=== If you're on Linux
+=== Linux pre-setup
 On Linux, importizer requires a musl-based toolchain to create a truly standalone binary.
 However, your Linux (and as a result, your toolchain) is likely based on glibc (see more on
 <<y0-glibc, why not glibc>>), so we're going to use a container for everything.
 There's prebuilt Alpine Linux container images with all the correct tools installed
 https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[here] to make this easier.
-To set this up locally, personally, I use https://distrobox.it[distrobox] because it makes the
-host-container boundary (terminal-wise) kinda invisible.
+To set this up locally, I prefer https://distrobox.it[distrobox].
 [,bash]
 ----
 # Create distrobox container (replace {arch} with your architecture)
@@ -27,19 +20,19 @@ distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:3.24.2-
 distrobox enter importizer-alpine
 ----
 
-=== If you're on Windows
+=== Windows pre-setup
 Importizer rely on symbolic links, which on Windows, can't be created by default without
 Administrator privileges.
 You'd need to
 https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[enable Developer Mode]
-to allow for their creation.
+to create symlinks without Administrator privileges.
 
 === Setup
 Setup the environment (check architecture, required tools, backend and set environment variables) by
 running (replace {os} with the correct file):
 [,bash]
 ----
-. scripts/setup-env/{os}
+. scripts/setup/{os}
 ----
 
 You must do this before doing anything else, or you will get some weird errors.
@@ -53,11 +46,11 @@ Note:
 |===
 |Argument |Description |Default value
 
-|llvmPrefix
+|LLVMPrefix
 |Set the directory of the LLVM installation
 |`C:/Program Files/LLVM`
 
-|cmakePrefix
+|CMakePrefix
 |Set the directory of the CMake installation
 |`C:/Program Files/CMake`
 |===
@@ -70,7 +63,7 @@ Note that bundled tools usually lag behind in version, so use `:bundled` with ca
 |===
 | |Linux |MacOS |Windows
 
-|LibTooling
+|3rd-party libraries (LibTooling, doctest)
 3+^.^|Static
 
 |Sanitizers (only in Debug mode)
@@ -95,29 +88,25 @@ It's dynamic but also with stable ABI guaranteed between versions by Windows so 
 it's static.
 . [[y0-glibc]] CStdlib is musl. glibc was considered, but:
 .. Static linking with glibc is unsupported, so we must link to it dynamically.
-.. For dynamic linking, we need ABI stability guarantee between versions, which glibc doesn't have.
-.. Also for dynamic linking, we'd need glibc to be on *all* Linux systems, just like how Windows
-always comes with UCRT.
-But this isn't the case for glibc: it's only on *most*, not all Linux systems.
-So although rare, one with a different CStdlib (musl, LLVM libc, etc.) can't run importizer.
+.. For dynamic linking, we need ABI stability guarantee between versions, which glibc doesn't have,
+so we must use a very old version.
 
 == Building
 === Skip building LibTooling
-Importizer needs LibTooling, a Clang internal.
+Importizer require https://clang.llvm.org/docs/LibTooling.html[LibTooling]
 But LibTooling isn't like other 3rd-party libraries, it is massive!
 To save one from compiling it, there are
 https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.8[prebuilt ones], which are
 automatically installed like a package when configuring.
-Since LLVM's ABIs can change between versions, if you match the toolchain in the table below that
-was used to build LibTooling for CI, the prebuilt LibTooling will integrate seamlessly.
-One can start coding right away.
+Since LLVM's ABIs can change between versions, the prebuilt LibTooling will integrate seamlessly if
+you match the toolchain below that was used to build it.
 
 [%autowidth]
 |===
 | |Linux |MacOS |Windows
 
 |Build system
-3+^.^|CMake 4.x.x
+3+^.^|CMake 4.0.0{plus}
 
 |Generator
 3+^.^|Ninja^1^
@@ -125,10 +114,10 @@ One can start coding right away.
 |Compiler toolchain
 |clang, ld.lld 22.1.3
 |clang 18.1.8 (Homebrew)
-|clang-cl, lld-link, llvm-ml ^2^
+|clang-cl, lld-link, llvm-ml^2^
 
 |Backend
-|Alpine 3.24.2
+|Alpine Linux 3.24.2
 |Xcode SDK (`SDKROOT`)
 |Visual Studio or Build Tools^3^
 |===
@@ -141,19 +130,19 @@ One can start coding right away.
 
 Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
 `CMakePresets.json` to customize your local build.
-This is so you don't have to derive the correct settings yourself.
-For example, on MacOS:
+For example:
 [,json]
 ----
 {
   "version": 10,
   "configurePresets": [
     {
-      "name": "mine",
-      "inherits": ["importizer-macos"],
-
-      "$comment": "Easily switch between debug and release configuration",
+      "name": "my-preset",
+      "inherits": "importizer",
       "generator": "Ninja Multi-Config"
+      "cacheVariables": {
+        "TRACE_BUILD": true
+      }
     }
   ]
 }
@@ -167,7 +156,7 @@ If you still insist, good luck, and note that everything else here assumes you w
 
 === Build process
 Build the release mode from scratch.
-Note that cross compilation is currently unsupported.
+Cross compilation is currently unsupported.
 [,bash]
 ----
 # Shallow clone to save space
@@ -175,13 +164,13 @@ git clone --depth 1 https://github.com/msqr1/importizer
 cd importizer
 
 # Setup the environment
-. scripts/setup-env/{OS}
+. scripts/setup/{OS}
 
 # Configure
-cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake -B build -DCMAKE_BUILD_TYPE=Release --preset importizer
 
-# Build using all cores
-cmake --build build --config Release -j $(cmake -P scripts/Nproc.cmake)
+# Build (ninja is smart enough to multi-thread)
+cmake --build build --config Release
 
 # Optional: Make the release distribution archive
 cmake -Dtype=release -DbuildDir=build -P scripts/MkDist.cmake
@@ -197,24 +186,24 @@ Tests are disabled by default, but can be toggled via the `BUILD_TESTING` CMake 
 # Configure with tests enabled (Debug mode recommended for testing)
 cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
 
-# Build using all cores
-cmake --build build --config Debug -j $(cmake -P scripts/Nproc.cmake)
+# Build
+cmake --build build --config Debug
 
-# Run tests with recommended settings and using all cores
-ctest --test-dir build/tests --progress --schedule-random -j $(cmake -P scripts/Nproc.cmake)
+# Run tests
+ctest --test-dir build/tests --progress --schedule-random
 ----
 
 === Adding new tests
 ==== End-to-end tests
-Importizer uses a custom directory-based test harness (located in `src/testing`).
+Importizer uses a custom test runner (`src/testing/E2E.cc`) for end-to-end tests.
 To add a new test case:
 
 . Create a new directory under `tests/` with a descriptive name (e.g., `tests/my-new-feature/`).
-. Add a `Config.yml` file inside this directory to configure the importizer run.
-. Add a `RefCLI.txt` file containing the expected CLI output.
-. *(Optional)* Create a `in/` subdirectory containing the input files (C{plus}{plus} header-based
+. Add a `Config.yml` file for importizer's configuration.
+. Create a `in/` subdirectory containing the input files (C{plus}{plus} header-based
 code).
-. *(Optional)* Create a `ref/` subdirectory containing the expected output files.
+. Add a `RefCLI.txt` file containing the expected CLI output.
+. Create a `ref/` subdirectory containing the expected output files.
 The test driver will automatically compare the actual output directory against this reference
 directory.
 Don’t add this when expecting an error.
@@ -223,7 +212,7 @@ The CMake script detect changes in `tests/`, so your new test will be automatica
 next `cmake -B build` run.
 
 ==== Unit tests
-Unit tests are done with doctest.
+Unit tests are done with doctest
 
 == Coding conventions
 * 100-column per line limit for files and CLI outputs.
@@ -234,16 +223,17 @@ Unit tests are done with doctest.
 * *Environment variables:* `SNAKE_UPPERCASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 === C{plus}{plus}
-* See, and make use of `.clangd`, `.clang_format`, `.clang_tidy`
+* See and make use of `.clangd`, `.clang_format`, `.clang_tidy`.
+Format and lint will be checked in CI/CD.
 
 === CMake
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
 * If a setting is for a specific library, put it in `CMakePresets.json`.
-If it affect everything, put it in `DynPresets.cmake`
+If it's for everything, put it in `DynPresets.cmake`.
 
 === Scripts
 * Use CMake to write scripts, if not possible, then make a folder and add scripts for all supported
-OS'es (like `setup-env`).
+OS'es (like `setup`).
 * Environment setup scripts define these environment variables so you can use in other places:
 ** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, `macos`)
 ** `IMPORTIZER_ARCH`: The architecture (`amd64`, `arm64`)

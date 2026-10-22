@@ -18,8 +18,8 @@ set(scriptsDir "${root}/scripts")
 set(arch $ENV{IMPORTIZER_ARCH})
 
 # Project
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+set(CMAKE_CXX_SCAN_FOR_MODULES FALSE)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 add_library(common-config INTERFACE)
@@ -41,7 +41,6 @@ set(compileFlags
   -Werror
   -Wno-error=unused-parameter
   -Wno-error=unused-private-field
-  -Wno-exit-time-destructors
   -Wno-c++98-compat
   -Wno-c++98-compat-pedantic
   -Wno-unsafe-buffer-usage
@@ -84,26 +83,29 @@ elseif(WIN32 AND arch STREQUAL "amd64")
   list(APPEND compileFlags "$<$<CONFIG:Debug>:-D_DISABLE_STL_ANNOTATION>")
 
   list(APPEND linkFlags
-    "$<$<CONFIG:Debug>:-libpath:${clangLibPath};clang_rt.asan_dynamic-${clangArch}.lib;-wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib>"
+    "$<$<CONFIG:Debug>:-libpath:${clangLibPath};clang_rt.asan_dynamic-${clangArch}.lib"
+    "$<$<CONFIG:Debug>:-wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib>"
   )
 endif()
 
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   list(APPEND compileFlags
-    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-ffile-prefix-map=${root}/src/=>"
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-fno-c++-static-destructors>"
+    "-ffile-prefix-map=${root}/src/="
   )
   list(APPEND linkFlags
     "$<$<CONFIG:Debug>:-fsanitize=address>"
   )
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   list(APPEND compileFlags
-    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-ffile-prefix-map=${root}/src/=>"
+    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-fno-c++-static-destructors>"
+    "/clang:-ffile-prefix-map=${root}/src/="
   )
 endif()
 
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
-option(TRACE_BUILD "Enable build tracing for use with something like ClangBuildAnalyzer" OFF)
+option(TRACE_BUILD "Enable build tracing" FALSE)
 if(TRACE_BUILD)
   list(APPEND compileFlags -ftime-trace -ftime-trace-granularity=1)
 endif()
@@ -120,7 +122,7 @@ endif()
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
 
-option(BUILD_TESTING "Build test driver and enable tests" OFF)
+option(BUILD_TESTING "Build test driver and enable tests" FALSE)
 if(BUILD_TESTING)
   add_subdirectory(src/testing)
   add_subdirectory(tests)

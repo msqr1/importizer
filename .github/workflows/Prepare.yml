@@ -7,7 +7,7 @@ on:
         type: boolean
         default: false
       jqExpr:
-        description: jq job filter expression
+        description: jq platform filter expression
         type: string
         default: .
     outputs:
@@ -18,29 +18,31 @@ jobs:
   all:
     permissions:
       contents: read
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-26.04-arm
     outputs:
       platforms: ${{ steps.getPlatforms.output.platforms }}
     env:
       GH_TOKEN: ${{ github.token }}
-      repo: repos/${{ github.repository }}
+      repo: ${{ github.repository }}
     steps:
       - name: Check CI status of HEAD
-        if: inputs.checkCi == 'true'
+        if: inputs.checkCI == 'true'
         run: |
-          "$(gh api $repo/actions/workflows/Ci.yml/runs?head_sha=${{ github.sha }} \
+          "$(gh api repos/$repo/actions/workflows/CI.yml/runs?head_sha=${{ github.sha }} \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2026-03-10" \
           -q '(.total_count > 0 and .workflow_runs[0].conclusion != "success")')" &&
           exit 1
+      - name: Checkout
+        uses: taiki-e/checkout-action@v1.4.2
       - name: C++ format check
         run: |
+          find src -name "*.cc" -o -name "*.hh" | xargs clang-format-22 --dry-run --Werror
       - name: C++ lint check
         run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug --preset importizer
+          run-clang-tidy-22 -p build -j 0 src -quiet
       - name: Get platforms
         id: getPlatforms
         run: |
-          echo "platforms=$(gh api $repo/contents/Platforms.json \
-            -H "Accept: application/vnd.github.raw+json" \
-            -H "X-GitHub-Api-Version: 2026-03-10" \
-            -q '${{ inputs.jqExpr }}')" >> "$GITHUB_OUTPUT"
+          echo "platforms=$(cat Platforms.json | jq '${{ inputs.jqExpr }}')" >> "$GITHUB_OUTPUT"

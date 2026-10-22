@@ -14,3 +14,7 @@ Hover:
 Diagnostics:
   UnusedIncludes: Strict
   MissingIncludes: Strict
+
+Style:
+  QuotedHeaders: ["src/.*"]
+  AngledHeaders: ["3rd-party/.*"]

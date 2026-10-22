@@ -4,8 +4,9 @@ enable_testing()
 foreach(suiteName "Diag;Glob;FS;Opts")
   add_test(
     NAME "${suiteName}"
+    LABELS unit
     COMMAND "$<TARGET_FILE:run-test>"
-      "unit"
+      unit
       "${suiteName}"
   )
 endforeach()
@@ -19,8 +20,9 @@ foreach(testDir ${testDirs})
   cmake_path(GET testDir FILENAME testName)
   add_test(
     NAME "${testName}"
+    LABELS E2E
     COMMAND "$<TARGET_FILE:run-test>"
-      "E2E"
+      E2E
       "${CMAKE_CURRENT_SOURCE_DIR}/${testName}"
       "${CMAKE_CURRENT_BINARY_DIR}/${testName}"
   )

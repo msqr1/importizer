@@ -24,8 +24,8 @@ Checks: >
   -readability-magic-numbers,
   -readability-suspicious-call-argument
 
-WarningsAsErrors: ""
-FormatStyle: none
+WarningsAsErrors: "*"
+FormatStyle: file
 HeaderFilterRegex: '.*[/\\]src[/\\]'
 HeaderFileExtensions: ["hh"]
 ImplementationFileExtensions: ["cc"]

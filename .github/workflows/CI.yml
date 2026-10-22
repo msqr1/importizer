@@ -20,12 +20,12 @@ jobs:
       - name: Checkout
         uses: taiki-e/checkout-action@v1.4.2
       - name: Setup environment
-        run: . scripts/setup-env/${{ matrix.setup-env }} ${{ matrix.arch }}
+        run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
       - name: Configure
-        run: cmake -B build --preset importizer
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug --preset importizer
       - name: Build
         run: cmake --build build --config Debug
       - name: Test
-        run: ctest --test-dir build/tests -C Debug
+        run: ctest --test-dir build/tests -C Debug -j $(cmake -P scripts/NProc.cmake)
       - name: Make distribution
         run: cmake -Dtype=Debug -DbuildDir=build -P scripts/MkDist.cmake

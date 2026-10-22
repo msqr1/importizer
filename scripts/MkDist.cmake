@@ -1,4 +1,4 @@
-# Make a distribution archive from a build directory, must be already built and tested!
+# Make a distribution from a build directory, must be already built and tested!
 ## Uses Github CLI, needs GH_TOKEN env var
 
 set(knownTypes "Debug;Release")

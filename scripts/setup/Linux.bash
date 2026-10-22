@@ -37,7 +37,7 @@ if ! command -v clang >/dev/null 2>&1; then
   return 1
 fi
 
-if ! command -v clang++ > /dev/null 2>&1; then
+if ! command -v clang++ >/dev/null 2>&1; then
   echo "Clang++ not found" >&2
   return 1
 fi

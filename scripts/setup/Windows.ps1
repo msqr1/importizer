@@ -13,21 +13,21 @@ function exitWithErr {
     [Parameter(ValueFromRemainingArguments = $true)]
     [object[]]$parts
   )
-  $sb = [Text.StringBuilder]::new()
+  $strBuilder = [Text.StringBuilder]::new()
   foreach ($part in $parts) {
     if ($null -eq $part) { continue }
     if ($part -is [Collections.IEnumerable] -and $part -isnot [string]) {
       foreach ($item in $part) {
         if ($null -ne $item) {
-          $sb.Append($item.ToString())
-          $sb.Append(", ")
+          $strBuilder.Append($item.ToString())
+          $strBuilder.Append(", ")
         }
       }
     } else {
-      $sb.Append($part.ToString())
+      $strBuilder.Append($part.ToString())
     }
   }
-  throw [Management.Automation.RuntimeException]::new($sb.ToString())
+  throw [Management.Automation.RuntimeException]::new($strBuilder.ToString())
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
@@ -159,3 +159,4 @@ if ($ci) {
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
+

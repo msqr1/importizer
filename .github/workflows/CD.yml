@@ -19,13 +19,13 @@ jobs:
       - name: Checkout
         uses: taiki-e/checkout-action@v1.4.2
       - name: Setup environment
-        run: . scripts/setup-env/${{ matrix.setup-env }} ${{ matrix.arch }}
+        run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release --preset importizer
       - name: Build
         run: cmake --build build --config Release
       - name: Test
-        run: ctest --test-dir build/tests -C Release
+        run: ctest --test-dir build/tests -C Release -j $(cmake -P scripts/NProc.cmake)
       - name: Make distribution
         run: cmake -Dtype=Release -DbuildDir=build -P scripts/MkDist.cmake
       - name: Upload as artifact

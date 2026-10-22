@@ -62,7 +62,7 @@ template <> struct yml::MappingTraits<NormalOpts> {
   static void mapping(yml::IO &in, NormalOpts &opts) {
     in.mapRequired("root", opts.root);
     in.mapRequired("hdrGlobs", opts.hdrGlobExprs);
-    in.mapOptional("compilationDb", opts.dbPath);
+    in.mapOptional("compilationDB", opts.dbPath);
     in.mapOptional("stdImport", opts.stdImport);
     in.mapOptional("explicit", opts.xplicit);
   }
@@ -138,10 +138,10 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
   };
 
   if (nOpts.dbPath && nOpts.xplicit) {
-    return err("'compilationDb' and 'explicit' are mutually exclusive");
+    return err("'compilationDB' and 'explicit' are mutually exclusive");
   }
 
-  // compilationDb
+  // compilationDB
   if (nOpts.dbPath) {
     buf = VFS.getBufferForFile(*nOpts.dbPath, 0, false, false);
     if (!buf) {
@@ -150,7 +150,8 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     std::string msg;
     std::unique_ptr<tl::JSONCompilationDatabase> jsonCompDb{
         tl::JSONCompilationDatabase::loadFromBuffer((**buf).getBuffer(), msg,
-                                                    tl::JSONCommandLineSyntax::AutoDetect)};
+                                                    tl::JSONCommandLineSyntax::AutoDetect),
+    };
     if (!jsonCompDb) {
       return err("Error parsing compilation database: {}", msg);
     }
@@ -171,7 +172,7 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     // explicit.compileFlags
     opts.compDB = std::make_unique<tl::FixedCompilationDatabase>(".", nOpts.xplicit->compileFlags);
   } else {
-    return err("At least one of 'compilationDb' or 'explicit' must be specified");
+    return err("At least one of 'compilationDB' or 'explicit' must be specified");
   }
   return globDir(opts.root, rootGlobRules, VFS);
 }
