@@ -1,8 +1,8 @@
-name: Job Matrix
+name: Prepare for multi-platform CI/CD
 on:
   workflow_call:
     inputs:
-      checkCi:
+      checkCI:
         description: Check CI status of HEAD
         type: boolean
         default: false
@@ -11,16 +11,16 @@ on:
         type: string
         default: .
     outputs:
-      m:
-        description: Job matrix
-        value: ${{ jobs.all.outputs.m }}
+      platforms:
+        description: Platforms
+        value: ${{ jobs.all.outputs.platfoms }}
 jobs:
   all:
     permissions:
       contents: read
     runs-on: ubuntu-slim
     outputs:
-      m: ${{ steps.get.outputs.m }}
+      platforms: ${{ steps.getPlatforms.output.platforms }}
     env:
       GH_TOKEN: ${{ github.token }}
       repo: repos/${{ github.repository }}
@@ -33,10 +33,14 @@ jobs:
           -H "X-GitHub-Api-Version: 2026-03-10" \
           -q '(.total_count > 0 and .workflow_runs[0].conclusion != "success")')" &&
           exit 1
-      - name: Get jobs
-        id: get
+      - name: C++ format check
         run: |
-          echo "m=$(gh api $repo/contents/CiMatrix.json \
+      - name: C++ lint check
+        run: |
+      - name: Get platforms
+        id: getPlatforms
+        run: |
+          echo "platforms=$(gh api $repo/contents/Platforms.json \
             -H "Accept: application/vnd.github.raw+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
             -q '${{ inputs.jqExpr }}')" >> "$GITHUB_OUTPUT"

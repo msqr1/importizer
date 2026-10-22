@@ -1,17 +1,17 @@
 name: Tag Release
 on: workflow_dispatch
 jobs:
-  jobMatrix:
-    uses: ./.github/workflows/JobMatrix.yml
+  prepare:
+    uses: ./.github/workflows/Prepare.yml
     with:
-      checkCi: true
+      checkCI: true
   make:
     permissions:
       contents: write
-    needs: jobMatrix
+    needs: prepare
     strategy:
       matrix:
-        include: ${{ fromJSON(needs.jobMatrix.outputs.m) }}
+        include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     container: ${{ matrix.container || '' }}
@@ -20,12 +20,14 @@ jobs:
         uses: taiki-e/checkout-action@v1.4.2
       - name: Setup environment
         run: . scripts/setup-env/${{ matrix.setup-env }} ${{ matrix.arch }}
-      - name: Ensure LibTooling
-        run: cmake -P scripts/EnsureLibTooling.cmake
-      - name: Ensure doctest
-        run: cmake -P scripts/EnsureDoctest.cmake
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release --preset importizer
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build/tests -C Release
       - name: Make distribution
-        run: cmake -Dmode=Release -P scripts/MkDist.cmake
+        run: cmake -Dtype=Release -DbuildDir=build -P scripts/MkDist.cmake
       - name: Upload as artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:

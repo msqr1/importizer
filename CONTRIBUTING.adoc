@@ -117,7 +117,7 @@ One can start coding right away.
 | |Linux |MacOS |Windows
 
 |Build system
-3+^.^|CMake 3.31{plus}
+3+^.^|CMake 4.x.x
 
 |Generator
 3+^.^|Ninja^1^
@@ -125,7 +125,7 @@ One can start coding right away.
 |Compiler toolchain
 |clang, ld.lld 22.1.3
 |clang 18.1.8 (Homebrew)
-|clang-cl, lld-link, llvm-ml 20.1.x^2^
+|clang-cl, lld-link, llvm-ml ^2^
 
 |Backend
 |Alpine 3.24.2
@@ -136,7 +136,7 @@ One can start coding right away.
 . Ninja is the only generator that meets all these requirements:
 .. Available on all supported OS'es and architectures
 .. Can generate a JSON compilation database
-. `20.1.8` on AMD64, `20.1.6` on ARM64. Basically replacing MSVC toolchain here.
+. `20.1.8` on AMD64, `22.1.8` on ARM64. Basically replacing MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
 
 Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
@@ -160,13 +160,13 @@ For example, on MacOS:
 ----
 
 === Building from source entirely
-You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you will
+You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you'd
 have to rebuild LibTooling with that toolchain and deal with bugs on them.
 I gave up and decided that I'd only support using LLVM's toolchain.
 If you still insist, good luck, and note that everything else here assumes you won't be doing this.
 
 === Build process
-Ok, enough talking, here's how to build the release mode from scratch.
+Build the release mode from scratch.
 Note that cross compilation is currently unsupported.
 [,bash]
 ----
@@ -177,14 +177,14 @@ cd importizer
 # Setup the environment
 . scripts/setup-env/{OS}
 
-# Ensure LibTooling
-cmake -P scripts/EnsureLibTooling.cmake
-
 # Configure
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 
 # Build using all cores
 cmake --build build --config Release -j $(cmake -P scripts/Nproc.cmake)
+
+# Optional: Make the release distribution archive
+cmake -Dtype=release -DbuildDir=build -P scripts/MkDist.cmake
 ----
 The binary is in `build/importizer`, named `importizer` on Linux or MacOS and `importizer.exe` on
 Windows.
@@ -223,23 +223,23 @@ The CMake script detect changes in `tests/`, so your new test will be automatica
 next `cmake -B build` run.
 
 ==== Unit tests
-TODO
+Unit tests are done with doctest.
 
 == Coding conventions
 * 100-column per line limit for files and CLI outputs.
 
 === Naming
 * *All code variables and functions:* `camelCase`
-* *Executables and directories:* `kebab-case` (e.g., `testing/`)
-* *Environment variables:* `ALL_CAPS_SNAKE_CASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
+* *Executables and directories:* `kebab-case` (e.g., `3rd-party/`)
+* *Environment variables:* `SNAKE_UPPERCASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 === C{plus}{plus}
 * See, and make use of `.clangd`, `.clang_format`, `.clang_tidy`
 
 === CMake
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
-* If a global setting affects LibTooling too (e.g. `BUILD_SHARED_LIBS`), put in `CMakePresets.json`.
-Otherwise (eg. `CMAKE_CXX_SCAN_FOR_MODULES`), put in `CMakeLists.txt`.
+* If a setting is for a specific library, put it in `CMakePresets.json`.
+If it affect everything, put it in `DynPresets.cmake`
 
 === Scripts
 * Use CMake to write scripts, if not possible, then make a folder and add scripts for all supported

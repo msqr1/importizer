@@ -1,42 +1,23 @@
-# Make a distribution
+# Make a distribution archive from a build directory, must be already built and tested!
 ## Uses Github CLI, needs GH_TOKEN env var
 
-set(knownModes "Debug;Release")
-if(NOT mode IN_LIST knownModes)
-  message(FATAL_ERROR "Unknown mode '${mode}', only Debug/Release is allowed")
+set(knownTypes "Debug;Release")
+if(NOT type IN_LIST knownTypes)
+  message(FATAL_ERROR "Unknown distribution type '${type}', only Debug/Release is allowed")
 endif()
-if(LINUX)
-  set(os "linux")
-elseif(APPLE)
-  set(os "macos")
-elseif(WIN32)
-  set(os "windows")
-endif()
+set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
 cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptsDir)
 file(REAL_PATH "${scriptsDir}/.." root)
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
-set(buildDir "${root}/build")
 
-include("${scriptsDir}/Exec.cmake")
-
-exec("${CMAKE_COMMAND}" -B "${buildDir}" -DCMAKE_BUILD_TYPE=${mode} --preset importizer)
-exec("${CMAKE_COMMAND}" --build "${buildDir}" --config ${mode})
-
-exec(${CMAKE_CTEST_COMMAND}
-  --test-dir "${buildDir}/tests"
-  -C ${mode}
-  --verbose
-  --progress
-  --schedule-random
-  -j ${procCnt}
-)
+set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
 
 if(mode STREQUAL "Debug")
   # Format in debug mode: tzst(installation)
-  exec("${CMAKE_COMMAND}"
+  execute_process(COMMAND "${CMAKE_COMMAND}"
     --install "${buildDir}"
-    --config ${mode}
+    --config ${type}
     --prefix "${root}/importizer"
     -j ${procCnt}
   )
@@ -69,12 +50,22 @@ if(mode STREQUAL "Debug")
   set(repo "msqr1/importizer")
 
   # Upload
-  exec(gh release upload continuous "${root}/${os}-${arch}.tzst" --clobber -R ${repo})
+  execute_process(COMMAND
+    gh release upload continuous "${root}/${os}-${arch}.tzst"
+    --clobber
+    -R ${repo}
+  )
 
   # Update continous tag to current commit
-  exec(git tag -f continuous)
-  exec(git remote set-url --push origin https://msqr1:$ENV{GH_TOKEN}@github.com/${repo}.git)
-  execUnsafe(git push -f origin continuous)
+  execute_process(COMMAND git tag -f continuous)
+  execute_process(COMMAND
+    git remote set-url --push
+    origin https://msqr1:$ENV{GH_TOKEN}@github.com/${repo}.git\
+  )
+  execute_process(COMMAND
+    git push -f origin continuous
+    COMMAND_ERROR_IS_FATAL NONE
+  )
 endif()
 
 # CI release mode upload handled by actions/upload-artifact

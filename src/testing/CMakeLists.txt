@@ -25,12 +25,3 @@ add_custom_command(
     -P "${scriptsDir}/PostBuild.cmake"
   VERBATIM
 )
-
-foreach(suiteName "Diag;Glob;FS;Opts")
-  add_test(
-    NAME "${suiteName}"
-    COMMAND "$<TARGET_FILE:run-test>"
-      "unit"
-      "${suiteName}"
-  )
-endforeach()

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 4.0.0)
 project(importizer VERSION 3.0.0)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
@@ -112,7 +112,7 @@ target_compile_options(common-config INTERFACE ${compileFlags})
 target_link_options(common-config INTERFACE ${linkFlags})
 
 # 3rd-party
-include("${scriptsDir}/3rdParty.cmake")
+set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
 
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)

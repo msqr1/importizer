@@ -5,11 +5,11 @@
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
 
-// run-test e2e [testDir] [root]
+// run-test E2E [testDir] [root]
 // run-test unit [suiteName]
 auto main(const int argc, const char *const *argv) -> int {
   llvm::StringRef testType{argv[1]};
-  if (argc == 4 && testType == "e2e") {
+  if (argc == 4 && testType == "E2E") {
     return runE2ETest(argv[2], argv[3]) ? EXIT_SUCCESS : EXIT_FAILURE;
   }
   if (argc == 3 && testType == "unit") {

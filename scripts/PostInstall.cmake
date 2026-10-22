@@ -1,5 +1,5 @@
 # Post-installation steps
-# For use inclusion in CMake install rules
+# For inclusion in CMake install rules
 
 if(LINUX)
   file(RENAME "${exe}" "${CMAKE_INSTALL_PREFIX}/importizer.bin")

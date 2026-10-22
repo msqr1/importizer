@@ -1,8 +1,8 @@
 name: Make Alpine Images
 on: workflow_dispatch
 jobs:
-  jobMatrix:
-    uses: ./.github/workflows/JobMatrix.yml
+  prepare:
+    uses: ./.github/workflows/Prepare.yml
     with:
       jqExpr: 'map(select(.os == "linux"))'
   make:

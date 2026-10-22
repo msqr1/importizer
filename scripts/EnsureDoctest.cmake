@@ -43,16 +43,16 @@ file(CREATE_LINK "${root}/Toolchain.cmake"
 file(CREATE_LINK "${root}/DynPresets.cmake"
   "${doctestSrc}/DynPresets.cmake" SYMBOLIC)
 
-include("${scriptsDir}/Exec.cmake")
+set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
 
 # Build
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}"
   -S "${doctestSrc}"
   -B "${doctestSrc}/build"
   --preset doctest
 )
-exec("${CMAKE_COMMAND}" --build "${doctestSrc}/build")
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}" --build "${doctestSrc}/build")
+execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${doctestSrc}/build"
   --prefix "${3rdPartyDir}/doctest"
   -j ${procCnt}

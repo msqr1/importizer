@@ -87,7 +87,7 @@ file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
 file(REMOVE "${arFile}")
 file(RENAME "${3rdPartyDir}/llvm-project-${v}.src" "${LLVMProjSrc}")
 
-include("${scriptsDir}/Exec.cmake")
+set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
 
 # Build LibTooling
 ## Load toolchain, static and dynamic presets for LLVM
@@ -99,13 +99,13 @@ file(CREATE_LINK "${root}/DynPresets.cmake"
   "${LLVMProjSrc}/llvm/DynPresets.cmake" SYMBOLIC)
 
 ## Build LLVM
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}"
   -S "${LLVMProjSrc}/llvm"
   -B "${LLVMProjSrc}/build"
   --preset llvm
 )
-exec("${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build")
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build")
+execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${LLVMProjSrc}/build"
   --prefix "${3rdPartyDir}/llvm"
   -j ${procCnt}
@@ -120,14 +120,14 @@ file(CREATE_LINK "${root}/DynPresets.cmake"
   "${LLVMProjSrc}/clang/DynPresets.cmake" SYMBOLIC)
 
 ## Build Clang
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}"
   -S "${LLVMProjSrc}/clang"
   -B "${LLVMProjSrc}/build2"
   --preset clang
   "-DLLVM_DIR=${3rdPartyDir}/llvm/lib/cmake/llvm"
 )
-exec("${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build2")
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build2")
+execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${LLVMProjSrc}/build2"
   --prefix "${3rdPartyDir}/clang"
   -j ${procCnt}
@@ -144,7 +144,7 @@ file(ARCHIVE_CREATE
   COMPRESSION Zstd
   COMPRESSION_LEVEL 19
 )
-exec(gh release upload libtooling-${v} "${arFile}" --clobber -R ${repo})
+execute_process(COMMAND gh release upload libtooling-${v} "${arFile}" --clobber -R ${repo})
 file(REMOVE "${arFile}")
 
 endblock()
@@ -237,7 +237,7 @@ file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
 file(REMOVE "${arFile}")
 file(RENAME "${3rdPartyDir}/llvm-project-${v}.src" "${LLVMProjSrc}")
 
-include("${scriptsDir}/Exec.cmake")
+set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
 
 # Build LibTooling
 ## Load toolchain, static and dynamic presets for LLVM
@@ -249,13 +249,13 @@ file(CREATE_LINK "${root}/DynPresets.cmake"
   "${LLVMProjSrc}/llvm/DynPresets.cmake" SYMBOLIC)
 
 ## Build LLVM
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}"
   -S "${LLVMProjSrc}/llvm"
   -B "${LLVMProjSrc}/build"
   --preset llvm
 )
-exec("${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build")
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build")
+execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${LLVMProjSrc}/build"
   --prefix "${3rdPartyDir}/llvm"
   -j ${procCnt}
@@ -270,14 +270,14 @@ file(CREATE_LINK "${root}/DynPresets.cmake"
   "${LLVMProjSrc}/clang/DynPresets.cmake" SYMBOLIC)
 
 ## Build Clang
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}"
   -S "${LLVMProjSrc}/clang"
   -B "${LLVMProjSrc}/build2"
   --preset clang
   "-DLLVM_DIR=${3rdPartyDir}/llvm/lib/cmake/llvm"
 )
-exec("${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build2")
-exec("${CMAKE_COMMAND}"
+execute_process(COMMAND "${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build2")
+execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${LLVMProjSrc}/build2"
   --prefix "${3rdPartyDir}/clang"
   -j ${procCnt}
@@ -294,7 +294,7 @@ file(ARCHIVE_CREATE
   COMPRESSION Zstd
   COMPRESSION_LEVEL 19
 )
-exec(gh release upload libtooling-${v} "${arFile}" --clobber -R ${repo})
+execute_process(COMMAND gh release upload libtooling-${v} "${arFile}" --clobber -R ${repo})
 file(REMOVE "${arFile}")
 
 endblock()
