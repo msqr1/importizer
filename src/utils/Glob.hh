@@ -68,10 +68,10 @@ template <ConvertibleRange<GlobDirRule> T>
                            vfs::FileSystem &dirVFS = getRealFS()) -> bool {
   llvm::StringRef relPath;
   llvm::SmallString<128> tmp;
-  if (dir.toStringRef(tmp).empty()) {
+  if (dir.isTriviallyEmpty() || dir.toStringRef(tmp).empty()) {
     return err("Error globbing directory: dir path is empty");
   }
-  const size_t baseLen{tmp.size() + !pth::is_separator(tmp.back())};
+  const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
   auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> auto {
     relPath = ent.path().drop_front(baseLen);
     for (const auto &[globs, callback] : rules) {

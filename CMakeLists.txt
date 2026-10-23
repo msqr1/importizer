@@ -43,8 +43,6 @@ target_compile_options(common-config INTERFACE
   -Wextra-semi-stmt
   -Wglobal-constructors
   -Werror
-  -Wno-error=unused-parameter
-  -Wno-error=unused-private-field
   -Wno-c++98-compat
   -Wno-c++98-compat-pedantic
   -Wno-unsafe-buffer-usage
@@ -53,33 +51,62 @@ target_compile_options(common-config INTERFACE
   -Wno-padded
 )
 
-if(NOT (WIN32 AND arch STREQUAL "arm64"))
-  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
-endif()
-
-execute_process(
-  COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
-  OUTPUT_VARIABLE resourceDir
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  COMMAND_ERROR_IS_FATAL ANY
-)
-if(arch STREQUAL "amd64")
-  set(clangArch x86_64)
-elseif(arch STREQUAL "arm64")
-  set(clangArch aarch64)
+if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+  target_compile_options(common-config INTERFACE
+    -ffunction-sections
+    -fdata-sections
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-fno-c++-static-destructors>"
+    "-ffile-prefix-map=${root}/src/="
+  )
+  if(TRACE_BUILD)
+    target_compile_options(common-config INTERFACE
+      -ftime-trace
+      -ftime-trace-granularity=1
+    )
+  endif()
+elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+  target_compile_options(common-config INTERFACE
+    /Gy
+    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-fno-c++-static-destructors>"
+    "/clang:-ffile-prefix-map=${root}/src/="
+  )
+  if(TRACE_BUILD)
+    target_compile_options(common-config INTERFACE
+      /clang:-ftime-trace
+      /clang:-ftime-trace-granularity=1
+    )
+  endif()
+  target_link_options(common-config INTERFACE /OPT:REF)
 endif()
 
 if(LINUX)
+  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
   target_link_options(common-config INTERFACE
+    "LINKER:--gc-sections,--as-needed,--no-copy-dt-needed-entries"
+
     # In Debug mode, we want to still link in whatever dynamic library we need.
     "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
 
     # In Release mode, we want a fully static. But instead of -static we use -static-pie for more
     # security. On Windows and MacOS things are already secure (PIE always on).
-    "$<$<CONFIG:Release>:-static-pie>"
+    "$<$<CONFIG:Release>:-static-pie;LINKER:-s>"
+  )
+elseif(APPLE)
+  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
+  target_link_options(common-config INTERFACE
+    "$<$<CONFIG:Release>:LINKER:-S,-x,-dead_strip>"
   )
 elseif(WIN32 AND arch STREQUAL "amd64")
-  # Windows linkers doesn't know where clang resource directory is, but we need that for sanitizers
+  set(clangArch x86_64)
+  execute_process(
+    COMMAND "${CMAKE_C_COMPILER}" --print-resource-dir
+    OUTPUT_VARIABLE resourceDir
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
+  # Windows linkers doesn't know where clang resource directory is, but we need that for
+  # sanitizers
   set(clangLibPath "${resourceDir}/lib/windows")
 
   # Secret, undocumented define to make non-MSVC ASAN work.
@@ -91,36 +118,9 @@ elseif(WIN32 AND arch STREQUAL "amd64")
   )
 endif()
 
-if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-  target_compile_options(common-config INTERFACE
-    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-fno-c++-static-destructors>"
-    "-ffile-prefix-map=${root}/src/="
-  )
-  if(TRACE_BUILD)
-    target_compile_options(common-config INTERFACE
-      -ftime-trace
-      -ftime-trace-granularity=1
-    )
-  endif()
-  target_link_options(common-config INTERFACE
-    "$<$<CONFIG:Debug>:-fsanitize=address>"
-  )
-elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-  target_compile_options(common-config INTERFACE
-    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-fno-c++-static-destructors>"
-    "/clang:-ffile-prefix-map=${root}/src/="
-  )
-  if(TRACE_BUILD)
-    target_compile_options(common-config INTERFACE
-      /clang:-ftime-trace
-      /clang:-ftime-trace-granularity=1
-    )
-  endif()
-endif()
-
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
-# 3rd-party and its utils
+# 3rd-party and its utils (this is long so it's in another file)
 include("${cmakeDir}/3rdParty.cmake")
 
 # Precompiled headers and its utils

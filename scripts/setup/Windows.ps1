@@ -133,7 +133,6 @@ while (!$stdOut.EndOfStream) {
   $val = $match.Groups[2].Value
   [Environment]::SetEnvironmentVariable($name, $val)
   if ($ci) {
-
     # Since GITHUB_ENV is a file, we want to append only once so we accumulate
     $lines.Add($line)
   }

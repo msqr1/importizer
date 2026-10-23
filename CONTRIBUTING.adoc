@@ -3,20 +3,16 @@
 :toc: preamble
 
 Thank you for contributing to importizer!
-This page gets you from zero to a working build and a passing test run.
+This page gets you from zero to a working build and hopefully a passing test run.
 Everything else lives in link:/docs/[`docs/`].
-
-Maintainers, see xref:/docs/MAINTAINING.adoc[`docs/MAINTAINING.adoc`] for release and version bump
-checklists.
 
 == Quick start
 === 1. One-time setup
-* *Linux:* Build inside the Alpine container.
-See xref:/docs/Building.adoc#linux-pre-setup[Linux pre-setup].
+* *Linux:* Containerize everything, see xref:/docs/Building.adoc#linux-pre-setup[Linux pre-setup].
 * *Windows:* Enable
 https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[Developer Mode] so
 symbolic links work without Administrator privileges.
-* *Git:* Run these after cloning.
+* *Git:* Run after cloning:
 [,bash]
 ----
 # Keep permission of files in scripts/ executable on commit
@@ -40,7 +36,7 @@ It checks your tools and sets the environment variables the build relies on.
 # Windows (PowerShell)
 . scripts/setup/Windows.ps1
 ----
-Note the leading `.`: the scripts must be sourced, not executed.
+Note the leading `.`, the scripts must be sourced, not executed.
 
 === 3. Build and test
 [,bash]
@@ -72,3 +68,6 @@ The binary ends up in `build/importizer`.
 
 == Before opening a pull request
 Make sure your changes follow the xref:/docs/Conventions.adoc[conventions].
+
+== Maintainers
+See xref:/docs/MAINTAINING.adoc[`docs/MAINTAINING.adoc`] for release and version bump checklists.

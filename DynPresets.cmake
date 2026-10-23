@@ -3,8 +3,7 @@
 set(arch $ENV{IMPORTIZER_ARCH})
 
 add_compile_options(
-  -fno-delete-null-pointer-checks
-  -fno-strict-aliasing
+
 )
 
 if(arch STREQUAL "amd64")
@@ -15,31 +14,29 @@ endif()
 
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   add_compile_options(
-    -fvisibility=hidden
+    -fno-delete-null-pointer-checks
+    -fno-strict-aliasing
     -fstrict-flex-arrays=3
+    -ftrivial-auto-var-init=zero
+    -fvisibility=hidden
     -fstack-protector-all
   )
-  if(LINUX)
-    add_compile_options( -fstack-clash-protection)
-    add_link_options(
-      "-Wl,-z,nodlopen,-z,noexecstack,-z,relro,-z,now,--as-needed,--no-copy-dt-needed-entries"
-      "$<$<CONFIG:Release>:-Wl,-s>"
-    )
-  elseif(APPLE)
-    add_link_options(
-      "$<$<CONFIG:Release>:-Wl,-S,-x,-dead_strip>"
-    )
-  endif()
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   add_compile_options(
+    /clang:-fno-delete-null-pointer-checks
+    /clang:-fno-strict-aliasing
+    /clang:-fstrict-flex-arrays=3
+    /clang:-ftrivial-auto-var-init=zero
     /sdl
     /guard:cf
+    /MT # CMAKE_MSVC_RUNTIME_LIBRARY didn't work!!
+  )
+  add_link_options("LINKER:/CETCOMPAT,/GUARD:CF")
+endif()
 
-    # CMAKE_MSVC_RUNTIME_LIBRARY didn't work!!
-    /MT
-  )
-  add_link_options(
-    /CETCOMPAT
-    /GUARD:CF
-  )
+if(LINUX)
+  add_compile_options(-fstack-clash-protection)
+  add_link_options("LINKER:-z,nodlopen,-z,noexecstack,-z,relro,-z,now")
+elseif(APPLE)
+  add_link_options("LINKER:-bind_at_load")
 endif()

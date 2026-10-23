@@ -26,8 +26,8 @@ distrobox enter importizer-alpine
 ----
 
 === Windows pre-setup
-Importizer relies on symbolic links, which on Windows, can't be created by default without
-Administrator privileges.
+Importizer relies on symbolic links for installation and sanitizers, which on Windows, can't be
+created by default without Administrator privileges.
 You'd need to enable
 https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[Developer Mode] to create
 symlinks without Administrator privileges.
