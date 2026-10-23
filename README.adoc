@@ -163,4 +163,4 @@ explicit:
     - -I3rd-party/doctest/include
 ----
 
-== link:/CONTRIBUTING.adoc[Contributing]
+== xref:/CONTRIBUTING.adoc[Contributing]

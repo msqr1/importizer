@@ -1,0 +1,51 @@
+= Testing
+:toc: preamble
+:doctest-v: 2.5.3
+
+== Running tests
+Tests are disabled by default, but can be toggled via the `BUILD_TESTING` CMake option.
+Follow the xref:/docs/Building.adoc#build-process[build process], but configure and build in
+Debug mode with tests enabled.
+[,bash]
+----
+# Randomize test order and run in parallel
+ctest --test-dir build/tests --progress --schedule-random -j
+----
+
+== End-to-end (E2E) tests
+Importizer uses a custom test runner (link:/src/testing/E2E.cc[`src/testing/E2E.cc`]) for end-to-end
+tests.
+To add a new test case, follow this format:
+[,bash]
+----
+tests/my-new-feature/     # Subdirectory named after the test
+├── Config.yml            # importizer's configuration
+├── in/                   # Input files
+├── ref/                  # Expected output files
+└── RefCLI.txt            # Expected CLI output
+----
+
+The CMake script detect changes in `tests/`, so your new test will be automatically picked up on the
+next `cmake -B build` run.
+
+== Unit tests
+importizer uses https://github.com/doctest/doctest[doctest] (currently {doctest-v}) for unit
+testing.
+Unlike pre-built LibTooling, there's no pre-built doctest, but it's is still automatically
+installed on configure (see link:/cmake/EnsureDoctest.cmake[`cmake/EnsureDoctest.cmake`]).
+For unit tests:
+
+* The test runner is link:/src/testing/Unit.cc[`src/testing/Unit.cc`] and it runs an entire test
+suite by name.
+* Tests suites (one per file) are in `src/testing/` (e.g.
+link:/src/testing/FSTest.cc[`src/testing/FSTest.cc`] is the `FS` suite), and they test a family of
+function (e.g. the `FS` suite tests filesystem functions).
+* Each test suite consists of test cases, where each test case tests 1 function by varying inputs
+over many subcases.
+
+To add a new test case and subcase, simply follow
+https://github.com/doctest/doctest/blob/master/doc/markdown/testcases.md[doctest's official guide].
+To add a new test suite:
+
+. Add a new file in `src/testing/` for the new suite, named `<suite-name>Test.cc`.
+. Add the suite name to the list in link:/tests/CMakeLists.txt[`tests/CMakeLists.txt`].

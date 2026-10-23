@@ -1,0 +1,142 @@
+= Building
+:hide-uri-scheme:
+:toc: preamble
+:alpine-v: 3.24.2
+:libtooling-v: 22.1.8
+
+Toolchain, environment and build details.
+For the short version, see xref:/CONTRIBUTING.adoc[`CONTRIBUTING.adoc`].
+
+== Pre-setup
+[#linux-pre-setup]
+=== Linux pre-setup
+On Linux, importizer requires a musl-based toolchain to create a truly standalone binary.
+However, your Linux (and as a result, your toolchain) is likely based on glibc (see more on
+xref:/docs/Internals.adoc#y0-glibc[why not glibc]), so we're going to containerize everything.
+There's pre-built Alpine Linux container images with all the correct tools installed
+https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[here] to make this easier.
+To set this up locally, I prefer https://distrobox.it[distrobox].
+[,bash,subs=attributes+]
+----
+# Create distrobox container (replace <arch> with your architecture)
+distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:{alpine-v}-<arch> --no-entry
+
+# Enter container (always do this before coding)
+distrobox enter importizer-alpine
+----
+
+=== Windows pre-setup
+Importizer relies on symbolic links, which on Windows, can't be created by default without
+Administrator privileges.
+You'd need to enable
+https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[Developer Mode] to create
+symlinks without Administrator privileges.
+
+== Environment setup
+Setup the environment (check architecture, required tools, backend and set environment variables) by
+running (replace <os> with the correct file):
+[,bash]
+----
+. scripts/setup/<os>
+----
+
+You must do this before doing anything else, or you will get some weird errors.
+You should also automate this for workspace's terminal startup.
+On Windows, there's 2 optional arguments:
+[%autowidth]
+|===
+|Argument |Description |Default value
+
+|LLVMPrefix
+|Set the directory of the LLVM installation
+|`C:/Program Files/LLVM`
+
+|CMakePrefix
+|Set the directory of the CMake installation
+|`C:/Program Files/CMake`
+|===
+They can take the special value of `:bundled` that tells the script to look for the installation
+bundled within Visual Studio or Build Tools.
+Note: Bundled tools usually lag behind in version, so use `:bundled` with cautions.
+
+== Building
+=== Skip building LibTooling
+importizer uses https://clang.llvm.org/docs/LibTooling.html[LibTooling] (currently {libtooling-v})
+to parse C{plus}{plus} code.
+But LibTooling isn't like other 3rd-party libraries, it is massive!
+To skip building it, use the
+https://github.com/msqr1/importizer/releases/tag/libtooling-{libtooling-v}[pre-built ones], which
+are automatically installed on configure (see
+link:/cmake/EnsureLibTooling.cmake[`cmake/EnsureLibTooling.cmake`]).
+Since LLVM's ABIs can change between versions, the pre-built LibTooling is guaranteed to work only
+if you match the toolchain below that was used to build it.
+
+[%autowidth]
+|===
+| |Linux |MacOS |Windows
+
+|Build system
+3+^.^|CMake 4.0.0{plus}
+
+|Generator
+3+^.^|Ninja^1^
+
+|Compiler toolchain
+|clang, ld.lld 22.1.3
+|clang 18.1.8 (Homebrew)
+|clang-cl, lld-link, llvm-ml^2^
+
+|Backend
+|Alpine Linux {alpine-v}
+|Xcode SDK (`SDKROOT`)
+|Visual Studio or Build Tools^3^
+|===
+
+. Ninja is the only generator that meets all these requirements:
+.. Available on all supported OS'es and architectures
+.. Can generate a JSON compilation database
+. `20.1.8` on AMD64, `22.1.8` on ARM64. Basically replacing MSVC toolchain here.
+. Used strictly to provide the Windows SDK.
+
+=== Build customization
+Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
+link:/CMakePresets.json[`CMakePresets.json`] to customize your local build.
+For example:
+[,json]
+----
+{
+  "version": 10,
+  "configurePresets": [
+    {
+      "name": "my-preset",
+      "inherits": "importizer",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "BUILD_TESTING": true,
+        "TRACE_BUILD": true,
+        "USE_PCH": true
+      }
+    }
+  ]
+}
+----
+
+=== Build process
+Build the release mode from scratch.
+Cross compilation is currently unsupported.
+[,bash]
+----
+# Setup the environment
+. scripts/setup/<os>
+
+# Configure (--preset importizer MUST ALWAYS be specified to ensure correct build settings)
+cmake -B build -DCMAKE_BUILD_TYPE=Release --preset importizer
+
+# Build (ninja is smart enough to parallelize)
+cmake --build build --config Release
+
+# Optional: Make the release distribution archive
+cmake -DTYPE=Release -DBUILD_DIR=build -P scripts/MkDist.cmake
+----
+The binary is in `build/importizer`, named `importizer` on Linux or MacOS and `importizer.exe` on
+Windows.

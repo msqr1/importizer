@@ -9,18 +9,49 @@ detailed introduction to modules.
 == Use cases
 === Projects without public headers/API
 CLI tools, executables, such as importizer, CMake, ninja, etc can completely modularized
-because there's no public API to break.
+because there's no public API to break. This is our primary target for 3.0.0.
+
+=== Header-only libraries
+Because header-only libraries only have headers, it can't be modularized without breaking the public
+API.
+However, importizer supports wrapped modules, which exposes a module interface while keeping
+headers. This is our secondary target.
 
 === Typical libraries
 Typical libraries have a public API, but they also have source files and private headers that
 can be modularized.
 importizer can do a partial/best-effort modularization while respecting the public headers.
-Partially modularized projects can be difficult to maintain, though.
+This is our last and most difficult target.
 
-=== What about header-only libraries?
-Because header-only libraries only have headers, it can't be modularized without breaking the public
-API.
-However, importizer does support wrapped modules, which exposes a module interface while keeping
-headers.
+== Dependency linkage
+[%autowidth]
+|===
+| |Linux |MacOS |Windows
 
-== Architecture
+|3rd-party libraries (LibTooling, doctest)
+3+^.^|Static
+
+|Sanitizers (only in Debug mode)
+|Static
+2+^.^|Dynamic
+
+|C++ Standard Library (CxxStdlib)
+|Static
+.2+^.^|Dynamic^1^
+|Static
+
+|C Standard Library (CStdlib)
+|Static^2^ w/o sanitizers, dynamic with
+|Dynamic^3^
+|===
+
+. CStdlib is libSystem, CxxStdlib is a modded libc{plus}{plus}.
+Both are dynamic but with stable ABI between versions guaranteed by MacOS so we can treat as if
+they're static.
+. [[y0-glibc]] CStdlib is musl. glibc was considered, but:
+.. Static linking with glibc is unsupported, so we must link to it dynamically.
+.. For dynamic linking, we need ABI stability guarantee between versions, which glibc doesn't have,
+so we must use a very old version.
+. CStdlib is Windows UCRT.
+It's dynamic but also with stable ABI guaranteed between versions by Windows so we can use as if
+it's static.

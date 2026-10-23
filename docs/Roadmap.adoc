@@ -1,18 +1,18 @@
 = Roadmap
 
-=== Infrastructure
-==== Building
+== Infrastructure
+=== Building
 * [x] Determine platform (with version) and architecture set to support.
 * [x] Figure out dependency linkage.
 * [x] Figure out the required build toolchain.
 * [x] Setup base CMake project with LibTooling integration.
 * [x] Hardening flags for security
 
-==== Testing
+=== Testing
 * [x] Standardize test formats
 * [x] Directly intergrated test driver
 
-==== Distribution
+=== Distribution
 * [x] Working build, test, upload CI and CD for:
 ** [x] Windows (fix Windows 11 ARM64)
 ** [x] MacOS

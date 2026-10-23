@@ -145,18 +145,18 @@ $proc.WaitForExit()
 
 $llvmBin = [IO.Path]::Combine($LLVMPrefix, "bin")
 if (!$path.Contains($llvmBin)) {
-  [Environment]::SetEnvironmentVariable("PATH", "$llvmBin;$path")
+  $path = "$llvmBin;$path"
 }
 $cmakeBin = [IO.Path]::Combine($CMakePrefix, "bin")
 if (!$path.Contains($cmakeBin)) {
-  [Environment]::SetEnvironmentVariable("PATH", "$cmakeBin;$path")
+  $path = "$cmakeBin;$path"
 }
+[Environment]::SetEnvironmentVariable("PATH", $path)
+
 if ($ci) {
   $ghPath = [Environment]::GetEnvironmentVariable("GITHUB_PATH")
-  [IO.File]::AppendAllText($ghPath, [string[]]$cmakeBin, $utf8NoBom)
-  [IO.File]::AppendAllText($ghPath, [string[]]$llvmBin, $utf8NoBom)
+  [IO.File]::AppendAllLines($ghPath, [string[]]@($cmakeBin, $llvmBin), $utf8NoBom)
   $lines.Add("IMPORTIZER_OS=windows")
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
-
