@@ -2,38 +2,35 @@
 :toc:
 :toc-title:
 
-== 3.0.0 (in progress)
+== https://github.com/msqr1/importizer/releases/tag/3.0.0[3.0.0] (in progress)
 === Frontend (user-facing)
-==== Features
 * Removed all 2.0.0 features, restarting from scratch.
 * Added support for using `compile_commands.json` to provide modularizing context for files.
 * Added a `[explicit]` fallback mode for projects without JSON compilation database.
-
-==== Distribution
-* Official supported OS'es and architectures
-* Official distribution method and formats
+* Official supported OS'es and architectures.
+* Official distribution method (Github releases) and formats.
 
 === Backend (developer-facing)
-* Official supported build toolchain (LLVM's)
-* Offical directory-based format for tests
-* Directly intergrated C{plus}{plus} test driver to replace the old CMake-based one
-* Document with AsciiDoc instead of Markdown for much more control over formatting and referencing
-
-==== Library changes
+* Official supported build toolchain.
+* Official directory format for end-to-end tests.
+* Official unit tests with doctest.
+* Directly intergrated C{plus}{plus} test driver to replace the old CMake-based one.
+* Document with AsciiDoc instead of Markdown for much more control over formatting and referencing.
+* Library changes:
 |===
 |Area |2.0.0 |3.0.0 |Reason
 
 |Core logic
 |https://pcre2project.github.io/pcre2[PCRE2]
 |https://clang.llvm.org/docs/LibTooling.html[LibTooling]
-|Regex is just pattern matching, it can't understand C{plus}{plus} syntax.
+|Regex is just pattern matching, it doesn't understand C{plus}{plus} syntax.
 
 |CLI
 |https://github.com/Taywee/args[Taywee/args]
 |https://llvm.org/docs/CommandLine.html[LLVM CommandLine]
 |Already using LLVM, might as well use more of it.
 
-|Logging
+|Diagnostic
 |https://github.com/fmtlib/fmt[{fmt}]
 |https://llvm.org/doxygen/classllvm_1_1raw__ostream.html[LLVM streams]
 |Already using LLVM, might as well use more of it.

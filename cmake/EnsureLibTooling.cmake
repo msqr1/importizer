@@ -1,6 +1,5 @@
 # Ensure a built LibTooling (LLVM and Clang) is in 3rd-party/
-# Can be used either as script or included
-## Uses Github CLI, needs GH_TOKEN env var when on CI
+# Uses Github CLI, needs GH_TOKEN env var when on CI
 
 include_guard(GLOBAL)
 
@@ -8,11 +7,6 @@ block(SCOPE_FOR VARIABLES PROPAGATE LLVM_DIR Clang_DIR)
 
 set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
-if(DEFINED CMAKE_SCRIPT_MODE_FILE)
-  cmake_path(GET CMAKE_SCRIPT_MODE_FILE PARENT_PATH scriptsDir)
-  file(REAL_PATH "${scriptsDir}/.." root)
-  set(3rdPartyDir "${root}/3rd-party")
-endif()
 
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 set(v 22.1.8)

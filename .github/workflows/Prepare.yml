@@ -6,6 +6,10 @@ on:
         description: Check CI status of HEAD
         type: boolean
         default: false
+      checkCode:
+        description: Check format and lint for C++
+        type: boolean
+        default: false
       jqExpr:
         description: jq platform filter expression
         type: string
@@ -13,14 +17,14 @@ on:
     outputs:
       platforms:
         description: Platforms
-        value: ${{ jobs.all.outputs.platfoms }}
+        value: ${{ jobs.all.outputs.platforms }}
 jobs:
   all:
     permissions:
       contents: read
     runs-on: ubuntu-26.04-arm
     outputs:
-      platforms: ${{ steps.getPlatforms.output.platforms }}
+      platforms: ${{ steps.getPlatforms.outputs.platform }}
     env:
       GH_TOKEN: ${{ github.token }}
       repo: ${{ github.repository }}

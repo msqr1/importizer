@@ -13,7 +13,7 @@ target_link_libraries(run-test PRIVATE
   utils-lib
   importizer-lib
 )
-target_precompile_headers(run-test REUSE_FROM pch-LLVM)
+requirePCH(importizer)
 
 add_custom_command(
   TARGET run-test

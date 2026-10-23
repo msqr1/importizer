@@ -74,7 +74,7 @@ On Windows, there's 2 optional arguments:
 |===
 They can take the special value of `:bundled` that tells the script to look for the installation
 bundled within Visual Studio or Build Tools.
-Note that bundled tools usually lag behind in version, so use `:bundled` with cautions.
+Note: Bundled tools usually lag behind in version, so use `:bundled` with cautions.
 
 == Dependency linkage
 [%autowidth]
@@ -173,7 +173,6 @@ have to rebuild LibTooling with that toolchain and deal with bugs on them.
 I gave up and decided that I'd only support using LLVM's toolchain.
 If you still insist, good luck. Everything else here assumes you won't be doing this.
 
-[[build-process]]
 === Build process
 Build the release mode from scratch.
 Cross compilation is currently unsupported.

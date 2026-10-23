@@ -1,6 +1,10 @@
 # Make a distribution from a build directory, must be already built and tested!
 ## Uses Github CLI, needs GH_TOKEN env var
 
+if(NOT DEFINED CMAKE_SCRIPT_MODE_FILE)
+  message(FATAL_ERROR "File must be run as CMake script.")
+endif()
+
 set(knownTypes "Debug;Release")
 if(NOT type IN_LIST knownTypes)
   message(FATAL_ERROR "Unknown distribution type '${type}', only Debug/Release is allowed")
@@ -13,8 +17,8 @@ cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 
 set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
 
-if(mode STREQUAL "Debug")
-  # Format in debug mode: tzst(installation)
+if(type STREQUAL "Debug")
+  # Debug distribution format: tzst(installation)
   execute_process(COMMAND "${CMAKE_COMMAND}"
     --install "${buildDir}"
     --config ${type}
@@ -27,8 +31,8 @@ if(mode STREQUAL "Debug")
     COMPRESSION Zstd
     COMPRESSION_LEVEL 19
   )
-elseif(mode STREQUAL "Release")
-  # Format in release mode: zst(bin)
+elseif(type STREQUAL "Release")
+  # Release distribution format: zst(bin)
   set(bin "importizer")
   if(WIN32)
     set(bin "${bin}.exe")
@@ -46,7 +50,7 @@ if(NOT DEFINED ENV{CI})
   return()
 endif()
 
-if(mode STREQUAL "Debug")
+if(type STREQUAL "Debug")
   set(repo "msqr1/importizer")
 
   # Upload

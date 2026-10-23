@@ -12,7 +12,7 @@ target_link_libraries(importizer-lib PRIVATE
   utils-lib
 )
 require(importizer-lib PRIVATE LLVM Clang)
-# TODO: Use PCH here as well
+requirePCH(importizer-lib)
 
 # Executable for users
 add_executable(importizer
@@ -24,14 +24,14 @@ target_link_libraries(importizer PRIVATE
   importizer-lib
 )
 require(importizer PRIVATE LLVM)
-target_precompile_headers(importizer REUSE_FROM pch-LLVM)
+requirePCH(importizer)
 
 add_custom_command(
   TARGET importizer
   POST_BUILD
   COMMAND "${CMAKE_COMMAND}"
     "-DsearchDirs=$<$<CONFIG:Debug>:${clangLibPath}>"
-    "-Dexe=$<TARGET_FILE:importizer>"
+    "-Dbin=$<TARGET_FILE:importizer>"
     "-DpredictableDir=${CMAKE_BINARY_DIR}/importizer"
     -P "${scriptsDir}/PostBuild.cmake"
   VERBATIM

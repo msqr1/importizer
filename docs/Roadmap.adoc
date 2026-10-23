@@ -1,5 +1,4 @@
 = Roadmap
-:toc:
 
 == 3.0.0
 * [ ] Incrementally add to the link:Internals.adoc[internals' documentation]
@@ -44,8 +43,6 @@ author-specified public entry points; determines which headers are frozen)
 * [ ] Importizer 3.0.0 successfully modularizes itself, compiles and passes all tests
 
 == Post-3.0.0
-
-
 === Validation
 * [ ] stephenberry/glaze
 * [ ] kaldi

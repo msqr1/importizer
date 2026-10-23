@@ -1,4 +1,4 @@
-# 3rd-party library utilities (downloading, linking, precompiled headers, etc.)
+# 3rd-party library utilities
 # For inclusion in CMakeLists.txt
 
 include_guard(GLOBAL)
@@ -41,11 +41,3 @@ function(require target visibility)
     endif()
   endforeach()
 endfunction()
-
-add_library(pch-LLVM OBJECT "${CMAKE_SOURCE_DIR}/src/Empty.cc")
-require(pch-LLVM PRIVATE LLVM)
-target_link_libraries(pch-LLVM PRIVATE common-config)
-target_precompile_headers(pch-LLVM PRIVATE
-  <vector>
-  <chrono>
-)

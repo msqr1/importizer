@@ -6,13 +6,13 @@ jobs:
     with:
       jqExpr: 'map(select(.os == "linux"))'
   make:
-    needs: jobMatrix
+    needs: prepare
     permissions:
       packages: write
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.jobMatrix.outputs.m) }}
+        include: ${{ fromJSON(needs.prepare.outputs.m) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.arch }}
     steps:

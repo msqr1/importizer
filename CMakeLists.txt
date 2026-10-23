@@ -88,11 +88,15 @@ elseif(WIN32 AND arch STREQUAL "amd64")
   )
 endif()
 
+option(TRACE_BUILD "Enable build tracing" FALSE)
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   list(APPEND compileFlags
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-fno-c++-static-destructors>"
     "-ffile-prefix-map=${root}/src/="
   )
+  if(TRACE_BUILD)
+    list(APPEND compileFlag -ftime-trace -ftime-trace-granularity=1)
+  endif()
   list(APPEND linkFlags
     "$<$<CONFIG:Debug>:-fsanitize=address>"
   )
@@ -101,20 +105,21 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-fno-c++-static-destructors>"
     "/clang:-ffile-prefix-map=${root}/src/="
   )
+  if(TRACE_BUILD)
+    list(APPEND compileFlag /clang:-ftime-trace /clang:-ftime-trace-granularity=1)
+  endif()
 endif()
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
-option(TRACE_BUILD "Enable build tracing" FALSE)
-if(TRACE_BUILD)
-  list(APPEND compileFlags -ftime-trace -ftime-trace-granularity=1)
-endif()
-
 target_compile_options(common-config INTERFACE ${compileFlags})
 target_link_options(common-config INTERFACE ${linkFlags})
 
-# 3rd-party
+# 3rd-party utils
 include("${scriptsDir}/3rdParty.cmake")
+
+# Precompiled headers utils
+include("${scriptsDir}/PCH.cmake")
 
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)

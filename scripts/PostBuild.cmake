@@ -1,6 +1,10 @@
 # Post-build script
 # For use as script in CMake post-build
 
+if(NOT DEFINED CMAKE_SCRIPT_MODE_FILE)
+  message(FATAL_ERROR "File must be run as CMake script.")
+endif()
+
 cmake_path(GET exe PARENT_PATH exeDir)
 
 if(POLICY CMP0205)
