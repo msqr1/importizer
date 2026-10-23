@@ -70,5 +70,5 @@ elseif(APPLE)
 endif()
 install(CODE "
 set(exe \"\${CMAKE_INSTALL_PREFIX}/$<TARGET_FILE_NAME:importizer>\")
-include(\"${scriptsDir}/PostInstall.cmake\")
+include(\"${cmakeDir}/PostInstall.cmake\")
 ")

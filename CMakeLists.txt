@@ -14,6 +14,7 @@ endif()
 
 set(root "${CMAKE_SOURCE_DIR}")
 set(3rdPartyDir "${root}/3rd-party")
+set(cmakeDir "${root}/cmake")
 set(scriptsDir "${root}/scripts")
 set(arch $ENV{IMPORTIZER_ARCH})
 
@@ -116,10 +117,10 @@ target_compile_options(common-config INTERFACE ${compileFlags})
 target_link_options(common-config INTERFACE ${linkFlags})
 
 # 3rd-party utils
-include("${scriptsDir}/3rdParty.cmake")
+include("${cmakeDir}/3rdParty.cmake")
 
 # Precompiled headers utils
-include("${scriptsDir}/PCH.cmake")
+include("${cmakeDir}/PCH.cmake")
 
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)

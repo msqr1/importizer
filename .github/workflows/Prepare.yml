@@ -6,7 +6,7 @@ on:
         description: Check CI status of HEAD
         type: boolean
         default: false
-      checkCode:
+      checkCXX:
         description: Check format and lint for C++
         type: boolean
         default: false
@@ -33,21 +33,28 @@ jobs:
         if: inputs.checkCI == 'true'
         run: |
           "$(gh api repos/$repo/actions/workflows/CI.yml/runs?head_sha=${{ github.sha }} \
-          -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2026-03-10" \
-          -q '(.total_count > 0 and .workflow_runs[0].conclusion != "success")')" &&
-          exit 1
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            -q '(.total_count > 0 and .workflow_runs[0].conclusion != "success")')" &&
+            exit 1
       - name: Checkout
+        if: inputs.checkCXX == 'true'
         uses: taiki-e/checkout-action@v1.4.2
-      - name: C++ format check
+      - name: Check format and lint for C++
+        if: inputs.checkCXX == 'true'
         run: |
           find src -name "*.cc" -o -name "*.hh" | \
-          xargs -P 0 -I {} clang-format-22 --dry-run --Werror {}
-      - name: C++ lint check
-        run: |
+            xargs -P 0 -I {} clang-format-22 --dry-run --Werror {}
           cmake -B build -DCMAKE_BUILD_TYPE=Debug --preset importizer
           run-clang-tidy-22 -p build -j 0 src -quiet
       - name: Get platforms
         id: getPlatforms
         run: |
-          echo "platforms=$(cat Platforms.json | jq '${{ inputs.jqExpr }}')" >> "$GITHUB_OUTPUT"
+          if [ ${{ inputs.checkCXX }} ]; then
+            echo "platforms=$(cat Platforms.json | jq '${{ inputs.jqExpr }}')" >> "$GITHUB_OUTPUT"
+          else
+            echo "platforms=$(gh api repos/$repo/contents/Platforms.json \
+              -H "Accept: application/vnd.github.raw+json" \
+              -H "X-GitHub-Api-Version: 2026-03-10" \
+              -q '${{ inputs.jqExpr }}')" >> "$GITHUB_OUTPUT"
+          fi

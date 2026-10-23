@@ -3,6 +3,8 @@ on: [push, workflow_dispatch]
 jobs:
   prepare:
     uses: ./.github/workflows/Prepare.yml
+    with:
+      checkCXX: true
   all:
     permissions:
       contents: write

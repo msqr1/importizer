@@ -1,15 +1,12 @@
 = Roadmap
 
-== 3.0.0
-* [ ] Incrementally add to the link:Internals.adoc[internals' documentation]
-
 === Infrastructure
 ==== Building
 * [x] Determine platform (with version) and architecture set to support.
 * [x] Figure out dependency linkage.
 * [x] Figure out the required build toolchain.
 * [x] Setup base CMake project with LibTooling integration.
-* [x] Hardening
+* [x] Hardening flags for security
 
 ==== Testing
 * [x] Standardize test formats
@@ -22,22 +19,15 @@
 ** [x] Linux
 * [ ] Sign CI and CD distributions with minisign.
 
-=== Documentations
+=== Documentation
 * [x] Use AsciiDoc instead of Markdown.
 * [x] Separate README and CONTRIBUTING docs.
-* [ ] Rename "How it works" to "Internal" and rewrite (because we're using LibTooling now).
+* [ ] Rename "How it works" to "Internal" and rewrite.
 * [ ] Issues, PR templates and their contribution guidelines
 
 === Features
 * [x] Explicit mode
-* [x] Per-translation-unit include discovery (via `PPCallbacks::InclusionDirective`,
-shared across JSON compilation database and explicit mode argv paths)
-* [ ] Include-to-import conversion (no-public-API case: full rewrite, no classification needed)
-* [ ] Include classification (header+source case: transitive `#include` closure from
-author-specified public entry points; determines which headers are frozen)
-* [ ] Include-to-import conversion (header+source case: classification-gated rewrite)
-* [ ] Pragma once and include guard removal
-* [ ] Wrapping modules generation
+* [x] Per-TU include discovery
 
 === Validation
 * [ ] Importizer 3.0.0 successfully modularizes itself, compiles and passes all tests

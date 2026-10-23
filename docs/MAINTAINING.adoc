@@ -27,7 +27,7 @@ them, but we don't want Continuous and LibTooling releases to be immutable.
 ** link:/scripts/alpine/Containerfile[`scripts/alpine/Containerfile`]
 ** link:/Platforms.json[`Platforms.json`]
 ** link:/CONTRIBUTING.adoc[`CONTRIBUTING.adoc`]
-* [ ] Add `Bump Alpine to <v>` to link:ChangeLog.adoc[`ChangeLog.adoc`].
+* [ ] Add `Bump Alpine to <v>` to link:/ChangeLog.adoc[`ChangeLog.adoc`].
 * [ ] Commit with message `[no ci] Bump Alpine to <v>`.
 * [ ] Run the Make Alpine Images workflow and wait for completion.
 * [ ] Run the Tag Continuous workflow.
@@ -41,7 +41,7 @@ them, but we don't want Continuous and LibTooling releases to be immutable.
 ** link:/CONTRIBUTING.adoc[`CONTRIBUTING.adoc`]
 ** link:/scripts/EnsureLibTooling.cmake[`scripts/EnsureLibTooling.cmake`]
 (also update LLVM Project hash)
-* [ ] Add `Bump LibTooling to <v>` to link:ChangeLog.adoc[`ChangeLog.adoc`].
+* [ ] Add `Bump LibTooling to <v>` to link:/ChangeLog.adoc[`ChangeLog.adoc`].
 * [ ] Commit with message `Bump LibTooling to <v>` and let the CI run and wait for completion.
 * [ ] For the next commit:
 ** Update the LibTooling hashes in

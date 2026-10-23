@@ -163,6 +163,4 @@ explicit:
     - -I3rd-party/doctest/include
 ----
 
-== link:CONTRIBUTING.adoc[Contributing]
-== link:MAINTAINING.adoc[Maintaining]
-== link:Roadmap.adoc[Roadmap]
+== link:/CONTRIBUTING.adoc[Contributing]

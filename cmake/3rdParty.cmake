@@ -9,8 +9,8 @@ if(POLICY CMP0207)
 endif()
 
 # Setup a 3rd-party library for a target
-include("${scriptsDir}/EnsureLibTooling.cmake")
-include("${scriptsDir}/EnsureDoctest.cmake")
+include("${cmakeDir}/EnsureLibTooling.cmake")
+include("${cmakeDir}/EnsureDoctest.cmake")
 
 function(require target visibility)
   foreach(pkg IN LISTS ARGN)

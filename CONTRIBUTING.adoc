@@ -8,7 +8,8 @@
 :libtooling-v: 22.1.8
 
 Thank you for contributing to importizer!
-Maintainers, see link:MAINTAINING.adoc[`MAINTAINING.adoc`] for release and version bump checklists.
+Maintainers, see link:/docs/MAINTAINING.adoc[`docs/MAINTAINING.adoc`] for release and version bump
+checklists.
 
 == Setup
 === Linux pre-setup
@@ -50,7 +51,7 @@ Add a custom git refspec to overwrite it automatically:
 git config --add remote.origin.fetch "+refs/tags/continuous:refs/tags/continuous"
 ----
 
-=== REAL Setup
+=== REAL setup
 Setup the environment (check architecture, required tools, backend and set environment variables) by
 running (replace <os> with the correct file):
 [,bash]
@@ -147,7 +148,7 @@ you match the toolchain below that was used to build it.
 . Used strictly to provide the Windows SDK.
 
 Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
-link:CMakePresets.json[`CMakePresets.json`] to customize your local build.
+link:/CMakePresets.json[`CMakePresets.json`] to customize your local build.
 For example:
 [,json]
 ----
@@ -205,7 +206,7 @@ ctest --test-dir build/tests --progress --schedule-random
 
 === Adding new tests
 ==== End-to-end tests
-Importizer uses a custom test runner (link:src/testing/E2E.cc[`src/testing/E2E.cc`]) for end-to-end
+Importizer uses a custom test runner (link:/src/testing/E2E.cc[`src/testing/E2E.cc`]) for end-to-end
 tests.
 To add a new test case, follow this format:
 [,bash]
@@ -231,14 +232,14 @@ Unit tests are done with doctest
 * *Environment variables:* `SNAKE_UPPERCASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 === C{plus}{plus}
-* See and make use of link:.clangd[`.clangd`], link:.clang-format[`.clang-format`],
-link:.clang-tidy[`.clang-tidy`].
+* See and make use of link:/.clangd[`.clangd`], link:/.clang-format[`.clang-format`],
+link:/.clang-tidy[`.clang-tidy`].
 Formating and linting will be checked in CI/CD.
 
 === CMake
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
-* If a setting is for a specific library, put it in link:CMakePresets.json[`CMakePresets.json`].
-If it's for everything, put it in link:DynPresets.cmake[`DynPresets.cmake`].
+* If a setting is for a specific library, put it in link:/CMakePresets.json[`CMakePresets.json`].
+If it's for everything, put it in link:/DynPresets.cmake[`DynPresets.cmake`].
 
 === Scripts
 * Use CMake to write scripts, if not possible, then make a folder and add scripts for all supported

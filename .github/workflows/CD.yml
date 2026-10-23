@@ -4,6 +4,7 @@ jobs:
   prepare:
     uses: ./.github/workflows/Prepare.yml
     with:
+      checkCXX: true
       checkCI: true
   make:
     permissions:
@@ -57,5 +58,5 @@ jobs:
           gh release create $v dists/*
             -d \
             -t $v \
-            -n "[Change log](https://github.com/$repo/blob/main/ChangeLog.adoc#${v//./})" \
+            -n "[Change log](https://github.com/$repo/blob/main/ChangeLog.adoc#${v//./-})" \
             -R $repo
