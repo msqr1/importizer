@@ -1,9 +1,16 @@
 = Contributing
+:hide-uri-scheme:
 :toc: preamble
 
-Thank you for contributing to importizer!
+// Bumpable 3rd-party version strings
+:alpine-v: 3.24.2
+:doctest-v: 2.5.3
+:libtooling-v: 22.1.8
 
-== Environment
+Thank you for contributing to importizer!
+Maintainers, see link:MAINTAINING.adoc[`MAINTAINING.adoc`] for release and version bump checklists.
+
+== Setup
 === Linux pre-setup
 On Linux, importizer requires a musl-based toolchain to create a truly standalone binary.
 However, your Linux (and as a result, your toolchain) is likely based on glibc (see more on
@@ -11,37 +18,48 @@ However, your Linux (and as a result, your toolchain) is likely based on glibc (
 There's prebuilt Alpine Linux container images with all the correct tools installed
 https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[here] to make this easier.
 To set this up locally, I prefer https://distrobox.it[distrobox].
-[,bash]
+[,bash,subs=attributes+]
 ----
-# Create distrobox container (replace {arch} with your architecture)
-distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:3.24.2-{arch} --no-entry
+# Create distrobox container (replace <arch> with your architecture)
+distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:{alpine-v}-<arch> --no-entry
 
 # Enter container (always do this before coding)
 distrobox enter importizer-alpine
 ----
 
 === Windows pre-setup
-Importizer rely on symbolic links, which on Windows, can't be created by default without
+Importizer relies on symbolic links, which on Windows, can't be created by default without
 Administrator privileges.
-You'd need to
-https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[enable Developer Mode]
-to create symlinks without Administrator privileges.
+You'd need to enable
+https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[Developer Mode] to create
+symlinks without Administrator privileges.
 
-=== Setup
-Setup the environment (check architecture, required tools, backend and set environment variables) by
-running (replace {os} with the correct file):
+=== Git pre-setup
+When pushing, ensure permission of files in `scripts/` is set to executable.
+Use the provided git hook to do this automatically:
 [,bash]
 ----
-. scripts/setup/{os}
+git config core.hooksPath .githooks
+----
+
+When pulling, the remote `continuous` tag can be ahead of the local one, preventing pull unless you
+overwrite it.
+Add a custom git refspec to overwrite it automatically:
+[,bash]
+----
+git config --add remote.origin.fetch "+refs/tags/continuous:refs/tags/continuous"
+----
+
+=== REAL Setup
+Setup the environment (check architecture, required tools, backend and set environment variables) by
+running (replace <os> with the correct file):
+[,bash]
+----
+. scripts/setup/<os>
 ----
 
 You must do this before doing anything else, or you will get some weird errors.
-Note:
-
-* All scripts currently check if CMake and Ninja is in PATH.
-* *Linux:* The script checks if Clang and LLD is in PATH.
-* *MacOS:* The script checks Homebrew LLVM (for Clang and LLD).
-* *Windows:* There's 2 optional arguments:
+On Windows, there's 2 optional arguments:
 [%autowidth]
 |===
 |Argument |Description |Default value
@@ -63,7 +81,7 @@ Note that bundled tools usually lag behind in version, so use `:bundled` with ca
 |===
 | |Linux |MacOS |Windows
 
-|3rd-party libraries (LibTooling, doctest)
+|3rd-party libraries (LibTooling {libtooling-v}, doctest {doctest-v})
 3+^.^|Static
 
 |Sanitizers (only in Debug mode)
@@ -76,29 +94,29 @@ Note that bundled tools usually lag behind in version, so use `:bundled` with ca
 |Static
 
 |C Standard Library (CStdlib)
-|Static^3^ w/o sanitizers, dynamic with
-|Dynamic^2^
+|Static^2^ w/o sanitizers, dynamic with
+|Dynamic^3^
 |===
 
 . CStdlib is libSystem, CxxStdlib is a modded libc{plus}{plus}.
 Both are dynamic but with stable ABI between versions guaranteed by MacOS so we can treat as if
 they're static.
-. CStdlib is Windows UCRT.
-It's dynamic but also with stable ABI guaranteed between versions by Windows so we can use as if
-it's static.
 . [[y0-glibc]] CStdlib is musl. glibc was considered, but:
 .. Static linking with glibc is unsupported, so we must link to it dynamically.
 .. For dynamic linking, we need ABI stability guarantee between versions, which glibc doesn't have,
 so we must use a very old version.
+. CStdlib is Windows UCRT.
+It's dynamic but also with stable ABI guaranteed between versions by Windows so we can use as if
+it's static.
 
 == Building
 === Skip building LibTooling
-Importizer require https://clang.llvm.org/docs/LibTooling.html[LibTooling]
+Importizer requires https://clang.llvm.org/docs/LibTooling.html[LibTooling]
 But LibTooling isn't like other 3rd-party libraries, it is massive!
 To save one from compiling it, there are
-https://github.com/msqr1/importizer/releases/tag/libtooling-22.1.8[prebuilt ones], which are
-automatically installed like a package when configuring.
-Since LLVM's ABIs can change between versions, the prebuilt LibTooling will integrate seamlessly if
+https://github.com/msqr1/importizer/releases/tag/libtooling-{libtooling-v}[prebuilt ones], which
+are automatically installed like a package when configuring.
+Since LLVM's ABIs can change between versions, the prebuilt LibTooling will guaranteed to work if
 you match the toolchain below that was used to build it.
 
 [%autowidth]
@@ -117,7 +135,7 @@ you match the toolchain below that was used to build it.
 |clang-cl, lld-link, llvm-ml^2^
 
 |Backend
-|Alpine Linux 3.24.2
+|Alpine Linux {alpine-v}
 |Xcode SDK (`SDKROOT`)
 |Visual Studio or Build Tools^3^
 |===
@@ -129,7 +147,7 @@ you match the toolchain below that was used to build it.
 . Used strictly to provide the Windows SDK.
 
 Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
-`CMakePresets.json` to customize your local build.
+link:CMakePresets.json[`CMakePresets.json`] to customize your local build.
 For example:
 [,json]
 ----
@@ -139,9 +157,10 @@ For example:
     {
       "name": "my-preset",
       "inherits": "importizer",
-      "generator": "Ninja Multi-Config"
+      "generator": "Ninja Multi-Config",
       "cacheVariables": {
-        "TRACE_BUILD": true
+        "TRACE_BUILD": true,
+        "USE_PCH": true
       }
     }
   ]
@@ -152,21 +171,18 @@ For example:
 You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you'd
 have to rebuild LibTooling with that toolchain and deal with bugs on them.
 I gave up and decided that I'd only support using LLVM's toolchain.
-If you still insist, good luck, and note that everything else here assumes you won't be doing this.
+If you still insist, good luck. Everything else here assumes you won't be doing this.
 
+[[build-process]]
 === Build process
 Build the release mode from scratch.
 Cross compilation is currently unsupported.
 [,bash]
 ----
-# Shallow clone to save space
-git clone --depth 1 https://github.com/msqr1/importizer
-cd importizer
-
 # Setup the environment
-. scripts/setup/{OS}
+. scripts/setup/<os>
 
-# Configure
+# Configure (Release mode)
 cmake -B build -DCMAKE_BUILD_TYPE=Release --preset importizer
 
 # Build (ninja is smart enough to multi-thread)
@@ -181,32 +197,26 @@ Windows.
 == Testing
 === Running tests
 Tests are disabled by default, but can be toggled via the `BUILD_TESTING` CMake option.
+Follow the <<build-process, build process>>, but configure and build in Debug mode with tests
+enabled (`-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON`, `--config Debug`), then run:
 [,bash]
 ----
-# Configure with tests enabled (Debug mode recommended for testing)
-cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
-
-# Build
-cmake --build build --config Debug
-
-# Run tests
 ctest --test-dir build/tests --progress --schedule-random
 ----
 
 === Adding new tests
 ==== End-to-end tests
-Importizer uses a custom test runner (`src/testing/E2E.cc`) for end-to-end tests.
-To add a new test case:
-
-. Create a new directory under `tests/` with a descriptive name (e.g., `tests/my-new-feature/`).
-. Add a `Config.yml` file for importizer's configuration.
-. Create a `in/` subdirectory containing the input files (C{plus}{plus} header-based
-code).
-. Add a `RefCLI.txt` file containing the expected CLI output.
-. Create a `ref/` subdirectory containing the expected output files.
-The test driver will automatically compare the actual output directory against this reference
-directory.
-Don’t add this when expecting an error.
+Importizer uses a custom test runner (link:src/testing/E2E.cc[`src/testing/E2E.cc`]) for end-to-end
+tests.
+To add a new test case, follow this format:
+[,bash]
+----
+tests/my-new-feature/     # Subdirectory named after the test
+├── Config.yml            # importizer's configuration
+├── in/                   # Input files
+├── ref/                  # Expected output files
+└── RefCLI.txt            # Expected CLI output
+----
 
 The CMake script detect changes in `tests/`, so your new test will be automatically picked up on the
 next `cmake -B build` run.
@@ -215,21 +225,21 @@ next `cmake -B build` run.
 Unit tests are done with doctest
 
 == Coding conventions
-* 100-column per line limit for files and CLI outputs.
+* 100-column per line limit for files, CLI outputs, and markup.
 
 === Naming
-* *All code variables and functions:* `camelCase`
 * *Executables and directories:* `kebab-case` (e.g., `3rd-party/`)
 * *Environment variables:* `SNAKE_UPPERCASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 === C{plus}{plus}
-* See and make use of `.clangd`, `.clang_format`, `.clang_tidy`.
-Format and lint will be checked in CI/CD.
+* See and make use of link:.clangd[`.clangd`], link:.clang-format[`.clang-format`],
+link:.clang-tidy[`.clang-tidy`].
+Formating and linting will be checked in CI/CD.
 
 === CMake
 * Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
-* If a setting is for a specific library, put it in `CMakePresets.json`.
-If it's for everything, put it in `DynPresets.cmake`.
+* If a setting is for a specific library, put it in link:CMakePresets.json[`CMakePresets.json`].
+If it's for everything, put it in link:DynPresets.cmake[`DynPresets.cmake`].
 
 === Scripts
 * Use CMake to write scripts, if not possible, then make a folder and add scripts for all supported
@@ -240,66 +250,7 @@ OS'es (like `setup`).
 * For CI detection check if the environment variable `CI` was defined.
 
 === Markup
-* Use https://asciidoc.org[AsciiDoc]
+* Use https://asciidoc.org[AsciiDoc].
 * Begin every sentence on a new line (one sentence per line).
 * Wrap sentence to a new line at the column limit, but try not to because this means the sentence is
 loooooong.
-
-== Checklists
-=== New release
-* [ ] Update the version string(s) in:
-** `.github/workflows/Release.yml`
-** `ChangeLog.adoc` (delete "in progress")
-** `src/importizer/Opts.cc`
-** `CMakeLists.txt`
-* [ ] Commit and run the Tag Release workflow, it will:
-** Check if the latest commit built and tested successfully (in Debug mode).
-** Build and test on its own (in Release mode).
-** Draft the new release.
-* [ ] Enable release immutability (in repository settings).
-* [ ] Publish the drafted new release.
-* [ ] Disable release immutability.
-
-We do this because release immutability will also be applied to existing releases when we modify
-them, but we don't want Continuous and LibTooling releases to be immutable.
-
-=== Bumping LibTooling version
-* [ ] Tag a new release with (replace `{v}` with the new version):
-** Title: `libtooling-{v}`
-** Tag: `libtooling-{v}`
-** Description: `LibTooling {v} for developers and CI.`
-** Pre-release
-* [ ] Update the version string(s) in:
-** `scripts/EnsureLibTooling.cmake` (also update LLVM Project source hash)
-** `CONTRIBUTING.adoc`
-* [ ] Add `Bump LibTooling to {v}` to `ChangeLog.adoc`.
-* [ ] Commit with message `Bump LibTooling to {v}` and let the CI run and wait for completion.
-* [ ] For the next commit:
-** Update the LibTooling hashes in `scripts/EnsureLibTooling.cmake`.
-
-=== Bumping Alpine images version
-* [ ] Update the version string(s) in:
-** `.github/workflows/Alpine.yml`
-** `scripts/alpine/Containerfile`
-** `CiMatrix.json`
-** `CONTRIBUTING.adoc`
-* [ ] Add `Bump Alpine to {v}` to `ChangeLog.adoc`.
-* [ ] Commit with message `[no ci] Bump Alpine to {v}`.
-* [ ] Run the Make Alpine Images workflow and wait for completion.
-* [ ] Run the Tag Continuous workflow.
-
-== Misc
-When pushing, ensure permission of files in `scripts/` is set to executable.
-Use the provided git hook to do this automatically:
-[,bash]
-----
-git config core.hooksPath .githooks
-----
-
-When pulling, the remote `continuous` tag can be ahead of the local one, preventing pull unless
-you overwrite it.
-Add a custom git refspec to overwrite it automatically:
-[,bash]
-----
-git config --add remote.origin.fetch "+refs/tags/continuous:refs/tags/continuous"
-----

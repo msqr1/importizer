@@ -1,0 +1,56 @@
+= Maintaining
+:toc: preamble
+
+Checklists for maintainers.
+
+== New release
+* [ ] Update the version string(s) in:
+** link:src/importizer/Opts.cc[`src/importizer/Opts.cc`]
+** link:.github/workflows/CD.yml[`.github/workflows/CD.yml`]
+** link:CMakeLists.txt[`CMakeLists.txt`]
+* [ ] Add release date of current version, and add an entry for the next to
+link:ChangeLog.adoc[`ChangeLog.adoc`]
+* [ ] Commit and run the Tag Release workflow, it will:
+** Check if the latest commit built and tested successfully (in Debug mode).
+** Build and test on its own (in Release mode).
+** Draft the new release.
+* [ ] Enable release immutability (in repository settings).
+* [ ] Publish the drafted new release.
+* [ ] Disable release immutability.
+
+We do this because release immutability will also be applied to existing releases when we modify
+them, but we don't want Continuous and LibTooling releases to be immutable.
+
+== Bumping Alpine Linux version
+* [ ] Update the version string(s) in:
+** link:.github/workflows/Alpine.yml[`.github/workflows/Alpine.yml`]
+** link:scripts/alpine/Containerfile[`scripts/alpine/Containerfile`]
+** link:Platforms.json[`Platforms.json`]
+** link:CONTRIBUTING.adoc[`CONTRIBUTING.adoc`]
+* [ ] Add `Bump Alpine to <v>` to link:ChangeLog.adoc[`ChangeLog.adoc`].
+* [ ] Commit with message `[no ci] Bump Alpine to <v>`.
+* [ ] Run the Make Alpine Images workflow and wait for completion.
+* [ ] Run the Tag Continuous workflow.
+
+== Bumping LibTooling version
+* [ ] Tag a new release with (replace `<v>` with the new version):
+** Title: `libtooling-<v>`
+** Tag: `libtooling-<v>`
+** Description: `LibTooling <v> for developers and CI.`
+* [ ] Update the version string(s) in:
+** link:CONTRIBUTING.adoc[`CONTRIBUTING.adoc`]
+** link:scripts/EnsureLibTooling.cmake[`scripts/EnsureLibTooling.cmake`]
+(also update LLVM Project hash)
+* [ ] Add `Bump LibTooling to <v>` to link:ChangeLog.adoc[`ChangeLog.adoc`].
+* [ ] Commit with message `Bump LibTooling to <v>` and let the CI run and wait for completion.
+* [ ] For the next commit:
+** Update the LibTooling hashes in
+link:scripts/EnsureLibTooling.cmake[`scripts/EnsureLibTooling.cmake`].
+
+== Bumping doctest version
+* [ ] Update the version string(s) in:
+** link:CONTRIBUTING.adoc[`CONTRIBUTING.adoc`]
+** link:scripts/EnsureDoctest.cmake[`scripts/EnsureDoctest.cmake`]
+(also update doctest hash)
+* [ ] Add `Bump doctest to <v>` to link:ChangeLog.adoc[`ChangeLog.adoc`].
+* [ ] Commit with message `Bump doctest to <v>` and let the CI run and wait for completion.

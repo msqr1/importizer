@@ -90,7 +90,6 @@ path/to/configuration.yml`.
 Without this flag importizer does everything else but that.
 It's useful for validating configuration, see if your project is modularizable, and see a summary of
 what will change.
-
 |===
 
 === Configuration file (YAML)
@@ -151,18 +150,19 @@ Defaults to `[]`.
 === Example configuration file
 [,yml]
 ----
-root: importizer
+root: .
 hdrGlobs:
   - src/**.hh
 # compilationDB: build/compile_commands.json
-
 explicit:
   srcGlobs:
     - src/**.cc
   compileFlags:
-    - -Iinclude
-    - -Ithird_party/libs
-    - -DNDEBUG
+    - -I3rd-party/clang/include
+    - -I3rd-party/llvm/include
+    - -I3rd-party/doctest/include
 ----
 
 == link:CONTRIBUTING.adoc[Contributing]
+== link:MAINTAINING.adoc[Maintaining]
+== link:Roadmap.adoc[Roadmap]
