@@ -2,7 +2,7 @@
 # For inclusion in CMake install rules
 
 if(LINUX)
-  file(RENAME "${bin}" "${CMAKE_INSTALL_PREFIX}/importizer.bin")
+  file(RENAME "${binPath}" "${CMAKE_INSTALL_PREFIX}/importizer.bin")
   file(
     GLOB loaders
     LIST_DIRECTORIES false
@@ -20,7 +20,7 @@ exec "$dir/]]
   ${loaderName}
 [[" --library-path "$dir" "$dir/importizer.bin" "$@"]]
   )
-  file(WRITE "${bin}" "${trampoline}")
+  file(WRITE "${binPath}" "${trampoline}")
 endif()
 
 file(CHMOD_RECURSE "${CMAKE_INSTALL_PREFIX}" FILE_PERMISSIONS
@@ -28,6 +28,7 @@ file(CHMOD_RECURSE "${CMAKE_INSTALL_PREFIX}" FILE_PERMISSIONS
   OWNER_WRITE
   OWNER_EXECUTE
   GROUP_READ
+  GROUP_WRITE
   GROUP_EXECUTE
   WORLD_READ
   WORLD_WRITE

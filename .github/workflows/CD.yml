@@ -22,13 +22,13 @@ jobs:
       - name: Setup environment
         run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
       - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release --preset importizer
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=TRUE --preset importizer
       - name: Build
         run: cmake --build build --config Release
       - name: Test
-        run: ctest --test-dir build/tests -C Release -j $(cmake -P scripts/NProc.cmake)
+        run: ctest --test-dir build/tests -C Release -j
       - name: Make distribution
-        run: cmake -Dtype=Release -DbuildDir=build -P scripts/MkDist.cmake
+        run: cmake -DTYPE=Release -DBUILD_DIR=build -P scripts/MkDist.cmake
       - name: Upload as artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
         with:

@@ -19,6 +19,9 @@ set(scriptsDir "${root}/scripts")
 set(arch $ENV{IMPORTIZER_ARCH})
 
 # Project
+option(BUILD_TESTING "Build test driver and enable testing" FALSE)
+option(TRACE_BUILD "Enable build time tracing" FALSE)
+option(USE_PCH "Use precompiled headers to speed up repeated builds" FALSE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_CXX_SCAN_FOR_MODULES FALSE)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
@@ -26,7 +29,7 @@ set(CMAKE_STATIC_LIBRARY_PREFIX "")
 add_library(common-config INTERFACE)
 target_compile_features(common-config INTERFACE cxx_std_23)
 target_include_directories(common-config INTERFACE "${root}/src")
-set(compileFlags
+target_compile_options(common-config INTERFACE
   -Wall
   -Wextra
   -Wpedantic
@@ -49,10 +52,9 @@ set(compileFlags
   -Wno-switch-default
   -Wno-padded
 )
-set(linkFlags)
 
 if(NOT (WIN32 AND arch STREQUAL "arm64"))
-  list(APPEND compileFlags "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
+  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
 endif()
 
 execute_process(
@@ -68,7 +70,7 @@ elseif(arch STREQUAL "arm64")
 endif()
 
 if(LINUX)
-  list(APPEND linkFlags
+  target_link_options(common-config INTERFACE
     # In Debug mode, we want to still link in whatever dynamic library we need.
     "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
 
@@ -81,46 +83,63 @@ elseif(WIN32 AND arch STREQUAL "amd64")
   set(clangLibPath "${resourceDir}/lib/windows")
 
   # Secret, undocumented define to make non-MSVC ASAN work.
-  list(APPEND compileFlags "$<$<CONFIG:Debug>:-D_DISABLE_STL_ANNOTATION>")
+  target_compile_definitions(common-config INTERFACE "$<$<CONFIG:Debug>:_DISABLE_STL_ANNOTATION>")
 
-  list(APPEND linkFlags
+  target_link_options(common-config INTERFACE
     "$<$<CONFIG:Debug>:-libpath:${clangLibPath};clang_rt.asan_dynamic-${clangArch}.lib>"
     "$<$<CONFIG:Debug>:-wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib>"
   )
 endif()
 
-option(TRACE_BUILD "Enable build tracing" FALSE)
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-  list(APPEND compileFlags
+  target_compile_options(common-config INTERFACE
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-fno-c++-static-destructors>"
     "-ffile-prefix-map=${root}/src/="
   )
   if(TRACE_BUILD)
-    list(APPEND compileFlag -ftime-trace -ftime-trace-granularity=1)
+    target_compile_options(common-config INTERFACE
+      -ftime-trace
+      -ftime-trace-granularity=1
+    )
   endif()
-  list(APPEND linkFlags
+  target_link_options(common-config INTERFACE
     "$<$<CONFIG:Debug>:-fsanitize=address>"
   )
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-  list(APPEND compileFlags
+  target_compile_options(common-config INTERFACE
     "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-fno-c++-static-destructors>"
     "/clang:-ffile-prefix-map=${root}/src/="
   )
   if(TRACE_BUILD)
-    list(APPEND compileFlag /clang:-ftime-trace /clang:-ftime-trace-granularity=1)
+    target_compile_options(common-config INTERFACE
+      /clang:-ftime-trace
+      /clang:-ftime-trace-granularity=1
+    )
   endif()
 endif()
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
-target_compile_options(common-config INTERFACE ${compileFlags})
-target_link_options(common-config INTERFACE ${linkFlags})
-
-# 3rd-party utils
+# 3rd-party and its utils
 include("${cmakeDir}/3rdParty.cmake")
 
-# Precompiled headers utils
-include("${cmakeDir}/PCH.cmake")
+# Precompiled headers and its utils
+if(USE_PCH)
+  add_library(PCHLib OBJECT "${root}/src/Empty.cc")
+  target_link_libraries(PCHLib PRIVATE common-config)
+  target_precompile_headers(PCHLib PRIVATE
+    <vector>
+    <chrono>
+  )
+  target_compile_definitions(PCHLib PRIVATE
+    CLANG_BUILD_STATIC=1
+  )
+endif()
+function(requirePCH target)
+  if(USE_PCH)
+    target_precompile_headers(${target} REUSE_FROM PCHLib)
+  endif()
+endfunction()
 
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
@@ -128,7 +147,6 @@ endif()
 add_subdirectory(src/importizer)
 add_subdirectory(src/utils)
 
-option(BUILD_TESTING "Build test driver and enable testing" FALSE)
 if(BUILD_TESTING)
   add_subdirectory(src/testing)
   add_subdirectory(tests)

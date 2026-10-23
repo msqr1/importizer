@@ -8,6 +8,7 @@
       "generator": "Ninja",
       "toolchainFile": "${sourceDir}/Toolchain.cmake",
       "cacheVariables": {
+        "BUILD_SHARED_LIBS": false,
         "CMAKE_PROJECT_INCLUDE": "${sourceDir}/DynPresets.cmake"
       }
     },
@@ -67,10 +68,7 @@
     },
     {
       "name": "importizer",
-      "inherits": "all",
-      "cacheVariables": {
-        "BUILD_TESTING": true
-      }
+      "inherits": "all"
     }
   ]
 }

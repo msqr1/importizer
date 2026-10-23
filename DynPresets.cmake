@@ -1,46 +1,45 @@
-set(arch $ENV{IMPORTIZER_ARCH})
-set(BUILD_SHARED_LIBS OFF)
+# This "dynamic preset" are hardening flags requiring platform or compiler detection.
 
-set(compileFlags
+set(arch $ENV{IMPORTIZER_ARCH})
+
+add_compile_options(
   -fno-delete-null-pointer-checks
   -fno-strict-aliasing
 )
-set(linkFlags)
 
 if(arch STREQUAL "amd64")
-  list(APPEND compileFlags -fcf-protection=full)
+  add_compile_options(-fcf-protection=full)
 elseif(arch STREQUAL "arm64")
-  list(APPEND compileFlags -mbranch-protection=standard)
+  add_compile_options(-mbranch-protection=standard)
 endif()
 
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-  list(APPEND compileFlags
+  add_compile_options(
     -fvisibility=hidden
     -fstrict-flex-arrays=3
     -fstack-protector-all
   )
   if(LINUX)
-    list(APPEND compileFlags -fstack-clash-protection)
-    list(APPEND linkFlags
+    add_compile_options( -fstack-clash-protection)
+    add_link_options(
       "-Wl,-z,nodlopen,-z,noexecstack,-z,relro,-z,now,--as-needed,--no-copy-dt-needed-entries"
       "$<$<CONFIG:Release>:-Wl,-s>"
     )
   elseif(APPLE)
-    list(APPEND linkFlags
+    add_link_options(
       "$<$<CONFIG:Release>:-Wl,-S,-x,-dead_strip>"
     )
   endif()
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-  list(APPEND compileFlags
+  add_compile_options(
     /sdl
     /guard:cf
-    /MT # CMAKE_MSVC_RUNTIME_LIBRARY didn't work
+
+    # CMAKE_MSVC_RUNTIME_LIBRARY didn't work!!
+    /MT
   )
-  list(APPEND linkFlags
+  add_link_options(
     /CETCOMPAT
     /GUARD:CF
   )
 endif()
-
-add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:${compileFlags}>")
-add_link_options(${linkFlags})

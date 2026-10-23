@@ -19,9 +19,9 @@ add_custom_command(
   TARGET run-test
   POST_BUILD
   COMMAND "${CMAKE_COMMAND}"
-    "-DsearchDirs=${clangLibPath}"
+    "-DSEARCH_DIRS=${clangLibPath}"
     "-Dbin=$<TARGET_FILE:run-test>"
-    "-DpredictableDir=${CMAKE_BINARY_DIR}/testing"
+    "-DPREDICTABLE_DIR=${CMAKE_BINARY_DIR}/testing"
     -P "${scriptsDir}/PostBuild.cmake"
   VERBATIM
 )

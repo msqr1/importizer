@@ -1,4 +1,4 @@
-# Make a distribution from a build directory, must be already built and tested!
+# Make a distribution from a build directory, must be already built!
 ## Uses Github CLI, needs GH_TOKEN env var
 
 if(NOT DEFINED CMAKE_SCRIPT_MODE_FILE)
@@ -6,8 +6,8 @@ if(NOT DEFINED CMAKE_SCRIPT_MODE_FILE)
 endif()
 
 set(knownTypes "Debug;Release")
-if(NOT type IN_LIST knownTypes)
-  message(FATAL_ERROR "Unknown distribution type '${type}', only Debug/Release is allowed")
+if(NOT TYPE IN_LIST knownTypes)
+  message(FATAL_ERROR "Unknown distribution type '${TYPE}', only Debug/Release is allowed")
 endif()
 set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
@@ -17,13 +17,12 @@ cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 
 set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
 
-if(type STREQUAL "Debug")
+if(TYPE STREQUAL "Debug")
   # Debug distribution format: tzst(installation)
   execute_process(COMMAND "${CMAKE_COMMAND}"
-    --install "${buildDir}"
-    --config ${type}
+    --install "${BUILD_DIR}"
+    --config ${TYPE}
     --prefix "${root}/importizer"
-    -j ${procCnt}
   )
   file(ARCHIVE_CREATE
     OUTPUT "${root}/importizer-${os}-${arch}.tzst"
@@ -31,7 +30,7 @@ if(type STREQUAL "Debug")
     COMPRESSION Zstd
     COMPRESSION_LEVEL 19
   )
-elseif(type STREQUAL "Release")
+elseif(TYPE STREQUAL "Release")
   # Release distribution format: zst(bin)
   set(bin "importizer")
   if(WIN32)
@@ -50,7 +49,7 @@ if(NOT DEFINED ENV{CI})
   return()
 endif()
 
-if(type STREQUAL "Debug")
+if(TYPE STREQUAL "Debug")
   set(repo "msqr1/importizer")
 
   # Upload

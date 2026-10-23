@@ -16,7 +16,7 @@ checklists.
 On Linux, importizer requires a musl-based toolchain to create a truly standalone binary.
 However, your Linux (and as a result, your toolchain) is likely based on glibc (see more on
 <<y0-glibc, why not glibc>>), so we're going to use a container for everything.
-There's prebuilt Alpine Linux container images with all the correct tools installed
+There's pre-built Alpine Linux container images with all the correct tools installed
 https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[here] to make this easier.
 To set this up locally, I prefer https://distrobox.it[distrobox].
 [,bash,subs=attributes+]
@@ -36,18 +36,15 @@ https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[Devel
 symlinks without Administrator privileges.
 
 === Git pre-setup
-When pushing, ensure permission of files in `scripts/` is set to executable.
-Use the provided git hook to do this automatically:
 [,bash]
 ----
+# When pushing, ensure permission of files in `scripts/` is set to executable.
+# Use the provided git hook to do this automatically:
 git config core.hooksPath .githooks
-----
 
-When pulling, the remote `continuous` tag can be ahead of the local one, preventing pull unless you
-overwrite it.
-Add a custom git refspec to overwrite it automatically:
-[,bash]
-----
+# When pulling, the remote `continuous` tag can be ahead of the local one, preventing pull unless
+# you overwrite it.
+# Add a custom git refspec to overwrite it automatically:
 git config --add remote.origin.fetch "+refs/tags/continuous:refs/tags/continuous"
 ----
 
@@ -112,12 +109,14 @@ it's static.
 
 == Building
 === Skip building LibTooling
-Importizer requires https://clang.llvm.org/docs/LibTooling.html[LibTooling]
+importizer uses https://clang.llvm.org/docs/LibTooling.html[LibTooling] (currently {libtooling-v})
+to parse C{plus}{plus} code.
 But LibTooling isn't like other 3rd-party libraries, it is massive!
-To save one from compiling it, there are
-https://github.com/msqr1/importizer/releases/tag/libtooling-{libtooling-v}[prebuilt ones], which
-are automatically installed like a package when configuring.
-Since LLVM's ABIs can change between versions, the prebuilt LibTooling will guaranteed to work if
+To skip building it,
+https://github.com/msqr1/importizer/releases/tag/libtooling-{libtooling-v}[pre-built ones], which
+is automatically installed on configure (see
+link:/cmake/EnsureLibTooling.json[`cmake/EnsureLibTooling.json`]).
+Since LLVM's ABIs can change between versions, the pre-built LibTooling will guaranteed to work if
 you match the toolchain below that was used to build it.
 
 [%autowidth]
@@ -147,9 +146,10 @@ you match the toolchain below that was used to build it.
 . `20.1.8` on AMD64, `22.1.8` on ARM64. Basically replacing MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
 
+=== Build customization
 Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
 link:/CMakePresets.json[`CMakePresets.json`] to customize your local build.
-For example:
+For example (default values):
 [,json]
 ----
 {
@@ -160,19 +160,14 @@ For example:
       "inherits": "importizer",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-        "TRACE_BUILD": true,
-        "USE_PCH": true
+        "BUILD_TESTING": false,
+        "TRACE_BUILD": false,
+        "USE_PCH": false
       }
     }
   ]
 }
 ----
-
-=== Building from source entirely
-You are free to use other compiler toolchains (GCC, MSVC, Apple Clang, another Clang), but you'd
-have to rebuild LibTooling with that toolchain and deal with bugs on them.
-I gave up and decided that I'd only support using LLVM's toolchain.
-If you still insist, good luck. Everything else here assumes you won't be doing this.
 
 === Build process
 Build the release mode from scratch.
@@ -182,10 +177,10 @@ Cross compilation is currently unsupported.
 # Setup the environment
 . scripts/setup/<os>
 
-# Configure (Release mode)
+# Configure (--preset importizer MUST ALWAYS be specified to ensure correct build settings)
 cmake -B build -DCMAKE_BUILD_TYPE=Release --preset importizer
 
-# Build (ninja is smart enough to multi-thread)
+# Build (ninja is smart enough to parallelize)
 cmake --build build --config Release
 
 # Optional: Make the release distribution archive
@@ -198,14 +193,14 @@ Windows.
 === Running tests
 Tests are disabled by default, but can be toggled via the `BUILD_TESTING` CMake option.
 Follow the <<build-process, build process>>, but configure and build in Debug mode with tests
-enabled (`-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON`, `--config Debug`), then run:
+enabled.
 [,bash]
 ----
-ctest --test-dir build/tests --progress --schedule-random
+# Randomize test order and run in parallel
+ctest --test-dir build/tests --progress --schedule-random -j
 ----
 
-=== Adding new tests
-==== End-to-end tests
+=== End-to-end (E2E) tests
 Importizer uses a custom test runner (link:/src/testing/E2E.cc[`src/testing/E2E.cc`]) for end-to-end
 tests.
 To add a new test case, follow this format:
@@ -221,14 +216,34 @@ tests/my-new-feature/     # Subdirectory named after the test
 The CMake script detect changes in `tests/`, so your new test will be automatically picked up on the
 next `cmake -B build` run.
 
-==== Unit tests
-Unit tests are done with doctest
+=== Unit tests
+importizer uses https://github.com/doctest/doctest[doctest] (currently {doctest-v}) for unit
+testing.
+Unlike pre-built LibTooling, there's no pre-built doctest, but doctest is still automatically
+installed on configure (see link:/cmake/EnsureDoctest.json[`cmake/EnsureDoctest.json`]).
+For unit tests:
+
+* The test runner is link:/src/testing/Unit.cc[`src/testing/Unit.cc`] and it runs an entire test
+suite by name.
+* Tests suites (one per file) are in `src/testing/` (e.g.
+link:/src/testing/FSTest.cc[`src/testing/FSTest.cc`] is the `FS` suite), and they test a family of
+function (e.g. the `FS` suite tests filesystem functions).
+* Each test suite consists of test cases, where each test case tests 1 function by varying inputs
+over many subcases.
+
+To add a new test case and subcase, simply follow
+https://github.com/doctest/doctest/blob/master/doc/markdown/testcases.md[doctest's official guide].
+To add a new test suite:
+
+. Add a new file in `src/testing/` for the new suite, named `<suite-name>Test.cc`.
+. Add the suite name to the list in link:/tests/CMakeLists.txt[`tests/CMakeLists.txt`].
 
 == Coding conventions
 * 100-column per line limit for files, CLI outputs, and markup.
 
 === Naming
 * *Executables and directories:* `kebab-case` (e.g., `3rd-party/`)
+* *CMake user-defined variables:* `SNAKE_UPPERCASE` (e.g., `TRACE_BUILD`)
 * *Environment variables:* `SNAKE_UPPERCASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 === C{plus}{plus}
@@ -254,3 +269,6 @@ OS'es (like `setup`).
 * Begin every sentence on a new line (one sentence per line).
 * Wrap sentence to a new line at the column limit, but try not to because this means the sentence is
 loooooong.
+* Github turns on Asciidoctor's
+https://docs.asciidoctor.org/asciidoctor/latest/safe-modes/#secure[SECURE safe mode], so keep that
+mind.

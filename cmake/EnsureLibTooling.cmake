@@ -8,7 +8,6 @@ block(SCOPE_FOR VARIABLES PROPAGATE LLVM_DIR Clang_DIR)
 set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
 
-cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 set(v 22.1.8)
 set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
 set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
@@ -31,7 +30,7 @@ list(GET status 1 err)
 if(ec EQUAL 0)
   file(SHA256 "${arFile}" hash)
 
-  # Prebuilt LibTooling hashes
+  # Pre-built LibTooling hashes
   if(LINUX)
     if(arch STREQUAL "amd64")
       set(refHash 8bf900ed8505eb2ea85008b9a25682c30ddfafdfdd42d8c25b6249603f431ec4)
@@ -54,7 +53,7 @@ if(ec EQUAL 0)
 
   if(NOT hash STREQUAL refHash)
     file(REMOVE "${arFile}")
-    message(FATAL_ERROR "Mismatched prebuilt LibTooling hash.")
+    message(FATAL_ERROR "Mismatched pre-built LibTooling hash.")
   endif()
   file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
   file(REMOVE "${arFile}")
@@ -181,7 +180,7 @@ list(GET status 1 err)
 if(ec EQUAL 0)
   file(SHA256 "${arFile}" hash)
 
-  # Prebuilt LibTooling hashes
+  # Pre-built LibTooling hashes
   if(LINUX)
     if(arch STREQUAL "amd64")
       set(refHash 8bf900ed8505eb2ea85008b9a25682c30ddfafdfdd42d8c25b6249603f431ec4)
@@ -204,7 +203,7 @@ if(ec EQUAL 0)
 
   if(NOT hash STREQUAL refHash)
     file(REMOVE "${arFile}")
-    message(FATAL_ERROR "Mismatched prebuilt LibTooling hash.")
+    message(FATAL_ERROR "Mismatched pre-built LibTooling hash.")
   endif()
   file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
   file(REMOVE "${arFile}")

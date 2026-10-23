@@ -30,9 +30,9 @@ add_custom_command(
   TARGET importizer
   POST_BUILD
   COMMAND "${CMAKE_COMMAND}"
-    "-DsearchDirs=$<$<CONFIG:Debug>:${clangLibPath}>"
-    "-Dbin=$<TARGET_FILE:importizer>"
-    "-DpredictableDir=${CMAKE_BINARY_DIR}/importizer"
+    "-DSEARCH_DIRS=$<$<CONFIG:Debug>:${clangLibPath}>"
+    "-DBIN_PATH=$<TARGET_FILE:importizer>"
+    "-DPREDICTABLE_DIR=${CMAKE_BINARY_DIR}/importizer"
     -P "${scriptsDir}/PostBuild.cmake"
   VERBATIM
 )
@@ -69,6 +69,6 @@ elseif(APPLE)
   )
 endif()
 install(CODE "
-set(exe \"\${CMAKE_INSTALL_PREFIX}/$<TARGET_FILE_NAME:importizer>\")
+set(binPath \"\${CMAKE_INSTALL_PREFIX}/$<TARGET_FILE_NAME:importizer>\")
 include(\"${cmakeDir}/PostInstall.cmake\")
 ")

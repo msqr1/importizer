@@ -11,7 +11,8 @@
 #include <llvm/Support/raw_ostream.h>
 
 auto runUnitTest(const char *suiteName) -> int {
-  // Always set program and log stream before everything, in this case, we suppress everything.
+  // Always set program and log stream before everything.
+  // In this case, since we only care about return values, we void all logs.
   LogOpts logOpts{.prog = "", .stream = &llvm::nulls()};
   setGlobalLogOpts(logOpts);
 

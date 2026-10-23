@@ -1,8 +1,8 @@
 enable_testing()
 
 # Unit tests
-set(unitTestNames "Diag;Glob;FS;Opts")
-foreach(unitTestName ${unitTestNames})
+set(unitTestSuites "Diag;Glob;FS;Opts")
+foreach(unitTestName ${unitTestSuites})
   add_test(
     NAME ${unitTestName}
     COMMAND "$<TARGET_FILE:run-test>"
@@ -10,7 +10,7 @@ foreach(unitTestName ${unitTestNames})
       ${unitTestName}
   )
 endforeach()
-set_tests_properties(${unitTestNames} PROPERTIES LABELS "unit")
+set_tests_properties(${unitTestSuites} PROPERTIES LABELS "unit")
 
 # End-to-end tests
 set(E2ETestNames)
