@@ -27,11 +27,11 @@ auto getRealFS() -> vfs::FileSystem & {
 auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcVFS) noexcept
     -> bool {
   llvm::SmallString<128> tmp;
-  if (dst.isTriviallyEmpty() || dst.toStringRef(tmp).empty()) {
+  if (dst.isTriviallyEmpty() || (dst.toVector(tmp), tmp.empty())) {
     return err("Error copying directory: dst path is empty");
   }
   tmp.clear();
-  if (src.isTriviallyEmpty() || src.toStringRef(tmp).empty()) {
+  if (src.isTriviallyEmpty() || (src.toVector(tmp), tmp.empty())) {
     return err("Error copying directory: src path is empty");
   }
   const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
@@ -80,11 +80,11 @@ auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &src
 auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2, vfs::FileSystem &file1VFS,
               vfs::FileSystem &file2VFS) noexcept -> CmpRes {
   llvm::SmallString<128> tmp;
-  if (file1.isTriviallyEmpty() || file1.toStringRef(tmp).empty()) {
+  if (file1.isTriviallyEmpty() || (file1.toVector(tmp), tmp.empty())) {
     err("Error comparing file: file1 path is empty");
     return CmpRes::Err;
   }
-  if (file2.isTriviallyEmpty() || file2.toStringRef(tmp).empty()) {
+  if (file2.isTriviallyEmpty() || (file2.toVector(tmp), tmp.empty())) {
     err("Error comparing file: file2 path is empty");
     return CmpRes::Err;
   }
@@ -106,13 +106,13 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
   CmpRes res{CmpRes::Same};
   llvm::StringSet<> refRelPaths;
   llvm::SmallString<128> tmp;
-  if (dir.isTriviallyEmpty() || dir.toStringRef(tmp).empty()) {
+  if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
     err("Error comparing directory: dir path is empty");
     return CmpRes::Err;
   }
   const size_t dirBaseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
   tmp.clear();
-  if (ref.isTriviallyEmpty() || ref.toStringRef(tmp).empty()) {
+  if (ref.isTriviallyEmpty() || (ref.toVector(tmp), tmp.empty())) {
     err("Error comparing directory: ref path is empty");
     return CmpRes::Err;
   }
