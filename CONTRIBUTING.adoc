@@ -8,7 +8,7 @@ Everything else lives in link:/docs/[`docs/`].
 
 == Quick start
 === 1. One-time setup
-* *Linux:* Containerize everything, see xref:/docs/Building.adoc#linux-pre-setup[Linux pre-setup].
+* *Linux:* Use Alpine Linux container, see xref:/docs/Building.adoc#linux-pre-setup[Linux pre-setup].
 * *Windows:* Enable
 https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[Developer Mode] so
 symbolic links work without Administrator privileges.
@@ -28,6 +28,7 @@ It checks your tools and sets the environment variables the build relies on.
 [,bash]
 ----
 # Linux
+distrobox enter importizer-alpine
 . scripts/setup/Linux.bash
 
 # MacOS

@@ -20,9 +20,6 @@ To set this up locally, I prefer https://distrobox.it[distrobox].
 ----
 # Create distrobox container (replace <arch> with your architecture)
 distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:{alpine-v}-<arch> --no-entry
-
-# Enter container (always do this before coding)
-distrobox enter importizer-alpine
 ----
 
 === Windows pre-setup
@@ -37,6 +34,10 @@ Setup the environment (check architecture, required tools, backend and set envir
 running (replace <os> with the correct file):
 [,bash]
 ----
+# Linux (enter container before)
+distrobox enter importizer-alpine
+
+# Setup
 . scripts/setup/<os>
 ----
 
