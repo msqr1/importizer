@@ -16,16 +16,18 @@ set(root "${CMAKE_SOURCE_DIR}")
 set(3rdPartyDir "${root}/3rd-party")
 set(cmakeDir "${root}/cmake")
 set(scriptsDir "${root}/scripts")
+set(os $ENV{IMPORTIZER_OS})
 set(arch $ENV{IMPORTIZER_ARCH})
 
-# Project
-option(BUILD_TESTING "Build test driver and enable testing" FALSE)
-option(TRACE_BUILD "Enable build time tracing" FALSE)
-option(USE_PCH "Use precompiled headers to speed up repeated builds" FALSE)
-set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
-set(CMAKE_CXX_SCAN_FOR_MODULES FALSE)
-set(CMAKE_STATIC_LIBRARY_PREFIX "")
+# Build customization settings
+option(BUILD_TESTING "Build test driver and enable testing." FALSE)
+option(TRACE_BUILD "Enable build time tracing for something like ClangBuildAnalyzer" FALSE)
+option(USE_PCH "Use precompiled headers to speed up repeated compilation." FALSE)
+option(LTO_CACHE "Cache ThinLTO results to speed up repeated linking." FALSE)
+set(LTO_CACHE_POLICY "cache_size_bytes=1g" CACHE STRING
+  "Set the ThinLTO cache policy if LTO_CACHE is on.")
 
+# Project's common configuration
 add_library(common-config INTERFACE)
 target_compile_features(common-config INTERFACE cxx_std_23)
 target_include_directories(common-config INTERFACE "${root}/src")
@@ -118,35 +120,18 @@ elseif(WIN32 AND arch STREQUAL "amd64")
   )
 endif()
 
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
-
-# 3rd-party and its utils (this is long so it's in another file)
+# 3rd-party and its utils
 include("${cmakeDir}/3rdParty.cmake")
 
-# Precompiled headers and its utils
-if(USE_PCH)
-  add_library(PCHLib OBJECT "${root}/src/Empty.cc")
-  target_link_libraries(PCHLib PRIVATE common-config)
-  target_precompile_headers(PCHLib PRIVATE
-    <vector>
-    <chrono>
-  )
-  target_compile_definitions(PCHLib PRIVATE
-    CLANG_BUILD_STATIC=1
-  )
-endif()
-function(requirePCH target)
-  if(USE_PCH)
-    target_precompile_headers(${target} REUSE_FROM PCHLib)
-  endif()
-endfunction()
+# Utils to speed up builds
+include("${cmakeDir}/BuildSpeedup.cmake")
 
 if(POLICY CMP0207)
   cmake_policy(SET CMP0207 NEW)
 endif()
-add_subdirectory(src/importizer)
-add_subdirectory(src/utils)
 
+add_subdirectory(src/utils)
+add_subdirectory(src/importizer)
 if(BUILD_TESTING)
   add_subdirectory(src/testing)
   add_subdirectory(tests)

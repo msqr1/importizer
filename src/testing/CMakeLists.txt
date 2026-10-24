@@ -13,7 +13,7 @@ target_link_libraries(run-test PRIVATE
   utils-lib
   importizer-lib
 )
-requirePCH(importizer)
+usePCH(run-test)
 
 add_custom_command(
   TARGET run-test

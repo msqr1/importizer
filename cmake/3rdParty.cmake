@@ -1,17 +1,14 @@
 # 3rd-party library utilities
-# For inclusion in CMakeLists.txt
 
+if(DEFINED CMAKE_SCRIPT_MODE_FILE)
+  message(FATAL_ERROR "File unsuitable to be run as CMake script.")
+endif()
 include_guard(GLOBAL)
 
-# 3rd-party libs
-if(POLICY CMP0207)
-  cmake_policy(SET CMP0207 NEW)
-endif()
-
-# Setup a 3rd-party library for a target
 include("${cmakeDir}/EnsureLibTooling.cmake")
 include("${cmakeDir}/EnsureDoctest.cmake")
 
+# Setup a 3rd-party library for a target
 function(require target visibility)
   foreach(pkg IN LISTS ARGN)
     if(pkg STREQUAL "LLVM")

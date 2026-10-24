@@ -1,11 +1,11 @@
-# Ensure a built doctest 3rd-party/
+# Ensure a built doctest in 3rd-party/
 
+if(DEFINED CMAKE_SCRIPT_MODE_FILE)
+  message(FATAL_ERROR "File unsuitable to be run as CMake script.")
+endif()
 include_guard(GLOBAL)
 
 block(SCOPE_FOR VARIABLES PROPAGATE doctest_DIR)
-
-set(os $ENV{IMPORTIZER_OS})
-set(arch $ENV{IMPORTIZER_ARCH})
 
 cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 set(v 2.5.3)

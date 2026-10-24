@@ -7,4 +7,4 @@ require(utils-lib PRIVATE LLVM)
 target_link_libraries(utils-lib PRIVATE
   common-config
 )
-requirePCH(importizer)
+usePCH(utils-lib)

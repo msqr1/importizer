@@ -100,9 +100,9 @@ if you match the toolchain below that was used to build it.
 . Used strictly to provide the Windows SDK.
 
 === Build customization
-Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from
-link:/CMakePresets.json[`CMakePresets.json`] to customize your local build.
-For example:
+Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from the `importizer`
+preset of link:/CMakePresets.json[`CMakePresets.json`] to customize your local build.
+For example (you'd find this as the `recommended-dev` preset):
 [,json]
 ----
 {
@@ -115,7 +115,8 @@ For example:
       "cacheVariables": {
         "BUILD_TESTING": true,
         "TRACE_BUILD": true,
-        "USE_PCH": true
+        "USE_PCH": true,
+        "LTO_CACHE": true
       }
     }
   ]

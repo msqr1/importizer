@@ -12,7 +12,7 @@ target_link_libraries(importizer-lib PRIVATE
   utils-lib
 )
 require(importizer-lib PRIVATE LLVM Clang)
-requirePCH(importizer-lib)
+usePCH(importizer-lib)
 
 # Executable for users
 add_executable(importizer
@@ -24,7 +24,7 @@ target_link_libraries(importizer PRIVATE
   importizer-lib
 )
 require(importizer PRIVATE LLVM)
-requirePCH(importizer)
+usePCH(importizer)
 
 add_custom_command(
   TARGET importizer

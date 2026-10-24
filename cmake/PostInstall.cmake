@@ -1,5 +1,9 @@
 # Post-installation steps
-# For inclusion in CMake install rules
+
+if(DEFINED CMAKE_SCRIPT_MODE_FILE)
+  message(FATAL_ERROR "File unsuitable to be run as CMake script.")
+endif()
+include_guard(GLOBAL)
 
 if(LINUX)
   file(RENAME "${binPath}" "${CMAKE_INSTALL_PREFIX}/importizer.bin")

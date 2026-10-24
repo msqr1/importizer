@@ -68,7 +68,24 @@
     },
     {
       "name": "importizer",
-      "inherits": "all"
+      "inherits": "all",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "CMAKE_CXX_SCAN_FOR_MODULES": false,
+        "CMAKE_STATIC_LIBRARY_PREFIX": "",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE": true
+      }
+    },
+    {
+      "name": "recommended-dev",
+      "inherits": "importizer",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "BUILD_TESTING": true,
+        "TRACE_BUILD": true,
+        "USE_PCH": true,
+        "LTO_CACHE": true
+      }
     }
   ]
 }

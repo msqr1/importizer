@@ -1,12 +1,12 @@
-# Ensure a built LibTooling (LLVM and Clang) is in 3rd-party/
+# Ensure a built LibTooling (LLVM and Clang) in 3rd-party/
 # Uses Github CLI, needs GH_TOKEN env var when on CI
 
+if(DEFINED CMAKE_SCRIPT_MODE_FILE)
+  message(FATAL_ERROR "File unsuitable to be run as CMake script.")
+endif()
 include_guard(GLOBAL)
 
 block(SCOPE_FOR VARIABLES PROPAGATE LLVM_DIR Clang_DIR)
-
-set(os $ENV{IMPORTIZER_OS})
-set(arch $ENV{IMPORTIZER_ARCH})
 
 set(v 22.1.8)
 set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
