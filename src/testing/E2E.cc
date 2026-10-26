@@ -61,5 +61,5 @@ auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) noexcept ->
     errored |= cmpDirs(root, refDir) != CmpRes::Same;
   }
 
-  return errored;
+  return !errored;
 }

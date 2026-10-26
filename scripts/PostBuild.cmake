@@ -30,10 +30,12 @@ if(WIN32)
   )
   foreach(dep IN LISTS deps)
     cmake_path(GET dep FILENAME depName)
-    if(IS_READABLE "${binDir}/${depName}")
-      continue()
+
+    # When there's a dep next to the binary (possibly from previous runs of this script),
+    # file(GET_RUNTIME_DEPENDENCIES) resolves to it instead so symlinking would be to the same file
+    if(NOT dep STREQUAL "${binDir}/${depName}")
+      file(CREATE_LINK "${dep}" "${binDir}/${depName}" SYMBOLIC)
     endif()
-    file(CREATE_LINK "${dep}" "${binDir}/${depName}" SYMBOLIC)
   endforeach()
 endif()
 

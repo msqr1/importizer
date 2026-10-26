@@ -2,10 +2,6 @@
 
 set(arch $ENV{IMPORTIZER_ARCH})
 
-add_compile_options(
-
-)
-
 if(arch STREQUAL "amd64")
   add_compile_options(-fcf-protection=full)
 elseif(arch STREQUAL "arm64")

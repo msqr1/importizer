@@ -15,13 +15,13 @@ target_link_libraries(run-test PRIVATE
 )
 usePCH(run-test)
 
-add_custom_command(
-  TARGET run-test
-  POST_BUILD
+add_custom_target(run-test-post-build ALL
   COMMAND "${CMAKE_COMMAND}"
-    "-DSEARCH_DIRS=${clangLibPath}"
-    "-DBIN_PATH=$<TARGET_FILE:run-test>"
-    "-DPREDICTABLE_DIR=${CMAKE_BINARY_DIR}/testing"
+    "-DSEARCH_DIRS=$<$<CONFIG:Debug>:${clangLibPath}>"
+    "-DBIN_PATH=$<TARGET_FILE:importizer>"
+    "-DPREDICTABLE_DIR=${CMAKE_BINARY_DIR}/importizer"
     -P "${scriptsDir}/PostBuild.cmake"
+  COMMENT ""
   VERBATIM
 )
+add_dependencies(run-test-post-build run-test)

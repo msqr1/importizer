@@ -16,11 +16,11 @@ if(IS_READABLE "${LLVM_DIR}" OR IS_READABLE "${Clang_DIR}")
   return()
 endif()
 
-set(arFile "${3rdPartyDir}/LibTooling.tzst")
+set(arFile "${3rdPartyDir}/LibTooling.tar.zst")
 set(repo "msqr1/importizer")
 
 file(DOWNLOAD
-  https://github.com/${repo}/releases/download/libtooling-${v}/LibTooling-${os}-${arch}.tzst
+  https://github.com/${repo}/releases/download/libtooling-${v}/LibTooling-${os}-${arch}.tar.zst
   "${arFile}"
   STATUS status
 )
@@ -80,7 +80,7 @@ file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
 file(REMOVE "${arFile}")
 file(RENAME "${3rdPartyDir}/llvm-project-${v}.src" "${LLVMProjSrc}")
 
-set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
+set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL ANY)
 
 # Build LibTooling
 ## Load toolchain, static and dynamic presets for LLVM
@@ -129,7 +129,7 @@ execute_process(COMMAND "${CMAKE_COMMAND}"
 file(REMOVE_RECURSE "${LLVMProjSrc}")
 
 # Pack and upload
-set(arFile "${3rdPartyDir}/LibTooling-${os}-${arch}.tzst")
+set(arFile "${3rdPartyDir}/LibTooling-${os}-${arch}.tar.zst")
 file(ARCHIVE_CREATE
   OUTPUT "${arFile}"
   WORKING_DIRECTORY "${3rdPartyDir}"

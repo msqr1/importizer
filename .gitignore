@@ -7,9 +7,10 @@ __cmake_systeminformation
 /3rd-party
 
 # User files
-/importizer*
-/build*
+/build*/
+/dist*
 /CMakeUserPresets.json
-/ClangBuildAnalyzer.exe
+/ClangBuildAnalyzer*
+!/ClangBuildAnalyzer.ini
 **/test/
 !/tests/

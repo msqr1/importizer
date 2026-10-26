@@ -36,7 +36,7 @@ file(CREATE_LINK "${root}/Toolchain.cmake"
 file(CREATE_LINK "${root}/DynPresets.cmake"
   "${doctestSrc}/DynPresets.cmake" SYMBOLIC)
 
-set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL TRUE)
+set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL ANY)
 
 # Build
 execute_process(COMMAND "${CMAKE_COMMAND}"

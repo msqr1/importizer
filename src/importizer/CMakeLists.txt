@@ -26,16 +26,16 @@ target_link_libraries(importizer PRIVATE
 require(importizer PRIVATE LLVM)
 usePCH(importizer)
 
-add_custom_command(
-  TARGET importizer
-  POST_BUILD
+add_custom_target(importizer-post-build ALL
   COMMAND "${CMAKE_COMMAND}"
     "-DSEARCH_DIRS=$<$<CONFIG:Debug>:${clangLibPath}>"
     "-DBIN_PATH=$<TARGET_FILE:importizer>"
     "-DPREDICTABLE_DIR=${CMAKE_BINARY_DIR}/importizer"
     -P "${scriptsDir}/PostBuild.cmake"
+  COMMENT ""
   VERBATIM
 )
+add_dependencies(importizer-post-build importizer)
 
 if(LINUX)
   # For Linux, we want to actually install system libraries if needed
@@ -70,5 +70,5 @@ elseif(APPLE)
 endif()
 install(CODE "
 set(binPath \"\${CMAKE_INSTALL_PREFIX}/$<TARGET_FILE_NAME:importizer>\")
-include(\"${cmakeDir}/PostInstall.cmake\")
+include(\"${scriptsDir}/PostInstall.cmake\")
 ")

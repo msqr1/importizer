@@ -33,8 +33,9 @@ Some advantages of wrapping modules are:
 * *Support modules with headers:* Support a growing amount modules user while not breaking headers.
 
 == Installation
-There are binaries for major operating systems and architectures.
-Required shared libraries, if applicable, are bundled within the distribution.
+Distribution of binary (bin) for major operating systems and architectures.
+Required shared libraries, if applicable, are bundled within the archive.
+
 
 [%autowidth]
 |===
@@ -49,12 +50,12 @@ Required shared libraries, if applicable, are bundled within the distribution.
 |Windows 10{plus}
 
 |Release distribution format
-3+^.^|zst(bin)
+3+^.^|bin
 
 |Debug distribution format
-|tzst(trampoline {plus} bin {plus} .so)
-|tzst(bin {plus} .dylib)
-|tzst(bin {plus} .dll)
+|tar.zst(trampoline {plus} bin {plus} .so)
+|tar.zst(bin {plus} .dylib)
+|tar.zst(bin {plus} .dll)
 |===
 
 * *Stable release:* Download optimized release builds from the
