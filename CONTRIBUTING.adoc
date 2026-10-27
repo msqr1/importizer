@@ -1,6 +1,5 @@
 = Contributing
 :hide-uri-scheme:
-:toc: preamble
 
 Thank you for contributing to importizer!
 This page gets you from zero to a working build and hopefully a passing test run.
@@ -63,12 +62,12 @@ The binary ends up in `build/importizer`.
 |Know the naming, C{plus}{plus}, CMake, scripting and markup rules
 |xref:/docs/Conventions.adoc[Conventions]
 
-|Learn why things are built this way (dependency linkage, musl, etc.)
+|Learn why things are built this way (dependency linkage, CI/CD pipeline, etc.)
 |xref:/docs/Internals.adoc[Internals]
 |===
 
-== Before opening a pull request
-Make sure your changes follow the xref:/docs/Conventions.adoc[conventions].
+== Pull request
+Before opening one, make sure your changes follow the xref:/docs/Conventions.adoc[conventions].
 
 == Maintainers
 See xref:/docs/MAINTAINING.adoc[`docs/MAINTAINING.adoc`] for release and version bump checklists.

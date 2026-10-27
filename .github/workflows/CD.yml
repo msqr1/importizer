@@ -9,6 +9,7 @@ jobs:
   make:
     needs: prepare
     strategy:
+      fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}

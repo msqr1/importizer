@@ -1,6 +1,5 @@
 = importizer
 :toc: preamble
-:hide-uri-scheme:
 
 Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
 afraid that modularizing is too cumbersome? *importizer* is here to help.
@@ -15,7 +14,7 @@ Much pre-2.0.0 code are gone, but releases and git history are preserved.
 * *Improved encapsulation:* Modules allow you to choose what is exposed to users (exported), no need
 to hide stuff with a `detail` namespace.
 Includes and macros from a module will only stay in that module.
-* https://arewemodulesyet.org
+* https://arewemodulesyet.org[Are We Modules Yet?]
 
 === Native modules
 Native modules mean using modules internally.
@@ -28,15 +27,11 @@ freely.
 
 === Wrapped modules
 Wrapped modules mean exposing a modules interface by wrapping the underlying headers.
-Some advantages of wrapping modules are:
-
-* *Support modules with headers:* Support a growing amount modules user while not breaking headers.
+They allow supporting of a growing modules user base while not breaking headers.
 
 == Installation
 Distribution of binary (bin) for major operating systems and architectures.
 Required shared libraries, if applicable, are bundled within the archive.
-
-
 [%autowidth]
 |===
 | |Linux |MacOS |Windows
@@ -59,7 +54,7 @@ Required shared libraries, if applicable, are bundled within the archive.
 |===
 
 * *Stable release:* Download optimized release builds from the
-https://github.com/msqr1/importizer/releases[releases page].
+https://github.com/msqr1/importizer/releases[releases page], latest version recommended.
 * *Bleeding edge (debug):* Download unoptimized builds from the
 https://github.com/msqr1/importizer/releases/tag/continuous[Continuous release].
 Useful for testing latest features or reporting bugs.
@@ -163,5 +158,3 @@ explicit:
     - -I3rd-party/llvm/include
     - -I3rd-party/doctest/include
 ----
-
-== xref:/CONTRIBUTING.adoc[Contributing]

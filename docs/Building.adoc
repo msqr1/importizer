@@ -1,5 +1,4 @@
 = Building
-:hide-uri-scheme:
 :toc: preamble
 :alpine-v: 3.24.2
 :libtooling-v: 22.1.8
@@ -23,11 +22,11 @@ distrobox create -n importizer-alpine -i ghcr.io/msqr1/importizer-alpine:{alpine
 ----
 
 === Windows pre-setup
-Importizer relies on symbolic links for installation and sanitizers, which on Windows, can't be
-created by default without Administrator privileges.
+Importizer relies on symbolic links for installation and building 3rd-party dependencies.
+On Windows, symlinks can't be created by default without Administrator privileges.
 You'd need to enable
-https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[Developer Mode] to create
-symlinks without Administrator privileges.
+https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode[Developer Mode] to allow
+symlink creation without Administrator privileges.
 
 == Environment setup
 Setup the environment (check architecture, required tools, backend and set environment variables) by

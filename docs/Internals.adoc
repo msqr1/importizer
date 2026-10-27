@@ -1,26 +1,28 @@
 = Internals
 :toc: preamble
 
-== Prerequisite
-You are comfortable with C{plus}{plus} and modules.
-Check out https://vector-of-bool.github.io/2019/03/10/modules-1.html[this excellent article] for a
-detailed introduction to modules.
+== C{plus}{plus}20 Modules
+https://vector-of-bool.github.io/2019/03/10/modules-1.html[This article series] provides an
+excellent introduction to them.
 
 == Use cases
 === Projects without public headers/API
 CLI tools, executables, such as importizer, CMake, ninja, etc can completely modularized
-because there's no public API to break. This is our primary target for 3.0.0.
+because there's no public API to break.
+This is our primary target for 3.0.0.
 
 === Header-only libraries
 Because header-only libraries only have headers, it can't be modularized without breaking the public
 API.
 However, importizer supports wrapped modules, which exposes a module interface while keeping
-headers. This is our secondary target.
+headers.
+This is our secondary target.
 
 === Typical libraries
 Typical libraries have a public API, but they also have source files and private headers that
 can be modularized.
 importizer can do a partial/best-effort modularization while respecting the public headers.
+We should be able to produce wrapped modules for these as well.
 This is our last and most difficult target.
 
 == Dependency linkage
@@ -55,3 +57,5 @@ so we must use a very old version.
 . CStdlib is Windows UCRT.
 It's dynamic but also with stable ABI guaranteed between versions by Windows so we can use as if
 it's static.
+
+== CI/CD pipeline

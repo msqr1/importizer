@@ -1,5 +1,4 @@
 = Conventions
-:hide-uri-scheme:
 :toc: preamble
 
 Coding conventions for importizer.
@@ -32,8 +31,8 @@ OS'es (like `setup`).
 == Markup
 * Use https://asciidoc.org[AsciiDoc].
 * Begin every sentence on a new line (one sentence per line).
-* Wrap sentence to a new line at the column limit, but try not to because this means the sentence is
-loooooong.
+However, wrap sentences at the column limit, but try not to because this means it's quite loooooong.
 * Github turns on Asciidoctor's
 https://docs.asciidoctor.org/asciidoctor/latest/safe-modes/#secure[SECURE safe mode], which disables
 a few things, so keep that mind.
+* Don't add a Table of Contents (TOC) unless there's a need to quickly jump to a section.
