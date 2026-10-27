@@ -1,7 +1,20 @@
 # Make a distribution from a build directory, must be already built!
 
-if(NOT DEFINED CMAKE_SCRIPT_MODE_FILE)
-  message(FATAL_ERROR "File must be run as CMake script.")
+get_property(runMode GLOBAL PROPERTY CMAKE_ROLE)
+if(NOT runMode STREQUAL "SCRIPT")
+  message(FATAL_ERROR "File must run in cmake -P script mode.")
+endif()
+
+if(NOT DEFINED TYPE)
+  message(FATAL_ERROR "Missing distribution type, specify one with -DTYPE=.")
+endif()
+
+if(NOT DEFINED BUILD_DIR)
+  message(FATAL_ERROR "Missing build directory, specify one with -DBUILD_DIR=.")
+endif()
+
+if(NOT DEFINED OUT_DIR)
+  message(FATAL_ERROR "Missing out directory, specify one with -DOUT_DIR=.")
 endif()
 
 set(knownTypes "Debug;Release")
@@ -23,17 +36,17 @@ execute_process(COMMAND "${CMAKE_COMMAND}"
 
 if(TYPE STREQUAL "Debug")
   file(ARCHIVE_CREATE
-    OUTPUT "${OUT_DIR}/importizer-${os}-${arch}.tar.zst"
+    OUTPUT "${OUT_DIR}/importizer-debug-${os}-${arch}.tar.zst"
     PATHS "${OUT_DIR}/installation"
     COMPRESSION Zstd
     COMPRESSION_LEVEL 19
   )
 elseif(TYPE STREQUAL "Release")
-  set(bin "importizer")
   if(WIN32)
-    set(bin "${bin}.exe")
+    set(binExtension ".exe")
   endif()
-  file(COPY_FILE "${OUT_DIR}/installation/${bin}" "${OUT_DIR}/${bin}")
+  file(COPY_FILE "${OUT_DIR}/installation/${bin}${binExtension}"
+    "${OUT_DIR}/importizer-release-${os}-${arch}${binExtension}")
 endif()
 
 file(REMOVE_RECURSE "${OUT_DIR}/installation")

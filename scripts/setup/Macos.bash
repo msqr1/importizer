@@ -17,47 +17,32 @@ arm64 | aarch64)
   arch="arm64"
   ;;
 *)
-  echo "Unsupported architecture '$arch', only 'amd64' or 'arm64' is supported" >&2
+  echo "Unsupported architecture '$arch', only 'amd64' or 'arm64' supported." >&2
   return 1
   ;;
 esac
 
-if ! command -v cmake >/dev/null 2>&1; then
-  echo "CMake not found" >&2
-  return 1
-fi
-
-if ! command -v ninja >/dev/null 2>&1; then
-  echo "Ninja not found" >&2
-  return 1
-fi
-
 if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew isn't installed" >&2
+  echo "Homebrew not found." >&2
   return 1
 fi
 
-v=18
-llvmPrefix="$(brew --prefix llvm@$v || true)"
-if [ ! -d "$llvmPrefix" ]; then
+v=20
+brewLLVMPrefix="$(brew --prefix llvm@$v || true)"
+if [ ! -d "$brewLLVMPrefix" ]; then
   echo "Homebrew LLVM $v not found." >&2
   return 1
 fi
 
 # We are in CI
 if [ -n "$CI" ]; then
-  if ! command -v gh >/dev/null 2>&1; then
-    echo "Github CLI not found" >&2
-    return 1
-  fi
-
   {
-    echo "CMAKE_PREFIX_PATH=$llvmPrefix"
+    echo "CMAKE_PREFIX_PATH=$brewLLVMPrefix"
     echo "IMPORTIZER_OS=macos"
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"
 fi
 
-export CMAKE_PREFIX_PATH="$llvmPrefix"
+export CMAKE_PREFIX_PATH="$brewLLVMPrefix"
 export IMPORTIZER_OS=macos
 export IMPORTIZER_ARCH=$arch

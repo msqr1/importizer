@@ -1,7 +1,8 @@
 # 3rd-party library utilities
 
-if(DEFINED CMAKE_SCRIPT_MODE_FILE)
-  message(FATAL_ERROR "File unsuitable to be run as CMake script.")
+get_property(runMode GLOBAL PROPERTY CMAKE_ROLE)
+if(NOT runMode STREQUAL "PROJECT")
+  message(FATAL_ERROR "File must run in project mode.")
 endif()
 include_guard(GLOBAL)
 

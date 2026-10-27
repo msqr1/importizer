@@ -1,16 +1,40 @@
 name: Tag Continuous
 on: [push, workflow_dispatch]
+concurrency:
+  group: CI-${{ github.ref_name }}
+  cancel-in-progress: false
+  queue: max
 jobs:
   prepare:
-    uses: ./.github/workflows/Prepare.yml
-    with:
-      checkCXX: true
-  all:
+    outputs:
+      platforms: ${{ steps.platforms.outputs.platforms }}
+      shouldPublish: ${{ steps.publish.outputs.shouldPublish }}
+
+    # MacOS have clang-format and clang-tidy without containerization but isn't a snail
+    runs-on: macos-26
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # Sets the shouldPublish output because we still want to build and test on non-main branches,
+      # just not publish
+      - name: Publishability check
+        id: publish
+        run: |
+      - name: Checkout
+        uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b
+      - name: Setup
+        run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=TRUE --preset importizer
+      # TODO: Code quality check
+      - name: Get platforms
+        id: platforms
+        run: echo "platforms=$(cat Platforms.json | jq '${{ inputs.jqExpr }}')" >> "$GITHUB_OUTPUT"
+  make:
     needs: prepare
     strategy:
       fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
+      matrix: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     container: ${{ matrix.container || '' }}
@@ -19,38 +43,43 @@ jobs:
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b # 1.4.2
-      - name: Setup environment
+      - name: Setup
         run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
       - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=TRUE --preset importizer
-      - name: Build
-        run: cmake --build build --config Debug
-      - name: Test
-        run: ctest --test-dir build/tests -C Debug -j
-      - name: Make distribution
-        run: cmake -DTYPE=Debug -DBUILD_DIR=build -DOUT_DIR=dist -P scripts/MkDist.cmake
-      - name: Upload as artifact
+        run: cmake -B build --preset CI
+      - name: Build and test (Debug)
+        run: |
+          cmake --build build --config Debug
+          ctest --test-dir build/tests -C Debug -j
+      - name: Build and test (Release)
+        run: |
+          cmake --build build --config Release
+          ctest --test-dir build/tests -C Release -j
+      - name: Make distributions
+        run: |
+          cmake -DTYPE=Debug -DBUILD_DIR=build -DOUT_DIR=dists -P scripts/MkDist.cmake
+          cmake -DTYPE=Release -DBUILD_DIR=build -DOUT_DIR=dists -P scripts/MkDist.cmake
+      - name: Upload distributions
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
         with:
-          path: dist/importizer-${{ matrix.os }}-${{ matrix.arch }}.tar.zst
-          archive: false
+          name: importizer-${{ matrix.os }}-${{ matrix.arch }}
+
+          # If we upload the directory, unarchiving results in the directory, but we want the files
+          path: dists/*
+
+          # Compressing a binary file and a compressed archive wouldn't do much
+          compression: 0
+
           retention-days: 1
-          compression-level: 0
           if-no-files-found: error
-  tagRelease:
+  publish:
+    if: needs.prepare.outputs.shouldPublish == 'true'
+    needs: [make, prepare] # All jobs of make must succeed to publish
     permissions:
       contents: write
-      repository-projects: write
-    needs: make
-    runs-on: ubuntu-slim
+    runs-on: macos-26
     env:
       GH_TOKEN: ${{ github.token }}
-      repo: ${{ github.repository }}
     steps:
       - name: Download distributions
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # 8.0.2
-        with:
-          merge-multiple: true
-          path: dists
-      - name: Create and upload to release
         run: |

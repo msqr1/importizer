@@ -93,8 +93,9 @@ if you match the toolchain below that was used to build it.
 |===
 
 . Ninja is the only generator that meets all these requirements:
-.. Available on all supported OS'es and architectures
-.. Can generate a JSON compilation database
+.. Available on all supported OS'es and architectures.
+.. Can generate a JSON compilation database.
+.. Usable as both multi-config and single-config generator.
 . `20.1.8` on AMD64, `22.1.8` on ARM64. Basically replacing MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
 

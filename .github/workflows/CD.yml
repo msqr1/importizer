@@ -1,61 +1,18 @@
 name: Tag Release
 on: workflow_dispatch
 jobs:
-  prepare:
-    uses: ./.github/workflows/Prepare.yml
-    with:
-      checkCXX: true
-      checkCI: true
-  make:
-    needs: prepare
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
-    runs-on: ${{ matrix.runner }}
-    name: ${{ matrix.os }}-${{ matrix.arch }}
-    container: ${{ matrix.container || '' }}
-    steps:
-      - name: Checkout
-        uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b # 1.4.2
-      - name: Setup environment
-        run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
-      - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=TRUE --preset importizer
-      - name: Build
-        run: cmake --build build --config Release
-      - name: Test
-        run: ctest --test-dir build/tests -C Release -j
-      - name: Make distribution
-        run: cmake -DTYPE=Release -DBUILD_DIR=build -DOUT_DIR=dist -P scripts/MkDist.cmake
-      - name: Upload as artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
-        with:
-          path: dist/importizer-${{ matrix.os }}-${{ matrix.arch }}{.exe,}
-          archive: false
-          retention-days: 1
-          compression-level: 0
-          if-no-files-found: error
-  tagRelease:
-    permissions:
-      contents: write
-      repository-projects: write
-    needs: make
-    runs-on: ubuntu-slim
+  all:
+    # MacOS have clang-format and clang-tidy without containerization but isn't a snail
+    runs-on: macos-26
     env:
       GH_TOKEN: ${{ github.token }}
-      repo: ${{ github.repository }}
     steps:
-      - name: Download distributions
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # 8.0.2
-        with:
-          merge-multiple: true
-          path: dists
-      - name: Create and upload to release
+      # This one errors if unpublishable
+      - name: Publishability check
         run: |
-          v=3.0.0
-          gh release create $v dists/* \
-            -d \
-            -t $v \
-            -n "[Change log](https://github.com/$repo/blob/main/ChangeLog.adoc#${v//./-})" \
-            -R $repo
+          "$(gh api repos/msqr1/importizer/actions/workflows/CI.yml/runs?head_sha=${{ github.sha }} \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            -q '(.total_count > 0 and .workflow_runs[0].conclusion != "success")')"
+      - name: Download distributions
+        run: |

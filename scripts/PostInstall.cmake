@@ -1,8 +1,13 @@
 # Post-installation steps
 # For use inside CMake installation script (cmake_install.cmake)
 
-if(NOT DEFINED CMAKE_SCRIPT_MODE_FILE)
-  message(FATAL_ERROR "File must be run as CMake script.")
+get_property(runMode GLOBAL PROPERTY CMAKE_ROLE)
+if(NOT runMode STREQUAL "SCRIPT")
+  message(FATAL_ERROR "File must run in cmake -P script mode.")
+endif()
+
+if(NOT DEFINED binPath)
+  message(FATAL_ERROR "Missing binary's path.")
 endif()
 
 if(LINUX)

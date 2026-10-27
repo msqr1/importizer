@@ -2,26 +2,21 @@
 :toc: preamble
 
 Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
-afraid that modularizing is too cumbersome? *importizer* is here to help.
-
-This project uses https://semver.org[semantic versioning].
+afraid that modularizing is too much work? *importizer* is here to help.
 
 *Note:* This project is currently going through a complete rewrite using LibTooling to replace
 Regex (pre-2.0.0).
 Much pre-2.0.0 code are gone, but releases and git history are preserved.
 
-== Why C{plus}{plus} modules?
-* *Improved encapsulation:* Modules allow you to choose what is exposed to users (exported), no need
-to hide stuff with a `detail` namespace.
-Includes and macros from a module will only stay in that module.
-* https://arewemodulesyet.org[Are We Modules Yet?]
-
 === Native modules
 Native modules mean using modules internally.
 Some advantages of native modules are:
 
-* *Improved compilation time:* Modules don’t need to be recompiled every time it is imported, unlike
+* *Faster compilation:* Modules don’t need to be recompiled every time it is imported, unlike
 headers.
+* *Better encapsulation:* Modules allow you to choose what is exposed to users (exported), no need
+to hide stuff with a `detail` namespace.
+Includes and macros from a module won't leak.
 * *No ordering issues:* Modules are compiled in a topological order, and `import`s can be ordered
 freely.
 
@@ -53,11 +48,10 @@ Required shared libraries, if applicable, are bundled within the archive.
 |tar.zst(bin {plus} .dll)
 |===
 
-* *Stable release:* Download optimized release builds from the
+* *Stable release:* Download versioned builds from the
 https://github.com/msqr1/importizer/releases[releases page], latest version recommended.
-* *Bleeding edge (debug):* Download unoptimized builds from the
-https://github.com/msqr1/importizer/releases/tag/continuous[Continuous release].
-Useful for testing latest features or reporting bugs.
+* *Bleeding edge:* Download "nightly" builds from the
+https://github.com/msqr1/importizer/releases/tag/continuous[continuous release].
 
 == Configuration and usage
 Importizer primarily uses a YAML configuration file, along a few command-line options.

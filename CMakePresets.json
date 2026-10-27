@@ -77,6 +77,16 @@
       }
     },
     {
+      "name": "CI",
+      "inherits": "importizer",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "BUILD_TESTING": true,
+        "USE_PCH": true,
+        "LTO_CACHE": true
+      }
+    },
+    {
       "name": "recommended-dev",
       "inherits": "importizer",
       "generator": "Ninja Multi-Config",

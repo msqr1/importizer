@@ -36,7 +36,7 @@ distrobox enter importizer-alpine
 # Windows (PowerShell)
 . scripts/setup/Windows.ps1
 ----
-Note the leading `.`, the scripts must be sourced, not executed.
+Note the leading `.`: scripts must be sourced, not executed.
 
 === 3. Build and test
 [,bash]
@@ -70,4 +70,4 @@ The binary ends up in `build/importizer`.
 Before opening one, make sure your changes follow the xref:/docs/Conventions.adoc[conventions].
 
 == Maintainers
-See xref:/docs/MAINTAINING.adoc[`docs/MAINTAINING.adoc`] for release and version bump checklists.
+See xref:/docs/Maintenance.adoc[`docs/Maintenance.adoc`] for release and version bump checklists.

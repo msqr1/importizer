@@ -47,12 +47,8 @@ if (!$PSBoundParameters.ContainsKey("arch")) {
       [Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
     $arch = "amd64"
   } else {
-    exitWithErr("Unsupported architecture '", $osArch, "', only 'amd64' or 'arm64' is supported")
+    exitWithErr("Unsupported architecture '", $osArch, "', only 'amd64' or 'arm64' supported.")
   }
-}
-
-if (!(Get-Command ninja -ErrorAction SilentlyContinue)) {
-  exitWithErr("Ninja not found")
 }
 
 $ci = ![string]::IsNullOrEmpty([Environment]::GetEnvironmentVariable("CI"))
@@ -67,7 +63,7 @@ $vswhere = [IO.Path]::Combine(
   [Environment]::GetEnvironmentVariable("ProgramFiles(x86)"), "Microsoft Visual Studio",
   "Installer", "vswhere.exe")
 if (![IO.File]::Exists($vswhere)) {
-  exitWithErr("vswhere not found. Visual Studio does not appear to be installed.")
+  exitWithErr("vswhere not found. Visual Studio isn't installed?")
 }
 $x = if ($arch.Equals("amd64")) { "x86.x64" } else { "ARM64" }
 $components = [Collections.Generic.List[string]]@(
@@ -159,3 +155,4 @@ if ($ci) {
   $lines.Add("IMPORTIZER_ARCH=$arch")
   [IO.File]::AppendAllLines([Environment]::GetEnvironmentVariable("GITHUB_ENV"), $lines, $utf8NoBom)
 }
+

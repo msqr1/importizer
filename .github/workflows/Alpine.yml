@@ -1,18 +1,30 @@
 name: Make Alpine Images
 on: workflow_dispatch
+concurrency:
+  group: CI-${{ github.ref_name }}
+  cancel-in-progress: false
 jobs:
   prepare:
-    uses: ./.github/workflows/Prepare.yml
-    with:
-      jqExpr: 'map(select(.os == "linux"))'
+    outputs:
+      platforms: ${{ steps.platforms.outputs.platforms }}
+    runs-on: ubuntu-slim
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Get platforms
+        id: platforms
+        run: |
+          echo "platforms=$(gh api repos/msqr1/importizer/contents/Platforms.json \
+          -H "Accept: application/vnd.github.raw+json" \
+          -H "X-GitHub-Api-Version: 2026-03-10" \
+          -q 'map(select(.os == "linux"))')" >> "$GITHUB_OUTPUT"
   make:
     needs: prepare
     permissions:
       packages: write
     strategy:
       fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.prepare.outputs.m) }}
+      matrix: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.arch }}
     steps:
@@ -30,7 +42,7 @@ jobs:
             -p ${{ github.token }}
 
           podman push img \
-            ghcr.io/${{ github.repository }}-alpine:3.24.2-${{ matrix.arch }} \
+            ghcr.io/$repo-alpine:3.24.2-${{ matrix.arch }} \
             -f oci \
             --compression-format zstd \
             --compression-level 19

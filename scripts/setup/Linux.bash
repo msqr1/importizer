@@ -17,38 +17,13 @@ arm64 | aarch64)
   arch="arm64"
   ;;
 *)
-  echo "Unsupported architecture '$arch', only 'amd64' or 'arm64' is supported" >&2
+  echo "Unsupported architecture '$arch', only 'amd64' or 'arm64' supported." >&2
   return 1
   ;;
 esac
 
-if ! command -v cmake >/dev/null 2>&1; then
-  echo "CMake not found" >&2
-  return 1
-fi
-
-if ! command -v ninja >/dev/null 2>&1; then
-  echo "Ninja not found" >&2
-  return 1
-fi
-
-if ! command -v clang >/dev/null 2>&1; then
-  echo "Clang not found" >&2
-  return 1
-fi
-
-if ! command -v clang++ >/dev/null 2>&1; then
-  echo "Clang++ not found" >&2
-  return 1
-fi
-
 # We are in CI
 if [ -n "$CI" ]; then
-  if ! command -v gh >/dev/null 2>&1; then
-    echo "Github CLI not found" >&2
-    return 1
-  fi
-
   {
     echo "IMPORTIZER_OS=linux"
     echo "IMPORTIZER_ARCH=$arch"

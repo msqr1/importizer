@@ -1,8 +1,9 @@
 # Ensure a built LibTooling (LLVM and Clang) in 3rd-party/
-# Uses Github CLI, needs GH_TOKEN env var when on CI
+# When on CI: Needs Github CLI and GH_TOKEN env var
 
-if(DEFINED CMAKE_SCRIPT_MODE_FILE)
-  message(FATAL_ERROR "File unsuitable to be run as CMake script.")
+get_property(runMode GLOBAL PROPERTY CMAKE_ROLE)
+if(NOT runMode STREQUAL "PROJECT")
+  message(FATAL_ERROR "File must run in project mode.")
 endif()
 include_guard(GLOBAL)
 
@@ -64,6 +65,12 @@ endif()
 if(NOT DEFINED ENV{CI})
   message(FATAL_ERROR "${err} (${ec})")
 endif()
+
+if(NOT DEFINED ENV{GH_TOKEN})
+  message(FATAL_ERROR "Missing GH_TOKEN environment variable.")
+endif()
+
+find_program(ghCLI NAMES gh REQUIRED)
 
 file(MAKE_DIRECTORY "${3rdPartyDir}")
 set(LLVMProjSrc "${3rdPartyDir}/llvm-proj-src")
