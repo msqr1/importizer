@@ -1,4 +1,4 @@
-name: Make Alpine Images
+name: Make Alpine Linux Images
 on: workflow_dispatch
 concurrency:
   group: CI-${{ github.ref_name }}

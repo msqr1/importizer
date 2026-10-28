@@ -43,14 +43,16 @@ if(LTO_CACHE)
     target_link_options(common-config INTERFACE "LINKER:/lldltocache:${ltoCacheDir}")
   endif()
   if(NOT LTO_CACHE_POLICY STREQUAL "")
-    if(LINUX OR APPLE)
+    if(LINUX)
       target_link_options(common-config INTERFACE
         "LINKER:--thinlto-cache-policy=${LTO_CACHE_POLICY}"
       )
+    # MacOS's ld-prime doesn't allow specifying cache policy
     elseif(WIN32)
       target_link_options(common-config INTERFACE
         "LINKER:/lldltocachepolicy:${LTO_CACHE_POLICY}"
       )
     endif()
+
   endif()
 endif()

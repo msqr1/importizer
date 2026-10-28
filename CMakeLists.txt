@@ -25,7 +25,7 @@ option(TRACE_BUILD "Enable build time tracing for something like ClangBuildAnaly
 option(USE_PCH "Use precompiled headers to speed up repeated compilation." FALSE)
 option(LTO_CACHE "Cache ThinLTO results to speed up repeated linking." FALSE)
 set(LTO_CACHE_POLICY "cache_size_bytes=1g" CACHE STRING
-  "Set the ThinLTO cache policy if LTO_CACHE is on.")
+  "Set the ThinLTO cache policy if LTO_CACHE is on, no effect on MacOS.")
 
 # Project's common configuration
 add_library(common-config INTERFACE)

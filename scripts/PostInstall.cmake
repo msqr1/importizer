@@ -10,7 +10,7 @@ if(NOT DEFINED binPath)
   message(FATAL_ERROR "Missing binary's path.")
 endif()
 
-if(LINUX AND CMAKE_INSTALL_CONFIG_NAME STREQUAL "Release")
+if(LINUX AND CMAKE_INSTALL_CONFIG_NAME STREQUAL "Debug")
   file(RENAME "${binPath}" "${CMAKE_INSTALL_PREFIX}/importizer.bin")
   file(
     GLOB loaders

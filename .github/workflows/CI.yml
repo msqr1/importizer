@@ -27,7 +27,7 @@ jobs:
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: .
+          JQ_EXPR: map(select(.os != "windows"))
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then

@@ -81,9 +81,9 @@ if you match the toolchain below that was used to build it.
 |Generator
 3+^.^|Ninja^1^
 
-|Compiler toolchain
+|Toolchain
 |clang, ld.lld 22.1.3
-|clang 20.1.8 (Homebrew)
+|clang 20.1.8 (Homebrew), ld-prime
 |clang-cl, lld-link, llvm-ml^2^
 
 |Backend
