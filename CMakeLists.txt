@@ -78,7 +78,6 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
       /clang:-ftime-trace-granularity=1
     )
   endif()
-  target_link_options(common-config INTERFACE /OPT:REF)
 endif()
 
 if(LINUX)

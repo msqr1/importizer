@@ -2,6 +2,8 @@ name: Tag Release
 on: workflow_dispatch
 jobs:
   all:
+    permissions:
+      contents: write
     runs-on: ubuntu-slim
     env:
       GH_TOKEN: ${{ github.token }}
@@ -9,14 +11,15 @@ jobs:
       - name: Publishability check
         run: |
           # No releases from other branches
-          if [ "$GITHUB_REF" != "ref/heads/main" ]; then
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
             exit 1
           fi
 
           # Latest CI run must be successful so we can grab release builds from there
-          CIPassed=$(gh api repos/{owner}/{repo}/actions/workflows/CI.yml/runs?branch=main \
-            -H "Accept: application/vnd.github+json" \
+          repo="${{ github.repository }}"
+          CIPassed=$(gh api repos/$repo/actions/workflows/CI.yml/runs?branch=main \
             -H "X-GitHub-Api-Version: 2026-03-10" \
+            -H "Accept: application/vnd.github+json" \
             -q '.total_count > 0 and .workflow_runs[0].conclusion == "success"')
           if ! $CIPassed; then
             exit 1
@@ -24,11 +27,12 @@ jobs:
       - name: Download and rename distributions
         run: |
           gh release download continuous -D dists -p "importizer-release-*"
-          find dists -maxdepth 1 -exec bash -c 'for f; do mv "$f" "${f/release-/}"; done' _ {} +
+          find dists/* -maxdepth 1 -exec bash -c 'for f; do mv "$f" "${f/release-/}"; done' _ {} +
       - name: Publish release
         run: |
+          repo="${{ github.repository }}"
           v=3.0.0
-          gh release create $v dists/*
+          gh release create $v dists/* \
             -d \
             -t $v \
             -n "[Change log](https://github.com/$repo/blob/main/ChangeLog.adoc#${v//./-})" \

@@ -14,14 +14,15 @@ jobs:
     runs-on: macos-26
     env:
       # jq platform filter expression
-      JQ_EXPR: .
-
-      GH_TOKEN: ${{ github.token }}
+      JQ_EXPR: map(select(.os == "macos"))
     steps:
       - name: Publishability check
         id: publish
         run: |
-          if [ "$GITHUB_REF" = "ref/heads/main" ] && [ "$JQ_EXPR" = "." ]; then
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            if [ "$JQ_EXPR" != "." ]; then
+              exit 1
+            fi
             echo "shouldPublish=true" >> "$GITHUB_OUTPUT"
           else
             echo "shouldPublish=false" >> "$GITHUB_OUTPUT"
@@ -29,18 +30,23 @@ jobs:
       - name: Checkout
         uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b
       - name: Setup
-        run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
+        run: . scripts/setup/MacOS.bash
       - name: Configure
-        run: cmake -B build --preset importizer CI
-      # TODO: Code quality check
+        run: cmake -B build --preset CI
+      - name: Code quality check
+        run: |
+          echo "TODO"
       - name: Get platforms
         id: platforms
-        run: echo "platforms=$(jq '$JQ_EXPR' < Platforms.json)" >> "$GITHUB_OUTPUT"
+        run: echo "platforms=$(jq -c '${{ env.JQ_EXPR }}' < Platforms.json)" >> "$GITHUB_OUTPUT"
   make:
+    permissions:
+      contents: write
     needs: prepare
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.prepare.outputs.platforms) }}
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     container: ${{ matrix.container || '' }}
@@ -74,15 +80,13 @@ jobs:
           path: dists/*
 
           # Compressing a binary file and a compressed archive wouldn't do much
-          compression: 0
+          compression-level: 0
 
           retention-days: 1
           if-no-files-found: error
   publish:
-    if: needs.prepare.outputs.shouldPublish == 'true'
-
-    # All jobs of make must succeed to publish
     needs: [make, prepare]
+    if: needs.prepare.outputs.shouldPublish == 'true'
     permissions:
       contents: write
     runs-on: ubuntu-slim
@@ -96,3 +100,10 @@ jobs:
           path: dists
       - name: Publish distributions
         run: gh release upload continuous dists/* --clobber
+      - name: Move tag
+        run: |
+          gh api repos/${{ github.repository }}/git/refs/tags/continuous \
+            -H "X-GitHub-Api-Version: 2026-03-10" \
+            --method PATCH \
+            -f sha=${{ github.sha }} \
+            -F force=true

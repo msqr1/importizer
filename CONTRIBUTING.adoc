@@ -31,7 +31,7 @@ distrobox enter importizer-alpine
 . scripts/setup/Linux.bash
 
 # MacOS
-. scripts/setup/Macos.bash
+. scripts/setup/MacOS.bash
 
 # Windows (PowerShell)
 . scripts/setup/Windows.ps1

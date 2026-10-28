@@ -4,4 +4,4 @@ namespace llvm {
 class StringRef;
 } // namespace llvm
 
-auto runUnitTest(const char *suiteName) noexcept -> int;
+auto runUnitTest(const char *suiteName, int argc, const char *const *argv) noexcept -> int;

@@ -29,12 +29,12 @@
     "os": "macos",
     "arch": "amd64",
     "runner": "macos-26-intel",
-    "setup": "Macos.bash"
+    "setup": "MacOS.bash"
   },
   {
     "os": "macos",
     "arch": "arm64",
     "runner": "macos-26",
-    "setup": "Macos.bash"
+    "setup": "MacOS.bash"
   }
 ]

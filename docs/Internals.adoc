@@ -58,6 +58,3 @@ It's dynamic but also with stable ABI guaranteed between versions by Windows so 
 it's static.
 
 == CI/CD pipeline
-[%autowidth]
-|===
-|===

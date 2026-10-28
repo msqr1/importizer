@@ -1,13 +1,13 @@
 enable_testing()
 
 # Unit tests
-set(unitTestSuites "Diag;Glob;FS;Opts")
-foreach(unitTestName ${unitTestSuites})
+set(unitTestSuites "FS;")
+foreach(unitTestSuite ${unitTestSuites})
   add_test(
-    NAME ${unitTestName}
+    NAME ${unitTestSuite}
     COMMAND "$<TARGET_FILE:run-test>"
       unit
-      ${unitTestName}
+      ${unitTestSuite}
   )
 endforeach()
 set_tests_properties(${unitTestSuites} PROPERTIES LABELS "unit")

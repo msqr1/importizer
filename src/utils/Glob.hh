@@ -66,17 +66,15 @@ struct GlobDirRule {
 template <ConvertibleRange<GlobDirRule> T>
 [[nodiscard]] auto globDir(const llvm::Twine &dir, const T &rules,
                            vfs::FileSystem &dirVFS = getRealFS()) -> bool {
-  llvm::StringRef relPath;
   llvm::SmallString<128> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
     return err("Error globbing directory: dir path is empty");
   }
   const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
   auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> auto {
-    relPath = ent.path().drop_front(baseLen);
     for (const auto &[globs, callback] : rules) {
       for (const Glob &glob : globs) {
-        if (glob.match(relPath)) {
+        if (glob.match(ent.path().drop_front(baseLen))) {
           callback(ent.path());
           break;
         }

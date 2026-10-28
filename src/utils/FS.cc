@@ -3,15 +3,15 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
-#include <filesystem>
 #include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringMap.h>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/StringSet.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <system_error>
 
@@ -35,14 +35,11 @@ auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &src
     return err("Error copying directory: src path is empty");
   }
   const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
-
   if (std::error_code errCode{fs::create_directories(dst)}) {
     return err("Error making directory {}: {}", dst, errCode.message());
   }
-
-  llvm::StringRef relPath;
   auto copy{[&](const vfs::directory_entry &ent) noexcept -> IterDirCtrl {
-    relPath = ent.path().drop_front(baseLen);
+    llvm::StringRef relPath{ent.path().drop_front(baseLen)};
     tmp.clear();
     pth::append(tmp, dst, relPath);
     switch (ent.type()) {
@@ -58,17 +55,6 @@ auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &src
         return IterDirCtrl::ErrStop;
       }
       break;
-    case fs::file_type::symlink_file: {
-      // Falling back to std::filesystem because fs::read_link() won't be here
-      // until LLVM 23. TODO: use fs::read_link when LLVM is 23.
-      std::error_code errCode;
-      std::filesystem::copy_symlink(ent.path().data(), tmp.c_str(), errCode);
-      if (errCode) {
-        err("Error copying symlink {}: {}", ent.path(), errCode.message());
-        return IterDirCtrl::ErrStop;
-      }
-      break;
-    }
     default: // Other file types
       break;
     }
@@ -103,8 +89,6 @@ auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2, vfs::FileSyste
 
 auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &dirVFS,
              vfs::FileSystem &refVFS) noexcept -> CmpRes {
-  CmpRes res{CmpRes::Same};
-  llvm::StringSet<> refRelPaths;
   llvm::SmallString<128> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
     err("Error comparing directory: dir path is empty");
@@ -117,49 +101,70 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
     return CmpRes::Err;
   }
   const size_t refBaseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
-  tmp.clear();
 
-  llvm::StringRef relPath;
+  llvm::StringMap<fs::file_type> refFileT;
   auto checkRef{[&](const vfs::directory_entry &ent) noexcept -> IterDirCtrl {
-    if (ent.type() != fs::file_type::regular_file) {
-      return IterDirCtrl::Continue;
-    }
-    relPath = ent.path().drop_front(refBaseLen);
     tmp.clear();
-    pth::append(tmp, dir, relPath);
-    if (!fs::exists(tmp)) {
-      err("Missing file: {}", relPath);
-      res = CmpRes::Mismatch;
-      return IterDirCtrl::Continue;
-    }
-    switch (cmpFiles(tmp, ent.path(), dirVFS, refVFS)) {
-    case CmpRes::Same:
+    switch (ent.type()) {
+    case fs::file_type::regular_file:
+    case fs::file_type::directory_file:
+      refFileT.try_emplace(ent.path().drop_front(refBaseLen), ent.type());
       break;
-    case CmpRes::Mismatch:
-      err("Mismatched content for {}", relPath);
-      res = CmpRes::Mismatch;
+    default:
       break;
-    case CmpRes::Err:
-      return IterDirCtrl::ErrStop;
     }
-    refRelPaths.insert(relPath);
-    tmp.clear();
     return IterDirCtrl::Continue;
   }};
   if (!iterDir<true>(tmp, checkRef, refVFS)) {
     return CmpRes::Err;
   }
 
+  llvm::StringMap<fs::file_type> dirFileT;
   auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> IterDirCtrl {
-    if (ent.type() != fs::file_type::regular_file) {
-      return IterDirCtrl::Continue;
-    }
-    relPath = ent.path().drop_front(dirBaseLen);
-    if (!refRelPaths.contains(relPath)) {
-      err("Unexpected file: {}", relPath);
-      res = CmpRes::Mismatch;
+    switch (ent.type()) {
+    case fs::file_type::regular_file:
+    case fs::file_type::directory_file:
+      dirFileT.try_emplace(ent.path().drop_front(dirBaseLen), ent.type());
+      break;
+    default:
+      break;
     }
     return IterDirCtrl::Continue;
   }};
-  return iterDir<true>(dir, checkDir, dirVFS) ? res : CmpRes::Err;
+  if (!iterDir<true>(dir, checkDir, dirVFS)) {
+    return CmpRes::Err;
+  }
+
+  CmpRes res{CmpRes::Same};
+  for (const auto &[relPath, fileT] : refFileT) {
+    llvm::StringRef fileTStr{fileT == fs::file_type::regular_file ? "file" : "directory"};
+    if (!dirFileT.contains(relPath)) {
+      err("Missing {} {}", fileTStr, relPath);
+      res = CmpRes::Mismatch;
+      continue;
+    }
+    if (fileT != dirFileT[relPath]) {
+      err("Expected {} to be a {}", relPath, fileTStr);
+      res = CmpRes::Mismatch;
+    } else if (fileT == fs::file_type::regular_file) {
+      switch (cmpFiles(ref + pth::get_separator() + relPath, dir + pth::get_separator() + relPath,
+                       refVFS, dirVFS)) {
+      case CmpRes::Same:
+        break;
+      case CmpRes::Mismatch:
+        err("Mismatched file content for {}", relPath);
+        res = CmpRes::Mismatch;
+        break;
+      case CmpRes::Err:
+        return CmpRes::Err;
+      }
+    }
+    dirFileT.erase(relPath);
+  }
+  for (const auto &[relPath, fileT] : dirFileT) {
+    llvm::StringRef fileTStr{fileT == fs::file_type::regular_file ? "file" : "directory"};
+    err("Unexpected {} {}", fileTStr, relPath);
+    res = CmpRes::Mismatch;
+  }
+  return res;
 }

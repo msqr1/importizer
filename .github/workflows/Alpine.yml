@@ -14,9 +14,9 @@ jobs:
       - name: Get platforms
         id: platforms
         run: |
-          echo "platforms=$(gh api repos/{owner}/{repo}/contents/Platforms.json \
-          -H "Accept: application/vnd.github.raw+json" \
+          echo "platforms=$(gh api repos/${{ github.repository }}/contents/Platforms.json \
           -H "X-GitHub-Api-Version: 2026-03-10" \
+          -H "Accept: application/vnd.github.raw+json" \
           -q 'map(select(.os == "linux"))')" >> "$GITHUB_OUTPUT"
   make:
     needs: prepare
@@ -24,25 +24,24 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.prepare.outputs.platforms) }}
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.arch }}
     steps:
       - name: all
         run: |
-          repo=${{ github.repository }}
+          repo="${{ github.repository }}"
 
           podman build \
             https://raw.githubusercontent.com/$repo/${{ github.sha }}/scripts/alpine/Containerfile \
             --platform linux/${{ matrix.arch }} \
             -t img
 
-          podman login ghcr.io \
-            -u msqr1 \
-            -p ${{ github.token }}
+          echo ${{ github.token }} | \
+            podman login ghcr.io -u ${{ github.actor }} --password-stdin
 
-          podman push img \
-            ghcr.io/$repo-alpine:3.24.2-${{ matrix.arch }} \
+          podman push img ghcr.io/$repo-alpine:3.24.2-${{ matrix.arch }} \
             -f oci \
             --compression-format zstd \
             --compression-level 19
