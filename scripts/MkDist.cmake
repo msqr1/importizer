@@ -37,7 +37,8 @@ execute_process(COMMAND "${CMAKE_COMMAND}"
 if(TYPE STREQUAL "Debug")
   file(ARCHIVE_CREATE
     OUTPUT "${OUT_DIR}/importizer-debug-${os}-${arch}.tar.zst"
-    PATHS "${OUT_DIR}/installation"
+    WORKING_DIRECTORY "${OUT_DIR}"
+    PATHS installation
     COMPRESSION Zstd
     COMPRESSION_LEVEL 19
   )

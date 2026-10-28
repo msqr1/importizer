@@ -1,5 +1,3 @@
-# This "dynamic preset" are hardening flags requiring platform or compiler detection.
-
 set(arch $ENV{IMPORTIZER_ARCH})
 
 if(arch STREQUAL "amd64")
@@ -8,8 +6,14 @@ elseif(arch STREQUAL "arm64")
   add_compile_options(-mbranch-protection=standard)
 endif()
 
+if(LINUX)
+  add_compile_options(-fstack-clash-protection)
+  add_link_options("LINKER:-z,nodlopen,-z,noexecstack,-z,relro,-z,now")
+endif()
+
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   add_compile_options(
+    -fno-omit-frame-pointer
     -fno-delete-null-pointer-checks
     -fno-strict-aliasing
     -fstrict-flex-arrays=3
@@ -19,6 +23,7 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   )
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   add_compile_options(
+    /Oy-
     /clang:-fno-delete-null-pointer-checks
     /clang:-fno-strict-aliasing
     /clang:-fstrict-flex-arrays=3
@@ -28,11 +33,4 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     /MT # CMAKE_MSVC_RUNTIME_LIBRARY didn't work!!
   )
   add_link_options("LINKER:/CETCOMPAT,/GUARD:CF")
-endif()
-
-if(LINUX)
-  add_compile_options(-fstack-clash-protection)
-  add_link_options("LINKER:-z,nodlopen,-z,noexecstack,-z,relro,-z,now")
-elseif(APPLE)
-  add_link_options("LINKER:-bind_at_load")
 endif()

@@ -1,6 +1,6 @@
 = Building
 :toc: preamble
-:alpine-v: 3.24.2
+:alpine-v: 3.24.3
 :libtooling-v: 22.1.8
 
 Toolchain, environment and build details.

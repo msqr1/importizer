@@ -6,13 +6,13 @@ concurrency:
 jobs:
   prepare:
     outputs:
-      platforms: ${{ steps.platforms.outputs.platforms }}
+      platforms: ${{ steps.get.outputs.platforms }}
     runs-on: ubuntu-slim
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Get platforms
-        id: platforms
+      - name: Get outputs
+        id: get
         run: |
           echo "platforms=$(gh api repos/${{ github.repository }}/contents/Platforms.json \
           -H "X-GitHub-Api-Version: 2026-03-10" \
@@ -41,7 +41,7 @@ jobs:
           echo ${{ github.token }} | \
             podman login ghcr.io -u ${{ github.actor }} --password-stdin
 
-          podman push img ghcr.io/$repo-alpine:3.24.2-${{ matrix.arch }} \
+          podman push img ghcr.io/$repo-alpine:3.24.3-${{ matrix.arch }} \
             -f oci \
             --compression-format zstd \
             --compression-level 19

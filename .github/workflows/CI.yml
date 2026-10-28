@@ -7,17 +7,28 @@ concurrency:
 jobs:
   prepare:
     outputs:
-      platforms: ${{ steps.platforms.outputs.platforms }}
-      shouldPublish: ${{ steps.publish.outputs.shouldPublish }}
+      platforms: ${{ steps.get.outputs.platforms }}
+      shouldPublish: ${{ steps.get.outputs.shouldPublish }}
 
-    # MacOS have clang-format and clang-tidy without containerization but isn't a snail
-    runs-on: macos-26
-    env:
-      # jq platform filter expression
-      JQ_EXPR: map(select(.os == "macos"))
+    # Windows ARM64 is the one that:
+    # 1. Have jq, clang-format, clang-tidy
+    # 2. Is the fastest runner
+    runs-on: windows-11-vs2026-arm
     steps:
-      - name: Publishability check
-        id: publish
+      - name: Checkout
+        uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b
+      - name: Setup
+        run: . scripts/setup/Windows.ps1
+      - name: Configure
+        run: cmake -B build --preset CI
+      - name: Code quality check
+        run: echo "TODO"
+      - name: Get outputs
+        id: get
+        env:
+          # jq platform filter expression
+          JQ_EXPR: .
+        shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
             if [ "$JQ_EXPR" != "." ]; then
@@ -27,18 +38,7 @@ jobs:
           else
             echo "shouldPublish=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Checkout
-        uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b
-      - name: Setup
-        run: . scripts/setup/MacOS.bash
-      - name: Configure
-        run: cmake -B build --preset CI
-      - name: Code quality check
-        run: |
-          echo "TODO"
-      - name: Get platforms
-        id: platforms
-        run: echo "platforms=$(jq -c '${{ env.JQ_EXPR }}' < Platforms.json)" >> "$GITHUB_OUTPUT"
+          echo "platforms=$(jq -c "$JQ_EXPR" < Platforms.json)" >> "$GITHUB_OUTPUT"
   make:
     permissions:
       contents: write

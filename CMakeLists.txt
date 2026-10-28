@@ -57,8 +57,12 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   target_compile_options(common-config INTERFACE
     -ffunction-sections
     -fdata-sections
-    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-fno-c++-static-destructors>"
     "-ffile-prefix-map=${root}/src/="
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-fno-c++-static-destructors>"
+    "$<$<CONFIG:Debug>:-fsanitize=address,undefined;-fstandalone-debug>"
+  )
+  target_link_options(common-config INTERFACE
+    "$<$<CONFIG:Debug>:-fsanitize=address,undefined>"
   )
   if(TRACE_BUILD)
     target_compile_options(common-config INTERFACE
@@ -69,8 +73,8 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   target_compile_options(common-config INTERFACE
     /Gy
-    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-fno-c++-static-destructors>"
     "/clang:-ffile-prefix-map=${root}/src/="
+    "$<$<COMPILE_LANGUAGE:CXX>:/GR-;/EHs-c-;/clang:-fno-c++-static-destructors>"
   )
   if(TRACE_BUILD)
     target_compile_options(common-config INTERFACE
@@ -81,7 +85,6 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
 endif()
 
 if(LINUX)
-  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
   target_link_options(common-config INTERFACE
     "LINKER:--gc-sections,--as-needed,--no-copy-dt-needed-entries"
 
@@ -93,7 +96,6 @@ if(LINUX)
     "$<$<CONFIG:Release>:-static-pie;LINKER:-s>"
   )
 elseif(APPLE)
-  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
   target_link_options(common-config INTERFACE
     "$<$<CONFIG:Release>:LINKER:-S,-x,-dead_strip>"
   )
