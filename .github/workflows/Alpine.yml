@@ -14,7 +14,7 @@ jobs:
       - name: Get platforms
         id: platforms
         run: |
-          echo "platforms=$(gh api repos/msqr1/importizer/contents/Platforms.json \
+          echo "platforms=$(gh api repos/{owner}/{repo}/contents/Platforms.json \
           -H "Accept: application/vnd.github.raw+json" \
           -H "X-GitHub-Api-Version: 2026-03-10" \
           -q 'map(select(.os == "linux"))')" >> "$GITHUB_OUTPUT"

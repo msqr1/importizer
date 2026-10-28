@@ -6,8 +6,8 @@ Coding conventions for importizer.
 * 100-column per line limit for files, CLI outputs, and markup.
 
 == Naming
-* *Executables and directories:* `kebab-case` (e.g., `3rd-party/`)
-* *CMake user-defined variables:* `SNAKE_UPPERCASE` (e.g., `TRACE_BUILD`)
+* *CMake targets and directories:* `kebab-case` (e.g., `3rd-party/`)
+* *CMake user-defined (`-D`) variables :* `SNAKE_UPPERCASE` (e.g., `TRACE_BUILD`)
 * *Environment variables:* `SNAKE_UPPERCASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
 
 == C{plus}{plus}

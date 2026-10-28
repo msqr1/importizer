@@ -14,10 +14,10 @@
 
 === Distribution
 * [x] Working build, test, upload CI and CD for:
-** [x] Windows (fix Windows 11 ARM64)
+** [x] Windows
 ** [x] MacOS
 ** [x] Linux
-* [ ] Sign CI and CD distributions with minisign.
+* [ ] Sign distributions and images with minisign.
 
 === Documentation
 * [x] Use AsciiDoc instead of Markdown.
