@@ -10,7 +10,7 @@ if(NOT DEFINED binPath)
   message(FATAL_ERROR "Missing binary's path.")
 endif()
 
-if(LINUX)
+if(LINUX AND CMAKE_INSTALL_CONFIG_NAME STREQUAL "Release")
   file(RENAME "${binPath}" "${CMAKE_INSTALL_PREFIX}/importizer.bin")
   file(
     GLOB loaders
@@ -31,15 +31,3 @@ exec "$dir/]]
   )
   file(WRITE "${binPath}" "${trampoline}")
 endif()
-
-file(CHMOD_RECURSE "${CMAKE_INSTALL_PREFIX}" FILE_PERMISSIONS
-  OWNER_READ
-  OWNER_WRITE
-  OWNER_EXECUTE
-  GROUP_READ
-  GROUP_WRITE
-  GROUP_EXECUTE
-  WORLD_READ
-  WORLD_WRITE
-  WORLD_EXECUTE
-)

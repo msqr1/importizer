@@ -9,6 +9,9 @@
 #define DOCTEST_CONFIG_NO_EXCEPTIONS
 #define DOCTEST_CONFIG_NO_WINDOWS_SEH
 #define DOCTEST_CONFIG_NO_POSIX_SIGNALS
+#define DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
+#define DOCTEST_CONFIG_NO_MULTITHREADING
+#define DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES
 #include <doctest/doctest.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/raw_ostream.h>
@@ -45,13 +48,13 @@ public:
 
 } // namespace
 
-auto runUnitTest(const char *suiteName) noexcept -> int {
+auto runUnitTest(const char *suiteName, const int argc, const char *const *argv) noexcept -> int {
   // Always set program and log stream before everything.
   // In this case, since we only care about return values, we void all logs.
   LogOpts logOpts{.prog = "", .stream = &llvm::nulls()};
   setGlobalLogOpts(logOpts);
 
-  doctest::Context ctx;
+  doctest::Context ctx{argc, argv};
   LLVMOstream doctestOut{llvm::errs()};
   ctx.setOption("ts", suiteName);
   ctx.setCout(&doctestOut);

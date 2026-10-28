@@ -45,7 +45,7 @@ elseif(TYPE STREQUAL "Release")
   if(WIN32)
     set(binExtension ".exe")
   endif()
-  file(COPY_FILE "${OUT_DIR}/installation/${bin}${binExtension}"
+  file(COPY_FILE "${OUT_DIR}/installation/importizer${binExtension}"
     "${OUT_DIR}/importizer-release-${os}-${arch}${binExtension}")
 endif()
 
