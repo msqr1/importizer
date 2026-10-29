@@ -27,7 +27,7 @@ jobs:
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: map(select(.os != "windows"))
+          JQ_EXPR: map(select(.os == "linux" or (.os == "macos" and .arch == "arm64")))
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
@@ -78,9 +78,6 @@ jobs:
 
           # If we upload the directory, unarchiving results in a directory, but we want the files
           path: dists/*
-
-          # Compressing a binary file and a compressed archive wouldn't do much
-          compression-level: 0
 
           retention-days: 1
           if-no-files-found: error

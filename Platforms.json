@@ -34,7 +34,7 @@
   {
     "os": "macos",
     "arch": "arm64",
-    "runner": "macos-26",
+    "runner": "xcode-27",
     "setup": "MacOS.bash"
   }
 ]
