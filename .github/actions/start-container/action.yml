@@ -1,0 +1,45 @@
+# One must:
+## Use the sh shell
+name: Start a container
+inputs:
+  container:
+    description: Container
+    type: string
+    required: true
+  shell-name:
+    description: Containerized shell name
+    type: string
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: All
+      shell: bash
+      run: |
+        podman run -d --rm --name ${{ inputs.shell-name }} \
+          --userns=keep-id \
+          -v "${{ github.workspace }}:${{ github.workspace }}" \
+          -w "${{ github.workspace }}" \
+          -v "$GITHUB_ENV:$GITHUB_ENV" \
+          -v "$GITHUB_OUTPUT:$GITHUB_OUTPUT" \
+          -v "$GITHUB_PATH:$GITHUB_PATH" \
+          -v "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
+          ${{ inputs.container }} sleep infinity
+
+        sudo tee /usr/local/bin/${{ inputs.shell-name }} > /dev/null << 'EOF'
+        #!/bin/sh
+
+        if [ "${{ inputs.container }}" = "" ]; then
+          exec "$1"
+        else
+          # Filter dangerous env vars
+          env | grep -vE '^(HOME|PWD|PATH|SHLVL|_)=' > /tmp/Step.env
+
+          # GitHub passes the script file path as $1.
+          # We use -i to keep STDIN open and pipe the file's contents (< "$1")
+          # directly into the container's bash executable.
+          exec podman exec -i --env-file /tmp/Step.env ${{ inputs.shell-name }} /bin/sh < "$1"
+        fi
+        EOF
+
+        sudo chmod +x /usr/local/bin/${{ inputs.shell-name }}

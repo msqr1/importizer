@@ -27,7 +27,7 @@ jobs:
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: map(select(.os == "linux" or (.os == "macos" and .arch == "arm64")))
+          JQ_EXPR: map(select(.os == "linux"))
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
@@ -49,36 +49,41 @@ jobs:
         include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
-    container: ${{ matrix.container || '' }}
-    env:
-      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b # 1.4.2
       - name: Setup
         run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
+      - name: "Start container"
+        uses: ./.github/actions/start-container
+        with:
+          container: ${{ matrix.container || '' }}
+          shell-name: "container-sh"
       - name: Configure
+        shell: container-sh {0}
         run: cmake -B build --preset CI
       - name: Build and test (Debug)
+        shell: container-sh {0}
         run: |
           cmake --build build --config Debug
           ctest --test-dir build/tests -C Debug -j
       - name: Build and test (Release)
+        shell: container-sh {0}
         run: |
           cmake --build build --config Release
           ctest --test-dir build/tests -C Release -j
       - name: Make distributions
+        shell: container-sh {0}
         run: |
           cmake -DTYPE=Debug -DBUILD_DIR=build -DOUT_DIR=dists -P scripts/MkDist.cmake
           cmake -DTYPE=Release -DBUILD_DIR=build -DOUT_DIR=dists -P scripts/MkDist.cmake
       - name: Upload distributions
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
         with:
-          name: importizer-${{ matrix.os }}-${{ matrix.arch }}
-
           # If we upload the directory, unarchiving results in a directory, but we want the files
           path: dists/*
 
+          name: importizer-${{ matrix.os }}-${{ matrix.arch }}
           retention-days: 1
           if-no-files-found: error
   publish:

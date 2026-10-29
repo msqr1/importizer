@@ -17,7 +17,7 @@ jobs:
           echo "platforms=$(gh api repos/${{ github.repository }}/contents/Platforms.json \
           -H "X-GitHub-Api-Version: 2026-03-10" \
           -H "Accept: application/vnd.github.raw+json" \
-          -q 'map(select(.os == "linux"))')" >> "$GITHUB_OUTPUT"
+          -q 'map(select(has("container")))')" >> "$GITHUB_OUTPUT"
   make:
     needs: prepare
     permissions:
@@ -41,7 +41,7 @@ jobs:
           echo ${{ github.token }} | \
             podman login ghcr.io -u ${{ github.actor }} --password-stdin
 
-          podman push img ghcr.io/$repo-alpine:3.24.3-${{ matrix.arch }} \
+          podman push img ${{ matrix.container }} \
             -f oci \
             --compression-format zstd \
             --compression-level 19
