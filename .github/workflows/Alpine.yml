@@ -17,7 +17,7 @@ jobs:
           echo "platforms=$(gh api repos/${{ github.repository }}/contents/Platforms.json \
           -H "X-GitHub-Api-Version: 2026-03-10" \
           -H "Accept: application/vnd.github.raw+json" \
-          -q 'map(select(has("container")))')" >> "$GITHUB_OUTPUT"
+          -q 'map(select(.os == "linux"))')" >> "$GITHUB_OUTPUT"
   make:
     needs: prepare
     permissions:

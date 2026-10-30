@@ -1,4 +1,7 @@
+// Filesystem utilities test
+
 #include "utils/FS.hh"
+#include "testing/MemFS.hh"
 #include <doctest/doctest.h>
 #include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/ADT/StringRef.h>
@@ -7,96 +10,81 @@
 #include <llvm/Support/MemoryBufferRef.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/raw_ostream.h>
-#include <optional>
-
-namespace vfs = llvm::vfs;
-namespace fs = llvm::sys::fs;
-
-namespace {
-
-const auto buf1{llvm::MemoryBuffer::getMemBuffer("When I say six, what do you say?")};
-const auto buf2{llvm::MemoryBuffer::getMemBuffer("Seven!")};
-auto addDir(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool {
-  return memFS.addFileNoOwn(path, 0, *buf1, std::nullopt, std::nullopt,
-                            llvm::sys::fs::file_type::directory_file, std::nullopt);
-}
-auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool {
-  return memFS.addFileNoOwn(path, 0, *buf1);
-}
-auto addFile2(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool {
-  return memFS.addFileNoOwn(path, 0, *buf2);
-}
-
-class InitableMemFS : public vfs::InMemoryFileSystem {
-public:
-  InitableMemFS(llvm::function_ref<void(vfs::InMemoryFileSystem &memFS)> initFn) { initFn(*this); }
-};
-
-} // namespace
 
 TEST_SUITE_BEGIN("FS");
 
 TEST_CASE("Compare files") {
-  static InitableMemFS memFS{[](vfs::InMemoryFileSystem &FS) -> void {
+  InitableMemFS memFS{[](vfs::InMemoryFileSystem &FS) -> void {
     /*
       /
-      ├── file.txt
-      ├── meow.txt - Same content as file1.txt
-      └── woof.txt - Different content from file1.txt
+      ├── File.txt
+      ├── Meow.txt
+      └── Woof.txt
     */
-    addFile1(FS, "/file.txt");
-    addFile1(FS, "/meow.txt");
-    addFile2(FS, "/woof.txt");
+    addFile1(FS, "/File.txt");
+    addFile1(FS, "/Meow.txt");
+    addFile2(FS, "/Woof.txt");
   }};
-  SUBCASE("Empty file1 path") { CHECK(cmpFiles("", "/", memFS, memFS) == CmpRes::Err); }
-  SUBCASE("Empty file2 path") { CHECK(cmpFiles("/", "", memFS, memFS) == CmpRes::Err); }
-  SUBCASE("Same content") {
-    CHECK(cmpFiles("/file.txt", "/meow.txt", memFS, memFS) == CmpRes::Same);
-  }
-  SUBCASE("Different content") {
-    CHECK(cmpFiles("/file.txt", "/woof.txt", memFS, memFS) == CmpRes::Mismatch);
-  }
+
+  INFO("Empty file1 path");
+  CHECK_EQ(cmpFiles("", "/", memFS, memFS), CmpRes::Err);
+
+  INFO("Empty file2 path");
+  CHECK_EQ(cmpFiles("/", "", memFS, memFS), CmpRes::Err);
+
+  INFO("Same content");
+  CHECK_EQ(cmpFiles("/File.txt", "/Meow.txt", memFS, memFS), CmpRes::Same);
+
+  INFO("Mismatched content");
+  CHECK_EQ(cmpFiles("/File.txt", "/Woof.txt", memFS, memFS), CmpRes::Mismatch);
 }
 
 TEST_CASE("Compare directories") {
-  static InitableMemFS memFS{[](vfs::InMemoryFileSystem &FS) -> void {
+  InitableMemFS memFS{[](vfs::InMemoryFileSystem &FS) -> void {
     /*
       /
       ├── ref/
-      │   └── file.txt
-      ├── dir1/         - Same as ref/
-      │   └── file.txt
-      ├── dir2/         - Missing file
+      │   └── File.txt
+      ├── dir1/
+      │   └── File.txt
+      ├── dir2/
       ├── dir3/
-      │   └── file.txt  - Mismatched file content
+      │   └── File.txt
       ├── dir4/
-      │   ├── file.txt
-      │   └── meow.txt  - Unexpected file
+      │   ├── File.txt
+      │   └── Meow.txt
       └── dir5/
-          └── file.txt - Unexpected file type
+          └── File.txt
     */
-    addFile1(FS, "/ref/file.txt");
-    addFile1(FS, "/dir1/file.txt");
+    addFile1(FS, "/ref/File.txt");
+    addFile1(FS, "/dir1/File.txt");
     addDir(FS, "/dir2");
-    addFile2(FS, "/dir3/file.txt");
-    addFile1(FS, "/dir4/file.txt");
-    addFile1(FS, "/dir4/meow.txt");
-    addDir(FS, "/dir5/file.txt");
+    addFile2(FS, "/dir3/File.txt");
+    addFile1(FS, "/dir4/File.txt");
+    addFile1(FS, "/dir4/Meow.txt");
+    addDir(FS, "/dir5/File.txt");
   }};
 
-  SUBCASE("Empty dir path") { CHECK(cmpDirs("", "/", memFS, memFS) == CmpRes::Err); }
-  SUBCASE("Empty ref path") { CHECK(cmpDirs("/", "", memFS, memFS) == CmpRes::Err); }
-  SUBCASE("Same") { CHECK(cmpDirs("/dir1", "/ref", memFS, memFS) == CmpRes::Same); }
-  SUBCASE("Missing file") { CHECK(cmpDirs("/dir2", "/ref", memFS, memFS) == CmpRes::Mismatch); }
-  SUBCASE("Mismatched file content") {
-    CHECK(cmpDirs("/dir3", "/ref", memFS, memFS) == CmpRes::Mismatch);
-  }
-  SUBCASE("Unexpected file") { CHECK(cmpDirs("/dir4", "/ref", memFS, memFS) == CmpRes::Mismatch); }
-  SUBCASE("Unexpected file type") {
-    CHECK(cmpDirs("/dir5", "/ref", memFS, memFS) == CmpRes::Mismatch);
-  }
-}
+  INFO("Empty dir path");
+  CHECK_EQ(cmpDirs("", "/", memFS, memFS), CmpRes::Err);
 
-TEST_CASE("Copy directory") {}
+  INFO("Empty ref path");
+  CHECK_EQ(cmpDirs("/", "", memFS, memFS), CmpRes::Err);
+
+  INFO("Identical directories");
+  CHECK_EQ(cmpDirs("/dir1", "/ref", memFS, memFS), CmpRes::Same);
+
+  INFO("Missing file in target");
+  CHECK_EQ(cmpDirs("/dir2", "/ref", memFS, memFS), CmpRes::Mismatch);
+
+  INFO("Mismatched file content");
+  CHECK_EQ(cmpDirs("/dir3", "/ref", memFS, memFS), CmpRes::Mismatch);
+
+  INFO("Unexpected extra file");
+  CHECK_EQ(cmpDirs("/dir4", "/ref", memFS, memFS), CmpRes::Mismatch);
+
+  INFO("Unexpected file type");
+  CHECK_EQ(cmpDirs("/dir5", "/ref", memFS, memFS), CmpRes::Mismatch);
+}
 
 TEST_SUITE_END();

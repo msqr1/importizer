@@ -63,11 +63,6 @@ template <bool recurse = false>
   return true;
 }
 
-// Copy the contents of src into dst. Returns true if successful. Since
-// vfs::FileSystem isn't writable, dst is in the real FS.
-[[nodiscard]] auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
-                          vfs::FileSystem &srcVFS = getRealFS()) noexcept -> bool;
-
 enum class CmpRes : char {
   Same,
   Mismatch,

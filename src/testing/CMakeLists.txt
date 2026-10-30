@@ -2,6 +2,7 @@ add_executable(run-test
   Driver.cc
   E2E.cc
   Unit.cc
+  MemFS.cc
   FSTest.cc
   GlobTest.cc
   OptsTest.cc

@@ -35,12 +35,8 @@ struct Opts {
 
   // Allow default construction
   Opts() noexcept = default;
-
-  // Allow moving
   Opts(Opts &&) noexcept = default;
   auto operator=(Opts &&) noexcept -> Opts & = default;
-
-  // Disallow copying
   Opts(const Opts &) = delete;
   auto operator=(const Opts &) -> Opts & = delete;
 };

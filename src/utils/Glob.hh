@@ -33,7 +33,6 @@ public:
   Glob(const Glob &) = delete;
   auto operator=(const Glob &) -> Glob & = delete;
 
-  // Check if the glob matches the given string.
   [[nodiscard]] auto match(llvm::StringRef s) const noexcept -> bool;
 };
 
@@ -60,7 +59,7 @@ template <ConvertibleRange<llvm::StringRef> T>
 
 struct GlobDirRule {
   GlobStorage globs;
-  llvm::unique_function<void(llvm::StringRef) const> callback;
+  llvm::unique_function<void(const vfs::directory_entry &ent) const> callback;
 };
 
 template <ConvertibleRange<GlobDirRule> T>
@@ -75,7 +74,7 @@ template <ConvertibleRange<GlobDirRule> T>
     for (const auto &[globs, callback] : rules) {
       for (const Glob &glob : globs) {
         if (glob.match(ent.path().drop_front(baseLen))) {
-          callback(ent.path());
+          callback(ent);
           break;
         }
       }

@@ -2,15 +2,16 @@
 #include "utils/Diag.hh"
 #include "utils/FS.hh"
 #include "utils/Glob.hh"
-#include <array>
 #include <cassert>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/JSONCompilationDatabase.h>
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/Support/CommandLine.h>
+#include <llvm/Support/FileSystem.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/SourceMgr.h>
@@ -20,13 +21,13 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <system_error>
 #include <utility>
 #include <vector>
 
 namespace cl = llvm::cl;
 namespace tl = clang::tooling;
+namespace fs = llvm::sys::fs;
 namespace vfs = llvm::vfs;
 namespace pth = llvm::sys::path;
 namespace yml = llvm::yaml;
@@ -124,18 +125,20 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     return err("Unable to get real path of {}: {}", opts.root, errCode.message());
   }
   opts.root = tmp.str();
-  std::array<GlobDirRule, 2> rootGlobRules;
+  llvm::SmallVector<GlobDirRule, 2> rootGlobRules;
 
   // stdImport
   opts.stdImport = nOpts.stdImport;
 
   // hdrGlobs
+  rootGlobRules.emplace_back();
   if (!mkGlobs(rootGlobRules[0].globs, nOpts.hdrGlobExprs)) {
     return false;
   }
-
-  rootGlobRules[0].callback = [&opts](llvm::StringRef path) -> void {
-    opts.hdrs.try_emplace(path);
+  rootGlobRules[0].callback = [&opts](const vfs::directory_entry &ent) -> void {
+    if (ent.type() == fs::file_type::regular_file) {
+      opts.hdrs.insert(ent.path());
+    }
   };
 
   if (nOpts.compDBPath && nOpts.xplicit) {
@@ -163,11 +166,14 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
   // explicit
   else if (nOpts.xplicit) {
     // explicit.srcGlobs
+    rootGlobRules.emplace_back();
     if (!mkGlobs(rootGlobRules[1].globs, nOpts.xplicit->srcGlobExprs)) {
       return false;
     }
-    rootGlobRules[1].callback = [&opts](llvm::StringRef path) -> void {
-      opts.srcs.emplace_back(path);
+    rootGlobRules[1].callback = [&opts](const vfs::directory_entry &ent) -> void {
+      if (ent.type() == fs::file_type::regular_file) {
+        opts.srcs.emplace_back(ent.path());
+      }
     };
 
     // explicit.compileFlags

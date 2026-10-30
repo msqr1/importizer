@@ -1,7 +1,7 @@
 enable_testing()
 
 # Unit tests
-set(unitTestSuites "FS;")
+set(unitTestSuites "FS;Glob;")
 foreach(unitTestSuite ${unitTestSuites})
   add_test(
     NAME ${unitTestSuite}

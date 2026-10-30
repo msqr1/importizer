@@ -10,11 +10,11 @@
 Glob::Glob(const bool negate_, llvm::GlobPattern &&ptn_) noexcept
     : negate{negate_}, ptn{std::move(ptn_)} {}
 
-auto mkGlob(llvm::StringRef ptn) noexcept -> std::optional<Glob> {
+[[nodiscard]] auto mkGlob(llvm::StringRef ptn) noexcept -> std::optional<Glob> {
   bool negate{ptn.consume_front('!')};
-  llvm::Expected<llvm::GlobPattern> p{llvm::GlobPattern::create(ptn, {})};
+  llvm::Expected<llvm::GlobPattern> p{llvm::GlobPattern::create(ptn)};
   if (!p) {
-    err("Error making glob {}", ptn);
+    err("Error making glob {}: {}", ptn, llvm::toString(p.takeError()));
     return std::nullopt;
   }
   return std::optional<Glob>(std::in_place, negate, std::move(*p));
