@@ -42,7 +42,7 @@ link:/src/testing/FSTest.cc[`src/testing/FSTest.cc`] is the `FS` suite), and the
 function (e.g. the `FS` suite tests filesystem functions).
 * Each test suite consists of test cases, where each test case tests 1 function.
 
-To add a new test case and subcase, simply follow
+To add a new test case, simply follow
 https://github.com/doctest/doctest/blob/master/doc/markdown/testcases.md[doctest's official guide].
 To add a new test suite:
 

@@ -89,6 +89,7 @@ For globs, it's always:
 
 * First match wins.
 * Prefixing patterns with `!` negates them.
+* 10 max subpatterns (`{...}`).
 * See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
 
 [%autowidth]

@@ -2,7 +2,7 @@
 
 #include "utils/FS.hh"
 #include "testing/MemFS.hh"
-#include <doctest/doctest.h>
+#include "testing/Unit.hh"
 #include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/FileSystem.h>

@@ -1,20 +1,12 @@
+#define DOCTEST_CONFIG_IMPLEMENT
 #include "testing/Unit.hh"
 #include "utils/Diag.hh"
 #include <cstdio>
 #include <ios>
-#include <ostream>
-#include <streambuf>
-#define DOCTEST_CONFIG_IMPLEMENT
-#define DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-#define DOCTEST_CONFIG_NO_EXCEPTIONS
-#define DOCTEST_CONFIG_NO_WINDOWS_SEH
-#define DOCTEST_CONFIG_NO_POSIX_SIGNALS
-#define DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
-#define DOCTEST_CONFIG_NO_MULTITHREADING
-#define DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES
-#include <doctest/doctest.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/raw_ostream.h>
+#include <ostream>
+#include <streambuf>
 
 namespace {
 

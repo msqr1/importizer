@@ -38,7 +38,7 @@ public:
 
 using GlobStorage = std::vector<Glob>;
 
-auto mkGlob(llvm::StringRef ptn) noexcept -> std::optional<Glob>;
+auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern = 10) noexcept -> std::optional<Glob>;
 
 template <typename Container, typename ElemT>
 concept ConvertibleRange = std::ranges::range<Container> &&
@@ -62,7 +62,7 @@ struct GlobDirRule {
   llvm::unique_function<void(const vfs::directory_entry &ent) const> callback;
 };
 
-template <ConvertibleRange<GlobDirRule> T>
+template <bool recurse = true, ConvertibleRange<GlobDirRule> T>
 [[nodiscard]] auto globDir(const llvm::Twine &dir, const T &rules,
                            vfs::FileSystem &dirVFS = getRealFS()) -> bool {
   llvm::SmallString<128> tmp;
@@ -70,7 +70,7 @@ template <ConvertibleRange<GlobDirRule> T>
     return err("Error globbing directory: dir path is empty");
   }
   const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
-  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> auto {
+  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> IterDirCtrl {
     for (const auto &[globs, callback] : rules) {
       for (const Glob &glob : globs) {
         if (glob.match(ent.path().drop_front(baseLen))) {
@@ -81,5 +81,5 @@ template <ConvertibleRange<GlobDirRule> T>
     }
     return IterDirCtrl::Continue;
   }};
-  return iterDir<true>(tmp, checkDir, dirVFS);
+  return iterDir<recurse>(tmp, checkDir, dirVFS);
 }

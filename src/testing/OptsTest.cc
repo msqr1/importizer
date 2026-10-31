@@ -1,4 +1,4 @@
-#include <doctest/doctest.h>
+#include "testing/Unit.hh"
 
 TEST_SUITE_BEGIN("Opts");
 

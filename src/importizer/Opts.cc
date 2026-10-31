@@ -54,19 +54,19 @@ void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*unused*/) noexcept 
 } // namespace
 
 template <> struct yml::MappingTraits<NormalExplicit> {
-  static void mapping(yml::IO &in, NormalExplicit &xplicit) {
-    in.mapRequired("srcGlobs", xplicit.srcGlobExprs);
-    in.mapOptional("compileFlags", xplicit.compileFlags);
+  static void mapping(yml::IO &in, NormalExplicit &normalXplicit) {
+    in.mapRequired("srcGlobs", normalXplicit.srcGlobExprs);
+    in.mapOptional("compileFlags", normalXplicit.compileFlags);
   }
 };
 
 template <> struct yml::MappingTraits<NormalOpts> {
-  static void mapping(yml::IO &in, NormalOpts &opts) {
-    in.mapRequired("root", opts.root);
-    in.mapRequired("hdrGlobs", opts.hdrGlobExprs);
-    in.mapOptional("compilationDB", opts.compDBPath);
-    in.mapOptional("stdImport", opts.stdImport);
-    in.mapOptional("explicit", opts.xplicit);
+  static void mapping(yml::IO &in, NormalOpts &normalOpts) {
+    in.mapRequired("root", normalOpts.root);
+    in.mapRequired("hdrGlobs", normalOpts.hdrGlobExprs);
+    in.mapOptional("compilationDB", normalOpts.compDBPath);
+    in.mapOptional("stdImport", normalOpts.stdImport);
+    in.mapOptional("explicit", normalOpts.xplicit);
   }
 };
 
@@ -74,6 +74,7 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     -> bool {
   // LLVM default options will mix into ours if we don't make our own category
   cl::OptionCategory cat{globalLogOpts.prog};
+
   cl::opt<std::string> configPath{
       cl::cat(cat),
       cl::desc("<YAML configuration file>"),
@@ -177,7 +178,7 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     };
 
     // explicit.compileFlags
-    opts.compDB = std::make_unique<tl::FixedCompilationDatabase>(".", nOpts.xplicit->compileFlags);
+    opts.compDB = std::make_unique`<tl::FixedCompilationDatabase>(".", nOpts.xplicit->compileFlags);
   } else {
     return err("At least one of 'compilationDB' or 'explicit' must be specified");
   }
