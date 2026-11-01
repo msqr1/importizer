@@ -13,7 +13,8 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: All
+    - name: Containerize
+      if: inputs.container != ''
       shell: bash
       run: |
         podman run -d --rm \
@@ -27,17 +28,19 @@ runs:
           -v "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
           ${{ inputs.container }} sleep infinity
 
-        if [ "${{ inputs.container }}" = "" ]; then
-          sudo cat <<'EOF' >/usr/local/bin/${{ inputs.shell-name }}
-          #!/usr/bin/env sh
-          exec "$1"
-          EOF
-        else
-          sudo cat <<'EOF' >/usr/local/bin/${{ inputs.shell-name }}
-          #!/usr/bin/env sh
-          env | grep -vE '^(HOME|PWD|PATH|SHLVL|_)=' > /tmp/Step.env
-          exec podman exec -i --env-file /tmp/Step.env ${{ inputs.shell-name }} /bin/sh < "$1"
-          EOF
-        fi
-
-        sudo chmod +x /usr/local/bin/${{ inputs.shell-name }}
+        sudo cat <<'EOF' >/usr/local/bin/${{ inputs.shell-name }}
+        #!/usr/bin/env sh
+        env | grep -vE '^(HOME|PWD|PATH|SHLVL|_)=' > /tmp/Step.env
+        exec podman exec -i --env-file /tmp/Step.env ${{ inputs.shell-name }} /bin/sh < "$1"
+        EOF
+    - name: Native
+      if: inputs.container == ''
+      shell: bash
+      run: |
+        sudo cat <<'EOF' >/usr/local/bin/${{ inputs.shell-name }}
+        #!/usr/bin/env sh
+        exec "$1"
+        EOF
+    - name: Executable permission
+      shell: bash
+      run: sudo chmod +x /usr/local/bin/${{ inputs.shell-name }}

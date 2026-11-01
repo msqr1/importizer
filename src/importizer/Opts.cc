@@ -178,7 +178,7 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     };
 
     // explicit.compileFlags
-    opts.compDB = std::make_unique`<tl::FixedCompilationDatabase>(".", nOpts.xplicit->compileFlags);
+    opts.compDB = std::make_unique<tl::FixedCompilationDatabase>(".", nOpts.xplicit->compileFlags);
   } else {
     return err("At least one of 'compilationDB' or 'explicit' must be specified");
   }

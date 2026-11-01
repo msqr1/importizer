@@ -6,10 +6,13 @@
 #include "testing/Unit.hh"
 #include <array>
 #include <llvm/ADT/STLExtras.h>
+#include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
+#include <llvm/Support/raw_ostream.h>
 #include <optional>
 
 namespace fs = llvm::sys::fs;
@@ -33,7 +36,7 @@ TEST_CASE("Creation and negation") {
   }
 
   INFO("Negated match");
-  CHECK_NE(g->match("hehe"), gNeg->match("hehe"));
+  CHECK_NE(g->match("hehe"), gNeg->match("hehe")); // NOLINT (checked above already)
 }
 
 TEST_CASE("Glob directory") {
@@ -68,7 +71,8 @@ TEST_CASE("Glob directory") {
   }
   rules[0].callback = [&globbedCPPFilePaths](const vfs::directory_entry &ent) -> void {
     if (ent.type() == fs::file_type::regular_file) {
-      globbedCPPFilePaths.insert(ent.path());
+      // Without \ -> / conversion StringSet comparison will fail on Windows.
+      globbedCPPFilePaths.insert(pth::convert_to_slash(ent.path()));
     }
   };
   llvm::StringSet<> globbedCMakeFilePaths;
@@ -77,10 +81,10 @@ TEST_CASE("Glob directory") {
   }
   rules[1].callback = [&globbedCMakeFilePaths](const vfs::directory_entry &ent) -> void {
     if (ent.type() == fs::file_type::regular_file) {
-      globbedCMakeFilePaths.insert(ent.path());
+      // Without \ -> / conversion StringSet comparison will fail on Windows.
+      globbedCMakeFilePaths.insert(pth::convert_to_slash(ent.path()));
     }
   };
-
   if (!CHECK_UNARY(globDir("/", rules, memFS))) {
     return;
   }

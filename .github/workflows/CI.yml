@@ -20,14 +20,14 @@ jobs:
       - name: Setup
         run: . scripts/setup/Windows.ps1
       - name: Configure
-        run: cmake -B build --preset CI
+        run: cmake -B build --preset lint
       - name: Code quality check
         run: echo "TODO"
       - name: Get outputs
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: map(select(.os == "linux"))
+          JQ_EXPR: map(select(.os != "macos" or .arch != "amd64"))
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then

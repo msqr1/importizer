@@ -77,6 +77,14 @@
       }
     },
     {
+      "name": "lint",
+      "inherits": "importizer",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "BUILD_TESTING": true
+      }
+    },
+    {
       "name": "CI",
       "inherits": "importizer",
       "generator": "Ninja Multi-Config",
