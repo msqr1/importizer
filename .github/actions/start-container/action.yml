@@ -1,14 +1,15 @@
-# One must:
-## Use the sh shell
 name: Start a container
 inputs:
   container:
-    description: Container
-    type: string
-    required: true
-  shell-name:
-    description: Containerized shell name
-    type: string
+    description: Container image (empty = do nothing)
+    required: false
+    default: ""
+  wrapped-shell:
+    description: Shell in the container to wrap
+    required: false
+    default: /bin/sh -e
+  wrapper-name:
+    description: Wrapper name
     required: true
 runs:
   using: composite
@@ -16,30 +17,38 @@ runs:
     - name: Containerize
       if: inputs.container != ''
       shell: bash
+      env:
+        CONTAINER: ${{ inputs.container }}
+        WRAPPER: ${{ inputs.wrapper-name }}
+        WRAPPED_SHELL: ${{ inputs.wrapped-shell }}
       run: |
+        containerName="$WRAPPER-${{ github.run_id }}-${{ github.job }}"
+
+        # Where Github Actions puts per-step files:
+        # $GITHUB_ENV, $GITHUB_OUTPUT, $GITHUB_PATH, $GITHUB_STEP_SUMMARY
+        ghStepDir="$RUNNER_TEMP/_runner_file_commands"
+
         podman run -d --rm \
-          --name ${{ inputs.shell-name }} \
+          --name "$containerName" \
           --userns=keep-id \
-          -v "${{ github.workspace }}:${{ github.workspace }}" \
-          -w "${{ github.workspace }}" \
-          -v "$GITHUB_ENV:$GITHUB_ENV" \
-          -v "$GITHUB_OUTPUT:$GITHUB_OUTPUT" \
-          -v "$GITHUB_PATH:$GITHUB_PATH" \
-          -v "$GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY" \
-          ${{ inputs.container }} sleep infinity
+          -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" \
+          -w "$GITHUB_WORKSPACE" \
+          -v "$ghStepDir:$ghStepDir" \
+          "$CONTAINER" sleep infinity
 
-        sudo cat <<'EOF' >/usr/local/bin/${{ inputs.shell-name }}
-        #!/usr/bin/env sh
-        env | grep -vE '^(HOME|PWD|PATH|SHLVL|_)=' > /tmp/Step.env
-        exec podman exec -i --env-file /tmp/Step.env ${{ inputs.shell-name }} /bin/sh < "$1"
+        dir="$RUNNER_TEMP/$WRAPPER"
+        mkdir -p "$dir"
+        cat > "$dir/$WRAPPER" <<EOF
+        #!/usr/bin/env bash
+        args=()
+        while IFS= read -r envVar; do
+          case "\$envVar" in
+            HOME|PWD|OLDPWD|PATH|SHLVL|_) ;;
+            *) args+=(-e "\$envVar") ;;
+          esac
+        done < <(compgen -e)
+        exec podman exec -i "\${args[@]}" --workdir "\$PWD" "$containerName" $WRAPPED_SHELL < "\$1"
         EOF
 
-        sudo chmod +x /usr/local/bin/${{ inputs.shell-name }}
-    - name: Native
-      if: inputs.container == ''
-      shell: bash
-      run: |
-        sudo cat <<'EOF' >/usr/local/bin/${{ inputs.shell-name }}
-        #!/usr/bin/env sh
-        exec "$1"
-        EOF
+        chmod +x "$dir/$WRAPPER"
+        echo "$dir" >> "$GITHUB_PATH"

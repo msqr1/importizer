@@ -3,38 +3,44 @@
     "os": "linux",
     "arch": "amd64",
     "runner": "ubuntu-26.04",
-    "container": "ghcr.io/msqr1/importizer-alpine:3.24.3-amd64",
-    "setup": "Linux.bash"
+    "setup": "Linux.bash",
+    "shell": "bash",
+    "container": "ghcr.io/msqr1/importizer-alpine:3.24.3-amd64"
   },
   {
     "os": "linux",
     "arch": "arm64",
     "runner": "ubuntu-26.04-arm",
-    "container": "ghcr.io/msqr1/importizer-alpine:3.24.3-arm64",
-    "setup": "Linux.bash"
+    "setup": "Linux.bash",
+    "shell": "bash",
+    "container": "ghcr.io/msqr1/importizer-alpine:3.24.3-arm64"
   },
   {
     "os": "windows",
     "arch": "amd64",
     "runner": "windows-2025-vs2026",
-    "setup": "Windows.ps1"
+    "setup": "Windows.ps1",
+    "shell": "pwsh"
   },
   {
     "os": "windows",
     "arch": "arm64",
     "runner": "windows-11-vs2026-arm",
-    "setup": "Windows.ps1"
+    "setup": "Windows.ps1",
+    "shell": "pwsh"
   },
   {
     "os": "macos",
     "arch": "amd64",
     "runner": "macos-26-intel",
-    "setup": "MacOS.bash"
+    "setup": "MacOS.bash",
+    "shell": "bash"
   },
   {
     "os": "macos",
     "arch": "arm64",
     "runner": "xcode-27",
-    "setup": "MacOS.bash"
+    "setup": "MacOS.bash",
+    "shell": "bash"
   }
 ]

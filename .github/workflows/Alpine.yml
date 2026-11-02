@@ -27,6 +27,9 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
     name: ${{ matrix.arch }}
     steps:
       - name: all

@@ -5,6 +5,9 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-slim
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
     env:
       GH_TOKEN: ${{ github.token }}
     steps:

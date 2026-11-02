@@ -27,7 +27,7 @@ jobs:
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: map(select(.os != "macos" or .arch != "amd64"))
+          JQ_EXPR: map(select(.os == "macos" and .arch == "arm64"))
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
@@ -48,30 +48,48 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.prepare.outputs.platforms) }}
     runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
     name: ${{ matrix.os }}-${{ matrix.arch }}
     steps:
       - name: Checkout
         uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b # 1.4.2
       - name: Setup
         run: . scripts/setup/${{ matrix.setup }} ${{ matrix.arch }}
-      - name: "Start container"
+      - name: Start container
         uses: ./.github/actions/start-container
         with:
           container: ${{ matrix.container || '' }}
-          shell-name: container-sh
-      - name: Configure
+          wrapper-name: container-sh
+      - name: &configure1 Configure
+        if: matrix.container
         shell: container-sh {0}
-        run: cmake -B build --preset CI
-      - name: Build and test (Debug)
+        run: &configure2 |
+          cmake -B build --preset CI
+      - name: *configure1
+        if: "!matrix.container"
+        run: *configure2
+
+      - name: &debug1 Build and test (Debug)
+        if: matrix.container
         shell: container-sh {0}
-        run: |
+        run: &debug2 |
           cmake --build build --config Debug
           ctest --test-dir build/tests -C Debug -j
-      - name: Build and test (Release)
+      - name: *debug1
+        if: "!matrix.container"
+        run: *debug2
+
+      - name: &release1 Build and test (Release)
         shell: container-sh {0}
-        run: |
+        run: &release2 |
           cmake --build build --config Release
           ctest --test-dir build/tests -C Release -j
+      - name: *release1
+        if: "!matrix.container"
+        run: *release2
+
       - name: Make distributions
         shell: container-sh {0}
         run: |
