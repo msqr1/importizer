@@ -33,6 +33,8 @@ runs:
         env | grep -vE '^(HOME|PWD|PATH|SHLVL|_)=' > /tmp/Step.env
         exec podman exec -i --env-file /tmp/Step.env ${{ inputs.shell-name }} /bin/sh < "$1"
         EOF
+
+        sudo chmod +x /usr/local/bin/${{ inputs.shell-name }}
     - name: Native
       if: inputs.container == ''
       shell: bash
@@ -41,6 +43,3 @@ runs:
         #!/usr/bin/env sh
         exec "$1"
         EOF
-    - name: Executable permission
-      shell: bash
-      run: sudo chmod +x /usr/local/bin/${{ inputs.shell-name }}

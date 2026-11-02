@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/start-container
         with:
           container: ${{ matrix.container || '' }}
-          shell-name: "container-sh"
+          shell-name: container-sh
       - name: Configure
         shell: container-sh {0}
         run: cmake -B build --preset CI
