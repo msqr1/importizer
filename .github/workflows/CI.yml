@@ -19,15 +19,15 @@ jobs:
         uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b
       - name: Setup
         run: . scripts/setup/Windows.ps1
-      - name: Configure
+      - name: Configure (for linting)
         run: cmake -B build --preset lint
-      - name: Code quality check
+      - name: Lint
         run: echo "TODO"
       - name: Get outputs
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: map(select(.os == "macos" and .arch == "arm64"))
+          JQ_EXPR: map(select(.os == "macos"))
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
@@ -62,14 +62,18 @@ jobs:
         with:
           container: ${{ matrix.container || '' }}
           wrapper-name: container-sh
-      - name: &configure1 Configure
+
+      - name: &configure1 Configure (for CI build)
         if: matrix.container
         shell: container-sh {0}
-        run: &configure2 |
+        env: &configure2
+          GH_TOKEN: ${{ github.token }}
+        run: &configure3 |
           cmake -B build --preset CI
       - name: *configure1
         if: "!matrix.container"
-        run: *configure2
+        env: *configure2
+        run: *configure3
 
       - name: &debug1 Build and test (Debug)
         if: matrix.container
@@ -82,6 +86,7 @@ jobs:
         run: *debug2
 
       - name: &release1 Build and test (Release)
+        if: matrix.container
         shell: container-sh {0}
         run: &release2 |
           cmake --build build --config Release
@@ -90,11 +95,16 @@ jobs:
         if: "!matrix.container"
         run: *release2
 
-      - name: Make distributions
+      - name: &dist1 Make distributions
+        if: matrix.container
         shell: container-sh {0}
-        run: |
+        run: &dist2 |
           cmake -DTYPE=Debug -DBUILD_DIR=build -DOUT_DIR=dists -P scripts/MkDist.cmake
           cmake -DTYPE=Release -DBUILD_DIR=build -DOUT_DIR=dists -P scripts/MkDist.cmake
+      - name: *dist1
+        if: "!matrix.container"
+        run: *dist2
+
       - name: Upload distributions
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
         with:

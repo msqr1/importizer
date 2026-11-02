@@ -32,14 +32,14 @@
   {
     "os": "macos",
     "arch": "amd64",
-    "runner": "macos-26-intel",
+    "runner": "macos-15-intel",
     "setup": "MacOS.bash",
     "shell": "bash"
   },
   {
     "os": "macos",
     "arch": "arm64",
-    "runner": "xcode-27",
+    "runner": "macos-15",
     "setup": "MacOS.bash",
     "shell": "bash"
   }
