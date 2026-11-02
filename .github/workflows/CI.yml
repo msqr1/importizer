@@ -4,6 +4,8 @@ concurrency:
   group: CI-${{ github.ref_name }}
   cancel-in-progress: false
   queue: max
+env:
+  REPO: ${{ github.repository }}
 jobs:
   prepare:
     outputs:
@@ -124,15 +126,12 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Download distributions
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # 8.0.2
-        with:
-          merge-multiple: true
-          path: dists
+        run: gh run download ${{ github.run_id }} -D dists -R "$REPO"
       - name: Publish distributions
-        run: gh release upload continuous dists/* --clobber
+        run: gh release upload continuous dists/*/* --clobber -R "$REPO"
       - name: Move tag
         run: |
-          gh api repos/${{ github.repository }}/git/refs/tags/continuous \
+          gh api "repos/$REPO/git/refs/tags/continuous" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
             --method PATCH \
             -f sha=${{ github.sha }} \

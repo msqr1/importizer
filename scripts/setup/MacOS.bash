@@ -22,28 +22,13 @@ arm64 | aarch64)
   ;;
 esac
 
-if ! command -v brew >/dev/null 2>&1; then
-  echo "Homebrew not found." >&2
-  return 1
-fi
-
-v=20
-brew install llvm@$v
-brewLLVMPrefix="$(brew --prefix llvm@$v || true)"
-if [ ! -d "$brewLLVMPrefix" ]; then
-  echo "Homebrew LLVM $v not found." >&2
-  return 1
-fi
-
 # We are in CI
 if [ -n "$CI" ]; then
   {
-    echo "CMAKE_PREFIX_PATH=$brewLLVMPrefix"
     echo "IMPORTIZER_OS=macos"
     echo "IMPORTIZER_ARCH=$arch"
   } >>"$GITHUB_ENV"
 fi
 
-export CMAKE_PREFIX_PATH="$brewLLVMPrefix"
 export IMPORTIZER_OS=macos
 export IMPORTIZER_ARCH=$arch
