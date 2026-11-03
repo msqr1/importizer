@@ -28,7 +28,3 @@ auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool {
 auto addFile2(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool {
   return memFS.addFileNoOwn(path, 0, *buf2);
 }
-
-InitableMemFS::InitableMemFS(llvm::function_ref<void(vfs::InMemoryFileSystem &memFS)> initFn) {
-  initFn(*this);
-}

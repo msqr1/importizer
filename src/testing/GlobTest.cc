@@ -21,28 +21,36 @@ namespace vfs = llvm::vfs;
 TEST_SUITE_BEGIN("Glob");
 
 TEST_CASE("Creation and negation") {
-  std::optional<Glob> invalid{mkGlob("[]")};
-
-  INFO("Invalid glob");
-  CHECK_UNARY_FALSE(invalid);
-
-  std::optional<Glob> g{mkGlob("*")};
-  if (!CHECK_UNARY(g)) {
-    return;
+  SUBCASE("Invalid glob") {
+    std::optional<Glob> invalid{mkGlob("[]")};
+    CHECK_UNARY_FALSE(invalid);
   }
-  std::optional<Glob> gNeg{mkGlob("!*")};
-  if (!CHECK_UNARY(gNeg)) {
-    return;
+  SUBCASE("Negated match") {
+    std::optional<Glob> g{mkGlob("*")};
+    if (!CHECK_UNARY(g)) {
+      return;
+    }
+    std::optional<Glob> gNeg{mkGlob("!*")};
+    if (!CHECK_UNARY(gNeg)) {
+      return;
+    }
+    CHECK_NE(g->match("hehe"), gNeg->match("hehe")); // NOLINT (checked above)
   }
-
-  INFO("Negated match");
-  CHECK_NE(g->match("hehe"), gNeg->match("hehe")); // NOLINT (checked above already)
 }
 
+constexpr std::array<llvm::StringRef, 2> cppFilesGlobs{{"*.hh", "*.cc"}};
+constexpr std::array<llvm::StringRef, 1> cmakeFileGlobs{"*CMakeLists.txt"};
 TEST_CASE("Glob directory") {
-  llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
-  llvm::StringSet<> cmakeFilePaths{"/CMakeLists.txt", "/lib/CMakeLists.txt", "/src/CMakeLists.txt"};
-  InitableMemFS memFS{[&](vfs::InMemoryFileSystem &FS) -> void {
+  SUBCASE("Empty paths") {
+    vfs::InMemoryFileSystem memFS;
+    std::array<GlobDirRule, 1> rules;
+    CHECK_UNARY_FALSE(globDir("", rules, memFS));
+  }
+  SUBCASE("Real matching") {
+    const llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
+    const llvm::StringSet<> cmakeFilePaths{"/CMakeLists.txt", "/lib/CMakeLists.txt",
+                                           "/src/CMakeLists.txt"};
+    vfs::InMemoryFileSystem memFS;
     /*
       /
       ├── CMakeLists.txt
@@ -56,44 +64,38 @@ TEST_CASE("Glob directory") {
     */
     for (llvm::StringRef path :
          llvm::concat<llvm::StringRef>(cppFilePaths.keys(), cmakeFilePaths.keys())) {
-      addFile1(FS, path);
+      addFile1(memFS, path);
     }
-  }};
+    std::array<GlobDirRule, 2> rules;
 
-  std::array<GlobDirRule, 2> rules;
-
-  INFO("Empty dir path");
-  CHECK_UNARY_FALSE(globDir("", rules, memFS));
-
-  llvm::StringSet<> globbedCPPFilePaths;
-  if (!CHECK_UNARY(mkGlobs(rules[0].globs, std::array<llvm::StringRef, 1>{"*.{hh,cc}"}))) {
-    return;
-  }
-  rules[0].callback = [&globbedCPPFilePaths](const vfs::directory_entry &ent) -> void {
-    if (ent.type() == fs::file_type::regular_file) {
-      // Without \ -> / conversion StringSet comparison will fail on Windows.
-      globbedCPPFilePaths.insert(pth::convert_to_slash(ent.path()));
+    llvm::StringSet<> globbedCPPFilePaths;
+    if (!CHECK_UNARY(mkGlobs(rules[0].globs, cppFilesGlobs))) {
+      return;
     }
-  };
-  llvm::StringSet<> globbedCMakeFilePaths;
-  if (!CHECK_UNARY(mkGlobs(rules[1].globs, std::array<llvm::StringRef, 1>{"*CMakeLists.txt"}))) {
-    return;
-  }
-  rules[1].callback = [&globbedCMakeFilePaths](const vfs::directory_entry &ent) -> void {
-    if (ent.type() == fs::file_type::regular_file) {
-      // Without \ -> / conversion StringSet comparison will fail on Windows.
-      globbedCMakeFilePaths.insert(pth::convert_to_slash(ent.path()));
+    rules[0].callback = [&](const vfs::directory_entry &ent) -> void {
+      if (ent.type() == fs::file_type::regular_file) {
+        // Without \ -> / conversion StringSet comparison will fail on Windows.
+        globbedCPPFilePaths.insert(pth::convert_to_slash(ent.path()));
+      }
+    };
+    llvm::StringSet<> globbedCMakeFilePaths;
+    if (!CHECK_UNARY(mkGlobs(rules[1].globs, cmakeFileGlobs))) {
+      return;
     }
-  };
-  if (!CHECK_UNARY(globDir("/", rules, memFS))) {
-    return;
+    rules[1].callback = [&](const vfs::directory_entry &ent) -> void {
+      if (ent.type() == fs::file_type::regular_file) {
+        // Without \ -> / conversion StringSet comparison will fail on Windows.
+        globbedCMakeFilePaths.insert(pth::convert_to_slash(ent.path()));
+      }
+    };
+
+    if (!CHECK_UNARY(globDir("/", rules, memFS))) {
+      return;
+    }
+
+    CHECK_EQ(cppFilePaths, globbedCPPFilePaths);
+    CHECK_EQ(cmakeFilePaths, globbedCMakeFilePaths);
   }
-
-  INFO("C++ files");
-  CHECK_EQ(cppFilePaths, globbedCPPFilePaths);
-
-  INFO("CMake files");
-  CHECK_EQ(cmakeFilePaths, globbedCMakeFilePaths);
 }
 
 TEST_SUITE_END();

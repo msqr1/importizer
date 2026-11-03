@@ -14,8 +14,3 @@ namespace vfs = llvm::vfs;
 auto addDir(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool;
 auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool;
 auto addFile2(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool;
-
-class InitableMemFS : public vfs::InMemoryFileSystem {
-public:
-  InitableMemFS(llvm::function_ref<void(vfs::InMemoryFileSystem &memFS)> initFn);
-};
