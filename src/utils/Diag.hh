@@ -14,9 +14,8 @@ struct LogOpts {
 
 void setGlobalLogOpts(const LogOpts &opts);
 
-// Log an error to the global output stream, always return false
-template <bool period = true, typename... Ts>
-auto err(const char *fmt, Ts &&...args) noexcept -> bool {
+// Log an error to the global output stream
+template <bool period = true, typename... Ts> void err(const char *fmt, Ts &&...args) noexcept {
   assert(globalLogOpts.stream != nullptr);
   llvm::WithColor::error(*globalLogOpts.stream, globalLogOpts.prog);
   llvm::WithColor stream{*globalLogOpts.stream, llvm::raw_ostream::Colors::SAVEDCOLOR, true};
@@ -26,9 +25,6 @@ auto err(const char *fmt, Ts &&...args) noexcept -> bool {
   } else {
     stream << '\n';
   }
-
-  // So we can do return err(...); instead of err(...); return false;
-  return false;
 }
 
 // Log a warning to the global output stream

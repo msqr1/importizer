@@ -5,6 +5,7 @@
 #include "utils/Diag.hh"
 #include <cassert>
 #include <llvm/ADT/STLFunctionalExtras.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <system_error>
@@ -63,12 +64,13 @@ template <bool recurse = false>
   return true;
 }
 
-enum class CmpRes : char {
-  Same,
+enum class CmpRes : bool {
+  Identical,
   Mismatch,
-  Err,
 };
 
+[[nodiscard]] auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
+                          vfs::FileSystem &srcVFS) noexcept -> llvm::Error;
 [[nodiscard]] auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2,
                             vfs::FileSystem &file1VFS = getRealFS(),
                             vfs::FileSystem &file2VFS = getRealFS()) noexcept -> CmpRes;

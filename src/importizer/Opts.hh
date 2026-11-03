@@ -33,7 +33,6 @@ struct Opts {
   // Convert standard #include to import std or std.compat
   bool stdImport{};
 
-  // Allow default construction
   Opts() noexcept = default;
   Opts(Opts &&) noexcept = default;
   auto operator=(Opts &&) noexcept -> Opts & = default;

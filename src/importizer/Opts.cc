@@ -136,7 +136,7 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
   if (!mkGlobs(rootGlobRules[0].globs, nOpts.hdrGlobExprs)) {
     return false;
   }
-  rootGlobRules[0].callback = [&opts](const vfs::directory_entry &ent) -> void {
+  rootGlobRules[0].callback = [&](const vfs::directory_entry &ent) -> void {
     if (ent.type() == fs::file_type::regular_file) {
       opts.hdrs.insert(ent.path());
     }
@@ -171,7 +171,7 @@ auto getOpts(const int argc, const char *const *argv, Opts &opts, vfs::FileSyste
     if (!mkGlobs(rootGlobRules[1].globs, nOpts.xplicit->srcGlobExprs)) {
       return false;
     }
-    rootGlobRules[1].callback = [&opts](const vfs::directory_entry &ent) -> void {
+    rootGlobRules[1].callback = [&](const vfs::directory_entry &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
         opts.srcs.emplace_back(ent.path());
       }

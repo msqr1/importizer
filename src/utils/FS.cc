@@ -24,6 +24,45 @@ auto getRealFS() -> vfs::FileSystem & {
   return *realFS;
 }
 
+auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcVFS) noexcept
+    -> bool {
+  llvm::SmallString<128> tmp;
+  if (dst.isTriviallyEmpty() || (dst.toVector(tmp), tmp.empty())) {
+    return err("Error copying directory: dst path is empty");
+  }
+  tmp.clear();
+  if (src.isTriviallyEmpty() || (src.toVector(tmp), tmp.empty())) {
+    return err("Error copying directory: src path is empty");
+  }
+  const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
+  if (std::error_code errCode{fs::create_directories(dst)}) {
+    return err("Error making directory {}: {}", dst, errCode.message());
+  }
+  auto copy{[&](const vfs::directory_entry &ent) noexcept -> IterDirCtrl {
+    llvm::StringRef relPath{ent.path().drop_front(baseLen)};
+    tmp.clear();
+    pth::append(tmp, dst, relPath);
+    switch (ent.type()) {
+    case fs::file_type::directory_file:
+      if (std::error_code errCode{fs::create_directory(tmp)}) {
+        err("Error making directory {}: {}", tmp, errCode.message());
+        return IterDirCtrl::ErrStop;
+      }
+      break;
+    case fs::file_type::regular_file:
+      if (std::error_code errCode{fs::copy_file(ent.path(), tmp)}) {
+        err("Error copying file {}: {}", tmp, errCode.message());
+        return IterDirCtrl::ErrStop;
+      }
+      break;
+    default: // Other file types
+      break;
+    }
+    return IterDirCtrl::Continue;
+  }};
+  return iterDir<true>(tmp, copy, srcVFS);
+}
+
 auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2, vfs::FileSystem &file1VFS,
               vfs::FileSystem &file2VFS) noexcept -> CmpRes {
   llvm::SmallString<128> tmp;
@@ -45,7 +84,7 @@ auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2, vfs::FileSyste
     err("Error opening {}: {}", file2, buf2.getError().message());
     return CmpRes::Err;
   }
-  return (**buf1).getBuffer() == (**buf2).getBuffer() ? CmpRes::Same : CmpRes::Mismatch;
+  return (**buf1).getBuffer() == (**buf2).getBuffer() ? CmpRes::Identical : CmpRes::Mismatch;
 }
 
 auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &dirVFS,
@@ -96,7 +135,7 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
     return CmpRes::Err;
   }
 
-  CmpRes res{CmpRes::Same};
+  CmpRes res{CmpRes::Identical};
   for (const auto &[relPath, fileT] : refFileT) {
     llvm::StringRef fileTStr{fileT == fs::file_type::regular_file ? "file" : "directory"};
     auto it{dirFileT.find(relPath)};
@@ -111,7 +150,7 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
     } else if (fileT == fs::file_type::regular_file) {
       switch (cmpFiles(ref + pth::get_separator() + relPath, dir + pth::get_separator() + relPath,
                        refVFS, dirVFS)) {
-      case CmpRes::Same:
+      case CmpRes::Identical:
         break;
       case CmpRes::Mismatch:
         err("Mismatched file content for {}", relPath);
