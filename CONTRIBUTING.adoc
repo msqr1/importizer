@@ -44,7 +44,7 @@ Note the leading `.`: scripts must be sourced, not executed.
 # --preset importizer MUST ALWAYS be specified
 cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=TRUE --preset importizer
 cmake --build build --config Debug
-ctest --test-dir build/tests -C Debug -j
+ctest --test-dir build/tests -C Debug --progress --output-on-failure --schedule-random -j
 ----
 The binary ends up in `build/importizer`.
 

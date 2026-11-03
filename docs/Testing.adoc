@@ -9,7 +9,7 @@ Debug mode with tests enabled.
 [,bash]
 ----
 # Randomize test order and run in parallel
-ctest --test-dir build/tests --progress --schedule-random -j
+ctest --test-dir build/tests --progress --output-on-failure --schedule-random -j
 ----
 
 == End-to-end (E2E) tests
