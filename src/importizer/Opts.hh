@@ -3,8 +3,10 @@
 // databases availability are handled, etc.
 
 #pragma once
+#include "utils/FS.hh"
 #include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/StringSet.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <memory>
 #include <string>
@@ -41,6 +43,5 @@ struct Opts {
 };
 
 // Populate a struct Opts from CLI args
-[[nodiscard]] auto getOpts(int argc, const char *const *argv, Opts &opts,
-                           vfs::FileSystem &VFS = *vfs::createPhysicalFileSystem()) noexcept
-    -> bool;
+[[nodiscard]] auto getOpts(int argc, const char *const *argv,
+                           vfs::FileSystem &VFS = getRealFS()) noexcept -> llvm::Expected<Opts>;

@@ -5,7 +5,7 @@ set(unitTestSuites "FS;Glob;")
 foreach(unitTestSuite ${unitTestSuites})
   add_test(
     NAME ${unitTestSuite}
-    COMMAND "$<TARGET_FILE:run-test>"
+    COMMAND "$<TARGET_FILE:test-tool>"
       unit
       ${unitTestSuite}
   )
@@ -22,7 +22,7 @@ foreach(testDir ${testDirs})
   cmake_path(GET testDir FILENAME E2ETestName)
   add_test(
     NAME "${E2ETestName}"
-    COMMAND "$<TARGET_FILE:run-test>"
+    COMMAND "$<TARGET_FILE:test-tool>"
       E2E
       "${CMAKE_CURRENT_SOURCE_DIR}/${E2ETestName}"
       "${CMAKE_CURRENT_BINARY_DIR}/${E2ETestName}"

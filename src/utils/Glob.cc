@@ -9,16 +9,15 @@
 #include <utility>
 
 Glob::Glob(const bool negate_, llvm::GlobPattern &&ptn_) noexcept
-    : negate{negate_}, ptn{std::move(ptn_)} {}
+    : ptn{std::move(ptn_)}, negate{negate_} {}
 
-auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern) noexcept -> std::optional<Glob> {
+auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern) noexcept -> llvm::Expected<Glob> {
   bool negate{ptn.consume_front('!')};
   llvm::Expected<llvm::GlobPattern> p{llvm::GlobPattern::create(ptn, maxSubpattern)};
   if (!p) {
-    err("Error making glob {}: {}", ptn, llvm::toString(p.takeError()));
-    return std::nullopt;
+    return p.takeError();
   }
-  return std::optional<Glob>(std::in_place, negate, std::move(*p));
+  return Glob{negate, std::move(*p)};
 }
 
 auto Glob::match(llvm::StringRef str) const noexcept -> bool {

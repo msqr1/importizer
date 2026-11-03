@@ -3,9 +3,21 @@
 #pragma once
 #include <cassert>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/WithColor.h>
 #include <llvm/Support/raw_ostream.h>
+#include <system_error>
+
+class EmptyErr : public llvm::ErrorInfo<EmptyErr> {
+public:
+  static char ID;
+
+  EmptyErr();
+
+  // REQUIRED: Formats the error when printed to a stream
+  void log(llvm::raw_ostream &OS) const override;
+};
 
 struct LogOpts {
   mutable const char *prog;

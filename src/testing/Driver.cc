@@ -5,8 +5,8 @@
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
 
-// run-test E2E [testDir] [root]
-// run-test unit [suiteName] -- [doctest args...]
+// test-tool E2E [testDir] [root]
+// test-tool unit [suiteName] -- [doctest args...]
 auto main(const int argc, const char *const *argv) -> int {
   llvm::StringRef testType{argv[1]};
   if (argc == 4 && testType == "E2E") {

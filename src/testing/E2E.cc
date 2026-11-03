@@ -15,7 +15,7 @@ namespace fs = llvm::sys::fs;
 
 auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) noexcept -> bool {
   // Always set program and log stream before everything
-  LogOpts logOpts{.prog = "run-test e2e", .stream = &llvm::errs()};
+  LogOpts logOpts{.prog = "test-tool e2e", .stream = &llvm::errs()};
   setGlobalLogOpts(logOpts);
 
   llvm::SmallString<128> tmp;

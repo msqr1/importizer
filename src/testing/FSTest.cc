@@ -16,33 +16,39 @@ TEST_SUITE_BEGIN("FS");
 TEST_CASE("Compare files") {
   SUBCASE("Empty paths") {
     vfs::InMemoryFileSystem memFS;
-    CHECK_EQ(cmpFiles("", "/", memFS, memFS), CmpRes::Err);
-    CHECK_EQ(cmpFiles("/", "", memFS, memFS), CmpRes::Err);
+    CHECK_UNARY_FALSE(cmpFiles("", "/", memFS, memFS));
+    CHECK_UNARY_FALSE(cmpFiles("/", "", memFS, memFS));
   }
   SUBCASE("Same content") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/File.txt");
     addFile1(memFS, "/Meow.txt");
-    CHECK_EQ(cmpFiles("/File.txt", "/Meow.txt", memFS, memFS), CmpRes::Identical);
+    llvm::Expected<bool> res{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
+    CHECK_UNARY(res);
+    CHECK_UNARY(*res);
   }
   SUBCASE("Mismatched content") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/File.txt");
     addFile2(memFS, "/Meow.txt");
-    CHECK_EQ(cmpFiles("/File.txt", "/Meow.txt", memFS, memFS), CmpRes::Mismatch);
+    llvm::Expected<bool> res{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
+    CHECK_UNARY(res);
+    CHECK_UNARY_FALSE(*res);
   }
 }
 TEST_CASE("Compare directories") {
   SUBCASE("Empty paths") {
     vfs::InMemoryFileSystem memFS;
-    CHECK_EQ(cmpDirs("", "/", memFS, memFS), CmpRes::Err);
-    CHECK_EQ(cmpDirs("/", "", memFS, memFS), CmpRes::Err);
+    CHECK_UNARY_FALSE(cmpDirs("", "/", memFS, memFS));
+    CHECK_UNARY_FALSE(cmpDirs("/", "", memFS, memFS));
   }
   SUBCASE("Identical directories") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addFile1(memFS, "/dir/File.txt");
-    CHECK_EQ(cmpDirs("/dir", "/ref", memFS, memFS), CmpRes::Identical);
+    llvm::Expected<bool> res{cmpDirs("/dir", "/ref", memFS, memFS)};
+    CHECK_UNARY(res);
+    CHECK_UNARY(*res);
   }
   SUBCASE("Missing file") {
     vfs::InMemoryFileSystem memFS;

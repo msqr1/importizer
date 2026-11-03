@@ -2,13 +2,13 @@
 // for globs.
 
 #pragma once
-#include "utils/Diag.hh"
 #include "utils/FS.hh"
 #include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <llvm/ADT/FunctionExtras.h>
 #include <llvm/ADT/SmallString.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/GlobPattern.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
@@ -24,8 +24,8 @@ class StringRef;
 } // namespace llvm
 
 class Glob {
-  const bool negate;
   llvm::GlobPattern ptn;
+  const bool negate;
 
 public:
   Glob(bool negate, llvm::GlobPattern &&ptn) noexcept;
@@ -38,23 +38,28 @@ public:
 
 using GlobStorage = std::vector<Glob>;
 
-auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern = 10) noexcept -> std::optional<Glob>;
+auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern = 10) noexcept -> llvm::Expected<Glob>;
 
 template <typename Container, typename ElemT>
 concept ConvertibleRange = std::ranges::range<Container> &&
                            std::convertible_to<std::ranges::range_value_t<Container>, ElemT>;
 
-// Make many globs, return true if none fails.
+// Make many globs
 template <ConvertibleRange<llvm::StringRef> T>
-[[nodiscard]] auto mkGlobs(GlobStorage &globs, const T &globExprs) noexcept -> bool {
+[[nodiscard]] auto mkGlobs(const T &globExprs) noexcept -> llvm::Expected<GlobStorage> {
+  GlobStorage globs;
+  llvm::Error err{llvm::Error::success()};
   for (llvm::StringRef globExpr : globExprs) {
-    std::optional<Glob> g{mkGlob(globExpr)};
+    llvm::Expected<Glob> g{mkGlob(globExpr)};
     if (!g) {
-      return false;
+      err = llvm::joinErrors(std::move(err), g.takeError());
     }
     globs.emplace_back(std::move(*g));
   }
-  return true;
+  if (err) {
+    return err;
+  }
+  return globs;
 };
 
 struct GlobDirRule {
@@ -64,13 +69,13 @@ struct GlobDirRule {
 
 template <bool recurse = true, ConvertibleRange<GlobDirRule> T>
 [[nodiscard]] auto globDir(const llvm::Twine &dir, const T &rules,
-                           vfs::FileSystem &dirVFS = getRealFS()) -> bool {
+                           vfs::FileSystem &dirVFS = getRealFS()) -> llvm::Error {
   llvm::SmallString<128> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
-    return err("Error globbing directory: dir path is empty");
+    return llvm::createStringError("Error globbing directory: dir path is empty");
   }
   const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
-  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> IterDirCtrl {
+  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
     for (const auto &[globs, callback] : rules) {
       for (const Glob &glob : globs) {
         if (glob.match(ent.path().drop_front(baseLen))) {
@@ -79,7 +84,7 @@ template <bool recurse = true, ConvertibleRange<GlobDirRule> T>
         }
       }
     }
-    return IterDirCtrl::Continue;
+    return true;
   }};
   return iterDir<recurse>(tmp, checkDir, dirVFS);
 }
