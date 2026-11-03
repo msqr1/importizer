@@ -49,6 +49,5 @@ auto runUnitTest(const char *suiteName, const int argc, const char *const *argv)
   LLVMOstream doctestOut{*logOpts.stream};
   ctx.setOption("ts", suiteName);
   ctx.setCout(&doctestOut);
-  const int doctestRtn{ctx.run()};
-  return doctestRtn;
+  return ctx.run();
 }

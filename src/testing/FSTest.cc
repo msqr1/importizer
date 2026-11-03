@@ -23,17 +23,21 @@ TEST_CASE("Compare files") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/File.txt");
     addFile1(memFS, "/Meow.txt");
-    llvm::Expected<bool> res{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
-    CHECK_UNARY(res);
-    CHECK_UNARY(*res);
+    llvm::Expected<bool> cmpRes{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
+    if (!CHECK_UNARY(!!cmpRes)) {
+      return;
+    }
+    CHECK_UNARY(*cmpRes);
   }
   SUBCASE("Mismatched content") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/File.txt");
     addFile2(memFS, "/Meow.txt");
-    llvm::Expected<bool> res{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
-    CHECK_UNARY(res);
-    CHECK_UNARY_FALSE(*res);
+    llvm::Expected<bool> cmpRes{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
+    if (!CHECK_UNARY(!!cmpRes)) {
+      return;
+    }
+    CHECK_UNARY_FALSE(*cmpRes);
   }
 }
 TEST_CASE("Compare directories") {
@@ -46,34 +50,52 @@ TEST_CASE("Compare directories") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addFile1(memFS, "/dir/File.txt");
-    llvm::Expected<bool> res{cmpDirs("/dir", "/ref", memFS, memFS)};
-    CHECK_UNARY(res);
-    CHECK_UNARY(*res);
+    llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
+    if (!CHECK_UNARY(!!cmpRes)) {
+      return;
+    }
+    CHECK_UNARY(*cmpRes);
   }
   SUBCASE("Missing file") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addDir(memFS, "/dir");
-    CHECK_EQ(cmpDirs("/dir", "/ref", memFS, memFS), CmpRes::Mismatch);
+    llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
+    if (!CHECK_UNARY(!!cmpRes)) {
+      return;
+    }
+    CHECK_UNARY_FALSE(*cmpRes);
   }
   SUBCASE("Mismatched file content") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addFile2(memFS, "/dir/File.txt");
-    CHECK_EQ(cmpDirs("/dir", "/ref", memFS, memFS), CmpRes::Mismatch);
+    llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
+    if (!CHECK_UNARY(!!cmpRes)) {
+      return;
+    }
+    CHECK_UNARY_FALSE(*cmpRes);
   }
   SUBCASE("Unexpected extra file") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addFile1(memFS, "/dir/File.txt");
     addFile1(memFS, "/dir/Meow.txt");
-    CHECK_EQ(cmpDirs("/dir", "/ref", memFS, memFS), CmpRes::Mismatch);
+    llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
+    if (!CHECK_UNARY(!!cmpRes)) {
+      return;
+    }
+    CHECK_UNARY_FALSE(*cmpRes);
   }
   SUBCASE("Unexpected file type") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addDir(memFS, "/dir/File.txt");
-    CHECK_EQ(cmpDirs("/dir", "/ref", memFS, memFS), CmpRes::Mismatch);
+    llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
+    if (!CHECK_UNARY(!!cmpRes)) {
+      return;
+    }
+    CHECK_UNARY_FALSE(*cmpRes);
   }
 }
 

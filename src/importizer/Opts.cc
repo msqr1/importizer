@@ -107,11 +107,11 @@ auto getOpts(const int argc, const char *const *argv, vfs::FileSystem &VFS) noex
                                    "importizer - Automagically rewrite "
                                    "header-based C++ into using modules",
                                    globalLogOpts.stream)) {
-    return llvm::create
+    return llvm::make_error<EmptyErr>();
   }
 
   auto buf{VFS.getBufferForFile(configPath, 0, false, false)};
-  if (!buf.) {
+  if (!buf) {
     return llvm::errorCodeToError(buf.getError());
   }
   yml::Input ymlIn{(**buf).getBuffer(), nullptr, ymlDiagHandler};

@@ -13,7 +13,7 @@
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/raw_ostream.h>
-#include <optional>
+#include <utility>
 
 namespace fs = llvm::sys::fs;
 namespace vfs = llvm::vfs;
@@ -22,16 +22,16 @@ TEST_SUITE_BEGIN("Glob");
 
 TEST_CASE("Creation and negation") {
   SUBCASE("Invalid glob") {
-    std::optional<Glob> invalid{mkGlob("[]")};
-    CHECK_UNARY_FALSE(invalid);
+    llvm::Expected<Glob> invalid{mkGlob("[]")};
+    CHECK_UNARY_FALSE(!!invalid);
   }
   SUBCASE("Negated match") {
-    std::optional<Glob> g{mkGlob("*")};
-    if (!CHECK_UNARY(g)) {
+    llvm::Expected<Glob> g{mkGlob("*")};
+    if (!CHECK_UNARY(!!g)) {
       return;
     }
-    std::optional<Glob> gNeg{mkGlob("!*")};
-    if (!CHECK_UNARY(gNeg)) {
+    llvm::Expected<Glob> gNeg{mkGlob("!*")};
+    if (!CHECK_UNARY(!!gNeg)) {
       return;
     }
     CHECK_NE(g->match("hehe"), gNeg->match("hehe")); // NOLINT (checked above)
@@ -44,7 +44,7 @@ TEST_CASE("Glob directory") {
   SUBCASE("Empty paths") {
     vfs::InMemoryFileSystem memFS;
     std::array<GlobDirRule, 1> rules;
-    CHECK_UNARY_FALSE(globDir("", rules, memFS));
+    CHECK_UNARY_FALSE(!!globDir("", rules, memFS));
   }
   SUBCASE("Real matching") {
     const llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
@@ -69,9 +69,11 @@ TEST_CASE("Glob directory") {
     std::array<GlobDirRule, 2> rules;
 
     llvm::StringSet<> globbedCPPFilePaths;
-    if (!CHECK_UNARY(mkGlobs(rules[0].globs, cppFilesGlobs))) {
+    llvm::Expected<GlobStorage> globs{mkGlobs(cppFilesGlobs)};
+    if (!CHECK_UNARY(!!globs)) {
       return;
     }
+    rules[0].globs = std::move(*globs);
     rules[0].callback = [&](const vfs::directory_entry &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
         // Without \ -> / conversion StringSet comparison will fail on Windows.
@@ -79,9 +81,11 @@ TEST_CASE("Glob directory") {
       }
     };
     llvm::StringSet<> globbedCMakeFilePaths;
-    if (!CHECK_UNARY(mkGlobs(rules[1].globs, cmakeFileGlobs))) {
+    globs = mkGlobs(cmakeFileGlobs);
+    if (!CHECK_UNARY(!!globs)) {
       return;
     }
+    rules[1].globs = std::move(*globs);
     rules[1].callback = [&](const vfs::directory_entry &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
         // Without \ -> / conversion StringSet comparison will fail on Windows.
@@ -89,7 +93,7 @@ TEST_CASE("Glob directory") {
       }
     };
 
-    if (!CHECK_UNARY(globDir("/", rules, memFS))) {
+    if (!CHECK_UNARY(!!globDir("/", rules, memFS))) {
       return;
     }
 

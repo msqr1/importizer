@@ -9,14 +9,14 @@
 #include <llvm/Support/raw_ostream.h>
 #include <system_error>
 
+// Used for calling into API that already logged the error
 class EmptyErr : public llvm::ErrorInfo<EmptyErr> {
 public:
-  static char ID;
+  static char ID; // NOLINT
 
   EmptyErr();
-
-  // REQUIRED: Formats the error when printed to a stream
-  void log(llvm::raw_ostream &OS) const override;
+  void log(llvm::raw_ostream &OS) const noexcept override;
+  [[nodiscard]] auto convertToErrorCode() const noexcept -> std::error_code override;
 };
 
 struct LogOpts {

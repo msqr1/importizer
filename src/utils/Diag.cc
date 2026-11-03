@@ -1,4 +1,14 @@
 #include "utils/Diag.hh"
+#include <llvm/Support/Error.h>
+#include <llvm/Support/raw_ostream.h>
+#include <system_error>
+
+char EmptyErr::ID;
+
+auto EmptyErr::convertToErrorCode() const noexcept -> std::error_code {
+  return llvm::inconvertibleErrorCode();
+}
+void EmptyErr::log(llvm::raw_ostream & /*OS*/) const noexcept {}
 
 const LogOpts globalLogOpts{};
 

@@ -9,7 +9,6 @@
 #define DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
 #define DOCTEST_CONFIG_NO_MULTITHREADING
 #define DOCTEST_CONFIG_ASSERTS_RETURN_VALUES
-#include <cfloat> // IWYU pragma: keep
 #include <doctest/doctest.h>
 
 auto runUnitTest(const char *suiteName, int argc, const char *const *argv) noexcept -> int;

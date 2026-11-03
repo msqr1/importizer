@@ -19,7 +19,7 @@ class Twine;
 class StringRef;
 } // namespace llvm
 
-auto getRealFS() -> vfs::FileSystem &;
+auto getRealFS() noexcept -> vfs::FileSystem &;
 
 template <bool recurse>
 using DirItT =

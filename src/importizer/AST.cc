@@ -16,7 +16,8 @@ public:
   SymbolVisitor(FrontendCtx &ctx_) : ctx{ctx_} {}
   auto TraverseDecl(clang::Decl *decl) -> bool {
     decl->dump(*globalLogOpts.stream);
-    return err("{}", ctx.opts.root);
+    err("{}", ctx.opts.root);
+    return false;
   }
 };
 

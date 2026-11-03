@@ -2,6 +2,7 @@
 #include "importizer/ClangDiag.hh"
 #include "importizer/Frontend.hh"
 #include "importizer/Opts.hh"
+#include "utils/Diag.hh"
 #include <cassert>
 #include <clang/Tooling/Tooling.h>
 #include <llvm/Support/Error.h>
@@ -23,7 +24,7 @@ auto importizerMain(const int argc, const char *const *argv) -> llvm::Error {
   case 0:
     break;
   case 1:
-    return llvm::createStringError("");
+    return llvm::make_error<EmptyErr>();
   case 2:
     assert(false && "Skipped files, missing compile commands??");
     break;

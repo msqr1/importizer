@@ -1,5 +1,6 @@
 #include "importizer/Main.hh"
 #include "utils/Diag.hh"
+#include <llvm/Support/Casting.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
 
@@ -8,7 +9,9 @@ auto main(const int argc, const char *const *argv) -> int {
   setGlobalLogOpts({.prog = "importizer", .stream = &llvm::errs()});
   llvm::handleAllErrors(importizerMain(argc, argv),
                         [](const llvm::ErrorInfoBase &errInfo) -> llvm::Error {
-                          err("{}", errInfo.message());
+                          if (!errInfo.isA<EmptyErr>()) {
+                            err("{}", errInfo.message());
+                          }
                           return llvm::Error::success();
                         });
 }
