@@ -5,7 +5,7 @@ Checklists for maintainers.
 
 == New release
 * [ ] Update the version strings (follow https://semver.org[semantic versioning]) in:
-** link:/src/importizer/Opts.cc[`src/importizer/Opts.cc`]
+** link:/src/importizer/Config.cc[`src/importizer/Config.cc`]
 ** link:/.github/workflows/CD.yml[`.github/workflows/CD.yml`]
 ** link:/CMakeLists.txt[`CMakeLists.txt`]
 * [ ] Add release date of current version, and add an entry for the next to

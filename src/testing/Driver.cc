@@ -5,12 +5,16 @@
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/Error.h>
+#include <llvm/Support/raw_ostream.h>
 
 // test-tool E2E [testDir] [root]
 // test-tool unit [suiteName] -- [doctest args...]
 auto main(const int argc, const char *const *argv) -> int {
   llvm::StringRef testType{argv[1]};
   if (argc == 4 && testType == "E2E") {
+    // Always set program and log stream before everything
+    LogOpts logOpts{.prog = "test-tool e2e", .stream = &llvm::errs()};
+    setGlobalLogOpts(logOpts);
     llvm::handleAllErrors(runE2ETest(argv[2], argv[3]),
                           [](const llvm::ErrorInfoBase &errInfo) -> llvm::Error {
                             if (!errInfo.isA<EmptyErr>()) {

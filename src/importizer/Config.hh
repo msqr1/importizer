@@ -1,4 +1,4 @@
-// "Resolved" options (struct Opts) that the user passed in through the CLI and
+// "Resolved" options (struct Config) that the user passed in through the CLI and
 // configuration file. Resolved means globs becomes paths, compilation
 // databases availability are handled, etc.
 
@@ -15,8 +15,8 @@
 namespace tl = clang::tooling;
 namespace vfs = llvm::vfs;
 
-// Resolved options
-struct Opts {
+// Resolved configuration
+struct Config {
   // Root directory
   std::string root;
 
@@ -35,13 +35,14 @@ struct Opts {
   // Convert standard #include to import std or std.compat
   bool stdImport{};
 
-  Opts() noexcept = default;
-  Opts(Opts &&) noexcept = default;
-  auto operator=(Opts &&) noexcept -> Opts & = default;
-  Opts(const Opts &) = delete;
-  auto operator=(const Opts &) -> Opts & = delete;
+  Config() noexcept = default;
+  Config(Config &&) noexcept = default;
+  auto operator=(Config &&) noexcept -> Config & = default;
+  Config(const Config &) = delete;
+  auto operator=(const Config &) -> Config & = delete;
 };
 
-// Populate a struct Opts from CLI args
-[[nodiscard]] auto getOpts(int argc, const char *const *argv,
-                           vfs::FileSystem &VFS = getRealFS()) noexcept -> llvm::Expected<Opts>;
+// Populate a struct Config from CLI args
+[[nodiscard]] auto resolveConfig(int argc, const char *const *argv,
+                                 vfs::FileSystem &VFS = getRealFS()) noexcept
+    -> llvm::Expected<Config>;

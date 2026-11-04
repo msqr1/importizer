@@ -16,13 +16,14 @@ TEST_SUITE_BEGIN("FS");
 TEST_CASE("Compare files") {
   SUBCASE("Empty paths") {
     vfs::InMemoryFileSystem memFS;
-    CHECK_UNARY_FALSE(cmpFiles("", "/", memFS, memFS));
-    CHECK_UNARY_FALSE(cmpFiles("/", "", memFS, memFS));
+    CHECK_UNARY_FALSE(!!cmpFiles("", "/", memFS, memFS));
+    CHECK_UNARY_FALSE(!!cmpFiles("/", "", memFS, memFS));
   }
   SUBCASE("Same content") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/File.txt");
     addFile1(memFS, "/Meow.txt");
+
     llvm::Expected<bool> cmpRes{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
     if (!CHECK_UNARY(!!cmpRes)) {
       return;
@@ -33,6 +34,7 @@ TEST_CASE("Compare files") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/File.txt");
     addFile2(memFS, "/Meow.txt");
+
     llvm::Expected<bool> cmpRes{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
     if (!CHECK_UNARY(!!cmpRes)) {
       return;
@@ -43,13 +45,14 @@ TEST_CASE("Compare files") {
 TEST_CASE("Compare directories") {
   SUBCASE("Empty paths") {
     vfs::InMemoryFileSystem memFS;
-    CHECK_UNARY_FALSE(cmpDirs("", "/", memFS, memFS));
-    CHECK_UNARY_FALSE(cmpDirs("/", "", memFS, memFS));
+    CHECK_UNARY_FALSE(!!cmpDirs("", "/", memFS, memFS));
+    CHECK_UNARY_FALSE(!!cmpDirs("/", "", memFS, memFS));
   }
   SUBCASE("Identical directories") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addFile1(memFS, "/dir/File.txt");
+
     llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
     if (!CHECK_UNARY(!!cmpRes)) {
       return;
@@ -60,6 +63,7 @@ TEST_CASE("Compare directories") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addDir(memFS, "/dir");
+
     llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
     if (!CHECK_UNARY(!!cmpRes)) {
       return;
@@ -70,6 +74,7 @@ TEST_CASE("Compare directories") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addFile2(memFS, "/dir/File.txt");
+
     llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
     if (!CHECK_UNARY(!!cmpRes)) {
       return;
@@ -81,6 +86,7 @@ TEST_CASE("Compare directories") {
     addFile1(memFS, "/ref/File.txt");
     addFile1(memFS, "/dir/File.txt");
     addFile1(memFS, "/dir/Meow.txt");
+
     llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
     if (!CHECK_UNARY(!!cmpRes)) {
       return;
@@ -91,6 +97,7 @@ TEST_CASE("Compare directories") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
     addDir(memFS, "/dir/File.txt");
+
     llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
     if (!CHECK_UNARY(!!cmpRes)) {
       return;

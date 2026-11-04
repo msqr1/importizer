@@ -12,7 +12,6 @@
 #include <llvm/Support/GlobPattern.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
-#include <optional>
 #include <ranges>
 #include <utility>
 #include <vector>
@@ -72,7 +71,7 @@ template <bool recurse = true, ConvertibleRange<GlobDirRule> T>
                            vfs::FileSystem &dirVFS = getRealFS()) -> llvm::Error {
   llvm::SmallString<128> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("Error globbing directory: dir path is empty");
+    return llvm::createStringError("When globbing directory: dir path is empty");
   }
   const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
   auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {

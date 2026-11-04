@@ -15,11 +15,11 @@ void MyDiagnosticConsumer::HandleDiagnostic(clang::DiagnosticsEngine::Level lvl,
   case clang::DiagnosticsEngine::Level::Remark:
     break;
   case clang::DiagnosticsEngine::Level::Warning:
-    warn<false>("{}", msg);
+    warn("{}", msg);
     break;
   case clang::DiagnosticsEngine::Level::Error:
   case clang::DiagnosticsEngine::Level::Fatal:
-    err<false>("{}", msg);
+    err("{}", msg);
     break;
   }
 }

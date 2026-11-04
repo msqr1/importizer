@@ -44,7 +44,7 @@ TEST_CASE("Glob directory") {
   SUBCASE("Empty paths") {
     vfs::InMemoryFileSystem memFS;
     std::array<GlobDirRule, 1> rules;
-    CHECK_UNARY_FALSE(!!globDir("", rules, memFS));
+    CHECK_UNARY(!!globDir("", rules, memFS));
   }
   SUBCASE("Real matching") {
     const llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
@@ -93,10 +93,9 @@ TEST_CASE("Glob directory") {
       }
     };
 
-    if (!CHECK_UNARY(!!globDir("/", rules, memFS))) {
+    if (!CHECK_UNARY_FALSE(!!globDir("/", rules, memFS))) {
       return;
     }
-
     CHECK_EQ(cppFilePaths, globbedCPPFilePaths);
     CHECK_EQ(cmakeFilePaths, globbedCMakeFilePaths);
   }

@@ -15,9 +15,6 @@
 namespace fs = llvm::sys::fs;
 
 auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) noexcept -> llvm::Error {
-  // Always set program and log stream before everything
-  LogOpts logOpts{.prog = "test-tool e2e", .stream = &llvm::errs()};
-  setGlobalLogOpts(logOpts);
 
   llvm::SmallString<128> tmp;
   const llvm::Twine refDir{testDir + "/ref"};
@@ -33,10 +30,10 @@ auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) noexcept ->
 
   llvm::SmallString<128> out{};
   llvm::raw_svector_ostream outStream{out};
-  LogOpts importizerLogOpts{.prog = "importizer", .stream = &outStream};
-  setGlobalLogOpts(importizerLogOpts);
+  LogOpts prevLogOpts{globalLogOpts};
+  setGlobalLogOpts({.prog = "importizer", .stream = &outStream});
   llvm::Error err{importizerMain(static_cast<int>(cmd.size()), cmd.data())};
-  setGlobalLogOpts(logOpts);
+  setGlobalLogOpts(prevLogOpts);
 
   const llvm::Twine refCLIPath{testDir + "/RefCLI.txt"};
   const auto buf{llvm::MemoryBuffer::getFile(refCLIPath, false, false, false)};
@@ -47,10 +44,8 @@ auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) noexcept ->
 
   llvm::Error res{llvm::Error::success()};
   if (out != refCLI) {
-    res = llvm::joinErrors(std::move(res),
-                           llvm::createStringError("Unexpected CLI output, got:\n{}", out));
+    res = llvm::createStringError("Unexpected CLI output, got:\n%s", out.c_str());
   }
-
   if (hasRef) {
     llvm::Expected<bool> cmpRes{cmpDirs(root, refDir)};
     if (!cmpRes) {
@@ -60,6 +55,5 @@ auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &root) noexcept ->
       res = llvm::joinErrors(std::move(res), llvm::make_error<EmptyErr>());
     }
   }
-
   return res;
 }

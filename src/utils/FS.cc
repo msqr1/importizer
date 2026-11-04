@@ -9,6 +9,7 @@
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
@@ -29,15 +30,16 @@ auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &src
     -> llvm::Error {
   llvm::SmallString<128> tmp;
   if (dst.isTriviallyEmpty() || (dst.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("Error copying directory: dst path is empty");
+    return llvm::createStringError("When copying directory: dst path is empty");
   }
   tmp.clear();
   if (src.isTriviallyEmpty() || (src.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("Error copying directory: src path is empty");
+    return llvm::createStringError("When copying directory: src path is empty");
   }
   const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
   if (std::error_code errCode{fs::create_directories(dst)}) {
-    return llvm::errorCodeToError(errCode);
+    return llvm::createStringError(errCode, "When creating directory: %s",
+                                   errCode.message().c_str());
   }
   auto copy{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
     llvm::StringRef relPath{ent.path().drop_front(baseLen)};
@@ -46,12 +48,13 @@ auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &src
     switch (ent.type()) {
     case fs::file_type::directory_file:
       if (std::error_code errCode{fs::create_directory(tmp)}) {
-        return llvm::errorCodeToError(errCode);
+        return llvm::createStringError(errCode, "When creating directory: %s",
+                                       errCode.message().c_str());
       }
       break;
     case fs::file_type::regular_file:
       if (std::error_code errCode{fs::copy_file(ent.path(), tmp)}) {
-        return llvm::errorCodeToError(errCode);
+        return llvm::createStringError(errCode, "When copying file: {}", errCode.message().c_str());
       }
       break;
     default: // Other file types
@@ -65,12 +68,14 @@ auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &src
 auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2, vfs::FileSystem &file1VFS,
               vfs::FileSystem &file2VFS) noexcept -> llvm::Expected<bool> {
   const auto buf1{file1VFS.getBufferForFile(file1, -1, false, false, false)};
-  if (!buf1) {
-    return llvm::errorCodeToError(buf1.getError());
+  if (std::error_code errCode{buf1.getError()}) {
+    return llvm::createStringError(errCode,
+                                   llvm::formatv("When opening {}: {}", file1, errCode.message()));
   }
   const auto buf2{file2VFS.getBufferForFile(file2, -1, false, false, false)};
-  if (!buf2) {
-    return llvm::errorCodeToError(buf1.getError());
+  if (std::error_code errCode{buf2.getError()}) {
+    return llvm::createStringError(errCode,
+                                   llvm::formatv("When opening {}: {}", file2, errCode.message()));
   }
   return (**buf1).getBuffer() == (**buf2).getBuffer();
 }
@@ -79,12 +84,12 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
              vfs::FileSystem &refVFS) noexcept -> llvm::Expected<bool> {
   llvm::SmallString<128> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("Error comparing directory: dir path is empty");
+    return llvm::createStringError("When comparing directories: dir path is empty");
   }
   const size_t dirBaseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
   tmp.clear();
   if (ref.isTriviallyEmpty() || (ref.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("Error comparing directory: ref path is empty");
+    return llvm::createStringError("When comparing directories: ref path is empty");
   }
   const size_t refBaseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
 

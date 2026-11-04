@@ -8,8 +8,7 @@ Follow the xref:/docs/Building.adoc#build-process[build process], but configure 
 Debug mode with tests enabled.
 [,bash]
 ----
-# Randomize test order and run in parallel
-ctest --test-dir build/tests --progress --output-on-failure --schedule-random -j
+ctest --test-dir build/tests --progress --output-on-failure --schedule-random -j -C Debug
 ----
 
 == End-to-end (E2E) tests

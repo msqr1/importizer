@@ -1,6 +1,6 @@
 #include "importizer/PP.hh"
+#include "importizer/Config.hh"
 #include "importizer/Frontend.hh"
-#include "importizer/Opts.hh"
 #include <clang/Basic/Diagnostic.h>
 #include <clang/Basic/FileEntry.h>
 #include <clang/Basic/SourceManager.h>
@@ -35,7 +35,7 @@ void PPAnalyzer::InclusionDirective(
   }
 
   // Only enforce top-level #include for modularizable headers
-  if (ctx.opts.hdrs.contains(file->getFileEntry().tryGetRealPathName())) {
+  if (ctx.cfg.hdrs.contains(file->getFileEntry().tryGetRealPathName())) {
     // Check if #include is nested within a conditional block
     if (condDepth > 0) {
       PP.getDiagnostics().Report(hashLoc, nestedIncludeDiagID);

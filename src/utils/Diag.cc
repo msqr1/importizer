@@ -3,15 +3,13 @@
 #include <llvm/Support/raw_ostream.h>
 #include <system_error>
 
-char EmptyErr::ID;
-
+char EmptyErr::ID{};
+void EmptyErr::log(llvm::raw_ostream & /*OS*/) const noexcept {}
 auto EmptyErr::convertToErrorCode() const noexcept -> std::error_code {
   return llvm::inconvertibleErrorCode();
 }
-void EmptyErr::log(llvm::raw_ostream & /*OS*/) const noexcept {}
 
 const LogOpts globalLogOpts{};
-
 void setGlobalLogOpts(const LogOpts &opts) {
   globalLogOpts.prog = opts.prog;
   globalLogOpts.stream = opts.stream;

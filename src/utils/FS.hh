@@ -2,12 +2,13 @@
 // in default VFS args. This is done for easy unit testing.
 
 #pragma once
-#include "utils/Diag.hh"
+
 #include <cassert>
 #include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/ErrorOr.h>
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <system_error>
 #include <type_traits>
@@ -41,7 +42,8 @@ template <bool recurse = false>
     it = VFS.dir_begin(dir, errCode);
   }
   if (errCode) {
-    return llvm::errorCodeToError(errCode);
+    return llvm::createStringError(errCode,
+                                   llvm::formatv("When iterating {}: {}", dir, errCode.message()));
   }
   while (it != end) {
     llvm::Expected<bool> res{callback(*it)};
@@ -53,7 +55,8 @@ template <bool recurse = false>
     }
     it.increment(errCode);
     if (errCode) {
-      return llvm::errorCodeToError(errCode);
+      return llvm::createStringError(
+          errCode, llvm::formatv("When iterating {}: {}", dir, errCode.message()));
     }
   }
   return llvm::Error::success();

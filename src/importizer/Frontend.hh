@@ -7,7 +7,7 @@
 #include <clang/Tooling/Tooling.h>
 #include <memory>
 
-struct Opts;
+struct Config;
 namespace llvm {
 class StringRef;
 } // namespace llvm
@@ -21,7 +21,7 @@ namespace tl = clang::tooling;
 // Used to pass information in and out of all layers of a ClangTool.
 struct FrontendCtx {
   // Inputs (const refs)
-  const Opts &opts;
+  const Config &cfg;
 
   // Outputs
 };

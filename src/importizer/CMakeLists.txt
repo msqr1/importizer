@@ -1,6 +1,6 @@
 # Library for testing
 add_library(importizer-lib
-  Opts.cc
+  Config.cc
   Main.cc
   PP.cc
   AST.cc

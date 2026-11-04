@@ -1,6 +1,6 @@
 #include "importizer/AST.hh"
+#include "importizer/Config.hh"
 #include "importizer/Frontend.hh"
-#include "importizer/Opts.hh"
 #include "utils/Diag.hh"
 #include <clang/AST/ASTConsumer.h>
 #include <clang/AST/ASTContext.h>
@@ -16,7 +16,7 @@ public:
   SymbolVisitor(FrontendCtx &ctx_) : ctx{ctx_} {}
   auto TraverseDecl(clang::Decl *decl) -> bool {
     decl->dump(*globalLogOpts.stream);
-    err("{}", ctx.opts.root);
+    err("{}", ctx.cfg.root);
     return false;
   }
 };

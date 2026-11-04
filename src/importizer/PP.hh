@@ -11,7 +11,7 @@
 #include <clang/Lex/Preprocessor.h>
 
 struct FrontendCtx;
-struct Opts;
+struct Config;
 
 namespace llvm {
 class StringRef;
