@@ -32,18 +32,20 @@ them, but we don't want Continuous and LibTooling releases to be immutable.
 
 == Bumping LibTooling version
 * [ ] Tag a new release with (replace `<v>` with the new version):
-** Title: `libtooling-<v>`
+** Title: `LibTooling-<v>`
 ** Tag: `libtooling-<v>`
 ** Description: `LibTooling <v> for developers and CI/CD.`
 * [ ] Update the version string(s) in:
 ** link:/scripts/EnsureLibTooling.cmake[`scripts/EnsureLibTooling.cmake`]
 ** xref:/docs/Building.adoc[`docs/Building.adoc`]
 (also update LLVM Project hash)
+* [ ] Disable linting in link:/.github/workflows/CI.yml[`.github/workflows/CI.yml`]
 * [ ] Add `Bump LibTooling to <v>` to xref:/ChangeLog.adoc[`ChangeLog.adoc`].
 * [ ] Commit with message `Bump LibTooling to <v>` and let CI run.
 * [ ] For the next commit:
 ** Update the LibTooling hashes in
 link:/scripts/EnsureLibTooling.cmake[`scripts/EnsureLibTooling.cmake`].
+** Re-enable linting in link:/.github/workflows/CI.yml[`.github/workflows/CI.yml`]
 
 == Bumping doctest version
 * [ ] Update the version strings in:

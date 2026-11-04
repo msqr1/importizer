@@ -9,7 +9,7 @@ include_guard(GLOBAL)
 
 block(SCOPE_FOR VARIABLES PROPAGATE LLVM_DIR Clang_DIR)
 
-set(v 22.1.8)
+set(v 23.1.5)
 set(LLVM_DIR "${3rdPartyDir}/llvm/lib/cmake/llvm")
 set(Clang_DIR "${3rdPartyDir}/clang/lib/cmake/clang")
 
@@ -34,21 +34,21 @@ if(ec EQUAL 0)
   # Pre-built LibTooling hashes
   if(LINUX)
     if(arch STREQUAL "amd64")
-      set(refHash 8bf900ed8505eb2ea85008b9a25682c30ddfafdfdd42d8c25b6249603f431ec4)
+      set(refHash)
     elseif(arch STREQUAL "arm64")
-      set(refHash 4263b3039e33aff3873dd97fb769c751b53277cf348461b64ed24fc7b49f65ae)
+      set(refHash)
     endif()
   elseif(APPLE)
     if(arch STREQUAL "amd64")
-      set(refHash d1eb7ec0a39239e97f82c74c23ef5a2894bf42010faccd96e616cff761fb5382)
+      set(refHash)
     elseif(arch STREQUAL "arm64")
-      set(refHash b908b54460b1ec02d445c15038d3596bad9ea70523327743a3da0960616c68f3)
+      set(refHash)
     endif()
   elseif(WIN32)
     if(arch STREQUAL "amd64")
-      set(refHash d9d2c3885bd2a0a0e2c37b8853508fc032d50b4e36b99c858915ef8c02b34a31)
+      set(refHash)
     elseif(arch STREQUAL "arm64")
-      set(refHash af002e746b0aabeea00cd1fef5a0daf1463de8ee53c6b78e0b03b5806f9fefbf)
+      set(refHash)
     endif()
   endif()
 
@@ -81,13 +81,14 @@ set(arFile "${3rdPartyDir}/LLVMProj.tar.xz")
 file(DOWNLOAD
   https://github.com/llvm/llvm-project/releases/download/llvmorg-${v}/llvm-project-${v}.src.tar.xz
   "${arFile}"
-  EXPECTED_HASH SHA256=922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888
+  EXPECTED_HASH SHA256=fb50b1eac93ddeb3aa8dab4cfe324dff74f4a9c2bdee6160c9e36188f8d06a6e
 )
 file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
 file(REMOVE "${arFile}")
 file(RENAME "${3rdPartyDir}/llvm-project-${v}.src" "${LLVMProjSrc}")
 
 set(CMAKE_EXECUTE_PROCESS_COMMAND_ERROR_IS_FATAL ANY)
+cmake_host_system_information(RESULT procCnt QUERY NUMBER_OF_LOGICAL_CORES)
 
 # Build LibTooling
 ## Load toolchain, static and dynamic presets for LLVM

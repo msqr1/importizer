@@ -16,5 +16,5 @@ Diagnostics:
   MissingIncludes: Strict
 
 Style:
-  QuotedHeaders: ["src/.*"]
-  AngledHeaders: ["3rd-party/.*"]
+  QuotedHeaders: ["src/*.hh"]
+  AngledHeaders: ["3rd-party/*.h"]

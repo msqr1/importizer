@@ -1,7 +1,7 @@
 = Building
 :toc: preamble
 :alpine-v: 3.24.3
-:libtooling-v: 22.1.8
+:libtooling-v: 23.1.5
 
 Toolchain, environment and build details.
 For the short version, see xref:/CONTRIBUTING.adoc[`CONTRIBUTING.adoc`].
@@ -83,7 +83,7 @@ if you match the toolchain below that was used to build it.
 
 |Toolchain
 |clang, ld.lld 22.1.3
-|clang 20.1.8 (Homebrew), ld-prime
+|Apple clang 21.0.0, ld-prime
 |clang-cl, lld-link, llvm-ml^2^
 
 |Backend

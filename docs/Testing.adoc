@@ -8,7 +8,7 @@ Follow the xref:/docs/Building.adoc#build-process[build process], but configure 
 Debug mode with tests enabled.
 [,bash]
 ----
-ctest --test-dir build/tests --progress --output-on-failure --schedule-random -j -C Debug
+ctest --test-dir build/tests -C Debug --progress --output-on-failure --schedule-random -j
 ----
 
 == End-to-end (E2E) tests
@@ -41,9 +41,9 @@ link:/src/testing/FSTest.cc[`src/testing/FSTest.cc`] is the `FS` suite), and the
 function (e.g. the `FS` suite tests filesystem functions).
 * Each test suite consists of test cases, where each test case tests 1 function.
 
-To add a new test case, simply follow
+To add a new test case and subcases, simply follow
 https://github.com/doctest/doctest/blob/master/doc/markdown/testcases.md[doctest's official guide].
 To add a new test suite:
 
-. Add a new file in `src/testing/` for the new suite, named `<suite-name>Test.cc`.
+. Add a new file in link:src/testing/[`src/testing/`] for the new suite, named `<suite-name>Test.cc`.
 . Add the suite name to the list in link:/tests/CMakeLists.txt[`tests/CMakeLists.txt`].

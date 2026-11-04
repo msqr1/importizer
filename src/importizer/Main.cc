@@ -12,8 +12,8 @@ namespace tl = clang::tooling;
 auto importizerMain(const int argc, const char *const *argv) -> llvm::Error {
   llvm::Expected<Config> cfg{resolveConfig(argc, argv)};
   if (!cfg) {
-    return llvm::joinErrors(llvm::createStringError("When resolving configuration"),
-                            cfg.takeError());
+    return llvm::joinErrors(cfg.takeError(),
+                            llvm::createStringError("When resolving configuration"));
   }
   tl::ClangTool tool{*cfg->compDB, cfg->srcs};
   FrontendCtx ctx{*cfg};

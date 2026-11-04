@@ -38,15 +38,15 @@ add_custom_target(importizer-post-build ALL
 add_dependencies(importizer-post-build importizer)
 
 if(LINUX)
-  # For Linux, we want to actually install system libraries if needed
+  # Install CStdlib because already having musl is rare (added /lib).
   install(
     TARGETS importizer
     DESTINATION .
     RUNTIME_DEPENDENCIES
-    DIRECTORIES /lib # TODO: Avoid hardcoding?
+    DIRECTORIES /lib
   )
 elseif(WIN32)
-  # Exclude Windows UCRT
+  # Exclude Windows UCRT, every Windows machine have it.
   install(
     TARGETS importizer
     DESTINATION .
@@ -58,7 +58,7 @@ elseif(WIN32)
       [[^.*[\\/]system32[\\/].*]]
   )
 elseif(APPLE)
-  # Exclude MacOS CStdlib and CxxStdlib
+  # Exclude MacOS CStdlib and CxxStdlib, every MacOS machine have them.
   install(
     TARGETS importizer
     DESTINATION .

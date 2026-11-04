@@ -6,15 +6,15 @@ if(NOT runMode STREQUAL "SCRIPT")
 endif()
 
 if(NOT DEFINED TYPE)
-  message(FATAL_ERROR "Missing distribution type, specify one with -DTYPE=.")
+  message(FATAL_ERROR "Missing distribution type, specify one with -DTYPE=")
 endif()
 
 if(NOT DEFINED BUILD_DIR)
-  message(FATAL_ERROR "Missing build directory, specify one with -DBUILD_DIR=.")
+  message(FATAL_ERROR "Missing build directory, specify one with -DBUILD_DIR=")
 endif()
 
 if(NOT DEFINED OUT_DIR)
-  message(FATAL_ERROR "Missing out directory, specify one with -DOUT_DIR=.")
+  message(FATAL_ERROR "Missing out directory, specify one with -DOUT_DIR=")
 endif()
 
 set(knownTypes "Debug;Release")
@@ -31,14 +31,14 @@ cmake_path(ABSOLUTE_PATH OUT_DIR)
 execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${BUILD_DIR}"
   --config ${TYPE}
-  --prefix "${OUT_DIR}/installation"
+  --prefix "${OUT_DIR}/importizer"
 )
 
 if(TYPE STREQUAL "Debug")
   file(ARCHIVE_CREATE
     OUTPUT "${OUT_DIR}/importizer-debug-${os}-${arch}.tar.zst"
     WORKING_DIRECTORY "${OUT_DIR}"
-    PATHS installation
+    PATHS importizer
     COMPRESSION Zstd
     COMPRESSION_LEVEL 19
   )
@@ -46,8 +46,8 @@ elseif(TYPE STREQUAL "Release")
   if(WIN32)
     set(binExtension ".exe")
   endif()
-  file(COPY_FILE "${OUT_DIR}/installation/importizer${binExtension}"
+  file(COPY_FILE "${OUT_DIR}/importizer/importizer${binExtension}"
     "${OUT_DIR}/importizer-release-${os}-${arch}${binExtension}")
 endif()
 
-file(REMOVE_RECURSE "${OUT_DIR}/installation")
+file(REMOVE_RECURSE "${OUT_DIR}/importizer")

@@ -6,11 +6,11 @@ if(NOT runMode STREQUAL "SCRIPT")
 endif()
 
 if(NOT DEFINED BIN_PATH)
-  message(FATAL_ERROR "Missing binary's path, specify one with -DBIN_PATH=.")
+  message(FATAL_ERROR "Missing binary's path, specify one with -DBIN_PATH=")
 endif()
 
 if(NOT DEFINED PREDICTABLE_DIR)
-  message(FATAL_ERROR "Missing predictable directory, specify one with -DPREDICTABLE_DIR=.")
+  message(FATAL_ERROR "Missing predictable directory, specify one with -DPREDICTABLE_DIR=")
 endif()
 
 cmake_path(GET BIN_PATH PARENT_PATH binDir)

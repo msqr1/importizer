@@ -1,18 +1,20 @@
 set(arch $ENV{IMPORTIZER_ARCH})
 
+set(compileOpts)
+
 if(arch STREQUAL "amd64")
-  add_compile_options(-fcf-protection=full)
+  list(APPEND compileOpts -fcf-protection=full)
 elseif(arch STREQUAL "arm64")
-  add_compile_options(-mbranch-protection=standard)
+  list(APPEND compileOpts -mbranch-protection=standard)
 endif()
 
 if(LINUX)
-  add_compile_options(-fstack-clash-protection)
+  list(APPEND compileOpts -fstack-clash-protection)
   add_link_options("LINKER:-z,nodlopen,-z,noexecstack,-z,relro,-z,now")
 endif()
 
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-  add_compile_options(
+  list(APPEND compileOpts
     -fno-omit-frame-pointer
     -fno-delete-null-pointer-checks
     -fno-strict-aliasing
@@ -22,7 +24,7 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     -fstack-protector-all
   )
 elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-  add_compile_options(
+  list(APPEND compileOpts
     /Oy-
     /clang:-fno-delete-null-pointer-checks
     /clang:-fno-strict-aliasing
@@ -34,3 +36,5 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   )
   add_link_options("LINKER:/CETCOMPAT,/GUARD:CF")
 endif()
+
+add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:${compileOpts}>")
