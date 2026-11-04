@@ -1,5 +1,6 @@
 = Building
 :toc: preamble
+:repo-url: https://github.com/msqr1/importizer
 :alpine-v: 3.24.3
 :libtooling-v: 23.1.5
 
@@ -13,7 +14,7 @@ On Linux, importizer requires a musl-based toolchain to create a truly standalon
 However, your Linux (and as a result, your toolchain) is likely based on glibc (see more on
 xref:/docs/Internals.adoc#y0-glibc[why not glibc]), so we're going to containerize everything.
 There's pre-built Alpine Linux container images with all the correct tools installed
-https://github.com/msqr1/importizer/pkgs/container/importizer-alpine[here] to make this easier.
+link:{repo-url}/pkgs/container/importizer-alpine[here] to make this easier.
 To set this up locally, I prefer https://distrobox.it[distrobox].
 [,bash,subs=attributes+]
 ----
@@ -64,9 +65,8 @@ Note: Bundled tools usually lag behind in version, so use `:bundled` with cautio
 importizer uses https://clang.llvm.org/docs/LibTooling.html[LibTooling] (currently {libtooling-v})
 to parse C{plus}{plus} code.
 But LibTooling isn't like other 3rd-party libraries, it is massive!
-To skip building it, use the
-https://github.com/msqr1/importizer/releases/tag/libtooling-{libtooling-v}[pre-built ones], which
-are automatically installed on configure (see
+To skip building it, use the link:{repo-url}/releases/tag/libtooling-{libtooling-v}[pre-built ones],
+which are automatically installed on configure (see
 link:/cmake/EnsureLibTooling.cmake[`cmake/EnsureLibTooling.cmake`]).
 Since LLVM's ABIs can change between versions, the pre-built LibTooling is guaranteed to work only
 if you match the toolchain below that was used to build it.
@@ -82,8 +82,8 @@ if you match the toolchain below that was used to build it.
 3+^.^|Ninja^1^
 
 |Toolchain
-|clang, ld.lld 22.1.3
-|Apple clang 21.0.0, ld-prime
+|clang, ld.lld 22.1.3{plus}
+|Apple clang 21.0.0{plus}, ld-prime
 |clang-cl, lld-link, llvm-ml^2^
 
 |Backend
@@ -96,7 +96,8 @@ if you match the toolchain below that was used to build it.
 .. Available on all supported OS'es and architectures.
 .. Can generate a JSON compilation database.
 .. Usable as both multi-config and single-config generator.
-. `20.1.8` on AMD64, `22.1.8` on ARM64. Basically replacing MSVC toolchain here.
+. 20.1.8{plus} on AMD64, 22.1.8{plus} on ARM64.
+We're replacing MSVC toolchain here.
 . Used strictly to provide the Windows SDK.
 
 === Build customization

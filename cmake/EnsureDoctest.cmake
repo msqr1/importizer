@@ -49,7 +49,7 @@ execute_process(COMMAND "${CMAKE_COMMAND}" --build "${doctestSrc}/build")
 execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${doctestSrc}/build"
   --prefix "${3rdPartyDir}/doctest"
-  -j ${procCnt}
+  -j "${procCnt}"
 )
 
 file(REMOVE_RECURSE "${doctestSrc}")

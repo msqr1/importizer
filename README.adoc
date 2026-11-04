@@ -1,5 +1,12 @@
 = importizer
 :toc: preamble
+:repo-url: https://github.com/msqr1/importizer
+:v: 2.0.0
+
+image:https://img.shields.io/github/v/release/msqr1/importizer?display_name=release[link={repo-url}/releases/{v}]
+image:https://img.shields.io/github/actions/workflow/status/msqr1/importizer/CI.yml[link={repo-url}/actions/workflows/CI.yml]
+image:https://img.shields.io/github/license/msqr1/importizer[link=/LICENSE]
+image:https://img.shields.io/github/commits-since/msqr1/importizer/latest[link={repo-url}/compare/{v}...main]
 
 Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
 afraid that modularizing is too much work? *importizer* is here to help.
@@ -9,7 +16,7 @@ Regex (pre-2.0.0).
 Much pre-2.0.0 code are gone, but releases and git history are preserved.
 
 === Native modules
-Native modules mean using modules internally.
+Native modules mean using modules internally, not just wrapping.
 Some advantages of native modules are:
 
 * *Faster compilation:* Modules don’t need to be recompiled every time it is imported, unlike
@@ -49,9 +56,9 @@ Required shared libraries, if applicable, are bundled within the archive.
 |===
 
 * *Stable release:* Download versioned builds from the
-https://github.com/msqr1/importizer/releases[releases page], latest version recommended.
+link:{repo-url}/releases[releases page], latest version recommended.
 * *Bleeding edge:* Download "nightly" builds from the
-https://github.com/msqr1/importizer/releases/tag/continuous[continuous release].
+link:{repo-url}/releases/tag/continuous[continuous release].
 
 == Configuration and usage
 Importizer primarily uses a YAML configuration file, along a few command-line options.
@@ -84,13 +91,14 @@ what will change.
 
 === Configuration file (YAML)
 Relative paths in the configuration file are resolved relative to the file’s location, *not* the
-current working directory.
+current working directory (CWD).
+But the path of the configuration file itself, if relative, will be resolved relative to the CWD.
 For globs, it's always:
 
 * First match wins.
 * Prefixing patterns with `!` negates them.
 * 10 max subpatterns (`{...}`).
-* See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html[here] for more info.
+* See https://llvm.org/doxygen/classllvm_1_1GlobPattern.html#details[here] for more details.
 
 [%autowidth]
 |===

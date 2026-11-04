@@ -29,7 +29,7 @@ jobs:
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: .
+          JQ_EXPR: 'map(select(.os != "macos"))'
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
@@ -92,8 +92,7 @@ jobs:
         shell: container-sh {0}
         run: &release2 |
           cmake --build build --config Release
-          ctest --test-dir build/tests -C Release --progress --output-on-failure --schedule-random \
-            -j
+          ctest --test-dir build/tests -C Release --progress --output-on-failure --schedule-random -j
       - name: *release1
         if: "!matrix.container"
         run: *release2

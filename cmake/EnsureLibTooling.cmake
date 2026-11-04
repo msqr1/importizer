@@ -21,7 +21,7 @@ set(arFile "${3rdPartyDir}/LibTooling.tar.zst")
 set(repo "msqr1/importizer")
 
 file(DOWNLOAD
-  https://github.com/${repo}/releases/download/libtooling-${v}/LibTooling-${os}-${arch}.tar.zst
+  "https://github.com/${repo}/releases/download/libtooling-${v}/LibTooling-${os}-${arch}.tar.zst"
   "${arFile}"
   STATUS status
 )
@@ -34,21 +34,21 @@ if(ec EQUAL 0)
   # Pre-built LibTooling hashes
   if(LINUX)
     if(arch STREQUAL "amd64")
-      set(refHash)
+      set(refHash 035eb261b5234adb05897c07e49bd607f4a9f165b25fb73f35df0e02d9eb92c2)
     elseif(arch STREQUAL "arm64")
-      set(refHash)
+      set(refHash )
     endif()
   elseif(APPLE)
     if(arch STREQUAL "amd64")
-      set(refHash)
+      set(refHash 9f783f93cc98d74737816ba934a92bb5c13374b7d19945255da2acf9e5a7f34d)
     elseif(arch STREQUAL "arm64")
-      set(refHash)
+      set(refHash 7544f5f7669f1f4b3466af4f27e993d72412f7418c5761dd77aca44c71a649c4)
     endif()
   elseif(WIN32)
     if(arch STREQUAL "amd64")
-      set(refHash)
+      set(refHash 93baa458bc628d1664ecddf8a0f3e207d9207dc63bf208c7c9b81e2a78a7f264)
     elseif(arch STREQUAL "arm64")
-      set(refHash)
+      set(refHash 5fb90086440144d81489acfe2ce893849588d548274c36fd46d3c929361d4eb5)
     endif()
   endif()
 
@@ -79,7 +79,7 @@ set(LLVMProjSrc "${3rdPartyDir}/llvm-proj-src")
 # Clang sources, but that seems to have ended in 21.x.x
 set(arFile "${3rdPartyDir}/LLVMProj.tar.xz")
 file(DOWNLOAD
-  https://github.com/llvm/llvm-project/releases/download/llvmorg-${v}/llvm-project-${v}.src.tar.xz
+  "https://github.com/llvm/llvm-project/releases/download/llvmorg-${v}/llvm-project-${v}.src.tar.xz"
   "${arFile}"
   EXPECTED_HASH SHA256=fb50b1eac93ddeb3aa8dab4cfe324dff74f4a9c2bdee6160c9e36188f8d06a6e
 )
@@ -109,7 +109,7 @@ execute_process(COMMAND "${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build")
 execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${LLVMProjSrc}/build"
   --prefix "${3rdPartyDir}/llvm"
-  -j ${procCnt}
+  -j "${procCnt}"
 )
 
 ## Load Clang's presets (same as LLVM)
@@ -131,7 +131,7 @@ execute_process(COMMAND "${CMAKE_COMMAND}" --build "${LLVMProjSrc}/build2")
 execute_process(COMMAND "${CMAKE_COMMAND}"
   --install "${LLVMProjSrc}/build2"
   --prefix "${3rdPartyDir}/clang"
-  -j ${procCnt}
+  -j "${procCnt}"
 )
 
 file(REMOVE_RECURSE "${LLVMProjSrc}")
@@ -145,7 +145,7 @@ file(ARCHIVE_CREATE
   COMPRESSION Zstd
   COMPRESSION_LEVEL 19
 )
-execute_process(COMMAND gh release upload libtooling-${v} "${arFile}" --clobber -R ${repo})
+execute_process(COMMAND gh release upload "libtooling-${v}" "${arFile}" --clobber -R "${repo}")
 file(REMOVE "${arFile}")
 
 endblock()

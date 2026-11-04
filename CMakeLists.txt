@@ -51,6 +51,7 @@ target_compile_options(common-config INTERFACE
   -Wno-switch-enum
   -Wno-switch-default
   -Wno-padded
+  -Wno-nrvo
 )
 
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")

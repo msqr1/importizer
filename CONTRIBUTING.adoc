@@ -2,6 +2,7 @@
 :hide-uri-scheme:
 
 Thank you for contributing to importizer!
+Improvements and bug fixes are gladly accepted, of course!
 This page gets you from zero to a working build and hopefully a passing test run.
 Everything else lives in link:/docs/[`docs/`].
 
@@ -66,8 +67,15 @@ The binary ends up in `build/importizer`.
 |xref:/docs/Internals.adoc[Internals]
 |===
 
-== Pull request
-Before opening one, make sure your changes follow the xref:/docs/Conventions.adoc[conventions].
+== Opening pull requests
+Constrain pull requests to individual changes where possible.
+Simple changes are more easily integrated and tested.
+Pull requests with many changes, where there are issues with one change in particular, will delay
+the integration of all changes.
+
+== LLM/AI policy
+Only human conceived and created code and prose is accepted for now, no AI/LLM-generated code
+allowed.
 
 == Maintainers
 See xref:/docs/Maintenance.adoc[`docs/Maintenance.adoc`] for release and version bump checklists.
