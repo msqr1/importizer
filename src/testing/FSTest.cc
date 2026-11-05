@@ -1,4 +1,4 @@
-// Filesystem utilities test
+// Filesystem utilities tests.
 
 #include "utils/FS.hh"
 #include "testing/MemFS.hh"
@@ -42,6 +42,7 @@ TEST_CASE("Compare files") {
     CHECK_UNARY_FALSE(*cmpRes);
   }
 }
+
 TEST_CASE("Compare directories") {
   SUBCASE("Empty paths") {
     vfs::InMemoryFileSystem memFS;

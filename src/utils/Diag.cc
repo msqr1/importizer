@@ -29,3 +29,9 @@ extern "C" auto __asan_default_options() -> const char * {
 }
 #endif
 #endif
+
+namespace {
+
+[[gnu::used, gnu::retain]] alignas(64) const thread_local int tlsAligner{};
+
+} // namespace

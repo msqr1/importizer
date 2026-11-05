@@ -10,10 +10,16 @@
 namespace tl = clang::tooling;
 
 auto importizerMain(const int argc, const char *const *argv) -> llvm::Error {
-  llvm::Expected<Config> cfg{resolveConfig(argc, argv)};
+  llvm::Expected<CLIConfig> cliCfg{getCLIConfig(argc, argv)};
+  if (!cliCfg) {
+    return llvm::joinErrors(cliCfg.takeError(),
+                            llvm::createStringError("When parsing CLI options."));
+  }
+
+  llvm::Expected<Config> cfg{resolveConfig(*cliCfg)};
   if (!cfg) {
     return llvm::joinErrors(cfg.takeError(),
-                            llvm::createStringError("When resolving configuration"));
+                            llvm::createStringError("When resolving configuration."));
   }
   tl::ClangTool tool{*cfg->compDB, cfg->srcs};
   FrontendCtx ctx{*cfg};
@@ -24,7 +30,7 @@ auto importizerMain(const int argc, const char *const *argv) -> llvm::Error {
   case 0:
     break;
   case 1:
-    return llvm::createStringError("When running tool");
+    return llvm::createStringError("When running tool.");
   case 2:
     assert(false && "Skipped files because of missing compile commands??");
     break;

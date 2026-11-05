@@ -1,5 +1,4 @@
 #include "utils/Glob.hh"
-#include "utils/Diag.hh"
 #include <cstddef>
 #include <llvm/ADT/FunctionExtras.h>
 #include <llvm/ADT/StringRef.h>

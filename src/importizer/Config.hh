@@ -7,18 +7,34 @@
 #include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/Support/Error.h>
-#include <llvm/Support/VirtualFileSystem.h>
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace tl = clang::tooling;
+
+namespace llvm::vfs {
+class FileSystem;
+}; // namespace llvm::vfs
+
 namespace vfs = llvm::vfs;
 
-// Resolved configuration
+struct CLIConfig {
+  std::string configPath;
+  std::string rootDir;
+  bool write{};
+
+  CLIConfig() noexcept = default;
+  CLIConfig(CLIConfig &&) noexcept = default;
+  auto operator=(CLIConfig &&) noexcept -> CLIConfig & = default;
+  CLIConfig(const CLIConfig &) = delete;
+  auto operator=(const CLIConfig &) -> CLIConfig & = delete;
+};
+
+// Fully-resolved configuration
 struct Config {
   // Root directory
-  std::string root;
+  std::string rootDir;
 
   // Headers to be modularized (resolved from hdrGlobs)
   llvm::StringSet<> hdrs;
@@ -29,11 +45,11 @@ struct Config {
   // Explicit and default mode compile commands centralized
   std::unique_ptr<tl::CompilationDatabase> compDB;
 
-  // Actually rewrite files
-  bool write{};
-
   // Convert standard #include to import std or std.compat
   bool stdImport{};
+
+  // Actually rewrite files
+  bool write{};
 
   Config() noexcept = default;
   Config(Config &&) noexcept = default;
@@ -42,7 +58,10 @@ struct Config {
   auto operator=(const Config &) -> Config & = delete;
 };
 
-// Populate a struct Config from CLI args
-[[nodiscard]] auto resolveConfig(int argc, const char *const *argv,
+[[nodiscard]] auto getCLIConfig(int argc, const char *const *argv,
+                                vfs::FileSystem &VFS = getRealFS()) noexcept
+    -> llvm::Expected<CLIConfig>;
+
+[[nodiscard]] auto resolveConfig(const CLIConfig &cliCfg,
                                  vfs::FileSystem &VFS = getRealFS()) noexcept
     -> llvm::Expected<Config>;

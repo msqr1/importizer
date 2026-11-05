@@ -1,4 +1,4 @@
-// Glob utilities testing. We trust that llvm::GlobPattern is already well-tested so we won't test
+// Glob utilities tests. We trust that llvm::GlobPattern is already well-tested so we won't test
 // creation and matching extensively.
 
 #include "utils/Glob.hh"
@@ -34,7 +34,7 @@ TEST_CASE("Creation and negation") {
     if (!CHECK_UNARY(!!gNeg)) {
       return;
     }
-    CHECK_NE(g->match("hehe"), gNeg->match("hehe")); // NOLINT (checked above)
+    CHECK_NE(g->match("hehe"), gNeg->match("hehe"));
   }
 }
 

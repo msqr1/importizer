@@ -12,6 +12,7 @@
 #include <llvm/ADT/StringSet.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/Error.h>
+#include <llvm/Support/ErrorOr.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/MemoryBuffer.h>
@@ -42,14 +43,14 @@ struct NormalExplicit {
 };
 
 struct NormalConfig {
-  std::optional<NormalExplicit> xplicit;
+  std::optional<NormalExplicit> nExplicit;
   std::optional<llvm::StringRef> compDBPath;
   std::vector<llvm::StringRef> hdrGlobExprs;
-  llvm::StringRef root;
+  llvm::StringRef rootDir;
   bool stdImport{};
 };
 
-void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*unused*/) noexcept {
+void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*ctx*/) noexcept {
   assert(globalLogOpts.stream != nullptr && globalLogOpts.prog != nullptr);
   diag.print(globalLogOpts.prog, *globalLogOpts.stream);
 }
@@ -57,44 +58,59 @@ void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*unused*/) noexcept 
 } // namespace
 
 template <> struct yml::MappingTraits<NormalExplicit> {
-  static void mapping(yml::IO &in, NormalExplicit &normalXplicit) {
-    in.mapRequired("srcGlobs", normalXplicit.srcGlobExprs);
-    in.mapOptional("compileFlags", normalXplicit.compileFlags);
+  static void mapping(yml::IO &in, NormalExplicit &nExplicit) {
+    in.mapRequired("srcGlobs", nExplicit.srcGlobExprs);
+    in.mapOptional("compileFlags", nExplicit.compileFlags);
   }
 };
 
 template <> struct yml::MappingTraits<NormalConfig> {
-  static void mapping(yml::IO &in, NormalConfig &normalCfg) {
-    in.mapRequired("root", normalCfg.root);
-    in.mapRequired("hdrGlobs", normalCfg.hdrGlobExprs);
-    in.mapOptional("compilationDB", normalCfg.compDBPath);
-    in.mapOptional("stdImport", normalCfg.stdImport);
-    in.mapOptional("explicit", normalCfg.xplicit);
+  static void mapping(yml::IO &in, NormalConfig &nCfg) {
+    assert(in.getContext() != nullptr);
+    const CLIConfig &cliCfg{*static_cast<CLIConfig *>(in.getContext())};
+    if (cliCfg.rootDir.empty()) {
+      in.mapRequired("rootDir", nCfg.rootDir);
+    } else {
+      in.mapOptional("rootDir", nCfg.rootDir);
+    }
+    in.mapRequired("hdrGlobs", nCfg.hdrGlobExprs);
+    in.mapOptional("compilationDB", nCfg.compDBPath);
+    in.mapOptional("stdImport", nCfg.stdImport);
+    in.mapOptional("explicit", nCfg.nExplicit);
   }
 };
 
-auto resolveConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS) noexcept
-    -> llvm::Expected<Config> {
-  Config cfg;
+auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS) noexcept
+    -> llvm::Expected<CLIConfig> {
+  CLIConfig cliCfg;
 
   // LLVM default options will mix into ours if we don't make our own category
   cl::OptionCategory cat{globalLogOpts.prog};
 
-  cl::opt<std::string> configPath{
-      cl::cat(cat),
-      cl::desc("<YAML configuration file>"),
+  cl::opt<std::string, true> configPath{
+      cl::cat{cat},
+      cl::desc{"<YAML configuration file>"},
+      cl::location(cliCfg.configPath),
       cl::init("importizer.yml"),
       cl::Positional,
       cl::ValueOptional,
   };
   cl::opt<bool, true> write{
-      cl::cat(cat),
+      cl::cat{cat},
       "write",
-      cl::desc("Actually rewrite files. Without this flag it's a dry-run."),
-      cl::location(cfg.write),
+      cl::desc{"Actually rewrite files. Without this flag it's a dry-run."},
+      cl::location(cliCfg.write),
       cl::init(false),
   };
-  cl::alias _{"w", cl::aliasopt(write)};
+  cl::alias writeAlias{"w", cl::aliasopt{write}};
+  cl::opt<std::string, true> rootDir{
+      cl::cat{cat},
+      "root-dir",
+      cl::desc{"Override the 'rootDir' key in the configuration file."},
+      cl::location(cliCfg.rootDir),
+      cl::ValueOptional,
+  };
+  cl::alias rootDirAlias{"r", cl::aliasopt{rootDir}};
 
   cl::SetVersionPrinter([](llvm::raw_ostream &stream) -> void { stream << "3.0.0\n"; });
   cl::HideUnrelatedOptions(cat);
@@ -102,46 +118,60 @@ auto resolveConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS
 
   // Reset default descriptions to be consistent with the README
   optMap["help"]->setDescription("Display available options.");
-  optMap["help-list"]->setDescription("Display list of available options.");
+  optMap["help-list"]->setDescription("List available options.");
   optMap["version"]->setDescription("Display version.");
 
   if (!cl::ParseCommandLineOptions(argc, argv,
                                    "importizer - Automagically rewrite "
-                                   "header-based C++ into using modules",
-                                   globalLogOpts.stream)) {
+                                   "header-based C++ into using modules.",
+                                   globalLogOpts.stream, &VFS)) {
     return llvm::make_error<EmptyErr>();
   }
 
-  auto buf{VFS.getBufferForFile(configPath, -1, false, false, false)};
+  return cliCfg;
+}
+
+auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
+    -> llvm::Expected<Config> {
+
+  auto buf{VFS.getBufferForFile(cliCfg.configPath, -1, false, false, false)};
   if (std::error_code errCode{buf.getError()}) {
     return llvm::createStringError(
-        errCode, llvm::formatv("When opening {}: {}.", configPath, errCode.message()));
+        errCode, llvm::formatv("When opening {}: {}.", cliCfg.configPath, errCode.message()));
   }
-  yml::Input ymlIn{(**buf).getBuffer(), nullptr, ymlDiagHandler};
-  NormalConfig nOpts;
-  ymlIn >> nOpts;
-  if (ymlIn.error()) {
+  // NOLINTBEGIN
+  yml::Input ymlIn{(**buf).getMemBufferRef(),
+                   const_cast<void *>(static_cast<const void *>(&cliCfg)), ymlDiagHandler};
+  // NOLINTEND
+  NormalConfig nCfg;
+  ymlIn >> nCfg;
+  if (std::error_code errCode{ymlIn.error()}) {
     return llvm::make_error<EmptyErr>();
   }
 
-  // root
-  llvm::SmallString<128> tmp{nOpts.root};
-  llvm::StringRef configDir{pth::parent_path(configPath)};
-  pth::make_absolute(configDir, tmp);
-  cfg.root = tmp.str();
-  if (std::error_code errCode{VFS.getRealPath(cfg.root, tmp)}) {
-    return llvm::createStringError(errCode, "When resolving root directory: %s.",
-                                   errCode.message().c_str());
-  }
-  cfg.root = tmp.str();
-  llvm::SmallVector<GlobDirRule, 2> rootGlobRules;
+  Config cfg;
 
-  // stdImport
-  cfg.stdImport = nOpts.stdImport;
+  // root
+  llvm::SmallString<128> tmp;
+  if (!cliCfg.rootDir.empty()) {
+    cfg.rootDir = cliCfg.rootDir;
+  } else {
+    tmp = nCfg.rootDir;
+    pth::make_absolute(pth::parent_path(cliCfg.configPath), tmp);
+    cfg.rootDir = tmp.str();
+    tmp.clear();
+  }
+  if (std::error_code errCode{VFS.getRealPath(cfg.rootDir, tmp)}) {
+    return llvm::createStringError(errCode, llvm::formatv("When resolving root directory {}: {}.",
+                                                          cfg.rootDir, errCode.message()));
+  }
+  cfg.rootDir = tmp.str();
+
+  llvm::SmallVector<GlobDirRule, 2> rootGlobRules;
 
   // hdrGlobs
   rootGlobRules.emplace_back();
-  llvm::Expected<GlobStorage> globs{mkGlobs(nOpts.hdrGlobExprs)};
+  llvm::Expected<GlobStorage> globs{mkGlobs(nCfg.hdrGlobExprs)};
   if (!globs) {
     return globs.takeError();
   }
@@ -152,18 +182,16 @@ auto resolveConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS
     }
   };
 
-  if (nOpts.compDBPath && nOpts.xplicit) {
-
-    return llvm::createStringError(
-        "Invalid configuration: 'compilationDB' and 'explicit' are mutually exclusive");
+  if (nCfg.compDBPath && nCfg.nExplicit) {
+    return llvm::createStringError("'compilationDB' and 'explicit' are mutually exclusive.");
   }
 
   // compilationDB
-  if (nOpts.compDBPath) {
-    buf = VFS.getBufferForFile(*nOpts.compDBPath, -1, false, false);
+  if (nCfg.compDBPath) {
+    buf = VFS.getBufferForFile(*nCfg.compDBPath, -1, false, false);
     if (std::error_code errCode{buf.getError()}) {
       return llvm::createStringError(
-          errCode, llvm::formatv("When opening {}: {}.", configPath, errCode.message()));
+          errCode, llvm::formatv("When opening {}: {}.", *nCfg.compDBPath, errCode.message()));
     }
     std::string msg;
     std::unique_ptr<tl::JSONCompilationDatabase> jsonCompDb{
@@ -171,17 +199,17 @@ auto resolveConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS
                                                     tl::JSONCommandLineSyntax::AutoDetect),
     };
     if (!jsonCompDb) {
-      return llvm::createStringError("When parsing JSON compilation database: %s", msg.c_str());
+      return llvm::createStringError("When parsing JSON compilation database: %s.", msg.c_str());
     }
     cfg.srcs = jsonCompDb->getAllFiles();
     cfg.compDB = std::move(jsonCompDb);
   }
 
   // explicit
-  else if (nOpts.xplicit) {
+  else if (nCfg.nExplicit) {
     // explicit.srcGlobs
     rootGlobRules.emplace_back();
-    globs = mkGlobs(nOpts.xplicit->srcGlobExprs);
+    globs = mkGlobs(nCfg.nExplicit->srcGlobExprs);
     if (!globs) {
       return globs.takeError();
     }
@@ -193,13 +221,20 @@ auto resolveConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS
     };
 
     // explicit.compileFlags
-    cfg.compDB = std::make_unique<tl::FixedCompilationDatabase>(".", nOpts.xplicit->compileFlags);
+    cfg.compDB = std::make_unique<tl::FixedCompilationDatabase>(".", nCfg.nExplicit->compileFlags);
   } else {
     return llvm::createStringError(
-        "Invalid configuration: At least one of 'compilationDB' or 'explicit' must be specified");
+        "At least one of 'compilationDB' or 'explicit' must be specified.");
   }
-  if (llvm::Error err{globDir(cfg.root, rootGlobRules, VFS)}) {
+  if (llvm::Error err{globDir(cfg.rootDir, rootGlobRules, VFS)}) {
     return err;
   }
+
+  // stdImport
+  cfg.stdImport = nCfg.stdImport;
+
+  // write
+  cfg.write = cliCfg.write;
+
   return cfg;
 }
