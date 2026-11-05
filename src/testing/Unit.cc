@@ -40,13 +40,9 @@ public:
 
 } // namespace
 
-auto runUnitTest(const char *suiteName, const int argc, const char *const *argv) noexcept -> int {
-  // Always set program and log stream before everything.
-  LogOpts logOpts{.prog = "", .stream = &llvm::errs()};
-  setGlobalLogOpts(logOpts);
-
+auto runUnitTest(const char *suiteName, const int argc, const char **argv) noexcept -> int {
   doctest::Context ctx{argc, argv};
-  LLVMOstream doctestOut{*logOpts.stream};
+  LLVMOstream doctestOut{*globalLogOpts.stream};
   ctx.setOption("ts", suiteName);
   ctx.setCout(&doctestOut);
   return ctx.run();

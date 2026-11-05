@@ -5,9 +5,9 @@ add_executable(test-tool
   MemFS.cc
   FSTest.cc
   GlobTest.cc
-  OptsTest.cc
+  ConfigTest.cc
 )
-require(test-tool PRIVATE LLVM doctest)
+require(test-tool PRIVATE LLVM Clang doctest)
 target_link_libraries(test-tool PRIVATE
   common-config
   utils-lib

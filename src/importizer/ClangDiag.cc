@@ -6,7 +6,7 @@
 
 void MyDiagnosticConsumer::HandleDiagnostic(clang::DiagnosticsEngine::Level lvl,
                                             const clang::Diagnostic &info) noexcept {
-  llvm::SmallString<128> msg;
+  llvm::SmallString<64> msg;
   info.FormatDiagnostic(msg);
 
   switch (lvl) {
@@ -15,11 +15,11 @@ void MyDiagnosticConsumer::HandleDiagnostic(clang::DiagnosticsEngine::Level lvl,
   case clang::DiagnosticsEngine::Level::Remark:
     break;
   case clang::DiagnosticsEngine::Level::Warning:
-    warn("{}", msg);
+    logWarning("{}", msg);
     break;
   case clang::DiagnosticsEngine::Level::Error:
   case clang::DiagnosticsEngine::Level::Fatal:
-    err("{}", msg);
+    logErr("{}", msg);
     break;
   }
 }

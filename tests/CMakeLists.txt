@@ -1,32 +1,32 @@
 enable_testing()
 
 # Unit tests
-set(unitTestSuites "FS;Glob;")
+set(unitTestSuites "FS;Glob;Config;")
 foreach(unitTestSuite ${unitTestSuites})
   add_test(
     NAME ${unitTestSuite}
     COMMAND "$<TARGET_FILE:test-tool>"
-      unit
+      run-unit
       ${unitTestSuite}
   )
 endforeach()
 set_tests_properties(${unitTestSuites} PROPERTIES LABELS "unit")
 
 # End-to-end tests
-set(E2ETestNames)
+set(e2eTestNames)
 file(GLOB testDirs ./*)
 foreach(testDir ${testDirs})
   if(NOT IS_DIRECTORY "${testDir}")
     continue()
   endif()
-  cmake_path(GET testDir FILENAME E2ETestName)
+  cmake_path(GET testDir FILENAME e2eTestName)
   add_test(
-    NAME "${E2ETestName}"
+    NAME "${e2eTestName}"
     COMMAND "$<TARGET_FILE:test-tool>"
-      E2E
-      "${CMAKE_CURRENT_SOURCE_DIR}/${E2ETestName}"
-      "${CMAKE_CURRENT_BINARY_DIR}/${E2ETestName}"
+      run-e2e
+      "${CMAKE_CURRENT_SOURCE_DIR}/${e2eTestName}"
+      "${CMAKE_CURRENT_BINARY_DIR}/${e2eTestName}"
   )
-  list(APPEND E2ETestNames ${E2ETestName})
+  list(APPEND e2eTestNames ${e2eTestName})
 endforeach()
-set_tests_properties(${E2ETestNames} PROPERTIES LABELS "E2E")
+set_tests_properties(${e2eTestNames} PROPERTIES LABELS "E2E")

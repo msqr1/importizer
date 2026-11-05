@@ -1,4 +1,5 @@
 #include "utils/Diag.hh"
+#include <cassert>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
 #include <system_error>
@@ -10,10 +11,14 @@ auto EmptyErr::convertToErrorCode() const noexcept -> std::error_code {
 }
 
 const LogOpts globalLogOpts{};
-void setGlobalLogOpts(const LogOpts &opts) {
-  globalLogOpts.prog = opts.prog;
-  globalLogOpts.stream = opts.stream;
+
+void setGlobalLogOpts(const char *prog, llvm::raw_ostream *stream) noexcept {
+  assert(prog != nullptr && stream != nullptr);
+  globalLogOpts.prog = prog;
+  globalLogOpts.stream = stream;
 }
+
+void setGlobalLogOpts(const LogOpts &opts) noexcept { setGlobalLogOpts(opts.prog, opts.stream); }
 
 #ifdef __has_feature
 #if __has_feature(address_sanitizer)
@@ -32,6 +37,6 @@ extern "C" auto __asan_default_options() -> const char * {
 
 namespace {
 
-[[gnu::used, gnu::retain]] alignas(64) const thread_local int tlsAligner{};
+[[gnu::used, gnu::retain]] alignas(64) const thread_local char tlsAligner{};
 
 } // namespace

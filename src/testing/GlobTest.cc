@@ -1,5 +1,5 @@
-// Glob utilities tests. We trust that llvm::GlobPattern is already well-tested so we won't test
-// creation and matching extensively.
+// Glob utilities tests. We trust that llvm::GlobPattern is already well-tested, so we won't test
+// creation and matching too much.
 
 #include "utils/Glob.hh"
 #include "testing/MemFS.hh"

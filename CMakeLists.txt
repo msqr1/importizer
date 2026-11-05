@@ -45,6 +45,7 @@ target_compile_options(common-config INTERFACE
   -Wextra-semi-stmt
   -Wglobal-constructors
   -Werror
+  -Wno-error=unknown-warning-option
   -Wno-c++98-compat
   -Wno-c++98-compat-pedantic
   -Wno-unsafe-buffer-usage

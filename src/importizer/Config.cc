@@ -135,9 +135,9 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
     -> llvm::Expected<Config> {
 
   auto buf{VFS.getBufferForFile(cliCfg.configPath, -1, false, false, false)};
-  if (std::error_code errCode{buf.getError()}) {
+  if (std::error_code err{buf.getError()}) {
     return llvm::createStringError(
-        errCode, llvm::formatv("When opening {}: {}.", cliCfg.configPath, errCode.message()));
+        err, llvm::formatv("When opening {}: {}.", cliCfg.configPath, err.message()));
   }
   // NOLINTBEGIN
   yml::Input ymlIn{(**buf).getMemBufferRef(),
@@ -145,14 +145,14 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
   // NOLINTEND
   NormalConfig nCfg;
   ymlIn >> nCfg;
-  if (std::error_code errCode{ymlIn.error()}) {
+  if (std::error_code err{ymlIn.error()}) {
     return llvm::make_error<EmptyErr>();
   }
 
   Config cfg;
 
   // root
-  llvm::SmallString<128> tmp;
+  llvm::SmallString<64> tmp;
   if (!cliCfg.rootDir.empty()) {
     cfg.rootDir = cliCfg.rootDir;
   } else {
@@ -161,9 +161,9 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
     cfg.rootDir = tmp.str();
     tmp.clear();
   }
-  if (std::error_code errCode{VFS.getRealPath(cfg.rootDir, tmp)}) {
-    return llvm::createStringError(errCode, llvm::formatv("When resolving root directory {}: {}.",
-                                                          cfg.rootDir, errCode.message()));
+  if (std::error_code err{VFS.getRealPath(cfg.rootDir, tmp)}) {
+    return llvm::createStringError(
+        err, llvm::formatv("When resolving root directory {}: {}.", cfg.rootDir, err.message()));
   }
   cfg.rootDir = tmp.str();
 
@@ -189,9 +189,9 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
   // compilationDB
   if (nCfg.compDBPath) {
     buf = VFS.getBufferForFile(*nCfg.compDBPath, -1, false, false);
-    if (std::error_code errCode{buf.getError()}) {
+    if (std::error_code err{buf.getError()}) {
       return llvm::createStringError(
-          errCode, llvm::formatv("When opening {}: {}.", *nCfg.compDBPath, errCode.message()));
+          err, llvm::formatv("When opening {}: {}.", *nCfg.compDBPath, err.message()));
     }
     std::string msg;
     std::unique_ptr<tl::JSONCompilationDatabase> jsonCompDb{

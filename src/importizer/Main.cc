@@ -2,14 +2,19 @@
 #include "importizer/ClangDiag.hh"
 #include "importizer/Config.hh"
 #include "importizer/Frontend.hh"
+#include "utils/Diag.hh"
 #include <cassert>
 #include <clang/Tooling/Tooling.h>
+#include <cstdlib>
 #include <llvm/Support/Error.h>
 #include <memory>
+#include <utility>
 
 namespace tl = clang::tooling;
 
-auto importizerMain(const int argc, const char *const *argv) -> llvm::Error {
+namespace {
+
+auto importizerMain2(const int argc, const char *const *argv) -> llvm::Error {
   llvm::Expected<CLIConfig> cliCfg{getCLIConfig(argc, argv)};
   if (!cliCfg) {
     return llvm::joinErrors(cliCfg.takeError(),
@@ -24,8 +29,7 @@ auto importizerMain(const int argc, const char *const *argv) -> llvm::Error {
   tl::ClangTool tool{*cfg->compDB, cfg->srcs};
   FrontendCtx ctx{*cfg};
   FrontendAnalyzerFactory factory{ctx};
-  std::unique_ptr<MyDiagnosticConsumer> diagHandler{std::make_unique<MyDiagnosticConsumer>()};
-  tool.setDiagnosticConsumer(diagHandler.get());
+  tool.setDiagnosticConsumer(std::make_unique<MyDiagnosticConsumer>().get());
   switch (tool.run(&factory)) {
   case 0:
     break;
@@ -38,4 +42,18 @@ auto importizerMain(const int argc, const char *const *argv) -> llvm::Error {
     break;
   }
   return llvm::Error::success();
+}
+
+} // namespace
+
+auto importizerMain(const int argc, const char *const *argv) -> int {
+  llvm::Error error{importizerMain2(argc, argv)};
+  int rtn{error ? EXIT_FAILURE : EXIT_SUCCESS};
+  llvm::handleAllErrors(std::move(error), [](const llvm::ErrorInfoBase &errInfo) -> llvm::Error {
+    if (!errInfo.isA<EmptyErr>()) {
+      logErr("{}", errInfo.message());
+    }
+    return llvm::Error::success();
+  });
+  return rtn;
 }

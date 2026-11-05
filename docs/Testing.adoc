@@ -20,7 +20,7 @@ To add a new test case, follow this format:
 tests/my-new-feature/     # Subdirectory named after the test
 ├── Config.yml            # importizer's configuration
 ├── in/                   # Input files
-├── ref/                  # Expected output files
+├── ref/                  # Expected output files (don't add when not expecting valid output)
 └── RefCLI.txt            # Expected CLI output
 ----
 

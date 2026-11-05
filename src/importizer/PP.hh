@@ -13,10 +13,6 @@
 struct FrontendCtx;
 struct Config;
 
-namespace llvm {
-class StringRef;
-} // namespace llvm
-
 namespace clang {
 class SourceLocation;
 class Module;

@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <llvm/ADT/FunctionExtras.h>
 #include <llvm/ADT/SmallString.h>
+#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/GlobPattern.h>
 #include <llvm/Support/Path.h>
@@ -17,10 +18,6 @@
 #include <vector>
 
 namespace pth = llvm::sys::path;
-
-namespace llvm {
-class StringRef;
-} // namespace llvm
 
 class Glob {
   llvm::GlobPattern ptn;
@@ -69,7 +66,7 @@ struct GlobDirRule {
 template <bool recurse = true, ConvertibleRange<GlobDirRule> T>
 [[nodiscard]] auto globDir(const llvm::Twine &dir, const T &rules,
                            vfs::FileSystem &dirVFS = getRealFS()) -> llvm::Error {
-  llvm::SmallString<128> tmp;
+  llvm::SmallString<64> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
     return llvm::createStringError("When globbing directory: dir path is empty");
   }

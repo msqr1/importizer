@@ -9,7 +9,8 @@
 #include <llvm/Support/raw_ostream.h>
 #include <system_error>
 
-// Used for calling into APIs that log their own errors.
+// Signify that an error has occured, but no further action required. Usually used for calling into
+// APIs that logs their own errors.
 class EmptyErr : public llvm::ErrorInfo<EmptyErr> {
 public:
   static char ID; // NOLINT
@@ -24,10 +25,11 @@ struct LogOpts {
   mutable llvm::raw_ostream *stream;
 } const extern globalLogOpts;
 
-void setGlobalLogOpts(const LogOpts &opts);
+void setGlobalLogOpts(const char *prog, llvm::raw_ostream *stream) noexcept;
+void setGlobalLogOpts(const LogOpts &opts) noexcept;
 
 // Log an error to the global output stream
-template <typename... Ts> void err(const char *fmt, Ts &&...args) noexcept {
+template <typename... Ts> void logErr(const char *fmt, Ts &&...args) noexcept {
   assert(globalLogOpts.stream != nullptr && globalLogOpts.prog != nullptr);
   llvm::WithColor::error(*globalLogOpts.stream, globalLogOpts.prog);
   llvm::WithColor{*globalLogOpts.stream, llvm::raw_ostream::Colors::SAVEDCOLOR, true}
@@ -35,7 +37,7 @@ template <typename... Ts> void err(const char *fmt, Ts &&...args) noexcept {
 }
 
 // Log a warning to the global output stream
-template <typename... Ts> void warn(const char *fmt, Ts &&...args) noexcept {
+template <typename... Ts> void logWarning(const char *fmt, Ts &&...args) noexcept {
   assert(globalLogOpts.stream != nullptr && globalLogOpts.prog != nullptr);
   llvm::WithColor::warning(*globalLogOpts.stream, globalLogOpts.prog);
   llvm::WithColor{*globalLogOpts.stream, llvm::raw_ostream::Colors::SAVEDCOLOR, true}
