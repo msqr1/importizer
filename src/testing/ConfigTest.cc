@@ -11,10 +11,7 @@ TEST_CASE("Resolution") {
   CLIConfig cliCfg;
   cliCfg.configPath = "/Config.yml";
 
-  SUBCASE("Nonexistant config file") {
-    llvm::Expected<Config> cfg{resolveConfig(cliCfg)};
-    CHECK_UNARY_FALSE(!!cfg);
-  }
+  SUBCASE("Nonexistant config file") { CHECK_UNARY_FALSE(!!resolveConfig(cliCfg)); }
 }
 
 TEST_SUITE_END();

@@ -69,14 +69,12 @@ auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &outDir) noexcept 
   const llvm::StringRef refCLI{(**buf).getBuffer()};
 
   llvm::Error res{llvm::Error::success()};
-
   if (out != refCLI) {
     res = llvm::joinErrors(
         std::move(res),
         llvm::createStringError(llvm::inconvertibleErrorCode(),
                                 llvm::formatv("Unexpected CLI output, got:\n{}", out)));
   }
-
   if (hasRef) {
     llvm::Expected<bool> cmpRes{cmpDirs(outDirStr, refDir)};
     if (!cmpRes) {
@@ -91,7 +89,8 @@ auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &outDir) noexcept 
 }
 
 auto updateE2ETest(const llvm::Twine &testDir) noexcept -> llvm::Error {
-  const llvm::Twine refDir{testDir + pth::get_separator() + "ref"};
+  llvm::SmallString<64> refDir;
+  pth::append(refDir, testDir, "ref");
   if (!fs::exists(refDir)) {
     return llvm::createStringError("Expected output directory not found");
   }
@@ -104,7 +103,7 @@ auto updateE2ETest(const llvm::Twine &testDir) noexcept -> llvm::Error {
         err, llvm::formatv("When creating directory {}: {}", tmpDir, err.message()));
   }
   llvm::SmallString<64> configPath;
-  (testDir + pth::get_separator() + "Config.yml").toVector(configPath);
+  pth::append(configPath, testDir, "Config.yml");
 
   // Make sure argv strings are always null-terminated
   std::array<const char *, 5> cmd{"importizer", configPath.c_str(), "-w", "-r", tmpDir.c_str()};

@@ -89,6 +89,8 @@ endif()
 if(LINUX)
   target_link_options(common-config INTERFACE
     "LINKER:--gc-sections,--as-needed,--no-copy-dt-needed-entries"
+
+    # Future-proof page size
     "LINKER:-z,max-page-size=65536,-z,common-page-size=65536"
 
     # In Debug mode, we want to still link in whatever dynamic library we need.

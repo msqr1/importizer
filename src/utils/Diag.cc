@@ -37,6 +37,7 @@ extern "C" auto __asan_default_options() -> const char * {
 
 namespace {
 
+// For Bionic CStdlib
 [[gnu::used, gnu::retain]] alignas(64) const thread_local char tlsAligner{};
 
 } // namespace
