@@ -4,8 +4,8 @@ using namespace System
 
 param (
   [Parameter(Position = 0)][ValidateSet("amd64", "arm64")][string]$arch,
-  [ValidateNotNullOrEmpty()][string]$LLVMPrefix = "C:/Program Files/LLVM",
-  [ValidateNotNullOrEmpty()][string]$CMakePrefix = "C:/Program Files/CMake"
+  [ValidateNotNullOrEmpty()][string]$llvmPrefix = "C:/Program Files/LLVM",
+  [ValidateNotNullOrEmpty()][string]$cmakePrefix = "C:/Program Files/CMake"
 )
 
 function exitWithErr {
@@ -70,10 +70,10 @@ $components = [Collections.Generic.List[string]]@(
   "Microsoft.VisualStudio.Component.Windows1?SDK.*"
   "Microsoft.VisualStudio.Component.VC.*.$x"
 )
-if ($LLVMPrefix.Equals(":bundled")) {
+if ($llvmPrefix.Equals(":bundled")) {
   $components.Add("Microsoft.VisualStudio.Component.VC.Llvm.Clang")
 }
-if ($CMakePrefix.Equals(":bundled")) {
+if ($cmakePrefix.Equals(":bundled")) {
   $components.Add("Microsoft.VisualStudio.Component.VC.CMake.Project")
 }
 $opts.FileName = $vswhere
@@ -86,12 +86,12 @@ if ($proc.ExitCode -ne 0 -or [string]::IsNullOrEmpty($vsPrefix)) {
   exitWithErr("No suitable Visual Studio installation found. One must have these components: ",
     $components)
 }
-if ($LLVMPrefix.Equals(":bundled")) {
+if ($llvmPrefix.Equals(":bundled")) {
   $dir = if ($arch.Equals("amd64")) { "x64" } else { "ARM64" }
-  $LLVMPrefix = [IO.Path]::Combine($vsPrefix, "VC", "Tools", "Llvm", $dir)
+  $llvmPrefix = [IO.Path]::Combine($vsPrefix, "VC", "Tools", "Llvm", $dir)
 }
-if ($CMakePrefix.Equals(":bundled")) {
-  $CMakePrefix = [IO.Path]::Combine($vsPrefix, "Common7", "IDE",
+if ($cmakePrefix.Equals(":bundled")) {
+  $cmakePrefix = [IO.Path]::Combine($vsPrefix, "Common7", "IDE",
     "CommonExtensions", "Microsoft", "CMake", "CMake")
 }
 
@@ -138,11 +138,11 @@ $proc.WaitForExit()
 [Environment]::SetEnvironmentVariable("IMPORTIZER_OS", "windows")
 [Environment]::SetEnvironmentVariable("IMPORTIZER_ARCH", $arch)
 
-$llvmBin = [IO.Path]::Combine($LLVMPrefix, "bin")
+$llvmBin = [IO.Path]::Combine($llvmPrefix, "bin")
 if (!$path.Contains($llvmBin)) {
   $path = "$llvmBin;$path"
 }
-$cmakeBin = [IO.Path]::Combine($CMakePrefix, "bin")
+$cmakeBin = [IO.Path]::Combine($cmakePrefix, "bin")
 if (!$path.Contains($cmakeBin)) {
   $path = "$cmakeBin;$path"
 }

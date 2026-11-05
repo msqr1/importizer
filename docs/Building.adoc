@@ -1,5 +1,6 @@
 = Building
 :toc: preamble
+
 :repo-url: https://github.com/msqr1/importizer
 :alpine-v: 3.24.3
 :libtooling-v: 23.1.5
@@ -103,7 +104,7 @@ We're replacing MSVC toolchain here.
 === Build customization
 Once you installed the toolchain, create a `CMakeUserPresets.json` and inherit from the `importizer`
 preset of link:/CMakePresets.json[`CMakePresets.json`] to customize your local build.
-For example (you'd find this as the `recommended-dev` preset):
+For example (you'd find this as the `build` preset):
 [,json]
 ----
 {
@@ -115,7 +116,6 @@ For example (you'd find this as the `recommended-dev` preset):
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
         "BUILD_TESTING": true,
-        "TRACE_BUILD": true,
         "USE_PCH": true,
         "LTO_CACHE": true
       }
@@ -132,7 +132,7 @@ Cross compilation is currently unsupported.
 # Setup the environment
 . scripts/setup/<os>
 
-# Configure (--preset importizer MUST ALWAYS be specified to ensure correct build settings)
+# Configure (--preset importizer MUST ALWAYS be specified to ensure corre build settings)
 cmake -B build -DCMAKE_BUILD_TYPE=Release --preset importizer
 
 # Build (ninja is smart enough to parallelize)
