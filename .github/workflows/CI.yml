@@ -1,5 +1,10 @@
 name: Tag Continuous
-on: [push, workflow_dispatch]
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      jqExpr:
+        description: Override JQ expression
 concurrency:
   group: CI-${{ github.ref_name }}
   cancel-in-progress: false
@@ -29,7 +34,7 @@ jobs:
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: 'map(select(.os != "macos"))'
+          JQ_EXPR: ${{ inputs.jqExpr || 'map(select(.os == "macos"))' }}
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then

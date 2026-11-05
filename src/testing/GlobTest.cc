@@ -25,6 +25,7 @@ TEST_CASE("Creation and negation") {
     llvm::Expected<Glob> invalid{mkGlob("[]")};
     CHECK_UNARY_FALSE(!!invalid);
   }
+
   SUBCASE("Negated match") {
     llvm::Expected<Glob> g{mkGlob("*")};
     if (!CHECK_UNARY(!!g)) {
@@ -46,6 +47,7 @@ TEST_CASE("Glob directory") {
     std::array<GlobDirRule, 1> rules;
     CHECK_UNARY(!!globDir("", rules, memFS));
   }
+
   SUBCASE("Real matching") {
     const llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
     const llvm::StringSet<> cmakeFilePaths{"/CMakeLists.txt", "/lib/CMakeLists.txt",

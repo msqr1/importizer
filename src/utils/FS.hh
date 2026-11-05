@@ -29,8 +29,8 @@ using IterDirCallback = llvm::function_ref<llvm::Expected<bool>(const vfs::direc
 
 // Nicer LLVM's directory iterator. Returns true if iteration is successful.
 template <bool recurse = false>
-[[nodiscard]] auto iterDir(const llvm::Twine &dir, IterDirCallback callback,
-                           vfs::FileSystem &VFS = getRealFS()) noexcept -> llvm::Error {
+auto iterDir(const llvm::Twine &dir, IterDirCallback callback,
+             vfs::FileSystem &VFS = getRealFS()) noexcept -> llvm::Error {
   std::error_code err;
   DirItT<recurse> it;
   DirItT<recurse> end;
@@ -59,15 +59,13 @@ template <bool recurse = false>
   return llvm::Error::success();
 }
 
-[[nodiscard]] auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
-                          vfs::FileSystem &srcVFS = getRealFS()) noexcept -> llvm::Error;
+auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
+            vfs::FileSystem &srcVFS = getRealFS()) noexcept -> llvm::Error;
 
-[[nodiscard]] auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2,
-                            vfs::FileSystem &file1VFS = getRealFS(),
-                            vfs::FileSystem &file2VFS = getRealFS()) noexcept
-    -> llvm::Expected<bool>;
+auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2,
+              vfs::FileSystem &file1VFS = getRealFS(),
+              vfs::FileSystem &file2VFS = getRealFS()) noexcept -> llvm::Expected<bool>;
 
 // Compare the content of 2 directories (including file content) and log mismatches.
-[[nodiscard]] auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref,
-                           vfs::FileSystem &dirVFS = getRealFS(),
-                           vfs::FileSystem &refVFS = getRealFS()) noexcept -> llvm::Expected<bool>;
+auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &dirVFS = getRealFS(),
+             vfs::FileSystem &refVFS = getRealFS()) noexcept -> llvm::Expected<bool>;

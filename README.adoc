@@ -122,14 +122,14 @@ Globs are resolved through this.
 |string
 |Path to a `compile_commands.json` compilation database to provide context.
 
-|explicit
-|object
-|See the <<explicit-mode, Explicit mode>> section.
-
 |stdImport
 |boolean
 |Replace C{plus}{plus} headers inclusion with `import std;` and if C wrappers headers are used,
 `std.compat`.
+
+|explicit
+|object
+|See the <<explicit-mode, Explicit mode>> section.
 |===
 
 ==== Explicit mode

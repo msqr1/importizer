@@ -42,7 +42,7 @@ concept ConvertibleRange = std::ranges::range<Container> &&
 
 // Make many globs
 template <ConvertibleRange<llvm::StringRef> T>
-[[nodiscard]] auto mkGlobs(const T &globExprs) noexcept -> llvm::Expected<GlobStorage> {
+auto mkGlobs(const T &globExprs) noexcept -> llvm::Expected<GlobStorage> {
   GlobStorage globs;
   llvm::Error err{llvm::Error::success()};
   for (llvm::StringRef globExpr : globExprs) {
@@ -64,8 +64,8 @@ struct GlobDirRule {
 };
 
 template <bool recurse = true, ConvertibleRange<GlobDirRule> T>
-[[nodiscard]] auto globDir(const llvm::Twine &dir, const T &rules,
-                           vfs::FileSystem &dirVFS = getRealFS()) -> llvm::Error {
+auto globDir(const llvm::Twine &dir, const T &rules, vfs::FileSystem &dirVFS = getRealFS())
+    -> llvm::Error {
   llvm::SmallString<64> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
     return llvm::createStringError("When globbing directory: dir path is empty");

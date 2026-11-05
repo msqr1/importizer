@@ -2,11 +2,9 @@ name: Start a container
 inputs:
   container:
     description: Container image (empty = do nothing)
-    required: false
-    default: ""
+    required: true
   wrapped-shell:
     description: Shell in the container to wrap
-    required: false
     default: /bin/sh -e
   wrapper-name:
     description: Wrapper name

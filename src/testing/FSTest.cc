@@ -19,6 +19,7 @@ TEST_CASE("Compare files") {
     CHECK_UNARY_FALSE(!!cmpFiles("", "/", memFS, memFS));
     CHECK_UNARY_FALSE(!!cmpFiles("/", "", memFS, memFS));
   }
+
   SUBCASE("Same content") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/File.txt");
@@ -49,6 +50,7 @@ TEST_CASE("Compare directories") {
     CHECK_UNARY_FALSE(!!cmpDirs("", "/", memFS, memFS));
     CHECK_UNARY_FALSE(!!cmpDirs("/", "", memFS, memFS));
   }
+
   SUBCASE("Identical directories") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
@@ -60,6 +62,7 @@ TEST_CASE("Compare directories") {
     }
     CHECK_UNARY(*cmpRes);
   }
+
   SUBCASE("Missing file") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
@@ -71,6 +74,7 @@ TEST_CASE("Compare directories") {
     }
     CHECK_UNARY_FALSE(*cmpRes);
   }
+
   SUBCASE("Mismatched file content") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
@@ -82,6 +86,7 @@ TEST_CASE("Compare directories") {
     }
     CHECK_UNARY_FALSE(*cmpRes);
   }
+
   SUBCASE("Unexpected extra file") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");
@@ -94,6 +99,7 @@ TEST_CASE("Compare directories") {
     }
     CHECK_UNARY_FALSE(*cmpRes);
   }
+
   SUBCASE("Unexpected file type") {
     vfs::InMemoryFileSystem memFS;
     addFile1(memFS, "/ref/File.txt");

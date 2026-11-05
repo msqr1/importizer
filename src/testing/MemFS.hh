@@ -2,6 +2,7 @@
 
 #pragma once
 #include <llvm/ADT/STLFunctionalExtras.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/raw_ostream.h>
 
@@ -11,6 +12,6 @@ class Twine;
 
 namespace vfs = llvm::vfs;
 
-auto addDir(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool;
-auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool;
-auto addFile2(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool;
+auto addDir(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error;
+auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error;
+auto addFile2(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error;

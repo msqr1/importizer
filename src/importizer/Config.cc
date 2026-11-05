@@ -35,50 +35,10 @@ namespace vfs = llvm::vfs;
 namespace pth = llvm::sys::path;
 namespace yml = llvm::yaml;
 
-namespace {
-
-struct NormalExplicit {
-  std::vector<llvm::StringRef> srcGlobExprs;
-  std::vector<std::string> compileFlags;
-};
-
-struct NormalConfig {
-  std::optional<NormalExplicit> nExplicit;
-  std::optional<llvm::StringRef> compDBPath;
-  std::vector<llvm::StringRef> hdrGlobExprs;
-  llvm::StringRef rootDir;
-  bool stdImport{};
-};
-
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*ctx*/) noexcept {
   assert(globalLogOpts.stream != nullptr && globalLogOpts.prog != nullptr);
   diag.print(globalLogOpts.prog, *globalLogOpts.stream);
 }
-
-} // namespace
-
-template <> struct yml::MappingTraits<NormalExplicit> {
-  static void mapping(yml::IO &in, NormalExplicit &nExplicit) {
-    in.mapRequired("srcGlobs", nExplicit.srcGlobExprs);
-    in.mapOptional("compileFlags", nExplicit.compileFlags);
-  }
-};
-
-template <> struct yml::MappingTraits<NormalConfig> {
-  static void mapping(yml::IO &in, NormalConfig &nCfg) {
-    assert(in.getContext() != nullptr);
-    const CLIConfig &cliCfg{*static_cast<CLIConfig *>(in.getContext())};
-    if (cliCfg.rootDir.empty()) {
-      in.mapRequired("rootDir", nCfg.rootDir);
-    } else {
-      in.mapOptional("rootDir", nCfg.rootDir);
-    }
-    in.mapRequired("hdrGlobs", nCfg.hdrGlobExprs);
-    in.mapOptional("compilationDB", nCfg.compDBPath);
-    in.mapOptional("stdImport", nCfg.stdImport);
-    in.mapOptional("explicit", nCfg.nExplicit);
-  }
-};
 
 auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS) noexcept
     -> llvm::Expected<CLIConfig> {
@@ -143,8 +103,8 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
   yml::Input ymlIn{(**buf).getMemBufferRef(),
                    const_cast<void *>(static_cast<const void *>(&cliCfg)), ymlDiagHandler};
   // NOLINTEND
-  NormalConfig nCfg;
-  ymlIn >> nCfg;
+  YMLConfig ymlCfg;
+  ymlIn >> ymlCfg;
   if (std::error_code err{ymlIn.error()}) {
     return llvm::make_error<EmptyErr>();
   }
@@ -156,7 +116,7 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
   if (!cliCfg.rootDir.empty()) {
     cfg.rootDir = cliCfg.rootDir;
   } else {
-    tmp = nCfg.rootDir;
+    tmp = ymlCfg.rootDir;
     pth::make_absolute(pth::parent_path(cliCfg.configPath), tmp);
     cfg.rootDir = tmp.str();
     tmp.clear();
@@ -171,7 +131,7 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
 
   // hdrGlobs
   rootGlobRules.emplace_back();
-  llvm::Expected<GlobStorage> globs{mkGlobs(nCfg.hdrGlobExprs)};
+  llvm::Expected<GlobStorage> globs{mkGlobs(ymlCfg.hdrGlobExprs)};
   if (!globs) {
     return globs.takeError();
   }
@@ -182,16 +142,12 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
     }
   };
 
-  if (nCfg.compDBPath && nCfg.nExplicit) {
-    return llvm::createStringError("'compilationDB' and 'explicit' are mutually exclusive.");
-  }
-
   // compilationDB
-  if (nCfg.compDBPath) {
-    buf = VFS.getBufferForFile(*nCfg.compDBPath, -1, false, false);
+  if (ymlCfg.compDBPath) {
+    buf = VFS.getBufferForFile(*ymlCfg.compDBPath, -1, false, false);
     if (std::error_code err{buf.getError()}) {
       return llvm::createStringError(
-          err, llvm::formatv("When opening {}: {}.", *nCfg.compDBPath, err.message()));
+          err, llvm::formatv("When opening {}: {}.", *ymlCfg.compDBPath, err.message()));
     }
     std::string msg;
     std::unique_ptr<tl::JSONCompilationDatabase> jsonCompDb{
@@ -206,10 +162,10 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
   }
 
   // explicit
-  else if (nCfg.nExplicit) {
+  else if (ymlCfg.xplicit) {
     // explicit.srcGlobs
     rootGlobRules.emplace_back();
-    globs = mkGlobs(nCfg.nExplicit->srcGlobExprs);
+    globs = mkGlobs(ymlCfg.xplicit->srcGlobExprs);
     if (!globs) {
       return globs.takeError();
     }
@@ -221,17 +177,14 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
     };
 
     // explicit.compileFlags
-    cfg.compDB = std::make_unique<tl::FixedCompilationDatabase>(".", nCfg.nExplicit->compileFlags);
-  } else {
-    return llvm::createStringError(
-        "At least one of 'compilationDB' or 'explicit' must be specified.");
+    cfg.compDB = std::make_unique<tl::FixedCompilationDatabase>(".", ymlCfg.xplicit->compileFlags);
   }
   if (llvm::Error err{globDir(cfg.rootDir, rootGlobRules, VFS)}) {
     return err;
   }
 
   // stdImport
-  cfg.stdImport = nCfg.stdImport;
+  cfg.stdImport = ymlCfg.stdImport;
 
   // write
   cfg.write = cliCfg.write;

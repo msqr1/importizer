@@ -3,7 +3,9 @@
 #include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/MemoryBufferRef.h>
 #include <llvm/Support/VirtualFileSystem.h>
@@ -16,15 +18,28 @@ const auto buf2{llvm::MemoryBuffer::getMemBuffer("Seven! Get it? Cuz, cuz 67!")}
 
 } // namespace
 
-auto addDir(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool {
-  return memFS.addFileNoOwn(path, 0, *buf1, std::nullopt, std::nullopt,
-                            llvm::sys::fs::file_type::directory_file, std::nullopt);
+auto addDir(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error {
+  bool res{memFS.addFileNoOwn(path, 0, *buf1, std::nullopt, std::nullopt,
+                              llvm::sys::fs::file_type::directory_file, std::nullopt)};
+  if (res) {
+    return llvm::Error::success();
+  }
+  return llvm::createStringError(
+      llvm::formatv("Directory {} exists with different content.", path));
 }
 
-auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool {
-  return memFS.addFileNoOwn(path, 0, *buf1);
+auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error {
+  bool res{memFS.addFileNoOwn(path, 0, *buf1)};
+  if (res) {
+    return llvm::Error::success();
+  }
+  return llvm::createStringError(llvm::formatv("File {} exists with different content.", path));
 }
 
-auto addFile2(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> bool {
-  return memFS.addFileNoOwn(path, 0, *buf2);
+auto addFile2(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error {
+  bool res{memFS.addFileNoOwn(path, 0, *buf2)};
+  if (res) {
+    return llvm::Error::success();
+  }
+  return llvm::createStringError(llvm::formatv("File {} exists with different content.", path));
 }
