@@ -16,6 +16,7 @@ Checks: >
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-special-member-functions,
+  -cppcoreguidelines-avoid-do-while,
   modernize-*,
   performance-*,
   portability-*,

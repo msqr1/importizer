@@ -1,12 +1,15 @@
-#define DOCTEST_CONFIG_IMPLEMENT
 #include "testing/Unit.hh"
+#define DOCTEST_CONFIG_IMPLEMENT
+#include "testing/Doctest.hh"
 #include "utils/Diag.hh"
 #include <cstdio>
 #include <ios>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
 #include <ostream>
 #include <streambuf>
+#include <utility>
 
 namespace {
 
@@ -39,6 +42,8 @@ public:
 };
 
 } // namespace
+
+auto ok(llvm::Error err) noexcept -> bool { return !llvm::errorToBool(std::move(err)); }
 
 auto runUnitTest(const char *suiteName, const int argc, const char **argv) noexcept -> int {
   doctest::Context ctx{argc, argv};

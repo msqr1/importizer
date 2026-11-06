@@ -2,6 +2,7 @@
 // creation and matching too much.
 
 #include "utils/Glob.hh"
+#include "testing/Doctest.hh"
 #include "testing/MemFS.hh"
 #include "testing/Unit.hh"
 #include <array>
@@ -9,6 +10,7 @@
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/StringSet.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
@@ -21,20 +23,15 @@ namespace vfs = llvm::vfs;
 TEST_SUITE_BEGIN("Glob");
 
 TEST_CASE("Creation and negation") {
-  SUBCASE("Invalid glob") {
-    llvm::Expected<Glob> invalid{mkGlob("[]")};
-    CHECK_UNARY_FALSE(!!invalid);
-  }
+  SUBCASE("Invalid glob") { CHECK_UNARY_FALSE(ok(mkGlob("["))); }
 
   SUBCASE("Negated match") {
     llvm::Expected<Glob> g{mkGlob("*")};
-    if (!CHECK_UNARY(!!g)) {
-      return;
-    }
+    REQUIRE_UNARY(ok(g));
+
     llvm::Expected<Glob> gNeg{mkGlob("!*")};
-    if (!CHECK_UNARY(!!gNeg)) {
-      return;
-    }
+    REQUIRE_UNARY(ok(gNeg));
+
     CHECK_NE(g->match("hehe"), gNeg->match("hehe"));
   }
 }
@@ -42,17 +39,17 @@ TEST_CASE("Creation and negation") {
 constexpr std::array<llvm::StringRef, 2> cppFilesGlobs{{"*.hh", "*.cc"}};
 constexpr std::array<llvm::StringRef, 1> cmakeFileGlobs{"*CMakeLists.txt"};
 TEST_CASE("Glob directory") {
+  vfs::InMemoryFileSystem memFS;
+
   SUBCASE("Empty paths") {
-    vfs::InMemoryFileSystem memFS;
-    std::array<GlobDirRule, 1> rules;
-    CHECK_UNARY(!!globDir("", rules, memFS));
+    std::array<GlobDirRule, 0> rules;
+    CHECK_UNARY_FALSE(ok(globDir("", rules, memFS)));
   }
 
   SUBCASE("Real matching") {
     const llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
     const llvm::StringSet<> cmakeFilePaths{"/CMakeLists.txt", "/lib/CMakeLists.txt",
                                            "/src/CMakeLists.txt"};
-    vfs::InMemoryFileSystem memFS;
     /*
       /
       ├── CMakeLists.txt
@@ -66,15 +63,13 @@ TEST_CASE("Glob directory") {
     */
     for (llvm::StringRef path :
          llvm::concat<llvm::StringRef>(cppFilePaths.keys(), cmakeFilePaths.keys())) {
-      addFile1(memFS, path);
+      llvm::cantFail(addFile1(memFS, path));
     }
     std::array<GlobDirRule, 2> rules;
 
     llvm::StringSet<> globbedCPPFilePaths;
     llvm::Expected<GlobStorage> globs{mkGlobs(cppFilesGlobs)};
-    if (!CHECK_UNARY(!!globs)) {
-      return;
-    }
+    REQUIRE_UNARY(ok(globs));
     rules[0].globs = std::move(*globs);
     rules[0].callback = [&](const vfs::directory_entry &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
@@ -82,11 +77,10 @@ TEST_CASE("Glob directory") {
         globbedCPPFilePaths.insert(pth::convert_to_slash(ent.path()));
       }
     };
+
     llvm::StringSet<> globbedCMakeFilePaths;
     globs = mkGlobs(cmakeFileGlobs);
-    if (!CHECK_UNARY(!!globs)) {
-      return;
-    }
+    REQUIRE_UNARY(ok(globs));
     rules[1].globs = std::move(*globs);
     rules[1].callback = [&](const vfs::directory_entry &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
@@ -94,10 +88,7 @@ TEST_CASE("Glob directory") {
         globbedCMakeFilePaths.insert(pth::convert_to_slash(ent.path()));
       }
     };
-
-    if (!CHECK_UNARY_FALSE(!!globDir("/", rules, memFS))) {
-      return;
-    }
+    REQUIRE_UNARY(ok(globDir("/", rules, memFS)));
     CHECK_EQ(cppFilePaths, globbedCPPFilePaths);
     CHECK_EQ(cmakeFilePaths, globbedCMakeFilePaths);
   }

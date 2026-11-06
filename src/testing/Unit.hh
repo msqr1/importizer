@@ -1,14 +1,19 @@
-// The unit test runner. Unit tests are located here. This header also acts as doctest with correct
-// settings, so it's used instead of #include <doctest/doctest.h>
+// The unit test runner. Unit tests are located here.
 
 #pragma once
-#define DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-#define DOCTEST_CONFIG_NO_EXCEPTIONS
-#define DOCTEST_CONFIG_NO_WINDOWS_SEH
-#define DOCTEST_CONFIG_NO_POSIX_SIGNALS
-#define DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
-#define DOCTEST_CONFIG_NO_MULTITHREADING
-#define DOCTEST_CONFIG_ASSERTS_RETURN_VALUES
-#include <doctest/doctest.h>
+#include <llvm/Support/Error.h>
+#include <utility>
+
+// Convenience functions for consuming things and convert it to bool, where true means no error.
+// If there's an error (a.k.a this returned false), one must terminate immediately.
+auto ok(llvm::Error err) noexcept -> bool;
+
+template <typename T> auto ok(llvm::Expected<T> &xpected) noexcept -> bool {
+  return ok(xpected.takeError());
+}
+
+template <typename T> auto ok(llvm::Expected<T> &&xpected) noexcept -> bool {
+  return ok(std::move(xpected).takeError());
+}
 
 auto runUnitTest(const char *suiteName, int argc, const char **argv) noexcept -> int;

@@ -32,7 +32,7 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     /clang:-ftrivial-auto-var-init=zero
     /sdl
     /guard:cf
-    /MT # CMAKE_MSVC_RUNTIME_LIBRARY didn't work!!
+    /MT # CMAKE_MSVC_RUNTIME_LIBRARY didn't work!
   )
   add_link_options("LINKER:/CETCOMPAT,/GUARD:CF")
 endif()

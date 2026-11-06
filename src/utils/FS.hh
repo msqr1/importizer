@@ -66,6 +66,6 @@ auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2,
               vfs::FileSystem &file1VFS = getRealFS(),
               vfs::FileSystem &file2VFS = getRealFS()) noexcept -> llvm::Expected<bool>;
 
-// Compare the content of 2 directories (including file content) and log mismatches.
+// Compare the content of 2 directories (including file content) and log mismatches as errors.
 auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &dirVFS = getRealFS(),
              vfs::FileSystem &refVFS = getRealFS()) noexcept -> llvm::Expected<bool>;

@@ -54,7 +54,7 @@ if(ec EQUAL 0)
 
   if(NOT hash STREQUAL refHash)
     file(REMOVE "${arFile}")
-    message(FATAL_ERROR "Mismatched pre-built LibTooling hash.")
+    message(FATAL_ERROR "Mismatching pre-built LibTooling hash.")
   endif()
   file(ARCHIVE_EXTRACT INPUT "${arFile}" DESTINATION "${3rdPartyDir}")
   file(REMOVE "${arFile}")

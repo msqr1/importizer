@@ -44,7 +44,7 @@ struct CLIConfig {
   ATTR_MOVE_ONLY;
   std::string configPath;
   std::string rootDir;
-  bool write{};
+  bool write;
 };
 
 struct YMLExplicit {
@@ -78,7 +78,7 @@ template <> struct yml::MappingTraits<YMLConfig> {
     }
     in.mapRequired("hdrGlobs", ymlCfg.hdrGlobExprs);
     in.mapOptional("compilationDB", ymlCfg.compDBPath);
-    in.mapOptional("stdImport", ymlCfg.stdImport);
+    in.mapOptional("stdImport", ymlCfg.stdImport, false);
     in.mapOptional("explicit", ymlCfg.xplicit);
   }
 
@@ -110,10 +110,10 @@ struct Config {
   std::unique_ptr<tl::CompilationDatabase> compDB;
 
   // Convert standard #include to import std or std.compat
-  bool stdImport{};
+  bool stdImport;
 
   // Actually rewrite files
-  bool write{};
+  bool write;
 };
 
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*ctx*/) noexcept;

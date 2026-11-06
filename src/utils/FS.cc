@@ -144,7 +144,7 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
         return fileRes.takeError();
       }
       if (!*fileRes) {
-        logErr("Mismatched file content for {}.", relPath);
+        logErr("Mismatching file content for {}.", relPath);
         res = false;
       }
     }
