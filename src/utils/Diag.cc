@@ -33,9 +33,10 @@ auto ErrorLogger::operator()(const llvm::ErrorInfoBase &errInfo) const -> llvm::
 
 #if __has_feature(address_sanitizer)
 extern "C" __attribute__((visibility("default"))) auto __asan_default_options() -> const char * {
-  // Good settings
-  return "detect_leaks=1"
-         ":strict_string_checks=1"
+  return ":strict_string_checks=1"
+#ifndef WIN32
+         ":detect_leaks=1"
+#endif
 #ifndef __APPLE__
          ":check_initialization_order=1"
 #endif

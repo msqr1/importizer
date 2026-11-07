@@ -36,24 +36,27 @@ For unit tests:
 
 * The test runner is link:/src/testing/Unit.cc[`src/testing/Unit.cc`] and it runs an entire test
 suite by name.
-* Tests suites (one per file) are in `src/testing/` (e.g.
+* Tests suites (one per file) are in link:/src/testing/[`src/testing/`] (e.g.
 link:/src/testing/FSTest.cc[`src/testing/FSTest.cc`] is the `FS` suite), and they test a family of
-function (e.g. the `FS` suite tests filesystem functions).
-* Each test suite consists of test cases, where each test case tests 1 function.
+function (e.g. the `FS` suite tests filesystem utilities).
+* Each test suite consists of test cases, where each test case should test 1 function.
 * Each subcase should test an "aspect" of the function.
 
 To add a new test case and subcases, simply follow
 https://github.com/doctest/doctest/blob/master/doc/markdown/testcases.md[doctest's official guide].
 Some rules to keep in mind, namely:
+
 * Don't `#include <doctest/doctest.h>`, `#include "testing/Doctest.hh"`, which enforces:
-** Correct doctest configuration for the project.
+** Correct doctest configurations.
 ** No syntatic sugar macros (`CHECK()`, `REQUIRE()`,...).
 * For code that sets up the test "context", use `llvm::cantFail()`.
 * For checks that must pass before others, use `REQUIRE_*()` macros.
 * For independent checks, use `CHECK_*()` macros.
-* Note that the macros require bool (bool-conversion does NOT work), so use the `ok()` function.
+* Note that the macros require `bool` and contextual conversion does NOT work, so use the `ok()`
+convenience functions.
 
 To add a new test suite:
 
-. Add a new file in link:src/testing/[`src/testing/`] for the new suite, named `<suite-name>Test.cc`.
+. Add a new file in link:/src/testing/[`src/testing/`] for the new suite, named
+`<suite-name>Test.cc`.
 . Add the suite name to the list in link:/tests/CMakeLists.txt[`tests/CMakeLists.txt`].

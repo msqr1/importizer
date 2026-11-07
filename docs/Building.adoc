@@ -16,7 +16,7 @@ However, your Linux (and as a result, your toolchain) is likely based on glibc (
 xref:/docs/Internals.adoc#y0-glibc[why not glibc]), so we're going to containerize everything.
 There's pre-built Alpine Linux container images with all the correct tools installed
 link:{repo-url}/pkgs/container/importizer-alpine[here] to make this easier.
-To set this up locally, I prefer https://distrobox.it[distrobox].
+To set this up locally, I prefer https://distrobox.it[distrobox]:
 [,bash,subs=attributes+]
 ----
 # Create distrobox container (replace <arch> with your architecture)

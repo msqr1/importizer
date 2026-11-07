@@ -4,12 +4,12 @@
 :repo: msqr1/importizer
 :repo-url: https://github.com/{repo}
 :shields-url: https://img.shields.io/github
-:v: 2.0.0
+:latest-v: 2.0.0
 
-image:{shields-url}/v/release/{repo}?display_name=release[link={repo-url}/releases/{v}]
+image:{shields-url}/v/release/{repo}?display_name=release[link={repo-url}/releases/{latest-v}]
 image:{shields-url}/actions/workflow/status/{repo}/CI.yml?display_name=build[link={repo-url}/actions/workflows/CI.yml]
 image:{shields-url}/license/{repo}[link=/LICENSE]
-image:{shields-url}/commits-since/{repo}/latest[link={repo-url}/compare/{v}...main]
+image:{shields-url}/commits-since/{repo}/latest[link={repo-url}/compare/{latest-v}...main]
 
 Are you looking to convert your header-based C{plus}{plus} codebase to C{plus}{plus}20 modules, but
 afraid that modularizing is too much work? *importizer* is here to help.
@@ -110,25 +110,25 @@ CWD.
 |Key |Type |Description
 
 |rootDir
-|string
+|`string`
 |*Required.* Root directory of the project to run importizer on.
 Globs are resolved through this.
 
 |hdrGlobs
-|string array
+|`array` of `string`
 |*Required.* Glob patterns to match header files to be modularized.
 
 |compilationDB
-|string
+|`string`
 |Path to a `compile_commands.json` compilation database to provide context.
 
 |stdImport
-|boolean
+|`boolean`
 |Replace C{plus}{plus} headers inclusion with `import std;` and if C wrappers headers are used,
 `std.compat`.
 
 |explicit
-|object
+|`object`
 |See the <<explicit-mode, Explicit mode>> section.
 |===
 
@@ -142,11 +142,11 @@ This can be the case for projects using a build system without JSON compilation 
 |Option |Type |Description
 
 |srcGlobs
-|string array
+|`array` of `string`
 |*Required.* Glob patterns to match source files to be modularized.
 
 |compileFlags
-|string array
+|`array` of `string`
 |Compile flags for source files.
 Defaults to `[]`.
 |===
