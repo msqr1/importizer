@@ -2,7 +2,7 @@
 :toc: preamble
 
 :repo-url: https://github.com/msqr1/importizer
-:alpine-v: 3.24.3
+:alpine-v: 3.24.4
 :libtooling-v: 23.1.5
 
 Toolchain, environment and build details.

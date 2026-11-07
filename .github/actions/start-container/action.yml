@@ -20,7 +20,7 @@ runs:
         WRAPPER: ${{ inputs.wrapper-name }}
         WRAPPED_SHELL: ${{ inputs.wrapped-shell }}
       run: |
-        containerName="$WRAPPER-${{ github.run_id }}-${{ github.job }}"
+        containerName="$WRAPPER-$GITHUB_RUN_ID-$GITHUB_JOB"
 
         # Where Github Actions puts per-step files:
         # $GITHUB_ENV, $GITHUB_OUTPUT, $GITHUB_PATH, $GITHUB_STEP_SUMMARY

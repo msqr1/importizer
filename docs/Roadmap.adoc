@@ -15,7 +15,7 @@
 === Distribution
 * [x] Working build, test, upload CI and CD for:
 ** [x] Windows
-** [ ] MacOS
+** [x] MacOS
 ** [x] Linux
 * [ ] Sign distributions and images with minisign.
 

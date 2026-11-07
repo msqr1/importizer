@@ -47,9 +47,5 @@ extern "C" __attribute__((visibility("default"))) auto __asan_default_options() 
 }
 #endif
 
-namespace {
-
 // For Bionic CStdlib
 [[gnu::used, gnu::retain]] alignas(64) const thread_local char tlsAligner{};
-
-} // namespace

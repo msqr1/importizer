@@ -47,7 +47,7 @@ https://github.com/doctest/doctest/blob/master/doc/markdown/testcases.md[doctest
 Some rules to keep in mind, namely:
 
 * Don't `#include <doctest/doctest.h>`, `#include "testing/Doctest.hh"`, which enforces:
-** Correct doctest configurations.
+** Correct doctest configuration macros.
 ** No syntatic sugar macros (`CHECK()`, `REQUIRE()`,...).
 * For code that sets up the test "context", use `llvm::cantFail()`.
 * For checks that must pass before others, use `REQUIRE_*()` macros.

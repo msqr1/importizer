@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 #define NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 #else
 #define NO_UNIQUE_ADDRESS [[no_unique_address]]
@@ -44,7 +44,7 @@ struct CLIConfig {
   ATTR_MOVE_ONLY;
   std::string configPath;
   std::string rootDir;
-  bool write;
+  bool write{};
 };
 
 struct YMLExplicit {
@@ -64,7 +64,7 @@ struct YMLConfig {
   std::optional<llvm::StringRef> compDBPath;
   std::vector<llvm::StringRef> hdrGlobExprs;
   llvm::StringRef rootDir;
-  bool stdImport;
+  bool stdImport{};
 };
 
 template <> struct yml::MappingTraits<YMLConfig> {
@@ -110,10 +110,10 @@ struct Config {
   std::unique_ptr<tl::CompilationDatabase> compDB;
 
   // Convert standard #include to import std or std.compat
-  bool stdImport;
+  bool stdImport{};
 
   // Actually rewrite files
-  bool write;
+  bool write{};
 };
 
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*ctx*/) noexcept;

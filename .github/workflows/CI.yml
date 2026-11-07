@@ -9,8 +9,6 @@ concurrency:
   group: CI-${{ github.ref_name }}
   cancel-in-progress: false
   queue: max
-env:
-  REPO: ${{ github.repository }}
 jobs:
   prepare:
     outputs:
@@ -23,7 +21,7 @@ jobs:
     runs-on: windows-11-vs2026-arm
     steps:
       - name: Checkout
-        uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b
+        uses: taiki-e/checkout-action@7d1e50e93dc4fb3bba58f85018fadf77898aee8b # 1.4.2
       - name: Setup
         run: . scripts/setup/Windows.ps1
       - name: Configure (for linting)
@@ -131,13 +129,12 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Download distributions
-        run: gh run download ${{ github.run_id }} -D dists -R "$REPO"
+        run: gh run download "$GITHUB_RUN_ID" -D dists -R "$GITHUB_REPOSITORY"
       - name: Publish distributions
-        run: gh release upload continuous dists/*/* --clobber -R "$REPO"
+        run: gh release upload continuous dists/*/* --clobber -R "$GITHUB_REPOSITORY"
       - name: Move tag
         run: |
-          gh api "repos/$REPO/git/refs/tags/continuous" \
+          gh api "repos/$GITHUB_REPOSITORY/git/refs/tags/continuous?sha=$GITHUB_SHA" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
             --method PATCH \
-            -f sha=${{ github.sha }} \
             -F force=true

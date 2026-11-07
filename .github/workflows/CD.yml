@@ -1,7 +1,5 @@
 name: Tag Release
 on: workflow_dispatch
-env:
-  REPO: ${{ github.repository }}
 jobs:
   all:
     permissions:
@@ -21,7 +19,7 @@ jobs:
           fi
 
           # Latest CI run must be successful so we can grab release builds from there
-          CIPassed=$(gh api "repos/$REPO/actions/workflows/CI.yml/runs?branch=main" \
+          CIPassed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/CI.yml/runs?branch=main" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
             -H "Accept: application/vnd.github+json" \
             -q '.total_count > 0 and .workflow_runs[0].conclusion == "success"')
@@ -30,7 +28,7 @@ jobs:
           fi
       - name: Download and rename distributions
         run: |
-          gh release download continuous -p "importizer-release-*" -D dists -R "$REPO"
+          gh release download continuous -p "importizer-release-*" -D dists -R "$GITHUB_REPOSITORY"
           find dists/* -maxdepth 1 -exec bash -c 'for f; do mv "$f" "${f/release-/}"; done' _ {} +
       - name: Publish release
         run: |
@@ -38,5 +36,5 @@ jobs:
           gh release create $v dists/* \
             -d \
             -t $v \
-            -n "[Change log](https://github.com/$REPO/blob/main/ChangeLog.adoc#${v//./-})" \
-            -R "$REPO"
+            -n "[Change log](https://github.com/$GITHUB_REPOSITORY/blob/main/ChangeLog.adoc#${v//./-})" \
+            -R "$GITHUB_REPOSITORY"

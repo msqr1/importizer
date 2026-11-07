@@ -3,8 +3,6 @@ on: workflow_dispatch
 concurrency:
   group: CI-${{ github.ref_name }}
   cancel-in-progress: false
-env:
-  REPO: ${{ github.repository }}
 jobs:
   prepare:
     outputs:
@@ -16,7 +14,7 @@ jobs:
       - name: Get outputs
         id: get
         run: |
-          echo "platforms=$(gh api "repos/$REPO/contents/Platforms.json" \
+          echo "platforms=$(gh api "repos/$GITHUB_REPOSITORY/contents/Platforms.json?ref=$GITHUB_SHA" \
           -H "X-GitHub-Api-Version: 2026-03-10" \
           -H "Accept: application/vnd.github.raw+json" \
           -q 'map(select(.os == "linux"))')" >> "$GITHUB_OUTPUT"
@@ -37,7 +35,7 @@ jobs:
       - name: all
         run: |
           podman build \
-            "https://raw.githubusercontent.com/$REPO/${{ github.sha }}/scripts/alpine/Containerfile" \
+            "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_SHA/scripts/alpine/Containerfile" \
             --platform linux/${{ matrix.arch }} \
             -t img
 
