@@ -32,16 +32,20 @@ auto ErrorLogger::operator()(const llvm::ErrorInfoBase &errInfo) const -> llvm::
 }
 
 #if __has_feature(address_sanitizer)
-extern "C" auto __asan_default_options() -> const char * {
-  // Always on LSAN (it's turned off on some platforms)
-  return ":detect_leaks=1"
-#ifdef __APPLE__
-         // On MacOS, ASAN annotations will cause false positive
+extern "C" __attribute__((visibility("default"))) auto __asan_default_options() -> const char * {
+  // Good settings
+  return "detect_leaks=1"
+         ":strict_string_checks=1"
+#ifndef __APPLE__
+         ":check_initialization_order=1"
+#endif
+#ifdef __SANITIZER_DISABLE_CONTAINER_OVERFLOW__
          ":detect_container_overflow=0"
 #endif
       ;
 }
 #endif
+
 namespace {
 
 // For Bionic CStdlib

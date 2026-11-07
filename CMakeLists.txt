@@ -55,16 +55,17 @@ target_compile_options(common-config INTERFACE
   -Wno-nrvo
 )
 
+# Partial ASAN-instrumentation (LibTooling isn't, but our code might be) causes false positive
+# container overflow errors.
+target_compile_definitions(common-config INTERFACE __SANITIZER_DISABLE_CONTAINER_OVERFLOW__)
+
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
   target_compile_options(common-config INTERFACE
     -ffunction-sections
     -fdata-sections
     "-ffile-prefix-map=${root}/src/="
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti;-fno-exceptions;-fno-c++-static-destructors>"
-    "$<$<CONFIG:Debug>:-fsanitize=address,undefined;-fstandalone-debug>"
-  )
-  target_link_options(common-config INTERFACE
-    "$<$<CONFIG:Debug>:-fsanitize=address,undefined>"
+    "$<$<CONFIG:Debug>:-fstandalone-debug>"
   )
   if(TRACE_BUILD)
     target_compile_options(common-config INTERFACE
@@ -87,11 +88,14 @@ elseif(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
 endif()
 
 if(LINUX)
+  target_compile_options(common-config INTERFACE
+    "$<$<CONFIG:Debug>:-fsanitize=address,undefined;-fsanitize-address-use-after-return=always>"
+  )
   target_link_options(common-config INTERFACE
-    "LINKER:--gc-sections,--as-needed,--no-copy-dt-needed-entries"
+    "$<$<CONFIG:Debug>:-fsanitize=address,undefined>"
 
-    # Future-proof page size
-    "LINKER:-z,max-page-size=65536,-z,common-page-size=65536"
+    "LINKER:--gc-sections,--as-needed,--no-copy-dt-needed-entries"
+    "LINKER:-z,max-page-size=65536,-z,common-page-size=65536" # Future-proof page size
 
     # In Debug mode, we want to still link in whatever dynamic library we need.
     "$<$<CONFIG:Debug>:-static-libgcc;-static-libstdc++>"
@@ -102,6 +106,7 @@ if(LINUX)
   )
 elseif(APPLE)
   target_link_options(common-config INTERFACE
+    "$<$<CONFIG:Debug>:-fsanitize=address,undefined>"
     "$<$<CONFIG:Release>:LINKER:-S,-x,-dead_strip>"
   )
 elseif(WIN32 AND arch STREQUAL "amd64")
@@ -112,7 +117,9 @@ elseif(WIN32 AND arch STREQUAL "amd64")
     OUTPUT_STRIP_TRAILING_WHITESPACE
     COMMAND_ERROR_IS_FATAL ANY
   )
-  target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
+  target_compile_options(common-config INTERFACE
+    "$<$<CONFIG:Debug>:-fsanitize=address,undefined;-fsanitize-address-use-after-return=always>"
+  )
 
   # Windows linkers doesn't know where clang resource directory is, but we need that for
   # sanitizers
@@ -122,6 +129,10 @@ elseif(WIN32 AND arch STREQUAL "amd64")
     "$<$<CONFIG:Debug>:-libpath:${clangLibPath};clang_rt.asan_dynamic-${clangArch}.lib>"
     "$<$<CONFIG:Debug>:-wholearchive:clang_rt.asan_static_runtime_thunk-${clangArch}.lib>"
   )
+
+  # Secret, undocumented define that matches our STL annotations with LibTooling's (disabled), and
+  # thus allows ASAN to link.
+  target_compile_definitions(common-config INTERFACE _DISABLE_STL_ANNOTATION)
 endif()
 
 # 3rd-party and its utils
