@@ -10,7 +10,7 @@
 #include <system_error>
 
 // Signify that an error has occured, but no further action required. Usually used for calling into
-// APIs that logs their own errors.
+// APIs that already logged their own errors.
 class EmptyErr : public llvm::ErrorInfo<EmptyErr> {
 public:
   static char ID; // NOLINT
@@ -43,3 +43,10 @@ template <typename... Ts> void logWarning(const char *fmt, Ts &&...args) noexcep
   llvm::WithColor{*globalLogOpts.stream, llvm::raw_ostream::Colors::SAVEDCOLOR, true}
       << llvm::formatv(fmt, std::forward<Ts>(args)...) << '\n';
 }
+
+// Lambda class that just logs the error if it's not an EmptyErr.
+class ErrorLogger {
+public:
+  // Adding noexcept fails llvm::handleError signature check.
+  auto operator()(const llvm::ErrorInfoBase &errInfo) const -> llvm::Error;
+};

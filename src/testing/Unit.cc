@@ -3,13 +3,16 @@
 #include "testing/Doctest.hh"
 #include "utils/Diag.hh"
 #include <cstdio>
+#include <doctest/extensions/doctest_util.h>
 #include <ios>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
 #include <ostream>
 #include <streambuf>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace {
 
@@ -45,9 +48,11 @@ public:
 
 auto ok(llvm::Error err) noexcept -> bool { return !llvm::errorToBool(std::move(err)); }
 
-auto runUnitTest(const char *suiteName, const int argc, const char **argv) noexcept -> int {
-  doctest::Context ctx{argc, argv};
+auto runUnitTest(const char *suiteName, const std::vector<std::string> &args) noexcept -> int {
+  doctest::Context ctx;
   LLVMOstream doctestOut{*globalLogOpts.stream};
+  doctest::applyCommandLine(ctx, args);
+  ctx.setOption("ni", true);
   ctx.setOption("ts", suiteName);
   ctx.setCout(&doctestOut);
   return ctx.run();

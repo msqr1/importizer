@@ -6,6 +6,7 @@
 #include "testing/Unit.hh"
 #include "utils/Diag.hh"
 #include <array>
+#include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
@@ -55,10 +56,9 @@ TEST_CASE("Resolution") {
   vfs::InMemoryFileSystem memFS;
   CLIConfig cliCfg;
   cliCfg.configPath = "/Config.yml";
+  YMLConfig ymlCfg;
 
   SUBCASE("Bad configurations") {
-    YMLConfig ymlCfg;
-
     SUBCASE("Nonexistent config file") {
       // Easiest way to satisfy YAML validation
       ymlCfg.compDBPath.emplace("");

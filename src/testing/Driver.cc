@@ -1,6 +1,7 @@
 #include "testing/E2E.hh"
 #include "testing/Unit.hh"
 #include "utils/Diag.hh"
+#include <cassert>
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
@@ -8,14 +9,12 @@
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
 #include <string>
-#include <vector>
 
 namespace cl = llvm::cl;
 
 auto main(const int argc, const char *const *argv) -> int {
   // Always set program and log stream before everything
-  LogOpts logOpts{.prog = "test-tool", .stream = &llvm::errs()};
-  setGlobalLogOpts(logOpts);
+  setGlobalLogOpts({.prog = "test-tool", .stream = &llvm::errs()});
 
   // LLVM default options will mix into ours if we don't make our own category
   cl::OptionCategory cat{globalLogOpts.prog};
@@ -48,21 +47,11 @@ auto main(const int argc, const char *const *argv) -> int {
     return 1;
   }
 
-  const auto errHandler{[](const llvm::ErrorInfoBase &errInfo) -> llvm::Error {
-    if (!errInfo.isA<EmptyErr>()) {
-      logErr("{}", errInfo.message());
-    }
-    return llvm::Error::success();
-  }};
   if (runE2E) {
-    llvm::handleAllErrors(runE2ETest(testDir, outDir), errHandler);
+    llvm::handleAllErrors(runE2ETest(testDir, outDir), ErrorLogger{});
   } else if (updateE2E) {
-    llvm::handleAllErrors(updateE2ETest(testDir), errHandler);
+    llvm::handleAllErrors(updateE2ETest(testDir), ErrorLogger{});
   } else if (runUnit) {
-    std::vector<const char *> fakeArgv{"--"};
-    for (const std::string &arg : doctestArgs) {
-      fakeArgv.emplace_back(arg.c_str());
-    }
-    return runUnitTest(suiteName.c_str(), static_cast<int>(fakeArgv.size()), fakeArgv.data());
+    return runUnitTest(suiteName.c_str(), doctestArgs);
   }
 }

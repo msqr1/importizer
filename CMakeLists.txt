@@ -113,12 +113,10 @@ elseif(WIN32 AND arch STREQUAL "amd64")
     COMMAND_ERROR_IS_FATAL ANY
   )
   target_compile_options(common-config INTERFACE "$<$<CONFIG:Debug>:-fsanitize=address,undefined>")
+
   # Windows linkers doesn't know where clang resource directory is, but we need that for
   # sanitizers
   set(clangLibPath "${resourceDir}/lib/windows")
-
-  # Secret, undocumented define to make non-MSVC ASAN work.
-  target_compile_definitions(common-config INTERFACE "$<$<CONFIG:Debug>:_DISABLE_STL_ANNOTATION>")
 
   target_link_options(common-config INTERFACE
     "$<$<CONFIG:Debug>:-libpath:${clangLibPath};clang_rt.asan_dynamic-${clangArch}.lib>"

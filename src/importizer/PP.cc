@@ -7,6 +7,7 @@
 #include <clang/Lex/ModuleLoader.h>
 #include <clang/Lex/PPCallbacks.h>
 #include <clang/Lex/Preprocessor.h>
+#include <llvm/ADT/StringRef.h>
 
 PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP_, FrontendCtx &ctx_)
     : PP{PP_}, ctx{ctx_},

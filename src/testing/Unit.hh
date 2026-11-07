@@ -2,7 +2,9 @@
 
 #pragma once
 #include <llvm/Support/Error.h>
+#include <string>
 #include <utility>
+#include <vector>
 
 // Convenience functions for consuming things and convert it to bool, where true means no error.
 // If there's an error (a.k.a this returned false), one must terminate immediately.
@@ -16,4 +18,4 @@ template <typename T> auto ok(llvm::Expected<T> &&xpected) noexcept -> bool {
   return ok(std::move(xpected).takeError());
 }
 
-auto runUnitTest(const char *suiteName, int argc, const char **argv) noexcept -> int;
+auto runUnitTest(const char *suiteName, const std::vector<std::string> &args) noexcept -> int;

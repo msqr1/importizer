@@ -2,6 +2,7 @@
 #include <cassert>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
+#include <string>
 #include <system_error>
 
 char EmptyErr::ID{};
@@ -20,21 +21,27 @@ void setGlobalLogOpts(const char *prog, llvm::raw_ostream *stream) noexcept {
 
 void setGlobalLogOpts(const LogOpts &opts) noexcept { setGlobalLogOpts(opts.prog, opts.stream); }
 
-#ifdef __has_feature
+auto ErrorLogger::operator()(const llvm::ErrorInfoBase &errInfo) const -> llvm::Error {
+  if (errInfo.isA<EmptyErr>()) {
+    return llvm::Error::success();
+  }
+  std::string msg{errInfo.message()};
+  assert(!msg.empty());
+  logErr("{}", msg);
+  return llvm::Error::success();
+}
+
 #if __has_feature(address_sanitizer)
 extern "C" auto __asan_default_options() -> const char * {
-  return ""
-#if defined(__x86_64__) && defined(__APPLE__)
-         // LSAN is only for amd64 Linux and MacOS, but it's only on by default
-         // for Linux so we explicitly turn it on for MacOS
-         ":detect_leaks=1"
-
+  // Always on LSAN (it's turned off on some platforms)
+  return ":detect_leaks=1"
+#ifdef __APPLE__
+         // On MacOS, ASAN annotations will cause false positive
+         ":detect_container_overflow=0"
 #endif
       ;
 }
 #endif
-#endif
-
 namespace {
 
 // For Bionic CStdlib

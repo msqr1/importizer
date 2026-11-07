@@ -47,13 +47,9 @@ auto importizerMain2(const int argc, const char *const *argv) -> llvm::Error {
 } // namespace
 
 auto importizerMain(const int argc, const char *const *argv) -> int {
-  llvm::Error error{importizerMain2(argc, argv)};
-  int rtn{error ? EXIT_FAILURE : EXIT_SUCCESS};
-  llvm::handleAllErrors(std::move(error), [](const llvm::ErrorInfoBase &errInfo) -> llvm::Error {
-    if (!errInfo.isA<EmptyErr>()) {
-      logErr("{}", errInfo.message());
-    }
-    return llvm::Error::success();
-  });
-  return rtn;
+  if (llvm::Error err{importizerMain2(argc, argv)}) {
+    llvm::handleAllErrors(std::move(err), ErrorLogger{});
+    return EXIT_FAILURE;
+  }
+  return EXIT_FAILURE;
 }

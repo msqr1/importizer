@@ -9,6 +9,7 @@
 #include <clang/Lex/ModuleLoader.h>
 #include <clang/Lex/PPCallbacks.h>
 #include <clang/Lex/Preprocessor.h>
+#include <llvm/ADT/StringRef.h>
 
 struct FrontendCtx;
 struct Config;
@@ -25,7 +26,7 @@ class PPAnalyzer : public clang::PPCallbacks {
   FrontendCtx &ctx;
   const unsigned nestedIncludeDiagID;
   const unsigned macroIncludeDiagID;
-  unsigned condDepth{0};
+  unsigned condDepth{};
 
 public:
   PPAnalyzer(clang::Preprocessor &PP, FrontendCtx &ctx);

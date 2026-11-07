@@ -4,6 +4,7 @@
 #include <clang/AST/ASTConsumer.h>
 #include <clang/Frontend/FrontendAction.h>
 #include <clang/Lex/Preprocessor.h>
+#include <llvm/ADT/StringRef.h>
 #include <memory>
 
 FrontendAnalyzer::FrontendAnalyzer(FrontendCtx &ctx_) : ctx{ctx_} {}

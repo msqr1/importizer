@@ -34,7 +34,7 @@ jobs:
         id: get
         env:
           # jq platform filter expression
-          JQ_EXPR: ${{ inputs.jqExpr || 'map(select(.os == "macos"))' }}
+          JQ_EXPR: ${{ inputs.jqExpr || '.' }}
         shell: bash
         run: |
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
