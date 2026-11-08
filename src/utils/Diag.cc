@@ -6,20 +6,30 @@
 #include <system_error>
 
 char EmptyErr::ID{};
-void EmptyErr::log(llvm::raw_ostream & /*OS*/) const noexcept {}
+void EmptyErr::log(llvm::raw_ostream & /*stream*/) const noexcept {}
 auto EmptyErr::convertToErrorCode() const noexcept -> std::error_code {
   return llvm::inconvertibleErrorCode();
 }
 
-const LogOpts globalLogOpts{};
+LogConfig globalLogCfg{}; // NOLINT
 
-void setGlobalLogOpts(const char *prog, llvm::raw_ostream *stream) noexcept {
+void LogConfig::set(const char *prog, llvm::raw_ostream *stream) noexcept {
   assert(prog != nullptr && stream != nullptr);
-  globalLogOpts.prog = prog;
-  globalLogOpts.stream = stream;
+  prog_ = prog;
+  stream_ = stream;
 }
 
-void setGlobalLogOpts(const LogOpts &opts) noexcept { setGlobalLogOpts(opts.prog, opts.stream); }
+void LogConfig::set(const LogConfig &cfg) noexcept { set(cfg.prog_, cfg.stream_); }
+
+auto LogConfig::prog() const noexcept -> const char * {
+  assert(prog_ != nullptr);
+  return prog_;
+}
+
+auto LogConfig::stream() const noexcept -> llvm::raw_ostream * {
+  assert(stream_ != nullptr);
+  return stream_;
+}
 
 auto ErrorLogger::operator()(const llvm::ErrorInfoBase &errInfo) const -> llvm::Error {
   if (errInfo.isA<EmptyErr>()) {
@@ -48,4 +58,4 @@ extern "C" __attribute__((visibility("default"))) auto __asan_default_options() 
 #endif
 
 // For Bionic CStdlib
-[[gnu::used, gnu::retain]] alignas(64) const thread_local char tlsAligner{};
+[[gnu::used, gnu::retain]] alignas(64) const thread_local char TLS_ALIGNER{};

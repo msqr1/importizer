@@ -18,24 +18,24 @@ namespace {
 
 // std::streambuf that forwards to a llvm::raw_ostream
 class LLVMStreamBuf : public std::streambuf {
-  llvm::raw_ostream &stream;
+  llvm::raw_ostream &stream_;
 
   // Writing single char
   auto overflow(int c) noexcept -> int override {
     if (c != EOF) {
-      stream.write(static_cast<unsigned char>(c));
+      stream_.write(static_cast<unsigned char>(c));
     }
     return c;
   }
 
   // Writing multiple chars
   auto xsputn(const char *str, std::streamsize n) noexcept -> std::streamsize override {
-    stream.write(str, static_cast<size_t>(n));
+    stream_.write(str, static_cast<size_t>(n));
     return n;
   }
 
 public:
-  LLVMStreamBuf(llvm::raw_ostream &stream_) : stream{stream_} {}
+  LLVMStreamBuf(llvm::raw_ostream &stream) : stream_{stream} {}
 };
 
 class LLVMOstream : private LLVMStreamBuf, public std::ostream {
@@ -50,7 +50,7 @@ auto ok(llvm::Error err) noexcept -> bool { return !llvm::errorToBool(std::move(
 
 auto runUnitTest(const char *suiteName, const std::vector<std::string> &args) noexcept -> int {
   doctest::Context ctx;
-  LLVMOstream doctestOut{*globalLogOpts.stream};
+  LLVMOstream doctestOut{*globalLogCfg.stream()};
   doctest::applyCommandLine(ctx, args);
   ctx.setOption("ni", true);
   ctx.setOption("ts", suiteName);

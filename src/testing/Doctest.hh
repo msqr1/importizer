@@ -25,6 +25,7 @@
 
 // Replace REQUIRE_* macros that rely on DOCTEST_CONFIG_ASSERTS_RETURN_VALUES.The real REQUIRE_*
 // with DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS behaves like CHECK_*.
+// NOLINTBEGIN
 #undef REQUIRE_UNARY
 #define REQUIRE_UNARY(...)                                                                         \
   if (!DOCTEST_REQUIRE_UNARY(__VA_ARGS__))                                                         \
@@ -64,3 +65,4 @@
 #define REQUIRE_LE(...)                                                                            \
   if (!DOCTEST_REQUIRE_LE(__VA_ARGS__))                                                            \
   return
+// NOLINTEND

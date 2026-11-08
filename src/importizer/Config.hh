@@ -29,7 +29,7 @@ struct MoveOnlyToken {
   auto operator=(const MoveOnlyToken &) -> MoveOnlyToken & = delete;
 };
 
-#define ATTR_MOVE_ONLY NO_UNIQUE_ADDRESS MoveOnlyToken _moveOnly_
+#define MOVE_ONLY NO_UNIQUE_ADDRESS MoveOnlyToken moveOnly_
 
 namespace tl = clang::tooling;
 namespace yml = llvm::yaml;
@@ -41,15 +41,15 @@ class FileSystem;
 namespace vfs = llvm::vfs;
 
 struct CLIConfig {
-  ATTR_MOVE_ONLY;
+  MOVE_ONLY;
   std::string configPath;
   std::string rootDir;
-  bool write{};
+  bool write;
 };
 
 struct YMLExplicit {
-  std::vector<llvm::StringRef> srcGlobExprs;
-  std::vector<std::string> compileFlags;
+  std::vector<llvm::StringRef> srcGlobExprs{};
+  std::vector<std::string> compileFlags{};
 };
 
 template <> struct yml::MappingTraits<YMLExplicit> {
@@ -62,7 +62,7 @@ template <> struct yml::MappingTraits<YMLExplicit> {
 struct YMLConfig {
   std::optional<YMLExplicit> xplicit;
   std::optional<llvm::StringRef> compDBPath;
-  std::vector<llvm::StringRef> hdrGlobExprs;
+  std::vector<llvm::StringRef> hdrGlobExprs{};
   llvm::StringRef rootDir;
   bool stdImport{};
 };
@@ -95,7 +95,7 @@ template <> struct yml::MappingTraits<YMLConfig> {
 
 // Fully-resolved configuration
 struct Config {
-  ATTR_MOVE_ONLY;
+  MOVE_ONLY;
 
   // Root directory
   std::string rootDir;
@@ -118,8 +118,8 @@ struct Config {
 
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*ctx*/) noexcept;
 
-auto getCLIConfig(int argc, const char *const *argv, vfs::FileSystem &VFS = getRealFS()) noexcept
+auto getCLIConfig(int argc, const char *const *argv, vfs::FileSystem &VFS = realFS()) noexcept
     -> llvm::Expected<CLIConfig>;
 
-auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS = getRealFS()) noexcept
+auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS = realFS()) noexcept
     -> llvm::Expected<Config>;

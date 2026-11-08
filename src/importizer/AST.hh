@@ -8,7 +8,7 @@
 struct FrontendCtx;
 
 class ASTAnalyzer : public clang::ASTConsumer {
-  FrontendCtx &ctx;
+  FrontendCtx &ctx_;
 
 public:
   ASTAnalyzer(FrontendCtx &ctx);

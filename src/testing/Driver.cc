@@ -14,10 +14,10 @@ namespace cl = llvm::cl;
 
 auto main(const int argc, const char *const *argv) -> int {
   // Always set program and log stream before everything
-  setGlobalLogOpts({.prog = "test-tool", .stream = &llvm::errs()});
+  globalLogCfg.set("test-tool", &llvm::errs());
 
   // LLVM default options will mix into ours if we don't make our own category
-  cl::OptionCategory cat{globalLogOpts.prog};
+  cl::OptionCategory cat{globalLogCfg.prog()};
 
   cl::SubCommand runE2E{"run-e2e", "Run an end-to-end test."};
   cl::SubCommand updateE2E{"update-e2e", "Update an end-to-end test."};
@@ -43,7 +43,7 @@ auto main(const int argc, const char *const *argv) -> int {
   optMap["help"]->setDescription("Display available options.");
   optMap["help-list"]->setDescription("List available options.");
   optMap["version"]->setHiddenFlag(cl::ReallyHidden);
-  if (!cl::ParseCommandLineOptions(argc, argv, "Test tool of importizer", globalLogOpts.stream)) {
+  if (!cl::ParseCommandLineOptions(argc, argv, "Test tool of importizer", globalLogCfg.stream())) {
     return 1;
   }
 

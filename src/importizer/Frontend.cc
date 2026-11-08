@@ -7,18 +7,18 @@
 #include <llvm/ADT/StringRef.h>
 #include <memory>
 
-FrontendAnalyzer::FrontendAnalyzer(FrontendCtx &ctx_) : ctx{ctx_} {}
+FrontendAnalyzer::FrontendAnalyzer(FrontendCtx &ctx) : ctx_{ctx} {}
 
 auto FrontendAnalyzer::CreateASTConsumer(clang::CompilerInstance &compiler,
                                          llvm::StringRef /*InFile*/) noexcept
     -> std::unique_ptr<clang::ASTConsumer> {
   clang::Preprocessor &preprocessor{compiler.getPreprocessor()};
-  preprocessor.addPPCallbacks(std::make_unique<PPAnalyzer>(preprocessor, ctx));
-  return std::make_unique<ASTAnalyzer>(ctx);
+  preprocessor.addPPCallbacks(std::make_unique<PPAnalyzer>(preprocessor, ctx_));
+  return std::make_unique<ASTAnalyzer>(ctx_);
 }
 
-FrontendAnalyzerFactory::FrontendAnalyzerFactory(FrontendCtx &ctx_) : ctx{ctx_} {}
+FrontendAnalyzerFactory::FrontendAnalyzerFactory(FrontendCtx &ctx) : ctx_{ctx} {}
 
 auto FrontendAnalyzerFactory::create() noexcept -> std::unique_ptr<clang::FrontendAction> {
-  return std::make_unique<FrontendAnalyzer>(ctx);
+  return std::make_unique<FrontendAnalyzer>(ctx_);
 }

@@ -10,20 +10,20 @@
 namespace {
 
 class SymbolVisitor : public clang::RecursiveASTVisitor<SymbolVisitor> {
-  FrontendCtx &ctx;
+  FrontendCtx &ctx_;
 
 public:
-  SymbolVisitor(FrontendCtx &ctx_) : ctx{ctx_} {}
-  auto TraverseDecl(clang::Decl *decl) -> bool {
-    decl->dump(*globalLogOpts.stream);
-    logErr("{}", ctx.cfg.rootDir);
+  SymbolVisitor(FrontendCtx &ctx) : ctx_{ctx} {}
+  auto traverseDecl(clang::Decl *decl) -> bool {
+    decl->dump(*globalLogCfg.stream());
+    logErr("{}", ctx_.cfg.rootDir);
     return false;
   }
 };
 
 } // namespace
 
-ASTAnalyzer::ASTAnalyzer(FrontendCtx &ctx_) : ctx{ctx_} {}
+ASTAnalyzer::ASTAnalyzer(FrontendCtx &ctx) : ctx_{ctx} {}
 void ASTAnalyzer::HandleTranslationUnit(clang::ASTContext &AST) noexcept {
-  SymbolVisitor{ctx}.TraverseAST(AST);
+  SymbolVisitor{ctx_}.TraverseAST(AST);
 }

@@ -9,14 +9,14 @@
 #include <clang/Lex/Preprocessor.h>
 #include <llvm/ADT/StringRef.h>
 
-PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP_, FrontendCtx &ctx_)
-    : PP{PP_}, ctx{ctx_},
-      nestedIncludeDiagID{
+PPAnalyzer::PPAnalyzer(clang::Preprocessor &PP, FrontendCtx &ctx)
+    : PP_{PP}, ctx_{ctx},
+      nestedIncludeDiagID_{
           PP.getDiagnostics().getCustomDiagID(
               clang::DiagnosticsEngine::Fatal,
               "#include within conditional block(s) is not modularizable."),
       },
-      macroIncludeDiagID{
+      macroIncludeDiagID_{
           PP.getDiagnostics().getCustomDiagID(clang::DiagnosticsEngine::Fatal,
                                               "Macro-expanded #include is not modularizable."),
       } {}
@@ -28,7 +28,7 @@ void PPAnalyzer::InclusionDirective(
     clang::OptionalFileEntryRef file, llvm::StringRef /*SearchPath*/,
     llvm::StringRef /*RelativePath*/, const clang::Module * /*SuggestedModule*/,
     bool /*ModuleImported*/, clang::SrcMgr::CharacteristicKind /*FileType*/) noexcept {
-  clang::SourceManager &srcMgr{PP.getSourceManager()};
+  clang::SourceManager &srcMgr{PP_.getSourceManager()};
 
   // Restrict only to the main file, and only resolved #include
   if (!(srcMgr.isInMainFile(hashLoc) && file)) {
@@ -36,16 +36,16 @@ void PPAnalyzer::InclusionDirective(
   }
 
   // Only enforce top-level #include for modularizable headers
-  if (ctx.cfg.hdrs.contains(file->getFileEntry().tryGetRealPathName())) {
+  if (ctx_.cfg.hdrs.contains(file->getFileEntry().tryGetRealPathName())) {
     // Check if #include is nested within a conditional block
-    if (condDepth > 0) {
-      PP.getDiagnostics().Report(hashLoc, nestedIncludeDiagID);
+    if (condDepth_ > 0) {
+      PP_.getDiagnostics().Report(hashLoc, nestedIncludeDiagID_);
       return;
     }
 
     // Check if #include itself or the filename came from a macro expansion
     if (hashLoc.isMacroID() || filenameRange.getBegin().isMacroID()) {
-      PP.getDiagnostics().Report(hashLoc, macroIncludeDiagID);
+      PP_.getDiagnostics().Report(hashLoc, macroIncludeDiagID_);
       return;
     }
   }
@@ -54,16 +54,16 @@ void PPAnalyzer::moduleImport(clang::SourceLocation /*ImportLoc*/, clang::Module
                               const clang::Module * /*Imported*/) noexcept {}
 void PPAnalyzer::If(clang::SourceLocation /*Loc*/, clang::SourceRange /*ConditionRange*/,
                     ConditionValueKind /*ConditionValue*/) noexcept {
-  ++condDepth;
+  ++condDepth_;
 }
 void PPAnalyzer::Ifdef(clang::SourceLocation /*Loc*/, const clang::Token & /*MacroNameTok*/,
                        const clang::MacroDefinition & /*MD*/) noexcept {
-  ++condDepth;
+  ++condDepth_;
 }
 void PPAnalyzer::Ifndef(clang::SourceLocation /*Loc*/, const clang::Token & /*MacroNameTok*/,
                         const clang::MacroDefinition & /*MD*/) noexcept {
-  ++condDepth;
+  ++condDepth_;
 }
 void PPAnalyzer::Endif(clang::SourceLocation /*Loc*/, clang::SourceLocation /*IfLoc*/) noexcept {
-  --condDepth;
+  --condDepth_;
 }

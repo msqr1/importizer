@@ -20,8 +20,8 @@
 namespace pth = llvm::sys::path;
 
 class Glob {
-  llvm::GlobPattern ptn;
-  const bool negate;
+  llvm::GlobPattern ptn_;
+  const bool negate_;
 
 public:
   Glob(bool negate, llvm::GlobPattern &&ptn) noexcept;
@@ -34,7 +34,7 @@ public:
 
 using GlobStorage = std::vector<Glob>;
 
-auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern = 10) noexcept -> llvm::Expected<Glob>;
+auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern = 1067) noexcept -> llvm::Expected<Glob>;
 
 template <typename Container, typename ElemT>
 concept ConvertibleRange = std::ranges::range<Container> &&
@@ -59,12 +59,12 @@ auto mkGlobs(const T &globExprs) noexcept -> llvm::Expected<GlobStorage> {
 };
 
 struct GlobDirRule {
-  GlobStorage globs;
+  GlobStorage globs{};
   llvm::unique_function<void(const vfs::directory_entry &ent) const> callback;
 };
 
-template <bool recurse = true, ConvertibleRange<GlobDirRule> T>
-auto globDir(const llvm::Twine &dir, const T &rules, vfs::FileSystem &dirVFS = getRealFS())
+template <bool Recurse = true, ConvertibleRange<GlobDirRule> T>
+auto globDir(const llvm::Twine &dir, const T &rules, vfs::FileSystem &dirVFS = realFS())
     -> llvm::Error {
   llvm::SmallString<64> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
@@ -82,5 +82,5 @@ auto globDir(const llvm::Twine &dir, const T &rules, vfs::FileSystem &dirVFS = g
     }
     return true;
   }};
-  return iterDir<recurse>(tmp, checkDir, dirVFS);
+  return iterDir<Recurse>(tmp, checkDir, dirVFS);
 }

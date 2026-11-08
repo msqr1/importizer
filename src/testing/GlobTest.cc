@@ -36,8 +36,6 @@ TEST_CASE("Creation and negation") {
   }
 }
 
-constexpr std::array<llvm::StringRef, 2> cppFilesGlobs{{"*.hh", "*.cc"}};
-constexpr std::array<llvm::StringRef, 1> cmakeFileGlobs{"*CMakeLists.txt"};
 TEST_CASE("Glob directory") {
   vfs::InMemoryFileSystem memFS;
 
@@ -47,6 +45,7 @@ TEST_CASE("Glob directory") {
   }
 
   SUBCASE("Real matching") {
+
     const llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
     const llvm::StringSet<> cmakeFilePaths{"/CMakeLists.txt", "/lib/CMakeLists.txt",
                                            "/src/CMakeLists.txt"};
@@ -68,6 +67,7 @@ TEST_CASE("Glob directory") {
     std::array<GlobDirRule, 2> rules;
 
     llvm::StringSet<> globbedCPPFilePaths;
+    const std::array<llvm::StringRef, 2> cppFilesGlobs{{"*.hh", "*.cc"}};
     llvm::Expected<GlobStorage> globs{mkGlobs(cppFilesGlobs)};
     REQUIRE_UNARY(ok(globs));
     rules[0].globs = std::move(*globs);
@@ -79,6 +79,7 @@ TEST_CASE("Glob directory") {
     };
 
     llvm::StringSet<> globbedCMakeFilePaths;
+    const std::array<llvm::StringRef, 1> cmakeFileGlobs{"*CMakeLists.txt"};
     globs = mkGlobs(cmakeFileGlobs);
     REQUIRE_UNARY(ok(globs));
     rules[1].globs = std::move(*globs);

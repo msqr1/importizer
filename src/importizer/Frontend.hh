@@ -25,7 +25,7 @@ struct FrontendCtx {
 };
 
 class FrontendAnalyzer : public clang::ASTFrontendAction {
-  FrontendCtx &ctx;
+  FrontendCtx &ctx_;
 
 public:
   FrontendAnalyzer(FrontendCtx &ctx);
@@ -34,7 +34,7 @@ public:
 };
 
 class FrontendAnalyzerFactory : public tl::FrontendActionFactory {
-  FrontendCtx &ctx;
+  FrontendCtx &ctx_;
 
 public:
   FrontendAnalyzerFactory(FrontendCtx &ctx);

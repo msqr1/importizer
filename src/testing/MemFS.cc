@@ -13,13 +13,13 @@
 
 namespace {
 
-const auto buf1{llvm::MemoryBuffer::getMemBuffer("When I say six, what do you say?")};
-const auto buf2{llvm::MemoryBuffer::getMemBuffer("Seven! Get it? Cuz, cuz 67!")};
+const auto BUF1{llvm::MemoryBuffer::getMemBuffer("When I say six, what do you say?")};
+const auto BUF2{llvm::MemoryBuffer::getMemBuffer("Seven! Get it? Cuz, cuz 67!")};
 
 } // namespace
 
 auto addDir(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error {
-  bool res{memFS.addFileNoOwn(path, 0, *buf1, std::nullopt, std::nullopt,
+  bool res{memFS.addFileNoOwn(path, 0, *BUF1, std::nullopt, std::nullopt,
                               llvm::sys::fs::file_type::directory_file, std::nullopt)};
   if (res) {
     return llvm::Error::success();
@@ -29,7 +29,7 @@ auto addDir(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Er
 }
 
 auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error {
-  bool res{memFS.addFileNoOwn(path, 0, *buf1)};
+  bool res{memFS.addFileNoOwn(path, 0, *BUF1)};
   if (res) {
     return llvm::Error::success();
   }
@@ -37,7 +37,7 @@ auto addFile1(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::
 }
 
 auto addFile2(vfs::InMemoryFileSystem &memFS, const llvm::Twine &path) -> llvm::Error {
-  bool res{memFS.addFileNoOwn(path, 0, *buf2)};
+  bool res{memFS.addFileNoOwn(path, 0, *BUF2)};
   if (res) {
     return llvm::Error::success();
   }

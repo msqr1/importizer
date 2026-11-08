@@ -22,11 +22,11 @@ class SourceRange;
 } // namespace clang
 
 class PPAnalyzer : public clang::PPCallbacks {
-  clang::Preprocessor &PP;
-  FrontendCtx &ctx;
-  const unsigned nestedIncludeDiagID;
-  const unsigned macroIncludeDiagID;
-  unsigned condDepth{};
+  clang::Preprocessor &PP_;
+  FrontendCtx &ctx_;
+  const unsigned nestedIncludeDiagID_;
+  const unsigned macroIncludeDiagID_;
+  unsigned condDepth_{};
 
 public:
   PPAnalyzer(clang::Preprocessor &PP, FrontendCtx &ctx);

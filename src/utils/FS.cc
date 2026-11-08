@@ -21,7 +21,7 @@ namespace pth = llvm::sys::path;
 namespace fs = llvm::sys::fs;
 namespace vfs = llvm::vfs;
 
-auto getRealFS() noexcept -> vfs::FileSystem & {
+auto realFS() noexcept -> vfs::FileSystem & {
   static std::unique_ptr<vfs::FileSystem> realFS{vfs::createPhysicalFileSystem()};
   return *realFS;
 }

@@ -36,8 +36,8 @@ namespace pth = llvm::sys::path;
 namespace yml = llvm::yaml;
 
 void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*ctx*/) noexcept {
-  assert(globalLogOpts.stream != nullptr && globalLogOpts.prog != nullptr);
-  diag.print(globalLogOpts.prog, *globalLogOpts.stream);
+  assert(globalLogCfg.stream() != nullptr && globalLogCfg.prog() != nullptr);
+  diag.print(globalLogCfg.prog(), *globalLogCfg.stream());
 }
 
 auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS) noexcept
@@ -45,7 +45,7 @@ auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS)
   CLIConfig cliCfg;
 
   // LLVM default options will mix into ours if we don't make our own category
-  cl::OptionCategory cat{globalLogOpts.prog};
+  cl::OptionCategory cat{globalLogCfg.prog()};
 
   cl::opt<std::string, true> configPath{
       cl::cat{cat},
@@ -84,7 +84,7 @@ auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS)
   if (!cl::ParseCommandLineOptions(argc, argv,
                                    "importizer - Automagically rewrite "
                                    "header-based C++ into using modules.",
-                                   globalLogOpts.stream, &VFS)) {
+                                   globalLogCfg.stream(), &VFS)) {
     return llvm::make_error<EmptyErr>();
   }
 

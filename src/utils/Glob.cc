@@ -7,8 +7,8 @@
 #include <optional>
 #include <utility>
 
-Glob::Glob(const bool negate_, llvm::GlobPattern &&ptn_) noexcept
-    : ptn{std::move(ptn_)}, negate{negate_} {}
+Glob::Glob(const bool negate, llvm::GlobPattern &&ptn) noexcept
+    : ptn_{std::move(ptn)}, negate_{negate} {}
 
 auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern) noexcept -> llvm::Expected<Glob> {
   bool negate{ptn.consume_front('!')};
@@ -20,5 +20,5 @@ auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern) noexcept -> llvm::Expecte
 }
 
 auto Glob::match(llvm::StringRef str) const noexcept -> bool {
-  return (ptn.isTrivialMatchAll() || ptn.match(str)) ^ negate;
+  return (ptn_.isTrivialMatchAll() || ptn_.match(str)) ^ negate_;
 }

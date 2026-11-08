@@ -52,10 +52,10 @@ auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &outDir) noexcept 
 
   llvm::SmallString<64> out{};
   llvm::raw_svector_ostream outStream{out};
-  LogOpts prevLogOpts{globalLogOpts};
-  setGlobalLogOpts("importizer", &outStream);
+  LogConfig prevLogConfig{globalLogCfg};
+  globalLogCfg.set("importizer", &outStream);
   importizerMain(static_cast<int>(cmd.size()), cmd.data());
-  setGlobalLogOpts(prevLogOpts);
+  globalLogCfg.set(prevLogConfig);
 
   llvm::SmallString<64> refCLIPath;
   pth::append(refCLIPath, testDir, "RefCLI.txt");
@@ -108,12 +108,12 @@ auto updateE2ETest(const llvm::Twine &testDir) noexcept -> llvm::Error {
   // Make sure argv strings are always null-terminated
   std::array<const char *, 5> cmd{"importizer", configPath.c_str(), "-w", "-r", tmpDir.c_str()};
 
-  LogOpts prevLogOpts{globalLogOpts};
-  setGlobalLogOpts("importizer", prevLogOpts.stream);
+  LogConfig prevLogConfig{globalLogCfg};
+  globalLogCfg.set("importizer", prevLogConfig.stream());
   if (importizerMain(static_cast<int>(cmd.size()), cmd.data()) != EXIT_SUCCESS) {
     return llvm::make_error<EmptyErr>();
   }
-  setGlobalLogOpts(prevLogOpts);
+  globalLogCfg.set(prevLogConfig);
 
   if (std::error_code err{fs::remove_directories(refDir)}) {
     return llvm::createStringError(
