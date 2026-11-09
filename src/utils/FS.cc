@@ -16,10 +16,41 @@
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <system_error>
+#include <utility>
 
 namespace pth = llvm::sys::path;
 namespace fs = llvm::sys::fs;
 namespace vfs = llvm::vfs;
+
+namespace {
+
+auto basePathLen(const llvm::Twine &path) noexcept -> llvm::Expected<size_t> {
+  llvm::SmallString<64> tmp;
+  if (path.isTriviallyEmpty() || (path.toVector(tmp), tmp.empty())) {
+    return llvm::createStringError("path is empty");
+  }
+  return tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()));
+}
+
+auto buildFileMap(const llvm::Twine &dir, vfs::FileSystem &vfs, size_t baseLen) noexcept
+    -> llvm::Expected<llvm::StringMap<fs::file_type>> {
+  llvm::StringMap<fs::file_type> fileMap{};
+
+  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
+    if (ent.type() == fs::file_type::regular_file || ent.type() == fs::file_type::directory_file) {
+      fileMap.try_emplace(ent.path().drop_front(baseLen), ent.type());
+    }
+    return true;
+  }};
+
+  if (llvm::Error err{iterDir<true>(dir, checkDir, vfs)}) {
+    return std::move(err);
+  }
+
+  return fileMap;
+}
+
+} // namespace
 
 auto realFS() noexcept -> vfs::FileSystem & {
   static std::unique_ptr<vfs::FileSystem> realFS{vfs::createPhysicalFileSystem()};
@@ -28,23 +59,31 @@ auto realFS() noexcept -> vfs::FileSystem & {
 
 auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcVFS) noexcept
     -> llvm::Error {
-  llvm::SmallString<64> tmp;
-  if (dst.isTriviallyEmpty() || (dst.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("When copying directory: dst path is empty.");
+  auto dstBaseLen{basePathLen(dst)};
+  if (!dstBaseLen) {
+    return llvm::createStringError(
+        llvm::formatv("When copying directory: {}.", llvm::toString(dstBaseLen.takeError())));
   }
-  tmp.clear();
-  if (src.isTriviallyEmpty() || (src.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("When copying directory: src path is empty.");
+
+  auto srcBaseLen{basePathLen(src)};
+  if (!srcBaseLen) {
+    return llvm::createStringError(
+        llvm::formatv("When copying directory: {}.", llvm::toString(srcBaseLen.takeError())));
   }
-  const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
+
   if (std::error_code err{fs::create_directories(dst)}) {
     return llvm::createStringError(
         err, llvm::formatv("When creating directory {}: {}.", dst, err.message()));
   }
+
+  llvm::SmallString<64> tmpDst{};
+  dst.toVector(tmpDst);
+
   auto copy{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
-    llvm::StringRef relPath{ent.path().drop_front(baseLen)};
-    tmp.clear();
-    pth::append(tmp, dst, relPath);
+    llvm::StringRef relPath{ent.path().drop_front(*srcBaseLen)};
+    llvm::SmallString<128> tmp{};
+    pth::append(tmp, tmpDst, relPath);
+
     switch (ent.type()) {
     case fs::file_type::directory_file:
       if (std::error_code err{fs::create_directory(tmp)}) {
@@ -58,84 +97,73 @@ auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &src
             err, llvm::formatv("When copying file {}: {}.", ent.path(), err.message()));
       }
       break;
-    default: // Other file types
+    default:
       break;
     }
     return true;
   }};
-  return iterDir<true>(tmp, copy, srcVFS);
+
+  llvm::SmallString<64> tmpSrc{};
+  src.toVector(tmpSrc);
+  return iterDir<true>(tmpSrc, copy, srcVFS);
 }
 
 auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2, vfs::FileSystem &file1VFS,
               vfs::FileSystem &file2VFS) noexcept -> llvm::Expected<bool> {
   const auto buf1{file1VFS.getBufferForFile(file1, -1, false, false, false)};
   if (std::error_code err{buf1.getError()}) {
-    return llvm::createStringError(err, llvm::formatv("When opening {}: {}", file1, err.message()));
+    return llvm::createStringError(err,
+                                   llvm::formatv("When opening {}: {}.", file1, err.message()));
   }
   const auto buf2{file2VFS.getBufferForFile(file2, -1, false, false, false)};
   if (std::error_code err{buf2.getError()}) {
-    return llvm::createStringError(err, llvm::formatv("When opening {}: {}", file2, err.message()));
+    return llvm::createStringError(err,
+                                   llvm::formatv("When opening {}: {}.", file2, err.message()));
   }
   return (**buf1).getBuffer() == (**buf2).getBuffer();
 }
 
 auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &dirVFS,
              vfs::FileSystem &refVFS) noexcept -> llvm::Expected<bool> {
-  llvm::SmallString<64> tmp;
-  if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("When comparing directories: dir path is empty");
-  }
-  const size_t dirBaseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
-  tmp.clear();
-  if (ref.isTriviallyEmpty() || (ref.toVector(tmp), tmp.empty())) {
-    return llvm::createStringError("When comparing directories: ref path is empty");
-  }
-  const size_t refBaseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
-
-  llvm::StringMap<fs::file_type> refFileT;
-  auto checkRef{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
-    tmp.clear();
-    switch (ent.type()) {
-    case fs::file_type::regular_file:
-    case fs::file_type::directory_file:
-      refFileT.try_emplace(ent.path().drop_front(refBaseLen), ent.type());
-      break;
-    default:
-      break;
-    }
-    return true;
-  }};
-  if (llvm::Error err{iterDir<true>(tmp, checkRef, refVFS)}) {
-    return err;
+  auto dirBaseLen{basePathLen(dir)};
+  if (!dirBaseLen) {
+    return llvm::createStringError(
+        llvm::formatv("When comparing directories: {}.", llvm::toString(dirBaseLen.takeError())));
   }
 
-  llvm::StringMap<fs::file_type> dirFileT;
-  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
-    switch (ent.type()) {
-    case fs::file_type::regular_file:
-    case fs::file_type::directory_file:
-      dirFileT.try_emplace(ent.path().drop_front(dirBaseLen), ent.type());
-      break;
-    default:
-      break;
-    }
-    return true;
-  }};
-  if (llvm::Error err{iterDir<true>(dir, checkDir, dirVFS)}) {
-    return err;
+  auto refBaseLen{basePathLen(ref)};
+  if (!refBaseLen) {
+    return llvm::createStringError(
+        llvm::formatv("When comparing directories: {}.", llvm::toString(refBaseLen.takeError())));
+  }
+
+  llvm::SmallString<64> tmpRef{};
+  ref.toVector(tmpRef);
+  auto refFileT{buildFileMap(tmpRef, refVFS, *refBaseLen)};
+  if (!refFileT) {
+    return refFileT.takeError();
+  }
+
+  llvm::SmallString<64> tmpDir{};
+  dir.toVector(tmpDir);
+  auto dirFileT{buildFileMap(tmpDir, dirVFS, *dirBaseLen)};
+  if (!dirFileT) {
+    return dirFileT.takeError();
   }
 
   bool res{true};
-  for (const auto &[relPath, fileT] : refFileT) {
+  for (const auto &[relPath, fileT] : *refFileT) {
     llvm::StringRef fileTStr{fileT == fs::file_type::regular_file ? "file" : "directory"};
-    auto it{dirFileT.find(relPath)};
-    if (it == dirFileT.end()) {
-      logErr("Missing {} {}.", fileTStr, relPath);
+    auto it{dirFileT->find(relPath)};
+
+    if (it == dirFileT->end()) {
+      logErr("When comparing directories: Missing {} {}.", fileTStr, relPath);
       res = false;
       continue;
     }
+
     if (fileT != it->getValue()) {
-      logErr("Expected {} to be a {}.", relPath, fileTStr);
+      logErr("When comparing directories: Expected {} to be a {}.", relPath, fileTStr);
       res = false;
     } else if (fileT == fs::file_type::regular_file) {
       llvm::Expected<bool> fileRes{cmpFiles(ref + pth::get_separator() + relPath,
@@ -144,16 +172,18 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
         return fileRes.takeError();
       }
       if (!*fileRes) {
-        logErr("Mismatching file content for {}.", relPath);
+        logErr("When comparing directories: Mismatching file content for {}.", relPath);
         res = false;
       }
     }
-    dirFileT.erase(it);
+    dirFileT->erase(it);
   }
-  for (const auto &[relPath, fileT] : dirFileT) {
+
+  for (const auto &[relPath, fileT] : *dirFileT) {
     llvm::StringRef fileTStr{fileT == fs::file_type::regular_file ? "file" : "directory"};
-    logErr("Unexpected {} {}.", fileTStr, relPath);
+    logErr("When comparing directories: Unexpected {} {}.", fileTStr, relPath);
     res = false;
   }
+
   return res;
 }

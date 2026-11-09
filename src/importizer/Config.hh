@@ -44,7 +44,7 @@ struct CLIConfig {
   MOVE_ONLY;
   std::string configPath;
   std::string rootDir;
-  bool write;
+  bool write{};
 };
 
 struct YMLExplicit {
