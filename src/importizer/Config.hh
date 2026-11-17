@@ -4,6 +4,7 @@
 
 #pragma once
 #include "utils/FS.hh"
+#include "utils/Types.hh"
 #include <cassert>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/StringRef.h>
@@ -16,21 +17,6 @@
 #include <string>
 #include <vector>
 
-#ifdef _MSC_VER
-#define NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-#else
-#define NO_UNIQUE_ADDRESS [[no_unique_address]]
-#endif
-
-struct MoveOnlyToken {
-  MoveOnlyToken() noexcept = default;
-  MoveOnlyToken(MoveOnlyToken &&) noexcept = default;
-  MoveOnlyToken(const MoveOnlyToken &) = delete;
-  auto operator=(const MoveOnlyToken &) -> MoveOnlyToken & = delete;
-};
-
-#define MOVE_ONLY NO_UNIQUE_ADDRESS MoveOnlyToken moveOnly_
-
 namespace tl = clang::tooling;
 namespace yml = llvm::yaml;
 
@@ -40,8 +26,7 @@ class FileSystem;
 
 namespace vfs = llvm::vfs;
 
-struct CLIConfig {
-  MOVE_ONLY;
+struct CLIConfig : MvOnly {
   std::string configPath;
   std::string rootDir;
   bool write{};
@@ -94,9 +79,7 @@ template <> struct yml::MappingTraits<YMLConfig> {
 };
 
 // Fully-resolved configuration
-struct Config {
-  MOVE_ONLY;
-
+struct Config : MvOnly {
   // Root directory
   std::string rootDir;
 

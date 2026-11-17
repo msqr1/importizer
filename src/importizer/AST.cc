@@ -25,5 +25,5 @@ public:
 
 ASTAnalyzer::ASTAnalyzer(FrontendCtx &ctx) : ctx_{ctx} {}
 void ASTAnalyzer::HandleTranslationUnit(clang::ASTContext &AST) noexcept {
-  SymbolVisitor{ctx_}.TraverseAST(AST);
+  SymbolVisitor{ctx_}.traverseDecl(AST.getTranslationUnitDecl());
 }

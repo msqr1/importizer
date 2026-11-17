@@ -59,8 +59,8 @@ auto iterDir(const llvm::Twine &dir, IterDirCallback callback,
   return llvm::Error::success();
 }
 
-auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst,
-            vfs::FileSystem &srcVFS = realFS()) noexcept -> llvm::Error;
+auto cpDir(const llvm::Twine &src, const llvm::Twine &dst,
+           vfs::FileSystem &srcVFS = realFS()) noexcept -> llvm::Error;
 
 auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2,
               vfs::FileSystem &file1VFS = realFS(), vfs::FileSystem &file2VFS = realFS()) noexcept

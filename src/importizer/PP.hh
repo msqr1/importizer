@@ -15,10 +15,7 @@ struct FrontendCtx;
 struct Config;
 
 namespace clang {
-class SourceLocation;
 class Module;
-class CharSourceRange;
-class SourceRange;
 } // namespace clang
 
 class PPAnalyzer : public clang::PPCallbacks {

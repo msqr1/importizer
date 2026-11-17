@@ -38,7 +38,7 @@ auto importizerMain2(const int argc, const char *const *argv) -> llvm::Error {
   case 2:
     assert(false && "Skipped files because of missing compile commands??");
     break;
-  default: // Other file types
+  default:
     break;
   }
   return llvm::Error::success();
@@ -51,5 +51,5 @@ auto importizerMain(const int argc, const char *const *argv) -> int {
     llvm::handleAllErrors(std::move(err), ErrorLogger{});
     return EXIT_FAILURE;
   }
-  return EXIT_FAILURE;
+  return EXIT_SUCCESS;
 }

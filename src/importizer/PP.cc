@@ -3,6 +3,7 @@
 #include "importizer/Frontend.hh"
 #include <clang/Basic/Diagnostic.h>
 #include <clang/Basic/FileEntry.h>
+#include <clang/Basic/SourceLocation.h>
 #include <clang/Basic/SourceManager.h>
 #include <clang/Lex/ModuleLoader.h>
 #include <clang/Lex/PPCallbacks.h>
@@ -29,21 +30,17 @@ void PPAnalyzer::InclusionDirective(
     llvm::StringRef /*RelativePath*/, const clang::Module * /*SuggestedModule*/,
     bool /*ModuleImported*/, clang::SrcMgr::CharacteristicKind /*FileType*/) noexcept {
   clang::SourceManager &srcMgr{PP_.getSourceManager()};
-
-  // Restrict only to the main file, and only resolved #include
   if (!(srcMgr.isInMainFile(hashLoc) && file)) {
     return;
   }
 
   // Only enforce top-level #include for modularizable headers
   if (ctx_.cfg.hdrs.contains(file->getFileEntry().tryGetRealPathName())) {
-    // Check if #include is nested within a conditional block
     if (condDepth_ > 0) {
       PP_.getDiagnostics().Report(hashLoc, nestedIncludeDiagID_);
       return;
     }
 
-    // Check if #include itself or the filename came from a macro expansion
     if (hashLoc.isMacroID() || filenameRange.getBegin().isMacroID()) {
       PP_.getDiagnostics().Report(hashLoc, macroIncludeDiagID_);
       return;

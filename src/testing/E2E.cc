@@ -45,7 +45,7 @@ auto runE2ETest(const llvm::Twine &testDir, const llvm::Twine &outDir) noexcept 
       return llvm::createStringError(
           err, llvm::formatv("When creating directory {}: {}", outDirStr, err.message()));
     }
-    if (llvm::Error err{cpyDir(testDir + pth::get_separator() + "in", outDirStr)}) {
+    if (llvm::Error err{cpDir(testDir + pth::get_separator() + "in", outDirStr)}) {
       return err;
     }
   }
@@ -123,5 +123,5 @@ auto updateE2ETest(const llvm::Twine &testDir) noexcept -> llvm::Error {
     return llvm::createStringError(
         err, llvm::formatv("When creating directory {}: {}", refDir, err.message()));
   }
-  return cpyDir(tmpDir, refDir);
+  return cpDir(tmpDir, refDir);
 }

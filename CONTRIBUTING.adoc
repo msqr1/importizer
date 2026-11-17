@@ -52,16 +52,13 @@ The binary ends up in `build/importizer`.
 == Where to go next
 [%autowidth]
 |===
-|I want to... |Read about...
+|I want to... |Go read...
 
 |Understand the toolchain, customize my build, or skip building LibTooling
 |xref:/docs/Building.adoc[Building]
 
 |Run or add unit and end-to-end tests
 |xref:/docs/Testing.adoc[Testing]
-
-|Know the naming, C{plus}{plus}, CMake, scripting and markup rules
-|xref:/docs/Conventions.adoc[Conventions]
 
 |Learn why things are built this way (dependency linkage, CI/CD pipeline, etc.)
 |xref:/docs/Internals.adoc[Internals]
@@ -77,5 +74,38 @@ the integration of all changes.
 Only human conceived and created code and prose is accepted for now, no AI/LLM-generated code
 allowed.
 
-== Maintainers
-See xref:/docs/Maintenance.adoc[`docs/Maintenance.adoc`] for release and version bump checklists.
+== Coding conventions
+
+* 100-column per line limit for files, CLI outputs, and markup.
+
+=== Naming
+* *CMake targets and directories:* `kebab-case` (e.g., `3rd-party/`)
+* *CMake user-defined (`-D`) variables :* `SNAKE_UPPERCASE` (e.g., `TRACE_BUILD`)
+* *Environment variables:* `SNAKE_UPPERCASE` prefixed with `IMPORTIZER_` (e.g., `IMPORTIZER_OS`)
+
+=== C{plus}{plus}
+* See and make use of link:/.clangd[`.clangd`], link:/.clang-format[`.clang-format`],
+link:/.clang-tidy[`.clang-tidy`].
+Formating and linting will be checked in CI/CD.
+
+=== CMake
+* Only use generator expressions for build-time conditionals (e.g., `<$COMPILE_LANGUAGE:CXX>`).
+* If a setting is for a specific library, put it in link:/CMakePresets.json[`CMakePresets.json`].
+If it's for everything, put it in link:/DynPresets.cmake[`DynPresets.cmake`].
+
+=== Scripts
+* Use CMake to write scripts, if not possible, then make a folder and add scripts for all supported
+OS'es (like `setup`).
+* Environment setup scripts define these environment variables so you can use in other places:
+** `IMPORTIZER_OS`: The operating system (`windows`, `linux`, `macos`)
+** `IMPORTIZER_ARCH`: The architecture (`amd64`, `arm64`)
+* For CI detection check if the environment variable `CI` was defined.
+
+=== Markup
+* Use https://asciidoc.org[AsciiDoc].
+* Begin every sentence on a new line (one sentence per line).
+However, wrap sentences at the column limit, but try not to because this means it's quite loooooong.
+* Github turns on Asciidoctor's
+https://docs.asciidoctor.org/asciidoctor/latest/safe-modes/#secure[SECURE safe mode], which disables
+a few things, so keep that mind.
+* Don't add a Table of Contents (TOC) unless there's a need to quickly jump to a section.

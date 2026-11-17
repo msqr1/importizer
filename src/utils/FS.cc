@@ -57,7 +57,7 @@ auto realFS() noexcept -> vfs::FileSystem & {
   return *realFS;
 }
 
-auto cpyDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcVFS) noexcept
+auto cpDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcVFS) noexcept
     -> llvm::Error {
   auto dstBaseLen{basePathLen(dst)};
   if (!dstBaseLen) {

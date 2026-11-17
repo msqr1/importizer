@@ -3,6 +3,7 @@
 
 #pragma once
 #include "utils/FS.hh"
+#include "utils/Types.hh"
 #include <cassert>
 #include <concepts>
 #include <cstddef>
@@ -19,15 +20,12 @@
 
 namespace pth = llvm::sys::path;
 
-class Glob {
+class Glob : MvOnly {
   llvm::GlobPattern ptn_;
   const bool negate_;
 
 public:
   Glob(bool negate, llvm::GlobPattern &&ptn) noexcept;
-  Glob(Glob &&) noexcept = default;
-  Glob(const Glob &) = delete;
-  auto operator=(const Glob &) -> Glob & = delete;
 
   [[nodiscard]] auto match(llvm::StringRef s) const noexcept -> bool;
 };
