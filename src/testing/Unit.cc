@@ -1,5 +1,4 @@
 #include "testing/Unit.hh"
-#define DOCTEST_CONFIG_IMPLEMENT
 #include "testing/Doctest.hh"
 #include "utils/Diag.hh"
 #include <cstdio>
@@ -11,7 +10,6 @@
 #include <ostream>
 #include <streambuf>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace {
@@ -45,8 +43,6 @@ public:
 };
 
 } // namespace
-
-auto ok(llvm::Error err) noexcept -> bool { return !llvm::errorToBool(std::move(err)); }
 
 auto runUnitTest(const char *suiteName, const std::vector<std::string> &args) noexcept -> int {
   doctest::Context ctx;

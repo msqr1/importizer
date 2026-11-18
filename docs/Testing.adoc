@@ -42,21 +42,14 @@ function (e.g. the `FS` suite tests filesystem utilities).
 * Each test suite consists of test cases, where each test case should test 1 function.
 * Each subcase should test an "aspect" of the function.
 
-To add a new test case and subcases, simply follow
-https://github.com/doctest/doctest/blob/master/doc/markdown/testcases.md[doctest's official guide].
 Some rules to keep in mind, namely:
 
-* Don't `#include <doctest/doctest.h>`, `#include "testing/Doctest.hh"`, which enforces:
-** Correct doctest configuration macros.
-** No syntatic sugar macros (`CHECK()`, `REQUIRE()`,...).
-* For code that sets up the test "context", use `llvm::cantFail()`.
-* For checks that must pass before others, use `REQUIRE_*()` macros.
-* For independent checks, use `CHECK_*()` macros.
-* Note that the macros require `bool` and contextual conversion does NOT work, so use the `ok()`
-convenience functions.
+* Don't `#include <doctest/doctest.h>`, `#include "testing/Doctest.hh"`.
+* For code that sets up the test's "context", use `llvm::cantFail()`.
+* For checks that must pass before others, use `REQUIRE*()` macros.
+* For independent checks, use `CHECK*()` macros.
 
 To add a new test suite:
 
-. Add a new file in link:/src/testing/[`src/testing/`] for the new suite, named
-`<suite-name>Test.cc`.
+. Add a new file in link:/src/testing/[`src/testing/`] named `<suite-name>Test.cc`.
 . Add the suite name to the list in link:/tests/CMakeLists.txt[`tests/CMakeLists.txt`].

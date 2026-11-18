@@ -4,7 +4,6 @@
 #include "utils/Glob.hh"
 #include "testing/Doctest.hh"
 #include "testing/MemFS.hh"
-#include "testing/Unit.hh"
 #include <array>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/SmallString.h>
@@ -20,32 +19,31 @@
 namespace fs = llvm::sys::fs;
 namespace vfs = llvm::vfs;
 
-TEST_SUITE_BEGIN("Glob");
+SUITE("Glob");
 
-TEST_CASE("Creation and negation") {
-  SUBCASE("Invalid glob") { CHECK_UNARY_FALSE(ok(mkGlob("["))); }
+CASE("Creation and negation") {
+  SUBCASE("Invalid glob") { CHECK_FALSE(mkGlob("[")); }
 
   SUBCASE("Negated match") {
     llvm::Expected<Glob> g{mkGlob("*")};
-    REQUIRE_UNARY(ok(g));
+    REQUIRE(g);
 
     llvm::Expected<Glob> gNeg{mkGlob("!*")};
-    REQUIRE_UNARY(ok(gNeg));
+    REQUIRE(gNeg);
 
     CHECK_NE(g->match("hehe"), gNeg->match("hehe"));
   }
 }
 
-TEST_CASE("Glob directory") {
+CASE("Glob directory") {
   vfs::InMemoryFileSystem memFS;
 
   SUBCASE("Empty paths") {
     std::array<GlobDirRule, 0> rules;
-    CHECK_UNARY_FALSE(ok(globDir("", rules, memFS)));
+    CHECK_FALSE(globDir("", rules, memFS));
   }
 
   SUBCASE("Real matching") {
-
     const llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
     const llvm::StringSet<> cmakeFilePaths{"/CMakeLists.txt", "/lib/CMakeLists.txt",
                                            "/src/CMakeLists.txt"};
@@ -69,7 +67,7 @@ TEST_CASE("Glob directory") {
     llvm::StringSet<> globbedCPPFilePaths;
     const std::array<llvm::StringRef, 2> cppFilesGlobs{{"*.hh", "*.cc"}};
     llvm::Expected<GlobStorage> globs{mkGlobs(cppFilesGlobs)};
-    REQUIRE_UNARY(ok(globs));
+    REQUIRE(globs);
     rules[0].globs = std::move(*globs);
     rules[0].callback = [&](const vfs::directory_entry &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
@@ -81,7 +79,7 @@ TEST_CASE("Glob directory") {
     llvm::StringSet<> globbedCMakeFilePaths;
     const std::array<llvm::StringRef, 1> cmakeFileGlobs{"*CMakeLists.txt"};
     globs = mkGlobs(cmakeFileGlobs);
-    REQUIRE_UNARY(ok(globs));
+    REQUIRE(globs);
     rules[1].globs = std::move(*globs);
     rules[1].callback = [&](const vfs::directory_entry &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
@@ -89,10 +87,10 @@ TEST_CASE("Glob directory") {
         globbedCMakeFilePaths.insert(pth::convert_to_slash(ent.path()));
       }
     };
-    REQUIRE_UNARY(ok(globDir("/", rules, memFS)));
+    REQUIRE(globDir("/", rules, memFS));
     CHECK_EQ(cppFilePaths, globbedCPPFilePaths);
     CHECK_EQ(cmakeFilePaths, globbedCMakeFilePaths);
   }
 }
 
-TEST_SUITE_END();
+END_SUITE();

@@ -3,7 +3,6 @@
 #include "utils/FS.hh"
 #include "testing/Doctest.hh"
 #include "testing/MemFS.hh"
-#include "testing/Unit.hh"
 #include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
@@ -13,14 +12,14 @@
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/raw_ostream.h>
 
-TEST_SUITE_BEGIN("FS");
+SUITE("FS");
 
-TEST_CASE("Compare files") {
+CASE("Compare files") {
   vfs::InMemoryFileSystem memFS;
 
   SUBCASE("Empty paths") {
-    CHECK_UNARY_FALSE(ok(cmpFiles("", "/", memFS, memFS)));
-    CHECK_UNARY_FALSE(ok(cmpFiles("/", "", memFS, memFS)));
+    CHECK_FALSE(cmpFiles("", "/", memFS, memFS));
+    CHECK_FALSE(cmpFiles("/", "", memFS, memFS));
   }
 
   SUBCASE("Same content") {
@@ -28,8 +27,8 @@ TEST_CASE("Compare files") {
     llvm::cantFail(addFile1(memFS, "/Meow.txt"));
 
     llvm::Expected<bool> cmpRes{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
-    REQUIRE_UNARY(ok(cmpRes));
-    CHECK_UNARY(*cmpRes);
+    REQUIRE(cmpRes);
+    CHECK(*cmpRes);
   }
 
   SUBCASE("Mismatching content") {
@@ -37,17 +36,17 @@ TEST_CASE("Compare files") {
     llvm::cantFail(addFile2(memFS, "/Meow.txt"));
 
     llvm::Expected<bool> cmpRes{cmpFiles("/File.txt", "/Meow.txt", memFS, memFS)};
-    REQUIRE_UNARY(ok(cmpRes));
-    CHECK_UNARY_FALSE(*cmpRes);
+    REQUIRE(cmpRes);
+    CHECK_FALSE(*cmpRes);
   }
 }
 
-TEST_CASE("Compare directories") {
+CASE("Compare directories") {
   vfs::InMemoryFileSystem memFS;
 
   SUBCASE("Empty paths") {
-    CHECK_UNARY_FALSE(ok(cmpDirs("", "/", memFS, memFS)));
-    CHECK_UNARY_FALSE(ok(cmpDirs("/", "", memFS, memFS)));
+    CHECK_FALSE(cmpDirs("", "/", memFS, memFS));
+    CHECK_FALSE(cmpDirs("/", "", memFS, memFS));
   }
 
   SUBCASE("Identical directories") {
@@ -55,8 +54,8 @@ TEST_CASE("Compare directories") {
     llvm::cantFail(addFile1(memFS, "/dir/File.txt"));
 
     llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
-    REQUIRE_UNARY(ok(cmpRes));
-    CHECK_UNARY(*cmpRes);
+    REQUIRE(cmpRes);
+    CHECK(*cmpRes);
   }
 
   SUBCASE("Mismatching directories") {
@@ -82,9 +81,9 @@ TEST_CASE("Compare directories") {
     }
 
     llvm::Expected<bool> cmpRes{cmpDirs("/dir", "/ref", memFS, memFS)};
-    REQUIRE_UNARY(ok(cmpRes));
-    CHECK_UNARY_FALSE(*cmpRes);
+    REQUIRE(cmpRes);
+    CHECK_FALSE(*cmpRes);
   }
 }
 
-TEST_SUITE_END();
+END_SUITE();

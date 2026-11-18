@@ -3,7 +3,6 @@
 
 #include "importizer/Config.hh"
 #include "testing/Doctest.hh"
-#include "testing/Unit.hh"
 #include "utils/Diag.hh"
 #include <array>
 #include <clang/Tooling/CompilationDatabase.h>
@@ -39,20 +38,20 @@ auto addYMLConfig(vfs::InMemoryFileSystem &memFS, CLIConfig &cliCfg, const YMLCo
 
 } // namespace
 
-TEST_SUITE_BEGIN("Config");
+SUITE("Config");
 
-TEST_CASE("CLI parsing") {
+CASE("CLI parsing") {
   vfs::InMemoryFileSystem memFS;
 
   SUBCASE("Default --write") {
     std::array<const char *, 1> argv{"importizer"};
     llvm::Expected<CLIConfig> cliCfg{getCLIConfig(argv.size(), argv.data(), memFS)};
-    REQUIRE_UNARY(ok(cliCfg));
-    CHECK_UNARY_FALSE(cliCfg->write);
+    REQUIRE(cliCfg);
+    CHECK_FALSE(cliCfg->write);
   }
 }
 
-TEST_CASE("Resolution") {
+CASE("Resolution") {
   vfs::InMemoryFileSystem memFS;
   CLIConfig cliCfg;
   cliCfg.configPath = "/Config.yml";
@@ -89,8 +88,8 @@ TEST_CASE("Resolution") {
     }
 
     llvm::cantFail(addYMLConfig(memFS, cliCfg, ymlCfg));
-    CHECK_UNARY_FALSE(ok(resolveConfig(cliCfg, memFS)));
+    CHECK_FALSE(resolveConfig(cliCfg, memFS));
   }
 }
 
-TEST_SUITE_END();
+END_SUITE();

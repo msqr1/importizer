@@ -1,6 +1,7 @@
 add_executable(test-tool
   Driver.cc
   E2E.cc
+  Doctest.cc
   Unit.cc
   MemFS.cc
   FSTest.cc

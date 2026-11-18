@@ -1,68 +1,92 @@
-// This header acts as <doctest/doctest.h> with correct configuration. We also replace some macros
-// to work without C++ exceptions.
+// This header acts as a proxy for <doctest/doctest.h> with correct configuration.
+// We also replace some macros to work without C++ exceptions, be compatible with LLVM error types
+// and ensure fast compilation.
 
 #pragma once
 #define DOCTEST_CONFIG_SUPER_FAST_ASSERTS
 #define DOCTEST_CONFIG_NO_EXCEPTIONS
-#define DOCTEST_CONFIG_NO_WINDOWS_SEH
-#define DOCTEST_CONFIG_NO_POSIX_SIGNALS
 #define DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
-#define DOCTEST_CONFIG_NO_MULTITHREADING
 #define DOCTEST_CONFIG_ASSERTS_RETURN_VALUES
 #define DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS
+#define DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES
 #include <doctest/doctest.h>
+#include <llvm/Support/Error.h>
 
-// Ban syntatic sugar macros that slows down compilation
-#undef REQUIRE
-#undef REQUIRE_FALSE
-#undef REQUIRE_MESSAGE
-#undef CHECK
-#undef CHECK_FALSE
-#undef CHECK_MESSAGE
-#undef WARN
-#undef WARN_FALSE
-#undef WARN_MESSAGE
+#define SUITE DOCTEST_TEST_SUITE_BEGIN
+#define END_SUITE DOCTEST_TEST_SUITE_END
+#define CASE DOCTEST_TEST_CASE
+#define SUBCASE DOCTEST_SUBCASE
 
-// Replace REQUIRE_* macros that rely on DOCTEST_CONFIG_ASSERTS_RETURN_VALUES.The real REQUIRE_*
-// with DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS behaves like CHECK_*.
+// Convenience functions for consuming things and convert it to bool, where true means no error.
+// If there's an error (a.k.a this returned false), one must terminate immediately.
+auto ok(bool res) noexcept -> bool;
+auto ok(llvm::Error err) noexcept -> bool;
+
+template <typename T> auto ok(llvm::Expected<T> &xpected) noexcept -> bool {
+  return ok(xpected.takeError());
+}
+
+template <typename T> auto ok(llvm::Expected<T> &&xpected) noexcept -> bool {
+  return ok(std::move(xpected).takeError());
+}
+
 // NOLINTBEGIN
-#undef REQUIRE_UNARY
-#define REQUIRE_UNARY(...)                                                                         \
-  if (!DOCTEST_REQUIRE_UNARY(__VA_ARGS__))                                                         \
-  return
+#define CHECK(...) DOCTEST_CHECK_UNARY(ok(__VA_ARGS__))
+#define CHECK_FALSE(...) DOCTEST_CHECK_UNARY_FALSE(ok(__VA_ARGS__))
+#define CHECK_EQ DOCTEST_CHECK_EQ
+#define CHECK_NE DOCTEST_CHECK_NE
+#define CHECK_GT DOCTEST_CHECK_GT
+#define CHECK_LT DOCTEST_CHECK_LT
+#define CHECK_GE DOCTEST_CHECK_GE
+#define CHECK_LE DOCTEST_CHECK_LE
 
-#undef REQUIRE_UNARY_FALSE
-#define REQUIRE_UNARY_FALSE(...)                                                                   \
-  if (!DOCTEST_REQUIRE_UNARY_FALSE(__VA_ARGS__))                                                   \
-  return
+// Replace REQUIRE_* macros that rely on DOCTEST_CONFIG_ASSERTS_RETURN_VALUES.The real REQUIRE*
+// with DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS behaves like CHECK*.
+#define REQUIRE(...)                                                                               \
+  do {                                                                                             \
+    if (!DOCTEST_REQUIRE_UNARY(ok(__VA_ARGS__)))                                                   \
+      return;                                                                                      \
+  } while (0)
 
-#undef REQUIRE_EQ
+#define REQUIRE_FALSE(...)                                                                         \
+  do {                                                                                             \
+    if (!DOCTEST_REQUIRE_UNARY_FALSE(ok(__VA_ARGS__)))                                             \
+      return;                                                                                      \
+  } while (0)
+
 #define REQUIRE_EQ(...)                                                                            \
-  if (!DOCTEST_REQUIRE_EQ(__VA_ARGS__))                                                            \
-  return
+  do {                                                                                             \
+    if (!DOCTEST_REQUIRE_EQ(__VA_ARGS__))                                                          \
+      return;                                                                                      \
+  } while (0)
 
-#undef REQUIRE_NE
 #define REQUIRE_NE(...)                                                                            \
-  if (!DOCTEST_REQUIRE_NE(__VA_ARGS__))                                                            \
-  return
+  do {                                                                                             \
+    if (!DOCTEST_REQUIRE_NE(__VA_ARGS__))                                                          \
+      return;                                                                                      \
+  } while (0)
 
-#undef REQUIRE_GT
 #define REQUIRE_GT(...)                                                                            \
-  if (!DOCTEST_REQUIRE_GT(__VA_ARGS__))                                                            \
-  return
+  do {                                                                                             \
+    if (!DOCTEST_REQUIRE_GT(__VA_ARGS__))                                                          \
+      return;                                                                                      \
+  } while (0)
 
-#undef REQUIRE_LT
 #define REQUIRE_LT(...)                                                                            \
-  if (!DOCTEST_REQUIRE_LT(__VA_ARGS__))                                                            \
-  return
+  do {                                                                                             \
+    if (!DOCTEST_REQUIRE_LT(__VA_ARGS__))                                                          \
+      return;                                                                                      \
+  } while (0)
 
-#undef REQUIRE_GE
 #define REQUIRE_GE(...)                                                                            \
-  if (!DOCTEST_REQUIRE_GE(__VA_ARGS__))                                                            \
-  return
+  do {                                                                                             \
+    if (!DOCTEST_REQUIRE_GE(__VA_ARGS__))                                                          \
+      return;                                                                                      \
+  } while (0)
 
-#undef REQUIRE_LE
 #define REQUIRE_LE(...)                                                                            \
-  if (!DOCTEST_REQUIRE_LE(__VA_ARGS__))                                                            \
-  return
+  do {                                                                                             \
+    if (!DOCTEST_REQUIRE_LE(__VA_ARGS__))                                                          \
+      return;                                                                                      \
+  } while (0)
 // NOLINTEND

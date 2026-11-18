@@ -6,16 +6,4 @@
 #include <utility>
 #include <vector>
 
-// Convenience functions for consuming things and convert it to bool, where true means no error.
-// If there's an error (a.k.a this returned false), one must terminate immediately.
-auto ok(llvm::Error err) noexcept -> bool;
-
-template <typename T> auto ok(llvm::Expected<T> &xpected) noexcept -> bool {
-  return ok(xpected.takeError());
-}
-
-template <typename T> auto ok(llvm::Expected<T> &&xpected) noexcept -> bool {
-  return ok(std::move(xpected).takeError());
-}
-
 auto runUnitTest(const char *suiteName, const std::vector<std::string> &args) noexcept -> int;
