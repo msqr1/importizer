@@ -1,11 +1,13 @@
 BasedOnStyle: LLVM
 ColumnLimit: 100
+LineEnding: LF
+
 SortIncludes:
   Enabled: true
-IncludeBlocks: Preserve # Or Regroup, depending on whether you want blank lines between groups
+IncludeBlocks: Preserve
 IncludeIsMainRegex: "$"
 IncludeCategories:
-  # Main header automatically gets Priority: 0
+  # Main header gets Priority: 0
   - Regex: '".*"'
     Priority: 1
   - Regex: "^<(llvm|clang)/"
@@ -13,4 +15,6 @@ IncludeCategories:
     CaseSensitive: true
   - Regex: "<.*>"
     Priority: 3
-LineEnding: LF
+
+QualifierAlignment: Right
+RemoveSemicolon: true

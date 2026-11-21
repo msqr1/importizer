@@ -5,7 +5,6 @@
 #include "testing/MemFS.hh"
 #include "utils/Glob.hh"
 #include <llvm/ADT/STLExtras.h>
-#include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/Support/Error.h>
@@ -39,13 +38,13 @@ CASE("Glob directory") {
   vfs::InMemoryFileSystem memFS;
 
   SUBCASE("Empty paths") {
-    std::array<GlobDirRule, 0> rules;
+    std::array<GlobDirRule, 0> const rules;
     CHECK_FALSE(globDir("", rules, memFS));
   }
 
   SUBCASE("Real matching") {
-    const llvm::StringSet<> cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
-    const llvm::StringSet<> cmakeFilePaths{"/CMakeLists.txt", "/lib/CMakeLists.txt",
+    llvm::StringSet<> const cppFilePaths{"/lib/IO.hh", "/lib/IO.cc", "/src/Driver.cc"};
+    llvm::StringSet<> const cmakeFilePaths{"/CMakeLists.txt", "/lib/CMakeLists.txt",
                                            "/src/CMakeLists.txt"};
     /*
       /
@@ -58,18 +57,18 @@ CASE("Glob directory") {
           ├── CMakeLists.txt
           └── Driver.cc
     */
-    for (llvm::StringRef path :
+    for (llvm::StringRef const path :
          llvm::concat<llvm::StringRef>(cppFilePaths.keys(), cmakeFilePaths.keys())) {
       llvm::cantFail(addFile1(memFS, path));
     }
     std::array<GlobDirRule, 2> rules;
 
     llvm::StringSet<> globbedCPPFilePaths;
-    const std::array<llvm::StringRef, 2> cppFilesGlobs{{"*.hh", "*.cc"}};
+    std::array<llvm::StringRef, 2> const cppFilesGlobs{{"*.hh", "*.cc"}};
     llvm::Expected<GlobStorage> globs{mkGlobs(cppFilesGlobs)};
     REQUIRE(globs);
     rules[0].globs = std::move(*globs);
-    rules[0].callback = [&](const vfs::directory_entry &ent) -> void {
+    rules[0].callback = [&](vfs::directory_entry const &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
         // Without \ -> / conversion StringSet comparison will fail on Windows.
         globbedCPPFilePaths.insert(pth::convert_to_slash(ent.path()));
@@ -77,11 +76,11 @@ CASE("Glob directory") {
     };
 
     llvm::StringSet<> globbedCMakeFilePaths;
-    const std::array<llvm::StringRef, 1> cmakeFileGlobs{"*CMakeLists.txt"};
+    std::array<llvm::StringRef, 1> const cmakeFileGlobs{"*CMakeLists.txt"};
     globs = mkGlobs(cmakeFileGlobs);
     REQUIRE(globs);
     rules[1].globs = std::move(*globs);
-    rules[1].callback = [&](const vfs::directory_entry &ent) -> void {
+    rules[1].callback = [&](vfs::directory_entry const &ent) -> void {
       if (ent.type() == fs::file_type::regular_file) {
         // Without \ -> / conversion StringSet comparison will fail on Windows.
         globbedCMakeFilePaths.insert(pth::convert_to_slash(ent.path()));

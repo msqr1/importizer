@@ -29,7 +29,7 @@ void PPAnalyzer::InclusionDirective(
     clang::OptionalFileEntryRef file, llvm::StringRef /*SearchPath*/,
     llvm::StringRef /*RelativePath*/, const clang::Module * /*SuggestedModule*/,
     bool /*ModuleImported*/, clang::SrcMgr::CharacteristicKind /*FileType*/) noexcept {
-  clang::SourceManager &srcMgr{PP_.getSourceManager()};
+  clang::SourceManager const &srcMgr{PP_.getSourceManager()};
   if (!(srcMgr.isInMainFile(hashLoc) && file)) {
     return;
   }

@@ -19,7 +19,7 @@ namespace tl = clang::tooling;
 // Used to pass information in and out of all layers of a ClangTool.
 struct FrontendCtx {
   // Inputs (const refs)
-  const Config &cfg;
+  Config const &cfg;
 
   // Outputs
 };
@@ -29,6 +29,8 @@ class FrontendAnalyzer : public clang::ASTFrontendAction {
 
 public:
   FrontendAnalyzer(FrontendCtx &ctx);
+
+protected:
   auto CreateASTConsumer(clang::CompilerInstance &compiler, llvm::StringRef file) noexcept
       -> std::unique_ptr<clang::ASTConsumer> override;
 };

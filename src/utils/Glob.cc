@@ -1,17 +1,15 @@
 #include "utils/Glob.hh"
-#include <llvm/ADT/FunctionExtras.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/GlobPattern.h>
 #include <cstddef>
-#include <optional>
 #include <utility>
 
-Glob::Glob(const bool negate, llvm::GlobPattern &&ptn) noexcept
+Glob::Glob(bool const negate, llvm::GlobPattern &&ptn) noexcept
     : ptn_{std::move(ptn)}, negate_{negate} {}
 
 auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern) noexcept -> llvm::Expected<Glob> {
-  bool negate{ptn.consume_front('!')};
+  bool const negate{ptn.consume_front('!')};
   llvm::Expected<llvm::GlobPattern> p{llvm::GlobPattern::create(ptn, maxSubpattern)};
   if (!p) {
     return p.takeError();

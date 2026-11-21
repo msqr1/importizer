@@ -33,8 +33,8 @@ struct CLIConfig : MvOnly {
 };
 
 struct YMLExplicit {
-  std::vector<llvm::StringRef> srcGlobExprs{};
-  std::vector<std::string> compileFlags{};
+  std::vector<llvm::StringRef> srcGlobExprs;
+  std::vector<std::string> compileFlags;
 };
 
 template <> struct yml::MappingTraits<YMLExplicit> {
@@ -47,7 +47,7 @@ template <> struct yml::MappingTraits<YMLExplicit> {
 struct YMLConfig {
   std::optional<YMLExplicit> xplicit;
   std::optional<llvm::StringRef> compDBPath;
-  std::vector<llvm::StringRef> hdrGlobExprs{};
+  std::vector<llvm::StringRef> hdrGlobExprs;
   llvm::StringRef rootDir;
   bool stdImport{};
 };
@@ -55,7 +55,7 @@ struct YMLConfig {
 template <> struct yml::MappingTraits<YMLConfig> {
   static void mapping(yml::IO &in, YMLConfig &ymlCfg) noexcept {
     assert(in.getContext() != nullptr);
-    const CLIConfig &cliCfg{*static_cast<CLIConfig *>(in.getContext())};
+    CLIConfig const &cliCfg{*static_cast<CLIConfig *>(in.getContext())};
     if (cliCfg.rootDir.empty()) {
       in.mapRequired("rootDir", ymlCfg.rootDir);
     } else {
@@ -99,10 +99,10 @@ struct Config : MvOnly {
   bool write{};
 };
 
-void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*ctx*/) noexcept;
+void ymlDiagHandler(llvm::SMDiagnostic const &diag, void * /*ctx*/) noexcept;
 
-auto getCLIConfig(int argc, const char *const *argv, vfs::FileSystem &VFS = realFS()) noexcept
+auto getCLIConfig(int argc, char const *const *argv, vfs::FileSystem &VFS = realFS()) noexcept
     -> llvm::Expected<CLIConfig>;
 
-auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS = realFS()) noexcept
+auto resolveConfig(CLIConfig const &cliCfg, vfs::FileSystem &VFS = realFS()) noexcept
     -> llvm::Expected<Config>;

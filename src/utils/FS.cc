@@ -7,7 +7,6 @@
 #include <llvm/Support/Error.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/FormatVariadic.h>
-#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/raw_ostream.h>
@@ -24,7 +23,7 @@ namespace vfs = llvm::vfs;
 
 namespace {
 
-auto basePathLen(const llvm::Twine &path) noexcept -> llvm::Expected<size_t> {
+auto basePathLen(llvm::Twine const &path) noexcept -> llvm::Expected<size_t> {
   llvm::SmallString<64> tmp;
   if (path.isTriviallyEmpty() || (path.toVector(tmp), tmp.empty())) {
     return llvm::createStringError("path is empty");
@@ -32,11 +31,11 @@ auto basePathLen(const llvm::Twine &path) noexcept -> llvm::Expected<size_t> {
   return tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()));
 }
 
-auto buildFileMap(const llvm::Twine &dir, vfs::FileSystem &vfs, size_t baseLen) noexcept
+auto buildFileMap(llvm::Twine const &dir, vfs::FileSystem &vfs, size_t baseLen) noexcept
     -> llvm::Expected<llvm::StringMap<fs::file_type>> {
   llvm::StringMap<fs::file_type> fileMap{};
 
-  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
+  auto checkDir{[&](vfs::directory_entry const &ent) noexcept -> llvm::Expected<bool> {
     if (ent.type() == fs::file_type::regular_file || ent.type() == fs::file_type::directory_file) {
       fileMap.try_emplace(ent.path().drop_front(baseLen), ent.type());
     }
@@ -57,7 +56,7 @@ auto realFS() noexcept -> vfs::FileSystem & {
   return *realFS;
 }
 
-auto cpDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcVFS) noexcept
+auto cpDir(llvm::Twine const &src, llvm::Twine const &dst, vfs::FileSystem &srcVFS) noexcept
     -> llvm::Error {
   auto dstBaseLen{basePathLen(dst)};
   if (!dstBaseLen) {
@@ -71,7 +70,7 @@ auto cpDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcV
         llvm::formatv("When copying directory: {}.", llvm::toString(srcBaseLen.takeError())));
   }
 
-  if (std::error_code err{fs::create_directories(dst)}) {
+  if (std::error_code const err{fs::create_directories(dst)}) {
     return llvm::createStringError(
         err, llvm::formatv("When creating directory {}: {}.", dst, err.message()));
   }
@@ -79,20 +78,20 @@ auto cpDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcV
   llvm::SmallString<64> tmpDst{};
   dst.toVector(tmpDst);
 
-  auto copy{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
-    llvm::StringRef relPath{ent.path().drop_front(*srcBaseLen)};
-    llvm::SmallString<128> tmp{};
+  auto copy{[&](vfs::directory_entry const &ent) noexcept -> llvm::Expected<bool> {
+    llvm::StringRef const relPath{ent.path().drop_front(*srcBaseLen)};
+    llvm::SmallString<64> tmp{};
     pth::append(tmp, tmpDst, relPath);
 
     switch (ent.type()) {
     case fs::file_type::directory_file:
-      if (std::error_code err{fs::create_directory(tmp)}) {
+      if (std::error_code const err{fs::create_directory(tmp)}) {
         return llvm::createStringError(
             err, llvm::formatv("When creating directory {}: {}.", tmp, err.message()));
       }
       break;
     case fs::file_type::regular_file:
-      if (std::error_code err{fs::copy_file(ent.path(), tmp)}) {
+      if (std::error_code const err{fs::copy_file(ent.path(), tmp)}) {
         return llvm::createStringError(
             err, llvm::formatv("When copying file {}: {}.", ent.path(), err.message()));
       }
@@ -108,22 +107,22 @@ auto cpDir(const llvm::Twine &src, const llvm::Twine &dst, vfs::FileSystem &srcV
   return iterDir<true>(tmpSrc, copy, srcVFS);
 }
 
-auto cmpFiles(const llvm::Twine &file1, const llvm::Twine &file2, vfs::FileSystem &file1VFS,
+auto cmpFiles(llvm::Twine const &file1, llvm::Twine const &file2, vfs::FileSystem &file1VFS,
               vfs::FileSystem &file2VFS) noexcept -> llvm::Expected<bool> {
-  const auto buf1{file1VFS.getBufferForFile(file1, -1, false, false, false)};
-  if (std::error_code err{buf1.getError()}) {
+  auto const buf1{file1VFS.getBufferForFile(file1, -1, false, false, false)};
+  if (std::error_code const err{buf1.getError()}) {
     return llvm::createStringError(err,
                                    llvm::formatv("When opening {}: {}.", file1, err.message()));
   }
-  const auto buf2{file2VFS.getBufferForFile(file2, -1, false, false, false)};
-  if (std::error_code err{buf2.getError()}) {
+  auto const buf2{file2VFS.getBufferForFile(file2, -1, false, false, false)};
+  if (std::error_code const err{buf2.getError()}) {
     return llvm::createStringError(err,
                                    llvm::formatv("When opening {}: {}.", file2, err.message()));
   }
   return (**buf1).getBuffer() == (**buf2).getBuffer();
 }
 
-auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &dirVFS,
+auto cmpDirs(llvm::Twine const &dir, llvm::Twine const &ref, vfs::FileSystem &dirVFS,
              vfs::FileSystem &refVFS) noexcept -> llvm::Expected<bool> {
   auto dirBaseLen{basePathLen(dir)};
   if (!dirBaseLen) {
@@ -152,7 +151,7 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
   }
 
   bool res{true};
-  for (const auto &[relPath, fileT] : *refFileT) {
+  for (auto const &[relPath, fileT] : *refFileT) {
     llvm::StringRef fileTStr{fileT == fs::file_type::regular_file ? "file" : "directory"};
     auto it{dirFileT->find(relPath)};
 
@@ -179,7 +178,7 @@ auto cmpDirs(const llvm::Twine &dir, const llvm::Twine &ref, vfs::FileSystem &di
     dirFileT->erase(it);
   }
 
-  for (const auto &[relPath, fileT] : *dirFileT) {
+  for (auto const &[relPath, fileT] : *dirFileT) {
     llvm::StringRef fileTStr{fileT == fs::file_type::regular_file ? "file" : "directory"};
     logErr("When comparing directories: Unexpected {} {}.", fileTStr, relPath);
     res = false;

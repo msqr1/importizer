@@ -22,11 +22,11 @@ namespace pth = llvm::sys::path;
 
 class Glob : MvOnly {
   llvm::GlobPattern ptn_;
-  const bool negate_;
+  bool const negate_;
+  Glob(bool negate, llvm::GlobPattern &&ptn) noexcept;
+  friend auto mkGlob(llvm::StringRef ptn, size_t maxSubpattern) noexcept -> llvm::Expected<Glob>;
 
 public:
-  Glob(bool negate, llvm::GlobPattern &&ptn) noexcept;
-
   [[nodiscard]] auto match(llvm::StringRef s) const noexcept -> bool;
 };
 
@@ -40,10 +40,10 @@ concept ConvertibleRange = std::ranges::range<Container> &&
 
 // Make many globs
 template <ConvertibleRange<llvm::StringRef> T>
-auto mkGlobs(const T &globExprs) noexcept -> llvm::Expected<GlobStorage> {
+auto mkGlobs(T const &globExprs) noexcept -> llvm::Expected<GlobStorage> {
   GlobStorage globs;
   llvm::Error err{llvm::Error::success()};
-  for (llvm::StringRef globExpr : globExprs) {
+  for (llvm::StringRef const globExpr : globExprs) {
     llvm::Expected<Glob> g{mkGlob(globExpr)};
     if (!g) {
       err = llvm::joinErrors(std::move(err), g.takeError());
@@ -54,24 +54,24 @@ auto mkGlobs(const T &globExprs) noexcept -> llvm::Expected<GlobStorage> {
     return err;
   }
   return globs;
-};
+}
 
 struct GlobDirRule {
-  GlobStorage globs{};
-  llvm::unique_function<void(const vfs::directory_entry &ent) const> callback;
+  GlobStorage globs;
+  llvm::unique_function<void(vfs::directory_entry const &ent) const> callback;
 };
 
 template <bool Recurse = true, ConvertibleRange<GlobDirRule> T>
-auto globDir(const llvm::Twine &dir, const T &rules, vfs::FileSystem &dirVFS = realFS())
+auto globDir(llvm::Twine const &dir, T const &rules, vfs::FileSystem &dirVFS = realFS())
     -> llvm::Error {
   llvm::SmallString<64> tmp;
   if (dir.isTriviallyEmpty() || (dir.toVector(tmp), tmp.empty())) {
     return llvm::createStringError("When globbing directory: dir path is empty");
   }
-  const size_t baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
-  auto checkDir{[&](const vfs::directory_entry &ent) noexcept -> llvm::Expected<bool> {
-    for (const auto &[globs, callback] : rules) {
-      for (const Glob &glob : globs) {
+  size_t const baseLen{tmp.size() + static_cast<size_t>(!pth::is_separator(tmp.back()))};
+  auto checkDir{[&](vfs::directory_entry const &ent) noexcept -> llvm::Expected<bool> {
+    for (auto const &[globs, callback] : rules) {
+      for (Glob const &glob : globs) {
         if (glob.match(ent.path().drop_front(baseLen))) {
           callback(ent);
           break;

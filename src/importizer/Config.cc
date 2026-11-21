@@ -8,13 +8,10 @@
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/StringSet.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/Error.h>
-#include <llvm/Support/ErrorOr.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/FormatVariadic.h>
-#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Support/VirtualFileSystem.h>
@@ -22,11 +19,9 @@
 #include <llvm/Support/raw_ostream.h>
 #include <cassert>
 #include <memory>
-#include <optional>
 #include <string>
 #include <system_error>
 #include <utility>
-#include <vector>
 
 namespace cl = llvm::cl;
 namespace tl = clang::tooling;
@@ -40,14 +35,14 @@ void ymlDiagHandler(const llvm::SMDiagnostic &diag, void * /*ctx*/) noexcept {
   diag.print(globalLogCfg.prog(), *globalLogCfg.stream());
 }
 
-auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS) noexcept
+auto getCLIConfig(int const argc, char const *const *argv, vfs::FileSystem &VFS) noexcept
     -> llvm::Expected<CLIConfig> {
   CLIConfig cliCfg;
 
   // LLVM default options will mix into ours if we don't make our own category
   cl::OptionCategory cat{globalLogCfg.prog()};
 
-  cl::opt<std::string, true> configPath{
+  cl::opt<std::string, true> const configPath{
       cl::cat{cat},
       cl::desc{"<YAML configuration file>"},
       cl::location(cliCfg.configPath),
@@ -62,7 +57,7 @@ auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS)
       cl::location(cliCfg.write),
       cl::init(false),
   };
-  cl::alias writeAlias{"w", cl::aliasopt{write}};
+  cl::alias const writeAlias{"w", cl::aliasopt{write}};
   cl::opt<std::string, true> rootDir{
       cl::cat{cat},
       "root-dir",
@@ -70,7 +65,7 @@ auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS)
       cl::location(cliCfg.rootDir),
       cl::ValueOptional,
   };
-  cl::alias rootDirAlias{"r", cl::aliasopt{rootDir}};
+  cl::alias const rootDirAlias{"r", cl::aliasopt{rootDir}};
 
   cl::SetVersionPrinter([](llvm::raw_ostream &stream) -> void { stream << "3.0.0\n"; });
   cl::HideUnrelatedOptions(cat);
@@ -88,14 +83,14 @@ auto getCLIConfig(const int argc, const char *const *argv, vfs::FileSystem &VFS)
     return llvm::make_error<EmptyErr>();
   }
 
-  return cliCfg;
+  return std::move(cliCfg);
 }
 
 auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
     -> llvm::Expected<Config> {
 
   auto buf{VFS.getBufferForFile(cliCfg.configPath, -1, false, false, false)};
-  if (std::error_code err{buf.getError()}) {
+  if (std::error_code const err{buf.getError()}) {
     return llvm::createStringError(
         err, llvm::formatv("When opening {}: {}.", cliCfg.configPath, err.message()));
   }
@@ -105,7 +100,7 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
   // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
   YMLConfig ymlCfg;
   ymlIn >> ymlCfg;
-  if (std::error_code err{ymlIn.error()}) {
+  if (std::error_code const err{ymlIn.error()}) {
     return llvm::make_error<EmptyErr>();
   }
 
@@ -121,7 +116,7 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
     cfg.rootDir = tmp.str();
     tmp.clear();
   }
-  if (std::error_code err{VFS.getRealPath(cfg.rootDir, tmp)}) {
+  if (std::error_code const err{VFS.getRealPath(cfg.rootDir, tmp)}) {
     return llvm::createStringError(
         err, llvm::formatv("When resolving root directory {}: {}.", cfg.rootDir, err.message()));
   }
@@ -145,7 +140,7 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
   // compilationDB
   if (ymlCfg.compDBPath) {
     buf = VFS.getBufferForFile(*ymlCfg.compDBPath, -1, false, false);
-    if (std::error_code err{buf.getError()}) {
+    if (std::error_code const err{buf.getError()}) {
       return llvm::createStringError(
           err, llvm::formatv("When opening {}: {}.", *ymlCfg.compDBPath, err.message()));
     }

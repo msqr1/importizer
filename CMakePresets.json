@@ -9,6 +9,7 @@
       "toolchainFile": "${sourceDir}/Toolchain.cmake",
       "cacheVariables": {
         "BUILD_SHARED_LIBS": false,
+        "CMAKE_COLOR_DIAGNOSTICS": true,
         "CMAKE_PROJECT_INCLUDE": "${sourceDir}/DynPresets.cmake"
       }
     },

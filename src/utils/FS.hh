@@ -33,7 +33,7 @@ auto iterDir(const llvm::Twine &dir, IterDirCallback callback,
              vfs::FileSystem &VFS = realFS()) noexcept -> llvm::Error {
   std::error_code err;
   DirItT<Recurse> it;
-  DirItT<Recurse> end;
+  DirItT<Recurse> const end{};
   if constexpr (Recurse) {
     it = vfs::recursive_directory_iterator(VFS, dir, err);
   } else {

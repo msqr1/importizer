@@ -4,4 +4,4 @@
 #include <string>
 #include <vector>
 
-auto runUnitTest(const char *suiteName, const std::vector<std::string> &args) noexcept -> int;
+auto runUnitTest(char const *suiteName, std::vector<std::string> const &args) noexcept -> int;

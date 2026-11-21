@@ -1,10 +1,9 @@
 #include "testing/Unit.hh"
 #include "testing/Doctest.hh"
 #include "utils/Diag.hh"
-#include <llvm/ADT/StringRef.h>
-#include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
 #include <cstdio>
+#include <doctest/extensions/doctest_util.h>
 #include <ios>
 #include <ostream>
 #include <streambuf>
@@ -26,7 +25,7 @@ class LLVMStreamBuf : public std::streambuf {
   }
 
   // Writing multiple chars
-  auto xsputn(const char *str, std::streamsize n) noexcept -> std::streamsize override {
+  auto xsputn(char const *str, std::streamsize n) noexcept -> std::streamsize override {
     stream_.write(str, static_cast<size_t>(n));
     return n;
   }
@@ -43,7 +42,7 @@ public:
 
 } // namespace
 
-auto runUnitTest(const char *suiteName, const std::vector<std::string> &args) noexcept -> int {
+auto runUnitTest(char const *suiteName, std::vector<std::string> const &args) noexcept -> int {
   doctest::Context ctx;
   LLVMOstream doctestOut{*globalLogCfg.stream()};
   doctest::applyCommandLine(ctx, args);

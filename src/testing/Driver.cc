@@ -3,7 +3,6 @@
 #include "utils/Diag.hh"
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/Twine.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
@@ -12,7 +11,7 @@
 
 namespace cl = llvm::cl;
 
-auto main(const int argc, const char *const *argv) -> int {
+auto main(int const argc, char const *const *argv) -> int {
   // Always set program and log stream before everything
   globalLogCfg.set("test-tool", &llvm::errs());
 
@@ -22,7 +21,7 @@ auto main(const int argc, const char *const *argv) -> int {
   cl::SubCommand runE2E{"run-e2e", "Run an end-to-end test."};
   cl::SubCommand updateE2E{"update-e2e", "Update an end-to-end test."};
   cl::SubCommand runUnit{"run-unit", "Run a unit test suite."};
-  cl::opt<std::string> suiteName{
+  cl::opt<std::string> const suiteName{
       cl::cat{cat}, cl::sub{runUnit}, cl::desc{"<suite name>"}, cl::Positional, cl::ValueRequired,
   };
   cl::list<std::string> doctestArgs{
@@ -31,11 +30,11 @@ auto main(const int argc, const char *const *argv) -> int {
       cl::desc{"<doctest args>..."},
       cl::ConsumeAfter,
   };
-  cl::opt<std::string> testDir{
+  cl::opt<std::string> const testDir{
       cl::cat{cat},   cl::sub{runE2E},   cl::sub{updateE2E}, cl::desc{"<test directory>"},
       cl::Positional, cl::ValueRequired,
   };
-  cl::opt<std::string> outDir{
+  cl::opt<std::string> const outDir{
       cl::cat{cat}, cl::sub{runE2E}, cl::desc{"<out directory>"}, cl::Positional, cl::ValueRequired,
   };
   cl::HideUnrelatedOptions(cat);

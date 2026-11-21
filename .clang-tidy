@@ -4,27 +4,24 @@ Checks: >
   llvm-*,
   -llvm-header-guard,
   -llvm-prefer-static-over-anonymous-namespace,
-  -llvm-else-after-return,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
-  -bugprone-derived-method-shadowing-base-method,
   concurrency-*,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-const-or-ref-data-members,
   -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
-  -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-special-member-functions,
-  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-avoid-magic-numbers,
   modernize-*,
+  misc-*,
   performance-*,
   portability-*,
   -portability-avoid-pragma-once,
   readability-*,
   -readability-identifier-length,
   -readability-magic-numbers,
-  -readability-suspicious-call-argument,
-  -readability-redundant-member-init
+  -readability-suspicious-call-argument
 
 WarningsAsErrors: "*"
 FormatStyle: file
@@ -32,6 +29,10 @@ HeaderFilterRegex: '.*[/\\]src[/\\]'
 HeaderFileExtensions: ["hh"]
 ImplementationFileExtensions: ["cc"]
 CheckOptions:
+  cppcoreguidelines-avoid-do-while.IgnoreMacros: true
+  misc-const-correctness.WarnPointersAsValues: true
+  misc-const-correctness.TransformPointersAsValues: true
+
   # 1. Namespaces
   readability-identifier-naming.NamespaceCase: lower_case
 

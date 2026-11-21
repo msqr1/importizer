@@ -14,7 +14,7 @@ namespace tl = clang::tooling;
 
 namespace {
 
-auto importizerMain2(const int argc, const char *const *argv) -> llvm::Error {
+auto importizerMain2(int const argc, char const *const *argv) -> llvm::Error {
   llvm::Expected<CLIConfig> cliCfg{getCLIConfig(argc, argv)};
   if (!cliCfg) {
     return llvm::joinErrors(cliCfg.takeError(),
@@ -46,7 +46,7 @@ auto importizerMain2(const int argc, const char *const *argv) -> llvm::Error {
 
 } // namespace
 
-auto importizerMain(const int argc, const char *const *argv) -> int {
+auto importizerMain(int const argc, char const *const *argv) -> int {
   if (llvm::Error err{importizerMain2(argc, argv)}) {
     llvm::handleAllErrors(std::move(err), ErrorLogger{});
     return EXIT_FAILURE;

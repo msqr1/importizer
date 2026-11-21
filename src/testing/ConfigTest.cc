@@ -4,13 +4,10 @@
 #include "importizer/Config.hh"
 #include "testing/Doctest.hh"
 #include "utils/Diag.hh"
-#include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/Twine.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/FormatVariadic.h>
-#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/YAMLTraits.h>
 #include <llvm/Support/raw_ostream.h>
@@ -23,12 +20,11 @@ auto addYMLConfig(vfs::InMemoryFileSystem &memFS, CLIConfig &cliCfg, const YMLCo
     -> llvm::Error {
   llvm::SmallString<64> ymlContent;
   llvm::raw_svector_ostream stream{ymlContent};
-  // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast): Won't modify the CLI or
-  // YML config
+  // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast): Won't modify the CLI or YML config
   yml::Output ymlOut{stream, const_cast<void *>(static_cast<const void *>(&cliCfg)), 100};
   ymlOut << const_cast<YMLConfig &>(ymlCfg);
   // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
-  if (std::error_code err{ymlOut.error()}) {
+  if (std::error_code const err{ymlOut.error()}) {
     return llvm::make_error<EmptyErr>();
   }
   return memFS.addFile(cliCfg.configPath, 0, llvm::MemoryBuffer::getMemBufferCopy(ymlContent, {}))
@@ -45,7 +41,7 @@ CASE("CLI parsing") {
   vfs::InMemoryFileSystem memFS;
 
   SUBCASE("Default --write") {
-    std::array<const char *, 1> argv{"importizer"};
+    std::array<char const *, 1> argv{"importizer"};
     llvm::Expected<CLIConfig> cliCfg{getCLIConfig(argv.size(), argv.data(), memFS)};
     REQUIRE(cliCfg);
     CHECK_FALSE(cliCfg->write);

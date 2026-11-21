@@ -13,15 +13,15 @@ auto EmptyErr::convertToErrorCode() const noexcept -> std::error_code {
 
 LogConfig globalLogCfg{}; // NOLINT
 
-void LogConfig::set(const char *prog, llvm::raw_ostream *stream) noexcept {
+void LogConfig::set(char const *prog, llvm::raw_ostream *stream) noexcept {
   assert(prog != nullptr && stream != nullptr);
   prog_ = prog;
   stream_ = stream;
 }
 
-void LogConfig::set(const LogConfig &cfg) noexcept { set(cfg.prog_, cfg.stream_); }
+void LogConfig::set(LogConfig const &cfg) noexcept { set(cfg.prog_, cfg.stream_); }
 
-auto LogConfig::prog() const noexcept -> const char * {
+auto LogConfig::prog() const noexcept -> char const * {
   assert(prog_ != nullptr);
   return prog_;
 }
@@ -31,18 +31,18 @@ auto LogConfig::stream() const noexcept -> llvm::raw_ostream * {
   return stream_;
 }
 
-auto ErrorLogger::operator()(const llvm::ErrorInfoBase &errInfo) const -> llvm::Error {
+auto ErrorLogger::operator()(llvm::ErrorInfoBase const &errInfo) const -> llvm::Error {
   if (errInfo.isA<EmptyErr>()) {
     return llvm::Error::success();
   }
-  std::string msg{errInfo.message()};
+  std::string const msg{errInfo.message()};
   assert(!msg.empty());
   logErr("{}", msg);
   return llvm::Error::success();
 }
 
 #if __has_feature(address_sanitizer)
-extern "C" __attribute__((visibility("default"))) auto __asan_default_options() -> const char * {
+extern "C" __attribute__((visibility("default"))) auto __asan_default_options() -> char const * {
   return ":strict_string_checks=1"
 #ifndef WIN32
          ":detect_leaks=1"
@@ -58,4 +58,4 @@ extern "C" __attribute__((visibility("default"))) auto __asan_default_options() 
 #endif
 
 // For Bionic CStdlib
-[[gnu::used, gnu::retain]] alignas(64) const thread_local char TLS_ALIGNER{};
+[[gnu::used, gnu::retain]] alignas(64) thread_local char const TLS_ALIGNER{};

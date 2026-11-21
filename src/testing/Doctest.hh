@@ -43,7 +43,7 @@ template <typename T> auto ok(llvm::Expected<T> &&xpected) noexcept -> bool {
 
 // Replacement of REQUIRE* macros via DOCTEST_CONFIG_ASSERTS_RETURN_VALUES.The real REQUIRE*
 // with DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS behaves like CHECK*.
-// NOLINTBEGIN(readability-else-after-return)
+// NOLINTBEGIN(readability-else-after-return,llvm-else-after-return)
 #define REQUIRE(...)                                                                               \
   if (!DOCTEST_REQUIRE_UNARY(ok(__VA_ARGS__)))                                                     \
     return;                                                                                        \
@@ -91,5 +91,5 @@ template <typename T> auto ok(llvm::Expected<T> &&xpected) noexcept -> bool {
     return;                                                                                        \
   else                                                                                             \
     ((void)0)
-// NOLINTEND(readability-else-after-return)
+// NOLINTEND(readability-else-after-return,llvm-else-after-return)
 // NOLINTEND(cppcoreguidelines-macro-usage)

@@ -21,26 +21,26 @@ public:
 };
 
 class LogConfig {
-  const char *prog_;
+  char const *prog_;
   llvm::raw_ostream *stream_;
 
 public:
   LogConfig() = default;
-  void set(const char *prog, llvm::raw_ostream *stream) noexcept;
+  void set(char const *prog, llvm::raw_ostream *stream) noexcept;
   void set(const LogConfig &cfg) noexcept;
-  [[nodiscard]] auto prog() const noexcept -> const char *;
+  [[nodiscard]] auto prog() const noexcept -> char const *;
   [[nodiscard]] auto stream() const noexcept -> llvm::raw_ostream *;
 } extern globalLogCfg; // NOLINT
 
 // Log an error to the global output stream
-template <typename... Ts> void logErr(const char *fmt, Ts &&...args) noexcept {
+template <typename... Ts> void logErr(char const *fmt, Ts &&...args) noexcept {
   llvm::WithColor::error(*globalLogCfg.stream(), globalLogCfg.prog());
   llvm::WithColor{*globalLogCfg.stream(), llvm::raw_ostream::Colors::SAVEDCOLOR, true}
       << llvm::formatv(fmt, std::forward<Ts>(args)...) << '\n';
 }
 
 // Log a warning to the global output stream
-template <typename... Ts> void logWarning(const char *fmt, Ts &&...args) noexcept {
+template <typename... Ts> void logWarning(char const *fmt, Ts &&...args) noexcept {
   llvm::WithColor::warning(*globalLogCfg.stream(), globalLogCfg.prog());
   llvm::WithColor{*globalLogCfg.stream(), llvm::raw_ostream::Colors::SAVEDCOLOR, true}
       << llvm::formatv(fmt, std::forward<Ts>(args)...) << '\n';

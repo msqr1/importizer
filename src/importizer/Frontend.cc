@@ -1,7 +1,6 @@
 #include "importizer/Frontend.hh"
 #include "importizer/AST.hh"
 #include "importizer/PP.hh"
-#include <clang/AST/ASTConsumer.h>
 #include <clang/Frontend/FrontendAction.h>
 #include <clang/Lex/Preprocessor.h>
 #include <llvm/ADT/StringRef.h>
@@ -12,8 +11,8 @@ FrontendAnalyzer::FrontendAnalyzer(FrontendCtx &ctx) : ctx_{ctx} {}
 auto FrontendAnalyzer::CreateASTConsumer(clang::CompilerInstance &compiler,
                                          llvm::StringRef /*InFile*/) noexcept
     -> std::unique_ptr<clang::ASTConsumer> {
-  clang::Preprocessor &preprocessor{compiler.getPreprocessor()};
-  preprocessor.addPPCallbacks(std::make_unique<PPAnalyzer>(preprocessor, ctx_));
+  clang::Preprocessor &PP{compiler.getPreprocessor()};
+  PP.addPPCallbacks(std::make_unique<PPAnalyzer>(PP, ctx_));
   return std::make_unique<ASTAnalyzer>(ctx_);
 }
 

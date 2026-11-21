@@ -3,12 +3,7 @@
 #include "testing/Doctest.hh"
 #include "testing/MemFS.hh"
 #include "utils/FS.hh"
-#include <llvm/ADT/STLFunctionalExtras.h>
-#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Support/MemoryBuffer.h>
-#include <llvm/Support/MemoryBufferRef.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/raw_ostream.h>
 
