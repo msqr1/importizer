@@ -2,7 +2,6 @@
 #include "utils/Diag.hh"
 #include "utils/FS.hh"
 #include "utils/Glob.hh"
-#include <cassert>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <clang/Tooling/JSONCompilationDatabase.h>
 #include <llvm/ADT/DenseMap.h>
@@ -21,6 +20,7 @@
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/YAMLTraits.h>
 #include <llvm/Support/raw_ostream.h>
+#include <cassert>
 #include <memory>
 #include <optional>
 #include <string>
@@ -99,10 +99,10 @@ auto resolveConfig(const CLIConfig &cliCfg, vfs::FileSystem &VFS) noexcept
     return llvm::createStringError(
         err, llvm::formatv("When opening {}: {}.", cliCfg.configPath, err.message()));
   }
-  // NOLINTBEGIN
+  // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast): Won't modify the CLI config.
   yml::Input ymlIn{(**buf).getMemBufferRef(),
                    const_cast<void *>(static_cast<const void *>(&cliCfg)), ymlDiagHandler};
-  // NOLINTEND
+  // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
   YMLConfig ymlCfg;
   ymlIn >> ymlCfg;
   if (std::error_code err{ymlIn.error()}) {

@@ -1,8 +1,5 @@
 #include "utils/FS.hh"
 #include "utils/Diag.hh"
-#include <cassert>
-#include <cstddef>
-#include <cstdio>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringMap.h>
 #include <llvm/ADT/StringRef.h>
@@ -14,6 +11,9 @@
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/raw_ostream.h>
+#include <cassert>
+#include <cstddef>
+#include <cstdio>
 #include <memory>
 #include <system_error>
 #include <utility>

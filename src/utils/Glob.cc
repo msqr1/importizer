@@ -1,9 +1,9 @@
 #include "utils/Glob.hh"
-#include <cstddef>
 #include <llvm/ADT/FunctionExtras.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/GlobPattern.h>
+#include <cstddef>
 #include <optional>
 #include <utility>
 

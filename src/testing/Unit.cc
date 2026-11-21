@@ -1,12 +1,11 @@
 #include "testing/Unit.hh"
 #include "testing/Doctest.hh"
 #include "utils/Diag.hh"
-#include <cstdio>
-#include <doctest/extensions/doctest_util.h>
-#include <ios>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
+#include <cstdio>
+#include <ios>
 #include <ostream>
 #include <streambuf>
 #include <string>

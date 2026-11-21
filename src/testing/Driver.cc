@@ -1,13 +1,13 @@
 #include "testing/E2E.hh"
 #include "testing/Unit.hh"
 #include "utils/Diag.hh"
-#include <cassert>
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
+#include <cassert>
 #include <string>
 
 namespace cl = llvm::cl;

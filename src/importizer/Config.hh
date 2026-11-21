@@ -5,13 +5,13 @@
 #pragma once
 #include "utils/FS.hh"
 #include "utils/Types.hh"
-#include <cassert>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Support/YAMLTraits.h>
 #include <llvm/Support/raw_ostream.h>
+#include <cassert>
 #include <memory>
 #include <optional>
 #include <string>

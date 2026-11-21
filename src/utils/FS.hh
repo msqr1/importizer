@@ -2,13 +2,13 @@
 // in default VFS args. This is done for easy unit testing.
 
 #pragma once
-#include <cassert>
 #include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/ErrorOr.h>
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/VirtualFileSystem.h>
+#include <cassert>
 #include <system_error>
 #include <type_traits>
 

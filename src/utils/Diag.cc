@@ -1,7 +1,7 @@
 #include "utils/Diag.hh"
-#include <cassert>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/raw_ostream.h>
+#include <cassert>
 #include <string>
 #include <system_error>
 

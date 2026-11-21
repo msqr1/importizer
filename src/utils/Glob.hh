@@ -4,9 +4,6 @@
 #pragma once
 #include "utils/FS.hh"
 #include "utils/Types.hh"
-#include <cassert>
-#include <concepts>
-#include <cstddef>
 #include <llvm/ADT/FunctionExtras.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
@@ -14,6 +11,9 @@
 #include <llvm/Support/GlobPattern.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
+#include <cassert>
+#include <concepts>
+#include <cstddef>
 #include <ranges>
 #include <utility>
 #include <vector>

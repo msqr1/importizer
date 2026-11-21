@@ -1,10 +1,9 @@
 // Glob utilities tests. We trust that llvm::GlobPattern is already well-tested, so we won't test
 // creation and matching too much.
 
-#include "utils/Glob.hh"
 #include "testing/Doctest.hh"
 #include "testing/MemFS.hh"
-#include <array>
+#include "utils/Glob.hh"
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/StringRef.h>
@@ -14,6 +13,7 @@
 #include <llvm/Support/Path.h>
 #include <llvm/Support/VirtualFileSystem.h>
 #include <llvm/Support/raw_ostream.h>
+#include <array>
 #include <utility>
 
 namespace fs = llvm::sys::fs;

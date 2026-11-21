@@ -2,10 +2,9 @@
 Checks: >
   -*,
   llvm-*,
-  -llvm-include-order,
   -llvm-header-guard,
   -llvm-prefer-static-over-anonymous-namespace,
-  -llvm-twine-local,
+  -llvm-else-after-return,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-derived-method-shadowing-base-method,

@@ -1,12 +1,12 @@
 // Diagnostics utility functions
 
 #pragma once
-#include <cassert>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/WithColor.h>
 #include <llvm/Support/raw_ostream.h>
+#include <cassert>
 #include <system_error>
 
 // Signify that an error has occured, but no further action required. Usually used for calling into

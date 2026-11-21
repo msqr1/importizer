@@ -1,8 +1,8 @@
 // Filesystem utilities tests.
 
-#include "utils/FS.hh"
 #include "testing/Doctest.hh"
 #include "testing/MemFS.hh"
+#include "utils/FS.hh"
 #include <llvm/ADT/STLFunctionalExtras.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Error.h>
